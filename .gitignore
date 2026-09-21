@@ -1,0 +1,19 @@
+# Dependencias / entorno
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+
+# Cachés y editores
+.cache/
+.vscode/
+.idea/
+*.swp
+*~
+
+# Salidas locales
+dist/
+.vercel/
+.netlify/
