@@ -24,7 +24,7 @@ function check(name, cond, detail = '') {
 
 const sources = [
   ...fs.readdirSync(path.join(ROOT, 'js')).map((f) => 'js/' + f),
-  'index.html', 'app/index.html', 'styles.css', 'tools/audit.js',
+  'index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'styles.css', 'tools/audit.js',
 ];
 
 const ACC = 'áéíóúÁÉÍÓÚñÑ';
@@ -188,7 +188,7 @@ check('sin tildes en el codigo', offenders.length === 0, offenders.slice(0, 6).j
 console.log('\n2. Las clases CSS que usa la interfaz estan definidas');
 const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
 const used = new Set();
-for (const rel of ['index.html', 'app/index.html', 'js/ui.js', 'js/charts.js', 'js/landing.js']) {
+for (const rel of ['index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'js/ui.js', 'js/charts.js', 'js/landing.js']) {
   const s = fs.readFileSync(path.join(ROOT, rel), 'utf8');
   for (const m of s.matchAll(/class="([^"$]*)"/g)) {
     for (const c of m[1].split(/\s+/)) if (c) used.add(c);

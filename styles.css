@@ -767,6 +767,19 @@ tr.sel td{color:var(--text-2)}
 }
 .lp-compare-caption{margin:14px 0 0;font-size:12.5px;color:var(--muted);max-width:62ch;line-height:1.5}
 
+.lp-doc h1{
+  font-size:clamp(28px,4vw,40px);line-height:1.12;letter-spacing:-.03em;
+  margin:0 0 16px;max-width:18ch;color:var(--text-hi);
+}
+.lp-doc .lp-lead{margin-bottom:36px}
+.lp-doc-block{margin:0 0 28px;padding-top:20px;border-top:1px solid var(--line)}
+.lp-doc-block h2{
+  font-size:18px;letter-spacing:-.02em;text-transform:none;font-weight:700;
+  color:var(--text);margin:0 0 10px;
+}
+.lp-doc-block p{margin:0;font-size:14.5px;line-height:1.6;color:var(--text-2);max-width:62ch}
+.lp-doc-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
+
 .lp-section{margin-bottom:48px;padding-top:8px;border-top:1px solid var(--line)}
 .lp-section h2{
   font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;

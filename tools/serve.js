@@ -31,19 +31,27 @@ const TYPES = {
 
 const server = http.createServer((req, res) => {
   let rel = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  // Quitar query/hash ya lo hace pathname; normalizar separadores.
+  rel = rel.replace(/\\/g, '/');
   if (rel === '/' || rel === '') rel = '/index.html';
-  // Carpetas con index.html (p. ej. /app/ → /app/index.html).
-  if (rel.endsWith('/')) rel += 'index.html';
-  else {
-    const bare = path.join(ROOT, rel);
+  // /app y /app/ → /app/index.html
+  if (rel.endsWith('/')) {
+    rel += 'index.html';
+  } else {
+    const bare = path.join(ROOT, rel.replace(/^\/+/, ''));
     try {
-      if (fs.existsSync(bare) && fs.statSync(bare).isDirectory()) rel = rel.replace(/\/?$/, '/') + 'index.html';
-    } catch { /* seguir con el path pedido */ }
+      if (fs.existsSync(bare) && fs.statSync(bare).isDirectory()) {
+        rel = rel.replace(/\/?$/, '/') + 'index.html';
+      }
+    } catch { /* seguir */ }
   }
-  const target = path.join(ROOT, rel);
 
-  // Nadie sale de la carpeta del proyecto.
-  if (!target.startsWith(ROOT)) {
+  const safeRel = rel.replace(/^\/+/, '');
+  const target = path.resolve(ROOT, safeRel);
+  const rootResolved = path.resolve(ROOT);
+
+  // Nadie sale de la carpeta del proyecto (comparacion segura en Windows).
+  if (target !== rootResolved && !target.toLowerCase().startsWith(rootResolved.toLowerCase() + path.sep)) {
     res.writeHead(403).end('403');
     return;
   }
@@ -55,10 +63,7 @@ const server = http.createServer((req, res) => {
     }
     res.writeHead(200, {
       'Content-Type': TYPES[path.extname(target).toLowerCase()] || 'application/octet-stream',
-      // La MISMA politica que se sirve en produccion (ver vercel.json). Tenerla solo
-      // alli significaria descubrir que rompe algo el dia del despliegue.
       'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests",
-      // En desarrollo nunca se cachea: un .js viejo en cache confunde muchisimo.
       'Cache-Control': 'no-store, must-revalidate',
     });
     res.end(data);
