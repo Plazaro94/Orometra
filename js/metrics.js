@@ -14,6 +14,12 @@ export const DEFAULT_POLICY = {
     bothPeriods: true,
   },
   /*
+   * Selección de mesetas cuando hay forward:
+   *   isThenOos — descubrir en IS (puertas+score), validar después con OOS (honesto)
+   *   joint     — min(IS,OOS) en puertas y score (forward contamina la selección)
+   */
+  selectionMode: 'isThenOos',
+  /*
    * Anclas: el valor que puntua 0 y el que puntua 1.
    *
    * El ancla del DRAWDOWN se estrecho de {40, 8} a {30, 5} tras medir que la anterior
@@ -130,7 +136,14 @@ export function resolvePolicy(policy = DEFAULT_POLICY) {
   if (Number.isFinite(g.minTrades) && g.minTrades > 0) {
     anchors.trades = { zero: Math.max(5, g.minTrades * 0.5), full: g.minTrades * 5 };
   }
-  return { ...policy, anchors, groups: policy.groups || DEFAULT_POLICY.groups };
+  return {
+    ...DEFAULT_POLICY,
+    ...policy,
+    gates: { ...DEFAULT_POLICY.gates, ...(policy.gates || {}) },
+    anchors,
+    groups: policy.groups || DEFAULT_POLICY.groups,
+    selectionMode: policy.selectionMode || DEFAULT_POLICY.selectionMode || 'isThenOos',
+  };
 }
 
 function linearScore(value, anchor) {

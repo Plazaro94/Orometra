@@ -396,6 +396,7 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .run-files{font-family:var(--mono);color:var(--muted)}
 .run-files b{color:var(--muted-2);font-weight:400}
 .run-sep{color:var(--line)}
+.run-holdout{color:var(--muted);font-weight:600}
 
 /* ---------------------------------------------------------------- content */
 .content{min-height:420px}

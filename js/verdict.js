@@ -34,12 +34,12 @@ export function buildVerdict(ctx) {
   const findings = [];
   const add = (severity, title, detail) => findings.push({ severity, title, detail });
 
-  const { gatePassCount, total, plateaus, fragility, fragilityFolds, fragilityAsymmetry,
+  const { gatePassCount, total, plateaus, fragility, fragilityQuality, fragilityFolds, fragilityAsymmetry,
     fragilityWorstDirection, sharpeTest, spearman, coverage, medianSupport,
     periodRatio, integrity, sampling, boundaryWorst, bestPlateau, inversions, periodComparison,
     hasForward, invertedRisk, alternativePlateau, underpowered, viableNeededForPlateau,
     tiedCount, tiedRanks, stabilityCheck, irregularGrids, rescuedDims, offsetsComplete,
-    spansIrregular, degreesOfFreedom, gateInfluence } = ctx;
+    spansIrregular, degreesOfFreedom, gateInfluence, selectionMode } = ctx;
 
   // ---- Bloqueantes
   if (!gatePassCount) {
@@ -112,25 +112,50 @@ export function buildVerdict(ctx) {
   const hasRefuge = viableShare >= VIABLE_REFUGE && hasRegion;
   if (Number.isFinite(fragility)) {
     if (fragility >= 0.5 && hasRefuge) {
-      // El PBO condena la forma de elegir, no la estrategia. Si ademas casi todo el
-      // espacio es viable y existe una región estable, hay de donde elegir: lo que
-      // no se puede es hacerlo mirando el ranking.
-      add(SEV.WARN, L(`Tu ranking esta invertido: la selección falla el ${(100 * fragility).toFixed(0)}% de las veces`, `Your ranking is inverted: selection fails ${(100 * fragility).toFixed(0)}% of the time`),
-        L(`Al quedarte con la mejor configuración segun un periodo, cae por debajo de la mediana del otro el ${(100 * fragility).toFixed(0)}% de las veces. No es que falte información: es que la tabla ordenada te empuja justo en la direccion contraria. La primera de tu lista es, sistematicamente, de las peores opciones. Ignora el orden y quedate con la región estable que se propone más abajo.`,
-          `When you keep the best configuration by one period, it falls below the median of the other ${(100 * fragility).toFixed(0)}% of the time. Information is not missing: the ranked table pushes you in the opposite direction. The first on your list is, systematically, among the worst options. Ignore the order and keep the stable region proposed below.`));
+      add(SEV.WARN, L(`Tu ranking MT5 (Result) esta invertido: falla el ${(100 * fragility).toFixed(0)}%`, `Your MT5 ranking (Result) is inverted: fails ${(100 * fragility).toFixed(0)}%`),
+        L(`Al quedarte con la mejor fila segun la columna Result de un periodo, cae por debajo de la mediana del otro el ${(100 * fragility).toFixed(0)}% de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quedate con la meseta de abajo.`,
+          `When you keep the best row by the Result column of one period, it falls below the median of the other ${(100 * fragility).toFixed(0)}% of the time. That condemns your table order, not the quality region Orometra proposes. Ignore the ranking and keep the plateau below.`));
     } else if (fragility >= 0.5) {
-      add(SEV.CRITICAL, L(`La regla "quedate con la primera" falla el ${(100 * fragility).toFixed(0)}% de las veces`, `The "keep the first" rule fails ${(100 * fragility).toFixed(0)}% of the time`),
-        L(`Al elegir la mejor configuración segun un periodo, cae por debajo de la mediana del otro el ${(100 * fragility).toFixed(0)}% de las veces. Por encima del 50% el ranking tiene menos valor que una moneda, y ademas no hay una región amplia y viable donde refugiarse.`,
-          `When choosing the best configuration by one period, it falls below the median of the other ${(100 * fragility).toFixed(0)}% of the time. Above 50% the ranking is worth less than a coin flip, and there is also no broad viable region to fall back on.`));
+      add(SEV.CRITICAL, L(`La regla "primera de Result" falla el ${(100 * fragility).toFixed(0)}% de las veces`, `The "top Result row" rule fails ${(100 * fragility).toFixed(0)}% of the time`),
+        L(`Elegir por la columna Result falla el ${(100 * fragility).toFixed(0)}% al cruzar periodos, y no hay región amplia donde refugiarse. Por encima del 50% ese ranking vale menos que una moneda.`,
+          `Choosing by the Result column fails ${(100 * fragility).toFixed(0)}% across periods, and there is no broad region to fall back on. Above 50% that ranking is worth less than a coin flip.`));
     } else if (fragility >= 0.3) {
-      add(SEV.WARN, L(`Fragilidad de la selección: ${(100 * fragility).toFixed(0)}%`, `Selection fragility: ${(100 * fragility).toFixed(0)}%`),
-        L('El ranking conserva algo de valor predictivo, pero no el suficiente para fiarte de la cima. Selecciona por meseta, nunca por el primer puesto de la tabla.',
-          'The ranking retains some predictive value, but not enough to trust the top. Select by plateau, never by the first row of the table.'));
+      add(SEV.WARN, L(`Fragilidad del ranking Result: ${(100 * fragility).toFixed(0)}%`, `Result-ranking fragility: ${(100 * fragility).toFixed(0)}%`),
+        L('El orden de Result conserva algo de valor, pero no el suficiente para fiarte de la cima. Selecciona por meseta.',
+          'Result order retains some value, but not enough to trust the top. Select by plateau.'));
     } else {
-      add(SEV.OK, L(`Fragilidad de la selección: ${(100 * fragility).toFixed(0)}%`, `Selection fragility: ${(100 * fragility).toFixed(0)}%`),
-        L('El orden de un periodo conserva valor predictivo en el otro. Es una señal favorable, poco habitual.',
-          'The order of one period retains predictive value in the other. That is a favorable signal, and uncommon.'));
+      add(SEV.OK, L(`Fragilidad del ranking Result: ${(100 * fragility).toFixed(0)}%`, `Result-ranking fragility: ${(100 * fragility).toFixed(0)}%`),
+        L('El orden de Result de un periodo conserva valor predictivo en el otro.',
+          'Result order in one period retains predictive value in the other.'));
     }
+  }
+
+  if (Number.isFinite(fragilityQuality)) {
+    if (fragilityQuality >= 0.5) {
+      add(SEV.WARN, L(`Fragilidad de la calidad Orometra: ${(100 * fragilityQuality).toFixed(0)}%`, `Orometra quality fragility: ${(100 * fragilityQuality).toFixed(0)}%`),
+        L('Aunque no uses Result, la calidad reconstruida (PF/DD/ops…) también pierde orden al cruzar periodos. La meseta sigue siendo mejor que la cima, pero el holdout es imprescindible.',
+          'Even without Result, rebuilt quality (PF/DD/trades…) also loses rank across periods. The plateau is still better than the peak, but holdout is essential.'));
+    } else if (fragilityQuality < 0.3) {
+      add(SEV.OK, L(`Fragilidad de la calidad Orometra: ${(100 * fragilityQuality).toFixed(0)}%`, `Orometra quality fragility: ${(100 * fragilityQuality).toFixed(0)}%`),
+        L('La calidad reconstruida conserva orden entre periodos mejor que un ranking frágil.',
+          'Rebuilt quality keeps order across periods better than a fragile ranking.'));
+    }
+  }
+
+  if (selectionMode === 'isThenOos' && hasForward) {
+    add(SEV.INFO, L('Mesetas descubiertas in-sample y validadas en forward', 'Plateaus discovered in-sample and validated on forward'),
+      L('El motor busca regiones con calidad y puertas del in-sample; el forward no elige la meseta, la puntúa después. Así el forward no contamina la selección.',
+        'The engine finds regions with in-sample quality and gates; forward does not choose the plateau, it scores it afterwards. Forward does not contaminate selection.'));
+    const v = bestPlateau && bestPlateau.oosValidation;
+    if (v && v.passFrac < 0.5) {
+      add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${(100 * v.passFrac).toFixed(0)}% en forward`, `The recommended plateau only holds ${(100 * v.passFrac).toFixed(0)}% on forward`),
+        L('Muchas configs de la región fallan las puertas del forward. Trátala como provisional hasta un holdout limpio.',
+          'Many configs in the region fail forward gates. Treat it as provisional until a clean holdout.'));
+    }
+  } else if (selectionMode === 'joint' && hasForward) {
+    add(SEV.INFO, L('Modo joint: el forward participa en la selección', 'Joint mode: forward takes part in selection'),
+      L('Puertas y score usan min(IS, forward). Las cifras del forward ya están algo contaminadas.',
+        'Gates and score use min(IS, forward). Forward figures are already somewhat contaminated.'));
   }
 
   /*

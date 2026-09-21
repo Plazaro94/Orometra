@@ -1,6 +1,6 @@
 // Regresiones de la auditoría P0/P1 (procedencia, roles, dedupe, sampling, fmt).
 import { pairTables, roleFromTable, inferParamsSingle } from '../js/schema.js';
-import { formatSetValue } from '../js/export.js';
+import { formatSetValue, fingerprintAnalysis, buildReport } from '../js/export.js';
 import { runAnalysis } from '../js/analysis.js';
 import { DEFAULT_POLICY } from '../js/metrics.js';
 import { CODE } from '../js/errors.js';
@@ -108,6 +108,22 @@ section('pairTables provenance compared');
   const paired = pairTables(isT, oosT);
   check('provenance checked', paired.integrity.provenance.checked);
   check('mismatches 0', paired.integrity.provenance.mismatches === 0);
+}
+
+section('Lote 2: isThenOos + fingerprint export');
+{
+  const [isT, oosT] = makeOptTables();
+  const a = runAnalysis({ isTable: isT, oosTable: oosT, policy: { ...DEFAULT_POLICY } });
+  check('selectionMode isThenOos por defecto', a.meta.selectionMode === 'isThenOos', a.meta.selectionMode);
+  check('meseta con oosValidation', a.plateaus.length === 0 || (a.plateaus[0].oosValidation && Number.isFinite(a.plateaus[0].oosValidation.passFrac)));
+  check('fragilidad quality en stats', 'fragilityQuality' in a.stats && 'fragilityQualityUsable' in a.stats);
+  const fp1 = fingerprintAnalysis(a);
+  const fp2 = fingerprintAnalysis(runAnalysis({ isTable: isT, oosTable: oosT, policy: { ...DEFAULT_POLICY } }));
+  check('fingerprint estable 8 hex', /^[0-9a-f]{8}$/.test(fp1), fp1);
+  check('misma entrada = mismo fingerprint', fp1 === fp2, `${fp1} vs ${fp2}`);
+  const rep = buildReport(a);
+  check('informe incluye fingerprint', rep.fingerprint === fp1, String(rep.fingerprint));
+  check('informe incluye oosValidation en mesetas', !rep.plateaus.length || ('oosValidation' in rep.plateaus[0]));
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks}`);

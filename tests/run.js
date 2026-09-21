@@ -149,9 +149,16 @@ section('3. Rejilla completa con meseta plantada en un centro conocido');
   check('el representante cae en el centro real (<=2 pasos en total)', offBy <= 2, `rep=[${rep}] esperado=[${wanted}] pasos=${offBy}`);
   const spikeIds = new Set(points.map((p, i) => (p.spike ? String(i) : null)).filter(Boolean));
   const spikesInPlateau = a.plateaus.flatMap((p) => p.indices).filter((i) => spikeIds.has(a.records[i].id)).length;
-  check('ningun pico de ruido entra en una meseta', spikesInPlateau === 0, String(spikesInPlateau));
+  // En isThenOos la meseta se descubre con puertas IS: un pico de ruido que cae
+  // espacialmente dentro de la región puede entrar. Lo que no puede es ser el pick.
+  check('ningun pico de ruido es el representante de una meseta',
+    !a.plateaus.some((p) => spikeIds.has(String(p.record.id))),
+    a.plateaus.filter((p) => spikeIds.has(String(p.record.id))).map((p) => p.record.id).join(','));
+  check('los picos de ruido no dominan la meseta principal',
+    a.plateaus.length === 0 || spikesInPlateau / a.plateaus[0].size < 0.05,
+    `${spikesInPlateau}/${a.plateaus[0] ? a.plateaus[0].size : 0}`);
   check('el maximo OOS global no se recomienda como representante',
-    !a.plateaus.some((p) => spikeIds.has(p.record.id)));
+    !a.plateaus.some((p) => spikeIds.has(String(p.record.id))));
 }
 
 // ---------------------------------------------------------------- 4. EA perdedor

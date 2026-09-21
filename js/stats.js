@@ -257,9 +257,15 @@ export function selectionFragility(isScores, oosScores, { repeats = 2000, fracti
   }
   const n = pairs.length;
   if (n < 20) return { fragility: NaN, n, usable: false, folds: null };
-  const take = Math.max(10, Math.min(n - 1, Math.floor(n * fraction)));
-  const forward = fragilityOneWay(pairs, 0, 1, makeRng(seed), repeats, take);
-  const reverse = fragilityOneWay(pairs, 1, 0, makeRng(seed ^ 0x5bf03635), repeats, take);
+  // Presupuesto: take grande (para no sesgar la fragilidad al alza en rejillas
+  // densas) y repeats que quepan. Antes, take=n/2 en 100k configs × 2 sentidos
+  // × fragilidad dual volvía el análisis inviable.
+  const BUDGET = 5_000_000;
+  const rawTake = Math.max(10, Math.min(n - 1, Math.floor(n * fraction)));
+  const take = Math.min(rawTake, 15000);
+  const effRepeats = Math.max(100, Math.min(repeats, Math.floor(BUDGET / Math.max(1, take))));
+  const forward = fragilityOneWay(pairs, 0, 1, makeRng(seed), effRepeats, take);
+  const reverse = fragilityOneWay(pairs, 1, 0, makeRng(seed ^ 0x5bf03635), effRepeats, take);
   const worst = forward.p >= reverse.p ? forward : reverse;
   return {
     fragility: worst.p,
@@ -274,7 +280,7 @@ export function selectionFragility(isScores, oosScores, { repeats = 2000, fracti
     asymmetry: Math.abs(forward.p - reverse.p),
     worstDirection: forward.p >= reverse.p ? 'is->oos' : 'oos->is',
     n,
-    repeats,
+    repeats: effRepeats,
     take,
     usable: true,
   };

@@ -14,7 +14,11 @@
 
 const td = new TextDecoder('utf-8');
 
-/** Lee el directorio central del ZIP y devuelve un mapa nombre -> {offset, comprimido}. */
+/** Tope por entrada y acumulado: evita bombas ZIP (poco comprimido → mucho XML). */
+export const MAX_XLSX_ENTRY_BYTES = 80 * 1024 * 1024;
+export const MAX_XLSX_TOTAL_BYTES = 160 * 1024 * 1024;
+
+/** Lee el directorio central del ZIP y devuelve un mapa nombre -> entrada. */
 function leerZip(buffer) {
   const dv = new DataView(buffer);
   const u8 = new Uint8Array(buffer);
@@ -29,19 +33,53 @@ function leerZip(buffer) {
   const total = dv.getUint16(fin + 10, true);
   let p = dv.getUint32(fin + 16, true);
   const entradas = new Map();
+  let declarado = 0;
   for (let i = 0; i < total; i++) {
     if (dv.getUint32(p, true) !== 0x02014b50) break;
     const metodo = dv.getUint16(p + 10, true);
     const tamComprimido = dv.getUint32(p + 20, true);
+    const tamSinComprimir = dv.getUint32(p + 24, true);
     const nomLen = dv.getUint16(p + 28, true);
     const extraLen = dv.getUint16(p + 30, true);
     const comLen = dv.getUint16(p + 32, true);
     const offsetLocal = dv.getUint32(p + 42, true);
     const nombre = td.decode(u8.subarray(p + 46, p + 46 + nomLen));
-    entradas.set(nombre, { metodo, tamComprimido, offsetLocal });
+    if (tamSinComprimir !== 0xffffffff && tamSinComprimir > MAX_XLSX_ENTRY_BYTES) {
+      throw new Error(`Entrada ZIP demasiado grande (${nombre}). Exporta un XML más reducido.`);
+    }
+    if (tamSinComprimir !== 0xffffffff) {
+      declarado += tamSinComprimir;
+      if (declarado > MAX_XLSX_TOTAL_BYTES) {
+        throw new Error('El libro descomprimido supera el límite permitido. Exporta un XML más reducido.');
+      }
+    }
+    entradas.set(nombre, { metodo, tamComprimido, tamSinComprimir, offsetLocal });
     p += 46 + nomLen + extraLen + comLen;
   }
-  return { dv, u8, entradas };
+  return { dv, u8, entradas, bytesLeidos: 0 };
+}
+
+async function leerLimitado(stream, maxBytes) {
+  const reader = stream.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        throw new Error('Descompresión ZIP supera el límite permitido. Exporta un XML más reducido.');
+      }
+      chunks.push(value);
+    }
+  } finally {
+    try { reader.releaseLock(); } catch { /* ignore */ }
+  }
+  const out = new Uint8Array(total);
+  let o = 0;
+  for (const c of chunks) { out.set(c, o); o += c.byteLength; }
+  return out;
 }
 
 async function extraer(zip, nombre) {
@@ -57,13 +95,31 @@ async function extraer(zip, nombre) {
   const inicio = base + 30 + nomLen + extraLen;
   const datos = u8.subarray(inicio, inicio + e.tamComprimido);
 
-  if (e.metodo === 0) return td.decode(datos);          // guardado sin comprimir
+  const capEntrada = Math.min(
+    MAX_XLSX_ENTRY_BYTES,
+    e.tamSinComprimir !== 0xffffffff ? e.tamSinComprimir + 4096 : MAX_XLSX_ENTRY_BYTES,
+  );
+  const capRestante = MAX_XLSX_TOTAL_BYTES - zip.bytesLeidos;
+  if (capRestante <= 0) {
+    throw new Error('El libro descomprimido supera el límite permitido. Exporta un XML más reducido.');
+  }
+  const cap = Math.min(capEntrada, capRestante);
+
+  if (e.metodo === 0) {
+    if (datos.length > cap) {
+      throw new Error('Entrada ZIP demasiado grande. Exporta un XML más reducido.');
+    }
+    zip.bytesLeidos += datos.length;
+    return td.decode(datos);
+  }
   if (e.metodo !== 8) throw new Error(`Compresion ZIP no soportada (metodo ${e.metodo}).`);
   if (typeof DecompressionStream === 'undefined') {
     throw new Error('Tu navegador no puede descomprimir este archivo. Exporta desde MT5 en XML, o guardalo como CSV.');
   }
   const flujo = new Blob([datos]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-  return new Response(flujo).text();
+  const plain = await leerLimitado(flujo, cap);
+  zip.bytesLeidos += plain.byteLength;
+  return td.decode(plain);
 }
 
 /** Columna en letras -> indice. "A"=0, "Z"=25, "AA"=26. */

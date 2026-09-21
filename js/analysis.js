@@ -149,27 +149,32 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
 
   let scores = new Array(records.length);
   let passes = new Uint8Array(records.length);
-  let gatePassCount = 0;
+  let gatePassCount = 0; // pasan IS+OOS (joint), para refugio / evidencia global
+  let discoverPassCount = 0; // pasan IS (descubrimiento)
+  const selectionMode = hasForward
+    ? (policy.selectionMode === 'joint' ? 'joint' : 'isThenOos')
+    : 'isOnly';
+
   records.forEach((r, i) => {
     const qi = periodQuality(r.is, policy, payoffAnchor);
-    // Al forward se le ajusta el ancla de operaciones por su duracion (aritmetica pura).
-    // La correccion de riesgo por raiz de n NO entra en la puntuacion -supondria un modelo
-    // que no podemos verificar para cada EA- y se calcula aparte solo para diagnosticar
-    // cuanta de la ventaja aparente del forward viene de ser mas corto.
     const qo = hasForward ? periodQuality(r.oos, policy, payoffAnchor, periodRatio) : { score: NaN, parts: {} };
     const qoAdj = hasForward ? periodQuality(r.oos, policy, payoffAnchor, periodRatio, { adjustRisk: true }) : { score: NaN };
     r.qualityOosLengthAdjusted = qoAdj.score;
     r.qualityIs = qi.score;
     r.qualityOos = qo.score;
     r.qualityParts = { is: qi.parts, oos: qo.parts };
-    r.score = hasForward ? combineScores(qi.score, qo.score) : qi.score;
+    r.qualityCombined = hasForward ? combineScores(qi.score, qo.score) : qi.score;
+    // Descubrir en IS: el forward valida después, no elige la meseta.
+    r.score = selectionMode === 'isThenOos' ? qi.score : r.qualityCombined;
     r.retention = retention(qi.score, qo.score);
     r.failsIs = gateFailures(r.is, policy, minTradesIs);
     r.failsOos = hasForward ? gateFailures(r.oos, policy, minTradesOos) : [];
-    const ok = !r.failsIs.length && (!hasForward || !r.failsOos.length);
-    r.passes = ok;
-    passes[i] = ok ? 1 : 0;
-    if (ok) gatePassCount++;
+    r.passesJoint = !r.failsIs.length && (!hasForward || !r.failsOos.length);
+    r.passesDiscover = !r.failsIs.length;
+    r.passes = selectionMode === 'isThenOos' ? r.passesDiscover : r.passesJoint;
+    passes[i] = r.passes ? 1 : 0;
+    if (r.passesJoint) gatePassCount++;
+    if (r.passesDiscover) discoverPassCount++;
     scores[i] = r.score;
   });
 
@@ -336,7 +341,11 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       scores = collapsed.scores;
       passes = collapsed.passes;
       gatePassCount = 0;
-      for (let i = 0; i < passes.length; i++) if (passes[i]) gatePassCount++;
+      discoverPassCount = 0;
+      for (let i = 0; i < records.length; i++) {
+        if (records[i].passesJoint) gatePassCount++;
+        if (records[i].passesDiscover) discoverPassCount++;
+      }
       integrity = { ...integrity, collapsedTopology: collapsed.collapsed };
     }
   }
@@ -458,18 +467,28 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   };
   const INVERTED_RISK_PENALTY = 0.75;
   const IRREGULAR_PENALTY = 0.85;
-  /*
-   * El tamano entra por `effectiveSize`, no por el numero de miembros. Son iguales en una
-   * rejilla completa y distintos en una optimizacion genetica, que es donde importa: el GA
-   * concentra las pruebas donde el in-sample iba bien, asi que esas zonas reunen mas
-   * configuraciones y formarian componentes mas grandes sin que el terreno sea mas ancho.
-   * Topar la evidencia por el volumen que la region abarca de verdad corta esa circularidad.
-   */
-  const rankScore = (p) => Math.max(0, p.q10Score)
-    * Math.log1p(p.extent.effectiveSize)
-    * evidenceFactor(p.stability.support)
-    * (p.invertedRisk.length ? INVERTED_RISK_PENALTY : 1)
-    * (p.spansIrregular.length ? IRREGULAR_PENALTY : 1);
+  // Validación OOS tras descubrir en IS: una meseta que no aguanta el forward baja de rango.
+  plateaus.forEach((p) => {
+    if (!hasForward) {
+      p.oosValidation = null;
+      return;
+    }
+    const oosPass = p.indices.filter((i) => !records[i].failsOos.length).length;
+    p.oosValidation = {
+      passFrac: p.indices.length ? oosPass / p.indices.length : 0,
+      medianOos: p.medianOos,
+      mode: selectionMode,
+    };
+  });
+  const rankScore = (p) => {
+    let s = Math.max(0, p.q10Score)
+      * Math.log1p(p.extent.effectiveSize)
+      * evidenceFactor(p.stability.support)
+      * (p.invertedRisk.length ? INVERTED_RISK_PENALTY : 1)
+      * (p.spansIrregular.length ? IRREGULAR_PENALTY : 1);
+    if (p.oosValidation) s *= 0.35 + 0.65 * p.oosValidation.passFrac;
+    return s;
+  };
   plateaus.forEach((p) => { p.rankScore = rankScore(p); });
   plateaus.sort((a, b) => b.rankScore - a.rankScore);
   plateaus.forEach((p, i) => { p.rank = i + 1; });
@@ -510,6 +529,12 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // entrenar en IS y validar en OOS, porque si el forward fue un tramo facil eso sale bien
   // por el motivo equivocado.
   const fragilityResult = hasForward ? selectionFragility(isCriterion, oosCriterion) : { fragility: NaN, usable: false };
+  const fragilityQuality = hasForward
+    ? selectionFragility(
+      records.map((r) => r.qualityIs),
+      records.map((r) => r.qualityOos),
+    )
+    : { fragility: NaN, usable: false };
   const degradation = hasForward ? degradationByDecile(isCriterion, oosCriterion) : [];
 
   // Número efectivo de pruebas: configuraciones vecinas no son ensayos independientes.
@@ -757,20 +782,24 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   progress(onProgress, 96, L('Emitiendo veredicto', 'Issuing verdict'));
   const verdict = buildVerdict({
     gatePassCount,
+    discoverPassCount,
     total: records.length,
     plateaus,
     fragility: fragilityResult.fragility,
+    fragilityQuality: fragilityQuality.fragility,
     fragilityMargin: fragilityResult.margin,
     fragilityFolds: fragilityResult.folds,
     fragilityAsymmetry: fragilityResult.asymmetry,
     fragilityWorstDirection: fragilityResult.worstDirection,
     sharpeTest,
     spearman: rho,
+    spearmanQuality: rhoQuality,
     coverage,
     medianSupport: nb.medianSupport,
     periodRatio,
     integrity,
     sampling,
+    selectionMode,
     inversions,
     periodComparison,
     hasForward,
@@ -797,6 +826,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   return {
     meta: {
       hasForward,
+      selectionMode,
+      discoverPassCount,
       generatedAt: new Date().toISOString(),
       elapsedMs: Date.now() - started,
       total: records.length,
@@ -863,6 +894,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       spearmanQuality: rhoQuality,
       // Ya no se llama PBO: no lo es. Ver `selectionFragility` en stats.js.
       fragility: fragilityResult.fragility,
+      fragilityQuality: fragilityQuality.fragility,
       fragilityMargin: fragilityResult.margin,
       fragilityLo: fragilityResult.lo,
       fragilityHi: fragilityResult.hi,
@@ -870,6 +902,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       fragilityAsymmetry: fragilityResult.asymmetry,
       fragilityWorstDirection: fragilityResult.worstDirection,
       fragilityUsable: fragilityResult.usable,
+      fragilityQualityUsable: fragilityQuality.usable,
       stabilityCheck,
       degradation,
       sharpeTest,

@@ -968,11 +968,53 @@ function verdictCopy(level) {
   return { label: t('verdict.strong'), cls: 'v-go' };
 }
 
+/** Estado del holdout para sello / hoja de evidencia (forward ≠ periodo no visto). */
+function holdoutFact(a) {
+  const res = state.unseen && state.unseen.result;
+  if (!res) {
+    return {
+      value: L('No aportado', 'Not supplied'),
+      note: a && a.meta && a.meta.hasForward
+        ? L('El forward ya entró en la selección. Falta un tramo no visto.', 'Forward already entered selection. An unseen segment is still missing.')
+        : L('Validación independiente aún no cargada.', 'Independent validation not loaded yet.'),
+      short: L('Holdout: no aportado', 'Holdout: not supplied'),
+      done: false,
+      ok: false,
+    };
+  }
+  const value = res.level === 'normal'
+    ? L('Normal', 'Normal')
+    : res.level === 'tail'
+      ? L('En la cola', 'In the tail')
+      : L('Fuera de rango', 'Out of range');
+  return {
+    value,
+    note: res.headline || '',
+    short: L(`Holdout: ${value}`, `Holdout: ${value}`),
+    done: true,
+    ok: res.level === 'normal' || res.level === 'tail',
+  };
+}
+
+/**
+ * Evidencia "fuerte" sin holdout limpio se muestra como moderada: el forward ya se usó.
+ */
+function displayVerdictLevel(a) {
+  let level = a.verdict.level;
+  if (level === 'strong' && a.meta.hasForward) {
+    const h = holdoutFact(a);
+    if (!h.done || !h.ok) level = 'moderate';
+  }
+  return level;
+}
+
 function renderVerdict(a) {
   const v = a.verdict;
-  const c = verdictCopy(v.level);
+  const displayLevel = displayVerdictLevel(a);
+  const c = verdictCopy(displayLevel);
   const best = a.plateaus[0];
   const mainRisk = (v.findings || []).find((f) => f.severity === 'critical' || f.severity === 'warn');
+  const hold = holdoutFact(a);
   const demoNote = state.isDemo
     ? `<div class="demo-note">${L(
       `Estos datos son <strong>sintéticos</strong>, generados por la aplicacion para que puedas ver el flujo completo. La meseta real esta plantada en: ${esc(Object.entries(state.demoTruth.center).map(([k, val]) => `${k}=${val}`).join(', '))}.`,
@@ -990,6 +1032,8 @@ function renderVerdict(a) {
         <span>${esc(L('analizado', 'analyzed'))} ${esc(src.at.toLocaleString(localeTag(), { dateStyle: 'short', timeStyle: 'short' }))}</span>
         <span class="run-sep">·</span>
         <span title="${esc(L('Mínimos exigidos en este análisis', 'Minima required in this analysis'))}">PF ≥ ${num(a.meta.policy.gates.minProfitFactor, 2)} · DD ≤ ${num(a.meta.policy.gates.maxDrawdownPct, 0)} % · ${int(a.meta.minTradesIs)} ops</span>
+        <span class="run-sep">·</span>
+        <span class="run-holdout" title="${esc(hold.note)}">${esc(hold.short)}</span>
       </div>`
     : '';
 
@@ -1003,6 +1047,12 @@ function renderVerdict(a) {
         <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
         <strong class="verdict-fact-value">${esc(t('verdict.nopick'))}</strong>
       </div>`;
+
+  const holdBlock = `<div class="verdict-fact${hold.done && !hold.ok ? ' verdict-fact-risk' : ''}">
+      <span class="verdict-fact-label">${L('Holdout', 'Holdout')}</span>
+      <strong class="verdict-fact-value">${esc(hold.value)}</strong>
+      <span class="verdict-fact-note">${esc(hold.note)}</span>
+    </div>`;
 
   const riskBlock = mainRisk
     ? `<div class="verdict-fact verdict-fact-risk">
@@ -1024,6 +1074,7 @@ function renderVerdict(a) {
     </div>
     <div class="verdict-aside">
       ${pickBlock}
+      ${holdBlock}
       ${riskBlock}
       <div class="verdict-fact verdict-fact-next">
         <span class="verdict-fact-label">${esc(t('verdict.next'))}</span>
@@ -1133,13 +1184,9 @@ function renderEvidenceSheet(a, best) {
     'If it touches the edge, the plateau may continue outside the range you optimized.',
   );
 
-  const holdoutDone = Boolean(state.unseen && state.unseen.result);
-  const holdoutVal = holdoutDone
-    ? L('Comprobado', 'Checked')
-    : L('No aportado', 'Not supplied');
-  const holdoutNote = holdoutDone
-    ? L('Hay un periodo holdout independiente en esta sesión.', 'An independent holdout period is present in this session.')
-    : L('Validación independiente: aún no has cargado un periodo no visto.', 'Independent validation: you have not loaded an unseen period yet.');
+  const hold = holdoutFact(a);
+  const holdoutVal = hold.value;
+  const holdoutNote = hold.note;
 
   const plateauVal = best
     ? L(`Encontrada · M${best.rank} · ${int(best.size)} configs`, `Found · M${best.rank} · ${int(best.size)} configs`)
@@ -2512,7 +2559,9 @@ function doExport(kind, plateauIndex) {
     if (!best) return showError(L('No hay ninguna meseta que refinar.', 'There is no plateau to refine.'));
     downloadText(`robustness-M${best.rank}-refinamiento.set`, buildRefinementSetFile(a, best));
   } else if (kind === 'json') {
-    downloadText(`robustness-informe-${stamp}.json`, JSON.stringify(buildReport(a), null, 2), 'application/json');
+    downloadText(`robustness-informe-${stamp}.json`, JSON.stringify(buildReport(a, {
+      source: state.source ? { is: state.source.is, oos: state.source.oos || null, at: state.source.at } : null,
+    }), null, 2), 'application/json');
   } else if (kind === 'csv') {
     downloadText(`robustness-configuraciones-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');
   }

@@ -138,5 +138,37 @@ section('4. Archivos que no son libros');
   check('rechaza un ZIP que no contiene hojas', /hoja/i.test(msg), msg);
 }
 
+section('5. Tope de descompresión (bomba ZIP declarada)');
+{
+  // Entrada con tamaño sin comprimir declarado absurdo: debe rechazarse antes de inflar.
+  const nombre = 'xl/worksheets/sheet1.xml';
+  const datos = Buffer.from('<worksheet/>', 'utf8');
+  const cuerpo = zlib.deflateRawSync(datos);
+  const nom = Buffer.from(nombre, 'utf8');
+  const crc = crc32(datos);
+  const huge = 200 * 1024 * 1024; // > MAX_XLSX_ENTRY_BYTES
+  const lh = Buffer.alloc(30);
+  lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(20, 4); lh.writeUInt16LE(8, 8);
+  lh.writeUInt32LE(crc, 14); lh.writeUInt32LE(cuerpo.length, 18);
+  lh.writeUInt32LE(huge, 22); lh.writeUInt16LE(nom.length, 26);
+  const ch = Buffer.alloc(46);
+  ch.writeUInt32LE(0x02014b50, 0); ch.writeUInt16LE(20, 4); ch.writeUInt16LE(20, 6);
+  ch.writeUInt16LE(8, 10); ch.writeUInt32LE(crc, 16);
+  ch.writeUInt32LE(cuerpo.length, 20); ch.writeUInt32LE(huge, 24);
+  ch.writeUInt16LE(nom.length, 28); ch.writeUInt32LE(0, 42);
+  const central = Buffer.concat([ch, nom]);
+  const fin = Buffer.alloc(22);
+  fin.writeUInt32LE(0x06054b50, 0);
+  fin.writeUInt16LE(1, 8); fin.writeUInt16LE(1, 10);
+  fin.writeUInt32LE(central.length, 12);
+  fin.writeUInt32LE(30 + nom.length + cuerpo.length, 16);
+  const bomb = Buffer.concat([lh, nom, cuerpo, central, fin]);
+  let msg = '';
+  try {
+    await parseXlsx(bomb.buffer.slice(bomb.byteOffset, bomb.byteOffset + bomb.byteLength));
+  } catch (e) { msg = e.message; }
+  check('rechaza entrada con uncompressed declarado enorme', /grande|límite|limite/i.test(msg), msg);
+}
+
 section(failures ? `RESULTADO: ${checks - failures}/${checks} — ${failures} FALLO(S)` : `RESULTADO: ${checks}/${checks} correctas`);
 process.exit(failures ? 1 : 0);

@@ -74,11 +74,38 @@ export function buildRefinementSetFile(analysis, plateau) {
   return lines.join('\r\n') + '\r\n';
 }
 
+/** Fingerprint estable del resultado (reproducibilidad entre runs). */
+export function fingerprintAnalysis(analysis) {
+  const payload = JSON.stringify({
+    selectionMode: analysis.meta && analysis.meta.selectionMode,
+    total: analysis.meta && analysis.meta.total,
+    coverage: analysis.meta && Number((analysis.meta.coverage || 0).toFixed(8)),
+    sampling: analysis.meta && analysis.meta.sampling,
+    params: analysis.meta && analysis.meta.paramNames,
+    gates: analysis.meta && analysis.meta.policy && analysis.meta.policy.gates,
+    plateaus: (analysis.plateaus || []).map((p) => ({
+      id: String(p.record.id),
+      size: p.size,
+      robust: Number(p.robust.toFixed(4)),
+      oosFrac: p.oosValidation ? Number(p.oosValidation.passFrac.toFixed(4)) : null,
+    })),
+    level: analysis.verdict && analysis.verdict.level,
+  });
+  let h = 0x811c9dc5;
+  for (let i = 0; i < payload.length; i++) {
+    h ^= payload.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (`00000000${(h >>> 0).toString(16)}`).slice(-8);
+}
+
 /** Informe completo en JSON, sin los arrays pesados por configuracion. */
-export function buildReport(analysis) {
+export function buildReport(analysis, extra = {}) {
   return {
     generatedAt: new Date().toISOString(),
     tool: 'Orometra v2',
+    fingerprint: fingerprintAnalysis(analysis),
+    source: extra.source || null,
     verdict: analysis.verdict,
     meta: analysis.meta,
     integrity: analysis.integrity,
@@ -97,6 +124,7 @@ export function buildReport(analysis) {
       worstScore: p.worstScore,
       medianQualityIs: p.medianIs,
       medianQualityOos: p.medianOos,
+      oosValidation: p.oosValidation || null,
       representative: {
         pass: p.record.id,
         params: Object.fromEntries(analysis.meta.paramNames.map((n, j) => [n, p.record.params[j]])),
