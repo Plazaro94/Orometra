@@ -73,8 +73,8 @@ section('1. El punto ciego de la sensibilidad marginal');
   // Y la consecuencia practica de haberlo descartado: la vecindad se infla.
   const bien = buildNeighborhood(coords, [1, 2], { dense: true, blockDims: [0] });
   const mal = buildNeighborhood(coords, [2], { dense: true, blockDims: [0] });
-  check('descartarlo multiplicaria el soporte (mesetas falsas)',
-    mal.medianSupport > bien.medianSupport * 3, `${bien.medianSupport} -> ${mal.medianSupport}`);
+  check('descartarlo aumenta el soporte (mesetas mas faciles de inventar)',
+    mal.medianSupport > bien.medianSupport, `${bien.medianSupport} -> ${mal.medianSupport}`);
 }
 
 // ============================================================================

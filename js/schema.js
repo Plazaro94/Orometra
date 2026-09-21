@@ -134,7 +134,7 @@ export function pairTables(isTable, oosTable) {
   // Prueba de procedencia: el "Back Result" del forward debe reproducir el "Result" del IS.
   const isResultCol = isTable.headers.findIndex((h) => metricRole(h) === 'result');
   const backResultCol = oosTable.headers.findIndex((h) => metricRole(h) === 'backResult');
-  let provenance = { checked: false, mismatches: 0, ratio: NaN };
+  let provenance = { checked: false, mismatches: 0, ratio: NaN, compared: 0 };
   if (isResultCol >= 0 && backResultCol >= 0) {
     let mism = 0;
     let comp = 0;
@@ -176,9 +176,21 @@ export function metricColumns(table) {
 }
 
 /**
+ * Rol del archivo por cabeceras: forward trae Forward Result / Back Result.
+ * Usar DESPUES de parsear (también .xlsx); no basta con mirar bytes de un ZIP.
+ */
+export function roleFromTable(table) {
+  if (!table || !table.headers) return 'is';
+  for (const h of table.headers) {
+    const role = metricRole(h);
+    if (role === 'forwardResult' || role === 'backResult') return 'oos';
+  }
+  return 'is';
+}
+
+/**
  * Detección de parámetros con UN SOLO archivo (modo global, sin forward).
- * Aquí no existe la prueba estructural, así que se usa una heuristica explicita
- * y revisable: columna numerica, no reconocida como métrica y de baja cardinalidad.
+ * Heurística: no métrica, baja cardinalidad; acepta numéricos, bool y enums cortos.
  */
 export function inferParamsSingle(table) {
   const n = table.rows.length;
@@ -191,18 +203,32 @@ export function inferParamsSingle(table) {
       rejected.push({ name: h, reason: 'métrica reconocida' });
       return;
     }
-    const vals = columnValues(table, i).map(toNumber);
-    const finite = vals.filter(Number.isFinite);
-    if (finite.length < n * 0.9) {
+    const raw = columnValues(table, i);
+    const asNum = raw.map(toNumber);
+    const finite = asNum.filter(Number.isFinite);
+    if (finite.length >= n * 0.9) {
+      const uniq = new Set(finite).size;
+      if (uniq > limit) {
+        rejected.push({ name: h, reason: `demasiados valores distintos (${uniq})` });
+        return;
+      }
+      params.push({ name: h, isCol: i, oosCol: i, levels: uniq });
+      return;
+    }
+    // Bool / enum: cardinalidad baja sobre valores canónicos no nulos.
+    const cats = raw
+      .map((v) => (v === null || v === undefined || v === '' ? null : String(v).trim()))
+      .filter((v) => v != null);
+    if (cats.length < n * 0.9) {
       rejected.push({ name: h, reason: 'no numerica' });
       return;
     }
-    const uniq = new Set(finite).size;
-    if (uniq > limit) {
-      rejected.push({ name: h, reason: `demasiados valores distintos (${uniq})` });
+    const uniqCat = new Set(cats.map((v) => v.toLowerCase())).size;
+    if (uniqCat < 2 || uniqCat > Math.min(12, limit)) {
+      rejected.push({ name: h, reason: `cardinalidad categorica inutil (${uniqCat})` });
       return;
     }
-    params.push({ name: h, isCol: i, oosCol: i, levels: uniq });
+    params.push({ name: h, isCol: i, oosCol: i, levels: uniqCat });
   });
   return { params, rejected };
 }

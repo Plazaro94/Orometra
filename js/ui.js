@@ -3,13 +3,13 @@
 
 import { parseTable } from './parse.js';
 import { DEFAULT_POLICY, qualityLabel, gateFailures } from './metrics.js';
-import { metricColumns, inferParamsSingle } from './schema.js';
+import { metricColumns, inferParamsSingle, roleFromTable } from './schema.js';
 import { buildDemoTables } from './demo.js';
 import { evaluateUnseen } from './unseen.js';
 import { parseBacktestReport, looksLikeReport, compareParams } from './report.js';
 import { mountBrandMark } from './brandmark.js';
 import { mountHeroSurface } from './hero-surface.js';
-import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText } from './export.js';
+import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { scatterIsOos, parameterProfile, degradationChart, sensitivityBars, plateauHeatmap, dimRole } from './charts.js';
 import { t, L, getLocale, setLocale, localeTag, applyStaticI18n } from './i18n.js';
 import { AnalysisError, CODE, classifyError, outcomeFromAnalysis, errorCopy } from './errors.js';
@@ -81,13 +81,26 @@ const BINARY_HINT = /\.(xlsx|xlsm)$/i;
  */
 async function detectRole(file) {
   try {
+    // .xlsx es ZIP: hay que parsear para ver cabeceras (Forward Result / Back Result).
+    if (BINARY_HINT.test(file.name) || /\.xlsx?$/i.test(file.name)) {
+      const prepared = await prepareTable(file);
+      if (prepared.table) return roleFromTable(prepared.table);
+    }
     const buf = await file.slice(0, 131072).arrayBuffer();
     const head = decodeHead(buf);
-    // El informe de un backtest individual es otro documento distinto: se reconoce por
-    // su titulo y va a parar a la pestana del periodo no visto, no a las cajas de carga.
     if (looksLikeReport(head)) return 'report';
     if (/Forward\s*Result|Resultado\s*(del\s*)?forward/i.test(head)) return 'oos';
     if (/Back\s*Result/i.test(head)) return 'oos';
+    // CSV/XML cortos: si el trozo no basta, parsear entero cuando quepa.
+    if (file.size <= 2 * 1024 * 1024) {
+      const full = await file.arrayBuffer();
+      try {
+        const table = parseTable(full, file.name);
+        return roleFromTable(table);
+      } catch {
+        /* sigue con heurística de cabecera */
+      }
+    }
     return 'is';
   } catch {
     return null;
@@ -157,6 +170,13 @@ async function acceptFiles(fileList, preferred) {
   if (oosIdx >= 0) {
     setFile('oos', files[oosIdx]);
     setFile('is', files[1 - oosIdx]);
+  } else if (roles[0] === 'is' && roles[1] === 'is') {
+    // Ambos parecen in-sample: no asignar el segundo a forward en silencio.
+    setFile('is', files[0]);
+    showError(L(
+      'Los dos archivos parecen in-sample (ninguno trae columnas Forward Result / Back Result). Carga el export del forward en la caja Forward, o un solo archivo si no usaste forward.',
+      'Both files look like in-sample (neither has Forward Result / Back Result columns). Load the forward export into the Forward box, or a single file if you did not use forward.',
+    ));
   } else {
     setFile('is', files[0]);
     setFile('oos', files[1]);
@@ -167,6 +187,16 @@ function setFile(which, file) {
   const statusEl = which === 'is' ? $('#isStatus') : $('#oosStatus');
   const boxEl = which === 'is' ? $('#isDrop') : $('#oosDrop');
   if (!file) return;
+  const MAX_BYTES = 80 * 1024 * 1024;
+  if (file.size > MAX_BYTES) {
+    statusEl.textContent = L(
+      `Archivo demasiado grande (>${Math.round(MAX_BYTES / 1048576)} MB). Exporta un XML más reducido o recorta la optimización.`,
+      `File too large (>${Math.round(MAX_BYTES / 1048576)} MB). Export a smaller XML or trim the optimization.`,
+    );
+    boxEl.classList.add('error');
+    boxEl.classList.remove('ready');
+    return;
+  }
   if (/\.opt$/i.test(file.name)) {
     statusEl.textContent = L(
       'El .opt es la cache interna del probador y no se puede leer. Exporta con clic derecho → Informe → XML.',
@@ -656,6 +686,10 @@ function runInWorker(payload) {
     // Red de seguridad por si el worker se queda mudo sin llegar a lanzar un error.
     const timer = setTimeout(() => {
       finish();
+      try {
+        w.terminate();
+      } catch { /* ignore */ }
+      worker = null;
       reject(new Error(L(
         'El análisis ha tardado demasiado y se ha cancelado. Prueba con una optimizacion más pequena.',
         'The analysis took too long and was cancelled. Try a smaller optimization.',
@@ -1715,7 +1749,7 @@ function renderDiagnostics(a) {
         <div><span>${L(`Umbral por azar con ${int(a.stats.sharpeTest.trials)} pruebas`, `Chance threshold with ${int(a.stats.sharpeTest.trials)} trials`)}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>
         <div><span>${L('Umbral con pruebas efectivas', 'Threshold with effective trials')}</span><strong>${num(a.stats.sharpeTest.chanceMaxEffective, 3)}</strong></div>
         <div><span>${L('Umbral del contraste publicado (más estricto)', 'Published contrast threshold (stricter)')}</span><strong>${num(a.stats.sharpeTest.chanceMaxConservative, 3)}</strong></div>
-        <div><span>${L('Sharpe deflactado', 'Deflated Sharpe')}</span><strong>${Number.isFinite(a.stats.sharpeTest.deflated) ? pct(a.stats.sharpeTest.deflated, 1) : '—'}</strong></div>` : ''}
+        <div><span>${L('Sharpe vs azar (Lo)', 'Sharpe vs chance (Lo)')}</span><strong>${Number.isFinite(a.stats.sharpeTest.deflated) ? pct(a.stats.sharpeTest.deflated, 1) : '—'}</strong></div>` : ''}
         <div><span>${L('Tiempo de calculo', 'Compute time')}</span><strong>${int(a.meta.elapsedMs)} ms</strong></div>
       </div>
       <p class="chart-note">
@@ -2444,15 +2478,15 @@ async function copyParams(index, button) {
   const a = state.analysis;
   if (!a || !a.plateaus.length) return;
   const p = a.plateaus[Math.min(index, a.plateaus.length - 1)];
+  // Mismo formato que el .set de MT5 (punto decimal), no Intl local.
   const text = a.meta.paramNames
-    .map((n, j) => `${n}=${paramValue(p.record.params[j])}`)
+    .map((n, j) => `${n}=${formatSetValue(p.record.params[j])}`)
     .join('\n');
   const original = button.textContent;
   try {
     await navigator.clipboard.writeText(text);
     button.textContent = L('Copiado ✓', 'Copied ✓');
   } catch {
-    // Sin permiso de portapapeles: al menos que pueda seleccionarlo a mano.
     button.textContent = L('No se ha podido copiar', 'Could not copy');
   }
   setTimeout(() => { button.textContent = original; }, 1800);
@@ -2467,6 +2501,12 @@ function doExport(kind, plateauIndex) {
   const best = a.plateaus[Math.min(idx, Math.max(0, a.plateaus.length - 1))];
   if (kind === 'set') {
     if (!best) return showError(L('No hay ninguna meseta que exportar.', 'There is no plateau to export.'));
+    if (!a.meta.hasForward) {
+      return showError(L(
+        'Sin forward no se exporta un .set de despliegue: la región solo se midió in-sample. Exporta el rango de refinamiento, o vuelve a auditar con el archivo forward.',
+        'Without forward, a deployment .set is not exported: the region was only measured in-sample. Export the refinement range, or re-audit with the forward file.',
+      ));
+    }
     downloadText(`robustness-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best));
   } else if (kind === 'refine') {
     if (!best) return showError(L('No hay ninguna meseta que refinar.', 'There is no plateau to refine.'));
@@ -2493,7 +2533,7 @@ function toggleExportMenu() {
   menu.innerHTML = `
     <button data-export="json">${esc(t('export.json'))}</button>
     <button data-export="csv">${esc(t('export.csv'))}</button>
-    <button data-export="set">${esc(t('export.set'))}</button>
+    <button data-export="set" ${state.analysis && !state.analysis.meta.hasForward ? 'disabled title="' + esc(L('Requiere forward', 'Requires forward')) + '"' : ''}>${esc(t('export.set'))}</button>
     <button data-export="refine">${esc(t('export.refine'))}</button>`;
   $('.top-actions').appendChild(menu);
   menu.querySelectorAll('[data-export]').forEach((b) => b.addEventListener('click', () => {

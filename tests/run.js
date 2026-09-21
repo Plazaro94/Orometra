@@ -235,9 +235,11 @@ section('7. Solo se descarta de la distancia el parametro demostrablemente plano
   const points = [];
   // 'inerte' recorre 5 niveles pero no afecta al resultado; 'a' y 'b' si.
   for (let a = 0; a < 6; a++) for (let b = 0; b < 6; b++) for (let inert = 0; inert < 5; inert++) {
-    const dist = ((a - 3) / 1.6) ** 2 + ((b - 3) / 1.6) ** 2;
+    // Región buena más ancha: tras colapsar ejes planos quedan 36 celdas; hace falta
+    // masa interior real, no soporte fabricado por copias del eje inerte.
+    const dist = ((a - 3) / 2.2) ** 2 + ((b - 3) / 2.2) ** 2;
     const g = Math.exp(-dist / 2);
-    const nz = gauss(r) * 0.05;
+    const nz = gauss(r) * 0.03;
     points.push({
       x: [a + 1, b + 1, inert * 10],
       is: metricsFromGoodness(g, nz, 1400), oos: metricsFromGoodness(g * 0.92, nz, 700),

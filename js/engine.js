@@ -18,7 +18,9 @@ export const ENGINE_DEFAULTS = {
   conditionalMinBuckets: 5,
   // Presupuesto de trabajo de la vecindad: desplazamientos x configuraciones.
   neighborWorkBudget: 8e6,
-  denseCoverage: 0.35,
+  // Umbral legado: solo se usa como referencia de "denso" en comentarios/tests.
+  // El etiquetado sampling==='grid' exige cobertura >= 0.95 (casi malla llena).
+  denseCoverage: 0.95,
   bruteForceLimit: 30000,
   /*
    * UMBRALES DE MESETA, Y DE DONDE SALEN SUS NUMEROS.
@@ -346,6 +348,41 @@ function encodeKey(z, dims) {
 }
 
 /**
+ * Una sola fila por celda topologica (active + block). Filas que solo difieren en
+ * ejes planos, o duplicados GA, no son evidencia espacial independiente: si se
+ * dejan, el grafo de vecindad queda fragmentado (solo el representante de cada
+ * cubo se enlaza) y las mesetas desaparecen o el soporte se fabrica.
+ */
+export function collapseToTopology(records, coords, scores, passes, activeDims, blockDims) {
+  if (!records.length) {
+    return { records, coords, scores, passes, collapsed: 0 };
+  }
+  const best = new Map();
+  let collapsed = 0;
+  for (let i = 0; i < records.length; i++) {
+    const key = encodeKey(coords[i], blockDims) + '|' + encodeKey(coords[i], activeDims);
+    const prev = best.get(key);
+    if (prev === undefined) {
+      best.set(key, i);
+      continue;
+    }
+    collapsed++;
+    const prefer = (passes[i] && !passes[prev])
+      || (passes[i] === passes[prev] && (scores[i] || 0) > (scores[prev] || 0));
+    if (prefer) best.set(key, i);
+  }
+  if (!collapsed) return { records, coords, scores, passes, collapsed: 0 };
+  const idxs = [...best.values()].sort((a, b) => a - b);
+  return {
+    records: idxs.map((i) => records[i]),
+    coords: idxs.map((i) => coords[i]),
+    scores: idxs.map((i) => scores[i]),
+    passes: Uint8Array.from(idxs.map((i) => passes[i])),
+    collapsed,
+  };
+}
+
+/**
  * Desplazamientos con distancia Manhattan <= radius.
  *
  * COMPLETO: cualquier numero de ejes a la vez. La version anterior solo generaba
@@ -438,15 +475,20 @@ function neighborsDense(coords, activeDims, blockDims, radius, maxOffsets = Infi
   neighbors.offsetsComplete = complete;
   for (let i = 0; i < coords.length; i++) {
     const acc = [];
+    const seen = new Set();
     const block = encodeKey(coords[i], blockDims) + '|';
-    // Mismas coordenadas en la distancia: difieren solo en ejes planos.
-    const same = buckets.get(block + encodeKey(coords[i], activeDims));
-    if (same) for (const k of same) if (k !== i) acc.push(k);
+    // Misma celda: otras filas duplicadas NO cuentan como vecinas (no son evidencia
+    // espacial). Solo desplazamientos a otras celdas, una vez por celda.
     for (const off of offsets) {
       let key = block;
       for (let k = 0; k < activeDims.length; k++) key += (coords[i][activeDims[k]] + off[k]) + ',';
+      if (seen.has(key)) continue;
       const list = buckets.get(key);
-      if (list) for (const k of list) if (k !== i) acc.push(k);
+      if (!list || !list.length) continue;
+      seen.add(key);
+      // Un representante por celda vecina.
+      const k = list[0];
+      if (k !== i) acc.push(k);
     }
     neighbors[i] = acc;
   }
@@ -468,6 +510,8 @@ function neighborsSparse(coords, activeDims, blockDims, radius) {
         dist += Math.abs(zi[activeDims[a]] - zk[activeDims[a]]);
         if (dist > radius) continue outer;
       }
+      // Misma celda (duplicados de params): no son vecinas espaciales.
+      if (dist === 0) continue;
       neighbors[i].push(k);
       neighbors[k].push(i);
     }
@@ -783,12 +827,14 @@ export function findPlateaus(neighbors, robust, passes, stability, opts = ENGINE
 
 /**
  * Elige el representante de una meseta por criterio maximin: la configuración cuyo
- * PEOR vecino es el mejor posible. Deliberadamente NO se elige el máximo de la zona;
- * la cima de una meseta suele estar en su borde y es la que peor envejece.
+ * PEOR vecino (en toda la vecindad observada) es el mejor posible. Empates: más
+ * interior en la componente, luego robustez. Deliberadamente NO se elige el máximo.
  */
 export function chooseRepresentative(component, neighbors, scores, robust) {
   let best = component[0];
-  let bestKey = -Infinity;
+  let bestWorst = -Infinity;
+  let bestInterior = -Infinity;
+  let bestRobust = -Infinity;
   const inComp = new Set(component);
   for (const i of component) {
     const nb = neighbors[i];
@@ -799,9 +845,15 @@ export function chooseRepresentative(component, neighbors, scores, robust) {
       if (Number.isFinite(scores[k]) && scores[k] < worst) worst = scores[k];
     }
     const interior = nb.length ? inside / nb.length : 0;
-    const key = worst * 0.6 + interior * 0.3 + (robust[i] / 100) * 0.1;
-    if (key > bestKey) {
-      bestKey = key;
+    const rob = Number.isFinite(robust[i]) ? robust[i] : 0;
+    if (
+      worst > bestWorst
+      || (worst === bestWorst && interior > bestInterior)
+      || (worst === bestWorst && interior === bestInterior && rob > bestRobust)
+    ) {
+      bestWorst = worst;
+      bestInterior = interior;
+      bestRobust = rob;
       best = i;
     }
   }

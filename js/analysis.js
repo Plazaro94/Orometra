@@ -10,6 +10,7 @@ import {
   conditionalSensitivity, selectDims, buildNeighborhood, localStability, robustnessScores,
   findPlateaus, coreMembers, chooseRepresentative, boundaryParams, refinementRange,
   countPossibleNeighbors, detectInversions, gridRegularity, componentExtent,
+  collapseToTopology,
 } from './engine.js';
 import {
   median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum,
@@ -52,6 +53,14 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   if (hasForward) {
     const paired = pairTables(isTable, oosTable);
     integrity = paired.integrity;
+    const prov = integrity.provenance;
+    // Hard-fail: mezclar optimizaciones distintas no puede producir una "meseta".
+    if (prov && prov.checked && prov.compared >= 5 && prov.ratio < 0.98) {
+      throw new AnalysisError(CODE.SCHEMA_ERROR, L(
+        `Los archivos no parecen de la misma optimización: en ${prov.mismatches} de ${prov.compared} pasadas el Result del in-sample no coincide con el Back Result del forward. No se puede auditar así.`,
+        `The files do not look like the same optimization: in ${prov.mismatches} of ${prov.compared} passes the in-sample Result does not match the forward Back Result. Cannot audit like this.`,
+      ), { provenance: prov });
+    }
     paramNames = paired.paramColumns.map((p) => p.name);
     records = paired.matched.map((m) => ({
       id: m.id,
@@ -101,6 +110,32 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const paramTypes = classifyParams(paramNames.map((_, j) => records.map((r) => r.params[j])));
   records.forEach((r) => { r.params = r.params.map((v, j) => normalizeByType(v, paramTypes[j])); });
 
+  // Varias filas con el mismo vector de parámetros no son evidencia independiente
+  // (típico en GA). Se conserva la mejor por score provisional de puertas/calidad IS.
+  {
+    const keyOf = (r) => r.params.map((v) => (v === null || v === undefined ? '' : String(v))).join('\0');
+    const best = new Map();
+    let duplicateParamVectors = 0;
+    for (const r of records) {
+      const k = keyOf(r);
+      const prev = best.get(k);
+      if (!prev) {
+        best.set(k, r);
+        continue;
+      }
+      duplicateParamVectors++;
+      // Preferir la que pasa más puertas / mejor profit factor IS como desempate.
+      const score = (x) => (Number.isFinite(x.is.profitFactor) ? x.is.profitFactor : -Infinity);
+      if (score(r) > score(prev)) best.set(k, r);
+    }
+    if (duplicateParamVectors) {
+      records = [...best.values()];
+      integrity = { ...integrity, duplicateParamVectors };
+    } else {
+      integrity = { ...integrity, duplicateParamVectors: 0 };
+    }
+  }
+
   progress(onProgress, 18, L('Evaluando calidad y puertas', 'Evaluating quality and gates'));
   const periodRatio = hasForward ? estimatePeriodRatio(records) : NaN;
   const minTradesIs = policy.gates.minTrades;
@@ -112,8 +147,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const payoffValues = records.flatMap((r) => (hasForward ? [r.is.expectedPayoff, r.oos.expectedPayoff] : [r.is.expectedPayoff]));
   const payoffAnchor = payoffScale(payoffValues);
 
-  const scores = new Array(records.length);
-  const passes = new Uint8Array(records.length);
+  let scores = new Array(records.length);
+  let passes = new Uint8Array(records.length);
   let gatePassCount = 0;
   records.forEach((r, i) => {
     const qi = periodQuality(r.is, policy, payoffAnchor);
@@ -167,10 +202,13 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
 
   progress(onProgress, 30, L('Construyendo el espacio de parámetros', 'Building parameter space'));
   const paramValues = paramNames.map((_, j) => records.map((r) => r.params[j]));
-  const { coords, levels } = buildCoordinates(paramValues, paramTypes);
+  let { coords, levels } = buildCoordinates(paramValues, paramTypes);
   const cartesian = levels.reduce((a, l) => a * Math.max(1, l.length), 1);
   const coverage = cartesian > 0 ? records.length / cartesian : 0;
   const optimisedDims = levels.filter((l) => l.length > 1).length;
+  // "grid" solo si la malla OBSERVADA esta casi llena. Cobertura media sobre niveles
+  // vistos (antes denseCoverage=0.35) mentía en GA densos en un rincón.
+  const sampling = coverage >= 0.95 ? 'grid' : coverage >= 0.02 ? 'partial' : 'sparse';
 
   /*
    * GRADOS DE LIBERTAD: cuanta evidencia sostiene cada parametro que has ajustado.
@@ -201,7 +239,6 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // Por encima de 1 se han explorado mas configuraciones que datos hay para separarlas.
     trialsPerTrade: Number.isFinite(evidenceTrades) && evidenceTrades > 0 ? records.length / evidenceTrades : NaN,
   };
-  const sampling = coverage >= opts.denseCoverage ? 'grid' : coverage >= 0.02 ? 'partial' : 'sparse';
 
   /*
    * ¿QUE PUERTA ESTA DECIDIENDO DE VERDAD?
@@ -286,26 +323,35 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
 
   const dense = sampling === 'grid';
   const dims = selectDims(sensitivity, paramTypes, opts, conditional);
-  const activeDims = dims.distanceDims;
-  const blockDims = dims.blockDims;
+  let activeDims = dims.distanceDims;
+  let blockDims = dims.blockDims;
   const flatDims = dims.flatDims.map((j) => paramNames[j]);
+
+  // Colapsar filas que comparten celda active+block (ejes planos / restos).
+  {
+    const collapsed = collapseToTopology(records, coords, scores, passes, activeDims, blockDims);
+    if (collapsed.collapsed) {
+      records = collapsed.records;
+      coords = collapsed.coords;
+      scores = collapsed.scores;
+      passes = collapsed.passes;
+      gatePassCount = 0;
+      for (let i = 0; i < passes.length; i++) if (passes[i]) gatePassCount++;
+      integrity = { ...integrity, collapsedTopology: collapsed.collapsed };
+    }
+  }
 
   // Saltos desproporcionados en la malla de un parametro: el motor trata todos los pasos
   // como equivalentes, asi que conviene decir cuando no lo son.
   const irregularGrids = gridRegularity(levels, paramTypes, paramNames);
 
   progress(onProgress, 55, L('Detectando vecindades', 'Detecting neighborhoods'));
-  // Bloquear por todos los categoricos puede dejar particiones demasiado pequeñas.
-  // Si el soporte se hunde, se van soltando los bloqueos menos influyentes y se
-  // informa de cuales, porque relaja la interpretación de "vecina".
-  let blocking = blockDims.slice();
+  // Los categóricos PARTICIONAN el espacio. No se liberan automáticamente: eso inventaba
+  // vecindad entre modos incompatibles. Si el soporte queda bajo, el veredicto ya marca
+  // underpowered / muestreo escaso.
+  const blocking = blockDims.slice();
   const releasedBlocks = [];
-  let nb = buildNeighborhood(coords, activeDims, { dense, blockDims: blocking, opts });
-  while (nb.medianSupport < opts.minSupport && blocking.length) {
-    releasedBlocks.push(blocking[0]);
-    blocking = blocking.slice(1);
-    nb = buildNeighborhood(coords, activeDims, { dense, blockDims: blocking, opts });
-  }
+  const nb = buildNeighborhood(coords, activeDims, { dense, blockDims: blocking, opts });
   const neighbors = nb.neighbors;
 
   progress(onProgress, 68, L('Analizando estabilidad local', 'Analyzing local stability'));

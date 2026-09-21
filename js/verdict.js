@@ -75,12 +75,12 @@ export function buildVerdict(ctx) {
           `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades: ${per.toFixed(0)} per parameter. At that ratio, the surface we are measuring is mostly noise, and any plateau that appears may be noise too. This is not a flaw in your EA: there is not enough data to speak about so many parameters at once. Reduce the parameters you optimize, or lengthen the period.${extraEn}`));
     } else if (per < 50) {
       add(SEV.WARN, L(`${per.toFixed(0)} operaciones por parámetro ajustado`, `${per.toFixed(0)} trades per fitted parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Es poco: la evidencia por grado de libertad es escasa y todo lo que sigue debe leerse como provisional.${extraEs}`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. That is little: evidence per degree of freedom is scarce and everything that follows should be read as provisional.${extraEn}`));
+        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Es poco: hay pocas operaciones por parámetro y todo lo que sigue debe leerse como provisional.${extraEs}`,
+          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. That is little: few trades per parameter and everything that follows should be read as provisional.${extraEn}`));
     } else if (per >= 100) {
       add(SEV.OK, L(`${per.toFixed(0)} operaciones por parámetro ajustado`, `${per.toFixed(0)} trades per fitted parameter`),
-        L(`${d.params} parámetros frente a ${tradesN} operaciones en ${periodoEs}. Hay evidencia suficiente por grado de libertad para que las conclusiones se sostengan.`,
-          `${d.params} parameters versus ${tradesN} trades in ${periodoEn}. There is enough evidence per degree of freedom for the conclusions to hold.`));
+        L(`${d.params} parámetros frente a ${tradesN} operaciones en ${periodoEs}. Hay operaciones de sobra por parámetro para que las conclusiones se sostengan.`,
+          `${d.params} parameters versus ${tradesN} trades in ${periodoEn}. There are enough trades per parameter for the conclusions to hold.`));
     }
   }
 

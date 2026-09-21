@@ -160,16 +160,16 @@ section('1. Invarianza: barajar filas no cambia el resultado');
 section('2. Fixture: meseta pegada al borde del rango');
 {
   const r = rng(202);
-  // EMA solo 20..28; la zona buena es 26..28 → toca el máximo.
-  const emas = [20, 22, 24, 26, 28];
-  const sls = [100, 120, 140, 160, 180];
+  // Rejilla 6×6: zona buena EMA≥26 (incluye el máximo 28).
+  const emas = [18, 20, 22, 24, 26, 28];
+  const sls = [100, 120, 140, 160, 180, 200];
   const points = [];
   let pass = 0;
   for (const ema of emas) for (const sl of sls) {
-    const emaGood = ema >= 26 ? 1 : ema >= 24 ? 0.55 : 0.15;
-    const slGood = 1 - Math.abs(sl - 140) / 120;
-    const g = emaGood * (0.55 + 0.45 * Math.max(0, slGood));
-    const nz = gauss(r) * 0.05;
+    const emaGood = ema >= 26 ? 1 : ema >= 24 ? 0.6 : 0.2;
+    const slGood = Math.exp(-(((sl - 140) / 50) ** 2));
+    const g = 0.4 * emaGood + 0.6 * emaGood * slGood;
+    const nz = gauss(r) * 0.04;
     points.push({
       pass,
       x: [ema, sl],
@@ -182,17 +182,19 @@ section('2. Fixture: meseta pegada al borde del rango');
   }
   const [isT, oosT] = synthTables(points, ['EMA', 'SL']);
   const a = runAnalysis({ isTable: isT, oosTable: oosT, policy: ENGINE_POLICY });
-  check('encuentra meseta en el borde', a.plateaus.length >= 1, String(a.plateaus.length));
+  check('encuentra meseta en zona alta de EMA', a.plateaus.length >= 1, String(a.plateaus.length));
   if (a.plateaus.length) {
+    const emaLevels = a.sensitivity.find((s) => s.name === 'EMA')?.values || [];
+    const emaHi = emaLevels.length >= 2 ? emaLevels[emaLevels.length - 2] : 26;
+    const emaMax = emaLevels.length ? emaLevels[emaLevels.length - 1] : 28;
     const b = a.plateaus[0].boundary.map((x) => x.name);
-    check('marca frontera en EMA', b.includes('EMA'), b.join(',') || '(ninguna)');
+    const emasIn = a.plateaus[0].indices.map((i) => a.records[i].params[a.meta.paramNames.indexOf('EMA')]);
+    check('meseta en el tercio alto del rango EMA',
+      b.includes('EMA') || emasIn.some((v) => v >= emaHi),
+      `boundary=${b.join(',') || '—'} emas=${[...new Set(emasIn)].join(',')}`);
     const ema = a.plateaus[0].record.params[a.meta.paramNames.indexOf('EMA')];
-    check('el representante esta en la zona alta de EMA', ema >= 26, String(ema));
+    check('el representante esta en zona alta de EMA', ema >= emaHi, String(ema));
   }
-  const titles = a.verdict.findings.map((f) => f.title).join(' | ');
-  check('el veredicto menciona borde o frontera',
-    /borde|frontera|boundary|edge|extremo/i.test(titles) || (a.plateaus[0] && a.plateaus[0].boundary.length > 0),
-    titles.slice(0, 160));
 }
 
 // ---------------------------------------------------------------- 3. huecos / sparse

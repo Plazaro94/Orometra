@@ -1,11 +1,16 @@
 // Exportacion: ficheros .set para MT5, rango de refinamiento e informe JSON.
 
-function fmt(value) {
+/** Formato MT5 (.set / pegar en Inputs): punto decimal, sin locale. */
+export function formatSetValue(value) {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   if (typeof value === 'string') return value;
   if (!Number.isFinite(value)) return '0';
   if (Number.isInteger(value)) return String(value);
   return String(Number(value.toFixed(8)));
+}
+
+function fmt(value) {
+  return formatSetValue(value);
 }
 
 /**
