@@ -26,6 +26,8 @@ const TYPES = {
   '.xls': 'application/vnd.ms-excel',
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   '.csv': 'text/csv; charset=utf-8',
+  '.png': 'image/png',
+  '.woff2': 'font/woff2',
   '.map': 'application/json; charset=utf-8',
 };
 

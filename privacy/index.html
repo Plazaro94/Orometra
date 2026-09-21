@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#070a12">
+<meta name="theme-color" content="#070b14">
 <meta name="description" content="Orometra privacy policy: MT5 optimization analysis runs entirely in your browser. No uploads, no accounts, no analytics cookies.">
 <title>Privacy — Orometra</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -22,6 +22,7 @@
 <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
 
 <header class="lp-top">
+  <div class="lp-shell">
   <a class="lp-brand" href="../">
     <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
     <span class="brand-name">Orometra</span>
@@ -42,7 +43,8 @@
         <span class="swatch cream" aria-hidden="true"></span><span data-i18n="theme.cream">Cream</span>
       </button>
     </div>
-    <a class="primary-btn lp-cta-top" href="../app/" data-i18n="lp.cta">Open app</a>
+    <a class="ghost-btn lp-cta-top" href="../app/" data-i18n="lp.cta">Open app</a>
+  </div>
   </div>
 </header>
 
@@ -50,6 +52,24 @@
   <p class="lp-eyebrow" data-i18n="doc.privacy.eyebrow">Privacy</p>
   <h1 data-i18n="doc.privacy.h1">Your files never leave your browser</h1>
   <p class="lp-lead" data-i18n="doc.privacy.lead">This is not a policy promise about servers we control carefully. There is no analysis backend: the audit runs as JavaScript on your machine.</p>
+
+  <div class="lp-claims">
+    <article class="lp-claim">
+      <span class="lp-claim-kicker" data-i18n="doc.privacy.claim1.kicker">Architecture</span>
+      <h2 data-i18n="doc.privacy.claim1.title">No backend</h2>
+      <p data-i18n="doc.privacy.claim1.body">Analysis runs as JavaScript in your browser. There is no server that receives your optimization tables.</p>
+    </article>
+    <article class="lp-claim">
+      <span class="lp-claim-kicker" data-i18n="doc.privacy.claim2.kicker">Files</span>
+      <h2 data-i18n="doc.privacy.claim2.title">No uploads</h2>
+      <p data-i18n="doc.privacy.claim2.body">Reports are read in memory and discarded when you close the tab. Nothing is stored on our side.</p>
+    </article>
+    <article class="lp-claim">
+      <span class="lp-claim-kicker" data-i18n="doc.privacy.claim3.kicker">Product</span>
+      <h2 data-i18n="doc.privacy.claim3.title">No analytics</h2>
+      <p data-i18n="doc.privacy.claim3.body">No accounts, no tracking cookies, no product analytics on your EA, parameters or results.</p>
+    </article>
+  </div>
 
   <section class="lp-doc-block">
     <h2 data-i18n="doc.privacy.s1.title">What we do not collect</h2>
@@ -82,10 +102,18 @@
 </main>
 
 <footer class="lp-foot">
-  <a href="../">Orometra</a>
-  <a href="../methodology/" data-i18n="nav.method">Methodology</a>
-  <a href="../privacy/" data-i18n="doc.privacy.nav">Privacy</a>
-  <a href="../app/" data-i18n="lp.cta">Open app</a>
+  <div class="lp-shell lp-foot-inner">
+    <div class="lp-foot-brand">
+      <strong>Orometra</strong>
+      <span data-i18n="lp.foot.tagline">Plateaus over peaks. Analysis stays in your browser.</span>
+    </div>
+    <nav class="lp-foot-nav" aria-label="Footer">
+      <a href="../">Orometra</a>
+      <a href="../methodology/" data-i18n="nav.method">Methodology</a>
+      <a href="../privacy/" data-i18n="doc.privacy.nav">Privacy</a>
+      <a href="../app/" data-i18n="lp.cta.footer">App</a>
+    </nav>
+  </div>
 </footer>
 
 <script type="module" src="../js/landing.js"></script>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#070a12">
+<meta name="theme-color" content="#070b14">
 <meta name="description" content="How Orometra evaluates MetaTrader 5 optimizations: absolute gates, plateaus, maximin selection, and what the tool cannot claim.">
 <title>Methodology — Orometra</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -22,6 +22,7 @@
 <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
 
 <header class="lp-top">
+  <div class="lp-shell">
   <a class="lp-brand" href="../">
     <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
     <span class="brand-name">Orometra</span>
@@ -42,7 +43,8 @@
         <span class="swatch cream" aria-hidden="true"></span><span data-i18n="theme.cream">Cream</span>
       </button>
     </div>
-    <a class="primary-btn lp-cta-top" href="../app/" data-i18n="lp.cta">Open app</a>
+    <a class="ghost-btn lp-cta-top" href="../app/" data-i18n="lp.cta">Open app</a>
+  </div>
   </div>
 </header>
 
@@ -50,6 +52,39 @@
   <p class="lp-eyebrow" data-i18n="doc.method.eyebrow">Methodology</p>
   <h1 data-i18n="doc.method.h1">How the engine decides</h1>
   <p class="lp-lead" data-i18n="doc.method.lead">Orometra does not re-rank your MT5 table. It measures whether strong results sit inside stable parameter regions — and how much evidence supports that claim.</p>
+
+  <ol class="lp-pipeline" aria-label="Engine pipeline">
+    <li>
+      <span class="lp-pipe-num">01</span>
+      <strong data-i18n="doc.method.pipe.1.title">Gates</strong>
+      <span data-i18n="doc.method.pipe.1.body">Absolute minima in both periods</span>
+    </li>
+    <li>
+      <span class="lp-pipe-num">02</span>
+      <strong data-i18n="doc.method.pipe.2.title">Quality</strong>
+      <span data-i18n="doc.method.pipe.2.body">Rebuilt without Result</span>
+    </li>
+    <li>
+      <span class="lp-pipe-num">03</span>
+      <strong data-i18n="doc.method.pipe.3.title">Neighborhood</strong>
+      <span data-i18n="doc.method.pipe.3.body">Local stability measured</span>
+    </li>
+    <li>
+      <span class="lp-pipe-num">04</span>
+      <strong data-i18n="doc.method.pipe.4.title">Plateau</strong>
+      <span data-i18n="doc.method.pipe.4.body">Connected good regions</span>
+    </li>
+    <li>
+      <span class="lp-pipe-num">05</span>
+      <strong data-i18n="doc.method.pipe.5.title">Representative</strong>
+      <span data-i18n="doc.method.pipe.5.body">Maximin, not the peak</span>
+    </li>
+    <li>
+      <span class="lp-pipe-num">06</span>
+      <strong data-i18n="doc.method.pipe.6.title">Unseen</strong>
+      <span data-i18n="doc.method.pipe.6.body">Optional clean check</span>
+    </li>
+  </ol>
 
   <section class="lp-doc-block">
     <h2 data-i18n="doc.method.s1.title">1. Absolute gates before rankings</h2>
@@ -88,10 +123,18 @@
 </main>
 
 <footer class="lp-foot">
-  <a href="../">Orometra</a>
-  <a href="../methodology/" data-i18n="nav.method">Methodology</a>
-  <a href="../privacy/" data-i18n="doc.privacy.nav">Privacy</a>
-  <a href="../app/" data-i18n="lp.cta">Open app</a>
+  <div class="lp-shell lp-foot-inner">
+    <div class="lp-foot-brand">
+      <strong>Orometra</strong>
+      <span data-i18n="lp.foot.tagline">Plateaus over peaks. Analysis stays in your browser.</span>
+    </div>
+    <nav class="lp-foot-nav" aria-label="Footer">
+      <a href="../">Orometra</a>
+      <a href="../methodology/" data-i18n="nav.method">Methodology</a>
+      <a href="../privacy/" data-i18n="doc.privacy.nav">Privacy</a>
+      <a href="../app/" data-i18n="lp.cta.footer">App</a>
+    </nav>
+  </div>
 </footer>
 
 <script type="module" src="../js/landing.js"></script>

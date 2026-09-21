@@ -2,9 +2,20 @@
 // bien, se copian bien y heredan el tema por CSS.
 
 import { median, quantile, extent } from './stats.js';
+import { L } from './i18n.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fx = (n) => (Number.isFinite(n) ? n.toFixed(1) : '0');
+
+function legend(items) {
+  return `<div class="chart-legend" role="list">${items.map((it) =>
+    `<span class="chart-legend-item" role="listitem"><span class="chart-swatch ${it.cls}" aria-hidden="true"></span>${esc(it.label)}</span>`
+  ).join('')}</div>`;
+}
+
+function wrapChart(svg, legendHtml) {
+  return `<div class="chart-block">${legendHtml || ''}${svg}</div>`;
+}
 
 function niceTicks(lo, hi, count = 5) {
   if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo === hi) return [lo];
@@ -59,10 +70,17 @@ export function scatterIsOos(analysis) {
   }).join('');
   const diagonal = `<line class="ch-diagonal" x1="${xScale(0)}" y1="${yScale(0)}" x2="${xScale(1)}" y2="${yScale(1)}"/>`;
   const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1];
-  return frame(W, H, pad, diagonal + pts.join('') + reps, {
-    xLabel: 'Calidad en In-Sample', yLabel: 'Calidad en Out-of-Sample',
+  const svg = frame(W, H, pad, diagonal + pts.join('') + reps, {
+    xLabel: L('Calidad en In-Sample', 'In-sample quality'),
+    yLabel: L('Calidad en Out-of-Sample', 'Out-of-sample quality'),
     xTicks: ticks, yTicks: ticks, xScale, yScale,
   });
+  return wrapChart(svg, legend([
+    { cls: 'chart-swatch-fail', label: L('No pasan mínimos', 'Fail gates') },
+    { cls: 'chart-swatch-pass', label: L('Pasan mínimos', 'Pass gates') },
+    { cls: 'chart-swatch-plateau', label: L('En meseta', 'In a plateau') },
+    { cls: 'chart-swatch-rep', label: L('Representante', 'Representative') },
+  ]));
 }
 
 /** Perfil de un parámetro: mediana y recorrido intercuartilico por nivel. */
@@ -121,11 +139,16 @@ export function degradationChart(analysis) {
   const labels = rows.map((r, k) => `<text class="ch-tick" x="${fx(xScale(k))}" y="${H - pad.b + 15}" text-anchor="middle">D${r.decile}</text>`).join('');
   const yTicks = niceTicks(lo, hi, 5);
   const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${W - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 3)}" text-anchor="end">${formatTick(t)}</text>`).join('');
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">
+  const svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">
     ${gy}${bars}<path class="ch-line-q25" d="${q25line}"/>${labels}
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
-    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">Decil del criterio in-sample (D10 = tus mejores) — barras: mediana OOS, linea: cuartil bajo</text>
+    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(L('Decil del criterio in-sample (D10 = tus mejores)', 'In-sample criterion decile (D10 = your best)'))}</text>
   </svg>`;
+  return wrapChart(svg, legend([
+    { cls: 'chart-swatch-bar', label: L('Mediana OOS', 'OOS median') },
+    { cls: 'chart-swatch-bar-top', label: L('D10 (mejores IS)', 'D10 (best IS)') },
+    { cls: 'chart-swatch-q25', label: L('Cuartil bajo OOS', 'OOS lower quartile') },
+  ]));
 }
 
 /**

@@ -3,12 +3,15 @@
 
 import { parseTable } from './parse.js';
 import { runAnalysis } from './analysis.js';
+import { setLocale } from './i18n.js';
 
 self.onmessage = (event) => {
-  const { id, isBuffer, oosBuffer, isName, oosName, policy } = event.data;
+  const { id, isBuffer, oosBuffer, isName, oosName, policy, locale } = event.data;
   const post = (type, payload) => self.postMessage({ id, type, ...payload });
   try {
-    post('progress', { pct: 2, label: 'Leyendo archivos' });
+    // Sin esto, L() en el worker cae siempre a español (no hay document).
+    if (locale === 'en' || locale === 'es') setLocale(locale);
+    post('progress', { pct: 2, label: locale === 'en' ? 'Reading files' : 'Leyendo archivos' });
     // Los Excel binarios llegan ya parseados desde el hilo principal, porque el
     // lector opcional solo puede cargarse alli.
     const isTable = event.data.isTable || parseTable(isBuffer, isName);
@@ -22,7 +25,11 @@ self.onmessage = (event) => {
     // Los arrays por configuración se quedan aquí salvo los que la interfaz dibuja.
     post('done', { analysis: stripHeavy(analysis) });
   } catch (error) {
-    post('error', { message: error && error.message ? error.message : String(error) });
+    post('error', {
+      message: error && error.message ? error.message : String(error),
+      code: error && error.code ? error.code : null,
+      details: error && error.details ? error.details : null,
+    });
   }
 };
 

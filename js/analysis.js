@@ -1,6 +1,7 @@
 // Orquestador del análisis completo. Es codigo puro: no toca el DOM, para poder
 // ejecutarlo dentro de un Web Worker y también en los tests de Node.
 
+import { AnalysisError, CODE } from './errors.js';
 import { toNumber, canonicalValue } from './parse.js';
 import { pairTables, metricColumns, inferParamsSingle, estimatePeriodRatio } from './schema.js';
 import { DEFAULT_POLICY, resolvePolicy, periodQuality, payoffScale, gateFailures, combineScores, retention } from './metrics.js';
@@ -8,13 +9,14 @@ import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
   conditionalSensitivity, selectDims, buildNeighborhood, localStability, robustnessScores,
   findPlateaus, coreMembers, chooseRepresentative, boundaryParams, refinementRange,
-  detectInversions, gridRegularity, componentExtent,
+  countPossibleNeighbors, detectInversions, gridRegularity, componentExtent,
 } from './engine.js';
 import {
   median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum,
   sharpeStandardError, normCdf, mean, stdev, extent, makeRng,
 } from './stats.js';
 import { buildVerdict } from './verdict.js';
+import { L } from './i18n.js';
 
 const METRIC_KEYS = ['profit', 'profitFactor', 'recoveryFactor', 'sharpe', 'drawdown', 'trades', 'expectedPayoff'];
 
@@ -39,7 +41,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // no imponerle nuestra escala de riesgo. Ver `resolvePolicy`.
   const policy = resolvePolicy(rawPolicy);
   const hasForward = Boolean(oosTable);
-  progress(onProgress, 5, 'Emparejando archivos');
+  progress(onProgress, 5, L('Emparejando archivos', 'Matching files'));
 
   let paramNames = [];
   let records = [];
@@ -61,7 +63,12 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     }));
   } else {
     const inferred = inferParamsSingle(isTable);
-    if (!inferred.params.length) throw new Error('No se ha podido identificar ningún parámetro en el archivo.');
+    if (!inferred.params.length) {
+      throw new AnalysisError(CODE.SCHEMA_ERROR, L(
+        'No se ha podido identificar ningún parámetro en el archivo.',
+        'No parameter could be identified in the file.',
+      ));
+    }
     paramNames = inferred.params.map((p) => p.name);
     integrity = {
       isRows: isTable.rows.length, oosRows: 0, matchedRows: isTable.rows.length,
@@ -82,14 +89,19 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const before = records.length;
   records = records.filter((r) => r.params.every((v) => v !== null && v !== undefined && v !== ''));
   const droppedParams = before - records.length;
-  if (records.length < 10) throw new Error('Quedan muy pocas configuraciones utilizables tras la limpieza.');
+  if (records.length < 10) {
+    throw new AnalysisError(CODE.DATA_ERROR, L(
+      'Quedan muy pocas configuraciones utilizables tras la limpieza.',
+      'Too few usable configurations remain after cleaning.',
+    ), { records: records.length });
+  }
 
   // Un mismo parámetro puede venir como número, como booleano ("true"/"false") o como
   // texto de una enumeracion. Se fija un tipo por columna y se normaliza todo a el.
   const paramTypes = classifyParams(paramNames.map((_, j) => records.map((r) => r.params[j])));
   records.forEach((r) => { r.params = r.params.map((v, j) => normalizeByType(v, paramTypes[j])); });
 
-  progress(onProgress, 18, 'Evaluando calidad y puertas');
+  progress(onProgress, 18, L('Evaluando calidad y puertas', 'Evaluating quality and gates'));
   const periodRatio = hasForward ? estimatePeriodRatio(records) : NaN;
   const minTradesIs = policy.gates.minTrades;
   const minTradesOos = hasForward && Number.isFinite(periodRatio)
@@ -153,7 +165,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     population: viable.length,
   };
 
-  progress(onProgress, 30, 'Construyendo el espacio de parámetros');
+  progress(onProgress, 30, L('Construyendo el espacio de parámetros', 'Building parameter space'));
   const paramValues = paramNames.map((_, j) => records.map((r) => r.params[j]));
   const { coords, levels } = buildCoordinates(paramValues, paramTypes);
   const cartesian = levels.reduce((a, l) => a * Math.max(1, l.length), 1);
@@ -247,7 +259,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     }));
   })();
 
-  progress(onProgress, 42, 'Midiendo sensibilidad de parámetros');
+  progress(onProgress, 42, L('Midiendo sensibilidad de parámetros', 'Measuring parameter sensitivity'));
   const sensitivity = parameterSensitivity(coords, levels, scores, viableMask, globalScale.iqr);
   sensitivity.forEach((s) => {
     s.name = paramNames[s.index];
@@ -282,7 +294,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // como equivalentes, asi que conviene decir cuando no lo son.
   const irregularGrids = gridRegularity(levels, paramTypes, paramNames);
 
-  progress(onProgress, 55, 'Detectando vecindades');
+  progress(onProgress, 55, L('Detectando vecindades', 'Detecting neighborhoods'));
   // Bloquear por todos los categoricos puede dejar particiones demasiado pequeñas.
   // Si el soporte se hunde, se van soltando los bloqueos menos influyentes y se
   // informa de cuales, porque relaja la interpretación de "vecina".
@@ -296,16 +308,16 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   }
   const neighbors = nb.neighbors;
 
-  progress(onProgress, 68, 'Analizando estabilidad local');
+  progress(onProgress, 68, L('Analizando estabilidad local', 'Analyzing local stability'));
   const stability = localStability(neighbors, scores, passes, globalScale);
   const robust = robustnessScores(scores, passes, stability, opts, nb.medianSupport);
 
-  progress(onProgress, 76, 'Buscando inversiones entre periodos');
+  progress(onProgress, 76, L('Buscando inversiones entre periodos', 'Looking for period inversions'));
   const inversions = hasForward
     ? detectInversions(coords, levels, paramNames, records.map((r) => r.qualityIs), records.map((r) => r.qualityOos), globalScale.iqr)
     : [];
 
-  progress(onProgress, 78, 'Buscando mesetas');
+  progress(onProgress, 78, L('Buscando mesetas', 'Finding plateaus'));
   const components = findPlateaus(neighbors, robust, passes, stability, opts);
   const inPlateau = new Int32Array(records.length).fill(-1);
   const plateaus = components.map((comp, ci) => {
@@ -327,6 +339,23 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       const crossed = g.jumps.filter((jp) => occupied.has(jp.fromIndex) && occupied.has(jp.toIndex));
       if (crossed.length) spansIrregular.push({ name: g.name, jumps: crossed });
     }
+    const refinement = refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes);
+    const st = stability[rep];
+    const passing = Number.isFinite(st.passCount)
+      ? st.passCount
+      : (Number.isFinite(st.fracPass) ? Math.round(st.fracPass * st.support) : 0);
+    const maxOff = Math.max(64, Math.floor((opts.neighborWorkBudget || 8e6) / Math.max(1, coords.length)));
+    const slotInfo = countPossibleNeighbors(coords[rep], activeDims, levels, nb.radius, maxOff);
+    const slotsKnown = slotInfo.complete && nb.offsetsComplete !== false;
+    const neighborhood = {
+      observed: st.support,
+      passing,
+      failing: Math.max(0, st.support - passing),
+      slots: slotsKnown ? slotInfo.slots : null,
+      gaps: slotsKnown ? Math.max(0, slotInfo.slots - st.support) : null,
+      radius: nb.radius,
+      slotsComplete: slotsKnown,
+    };
     return {
       extent: ext,
       spansIrregular,
@@ -338,7 +367,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       representative: rep,
       record: records[rep],
       robust: robust[rep],
-      stability: stability[rep],
+      stability: st,
+      neighborhood,
       medianScore: median(compScores),
       q10Score: quantile(compScores, 0.1),
       worstScore: worstMember,
@@ -352,7 +382,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       // región es amplia, porque entonces los toca todos.
       boundary: boundaryParams([rep], coords, levels, paramNames, paramTypes),
       boundaryRegion: boundaryParams(basis, coords, levels, paramNames, paramTypes),
-      refinement: refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes),
+      refinement,
       // Coherencia interna: si se apoya justo en el valor que gana en el in-sample de un
       // parámetro invertido, su buen resultado forward va a contracorriente de su propio
       // nivel y puede ser suerte.
@@ -398,7 +428,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   plateaus.sort((a, b) => b.rankScore - a.rankScore);
   plateaus.forEach((p, i) => { p.rank = i + 1; });
 
-  progress(onProgress, 85, 'Aislando picos');
+  progress(onProgress, 85, L('Aislando picos', 'Isolating peaks'));
   // Se ordena por el criterio del USUARIO (lo que MT5 le pone arriba del todo), no por
   // la calidad interna. La pregunta que hay que responder es exactamente esa: "¿por que
   // no me recomiendas la que aparece primera en mi tabla?".
@@ -425,7 +455,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     })
     .slice(0, 12);
 
-  progress(onProgress, 90, 'Contrastes estadisticos');
+  progress(onProgress, 90, L('Contrastes estadisticos', 'Statistical contrasts'));
   const isCriterion = records.map((r) => (Number.isFinite(r.criterionIs) ? r.criterionIs : r.qualityIs));
   const oosCriterion = records.map((r) => (Number.isFinite(r.criterionOos) ? r.criterionOos : r.qualityOos));
   const rho = hasForward ? spearman(isCriterion, oosCriterion) : NaN;
@@ -675,10 +705,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   tied.forEach((p) => { p.tied = true; });
 
   const bestPlateau = plateaus[0] || null;
-  progress(onProgress, 94, 'Probando la estabilidad del veredicto');
+  progress(onProgress, 94, L('Probando la estabilidad del veredicto', 'Testing verdict stability'));
   const stabilityCheck = assessStability(bestPlateau);
 
-  progress(onProgress, 96, 'Emitiendo veredicto');
+  progress(onProgress, 96, L('Emitiendo veredicto', 'Issuing verdict'));
   const verdict = buildVerdict({
     gatePassCount,
     total: records.length,
@@ -717,7 +747,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     bestPlateau,
   });
 
-  progress(onProgress, 100, 'Listo');
+  progress(onProgress, 100, L('Listo', 'Done'));
   return {
     meta: {
       hasForward,

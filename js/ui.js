@@ -3,13 +3,16 @@
 
 import { parseTable } from './parse.js';
 import { DEFAULT_POLICY, qualityLabel, gateFailures } from './metrics.js';
+import { metricColumns, inferParamsSingle } from './schema.js';
 import { buildDemoTables } from './demo.js';
 import { evaluateUnseen } from './unseen.js';
 import { parseBacktestReport, looksLikeReport, compareParams } from './report.js';
 import { mountBrandMark } from './brandmark.js';
+import { mountHeroSurface } from './hero-surface.js';
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText } from './export.js';
 import { scatterIsOos, parameterProfile, degradationChart, sensitivityBars, plateauHeatmap, dimRole } from './charts.js';
 import { t, L, getLocale, setLocale, localeTag, applyStaticI18n } from './i18n.js';
+import { AnalysisError, CODE, classifyError, outcomeFromAnalysis, errorCopy } from './errors.js';
 
 const roleBadge = (role) => {
   const ROLE_COPY = {
@@ -40,6 +43,7 @@ const state = {
   // Periodo no visto: lo que el usuario teclea y el último resultado calculado.
   unseen: { plateauIndex: 0, values: {}, result: null, error: null },
   report: null,
+  preflight: { is: null, oos: null },
 };
 
 // ---------------------------------------------------------------- formato
@@ -48,6 +52,8 @@ const num = (v, d = 2) => (Number.isFinite(v) ? nf(d).format(v) : '—');
 const int = (v) => (Number.isFinite(v) ? new Intl.NumberFormat(localeTag()).format(Math.round(v)) : '—');
 const pct = (v, d = 1) => (Number.isFinite(v) ? `${nf(d).format(v * 100)} %` : '—');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+/** Escape HTML but keep the inline tags the verdict engine embeds in finding details. */
+const rich = (s) => esc(s).replace(/&lt;(\/?(?:strong|em))&gt;/gi, '<$1>');
 const money = (v) => (Number.isFinite(v) ? new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 0 }).format(v) : '—');
 /** Valor tal como lo escribe MT5: punto decimal y sin separador de millares. */
 const rawValue = (v) => {
@@ -186,16 +192,139 @@ function setFile(which, file) {
   boxEl.classList.remove('error');
   boxEl.classList.add('ready');
   refreshAnalyzeButton();
+  queuePreflight(which);
+}
+
+const preflightToken = { is: 0, oos: 0 };
+
+async function resolveTable(file) {
+  const prepared = await prepareTable(file);
+  if (prepared.table) return prepared.table;
+  return parseTable(prepared.buffer, prepared.name || file.name);
+}
+
+async function buildPreflightSummary(file) {
+  const table = await resolveTable(file);
+  const metrics = metricColumns(table);
+  const inferred = inferParamsSingle(table);
+  return {
+    ok: true,
+    name: file.name,
+    rows: table.rows.length,
+    cols: table.headers.length,
+    params: inferred.params.length,
+    metrics: Object.keys(metrics).length,
+    format: table.format || 'table',
+  };
+}
+
+async function queuePreflight(which) {
+  const key = which === 'is' ? 'is' : 'oos';
+  const file = key === 'is' ? state.isFile : state.oosFile;
+  const token = ++preflightToken[key];
+  if (!file) {
+    state.preflight[key] = null;
+    renderPreflight();
+    return;
+  }
+  state.preflight[key] = { ok: null, name: file.name, reading: true };
+  renderPreflight();
+  try {
+    const summary = await buildPreflightSummary(file);
+    if (preflightToken[key] !== token) return;
+    state.preflight[key] = summary;
+  } catch (err) {
+    if (preflightToken[key] !== token) return;
+    const classified = classifyError(err);
+    state.preflight[key] = {
+      ok: false,
+      name: file.name,
+      error: classified,
+    };
+    const boxEl = key === 'is' ? $('#isDrop') : $('#oosDrop');
+    const statusEl = key === 'is' ? $('#isStatus') : $('#oosStatus');
+    if (boxEl) boxEl.classList.add('error');
+    if (statusEl) statusEl.textContent = `${file.name} · ${t('preflight.error')}`;
+  }
+  renderPreflight();
+  refreshAnalyzeButton();
+}
+
+function renderPreflight() {
+  const host = $('#preflight');
+  const grid = $('#preflightGrid');
+  const note = $('#preflightNote');
+  if (!host || !grid) return;
+  const slots = [
+    { key: 'is', label: L('In-sample', 'In-sample'), required: true },
+    { key: 'oos', label: L('Forward', 'Forward'), required: false },
+  ];
+  const hasAny = slots.some((s) => state.preflight[s.key]);
+  host.hidden = !hasAny;
+  if (!hasAny) return;
+
+  let hasError = false;
+  let reading = false;
+  grid.innerHTML = slots.map((s) => {
+    const p = state.preflight[s.key];
+    if (!p) {
+      return `<div class="preflight-card preflight-empty">
+        <span class="preflight-role">${esc(s.label)}${s.required ? '' : ` · ${L('opcional', 'optional')}`}</span>
+        <strong>—</strong>
+        <em>${L('Sin archivo', 'No file')}</em>
+      </div>`;
+    }
+    if (p.reading) {
+      reading = true;
+      return `<div class="preflight-card preflight-reading">
+        <span class="preflight-role">${esc(s.label)}</span>
+        <strong>${esc(p.name)}</strong>
+        <em>${esc(t('preflight.reading'))}</em>
+      </div>`;
+    }
+    if (p.ok === false) {
+      hasError = true;
+      return `<div class="preflight-card preflight-bad">
+        <span class="preflight-role">${esc(s.label)}</span>
+        <strong>${esc(p.name)}</strong>
+        <em>${esc(p.error && p.error.message ? p.error.message : t('preflight.error'))}</em>
+      </div>`;
+    }
+    return `<div class="preflight-card preflight-ok">
+      <span class="preflight-role">${esc(s.label)}</span>
+      <strong>${esc(p.name)}</strong>
+      <em>${esc(t('preflight.rows'))} ${int(p.rows)} · ${esc(t('preflight.params'))} ${int(p.params)} · ${esc(t('preflight.metrics'))} ${int(p.metrics)}</em>
+    </div>`;
+  }).join('');
+
+  if (note) {
+    if (hasError) {
+      note.textContent = t('preflight.note.warn');
+    } else if (reading) {
+      note.textContent = t('preflight.reading');
+    } else if (state.analysis) {
+      note.textContent = L(
+        'Archivos leídos. Puedes volver a auditar si cambias los mínimos.',
+        'Files read. You can audit again if you change the minima.',
+      );
+    } else {
+      note.textContent = t('preflight.note.ok');
+    }
+    note.classList.toggle('is-warn', hasError);
+  }
 }
 
 function refreshAnalyzeButton() {
   const ready = Boolean(state.isFile);
-  $('#analyzeBtn').disabled = !ready || state.busy;
+  const preflightBlocked = state.preflight.is && state.preflight.is.ok === false;
+  $('#analyzeBtn').disabled = !ready || state.busy || preflightBlocked;
   $('#analyzeSub').textContent = !ready
     ? t('analyze.needIs')
-    : state.oosFile
-      ? L('Modo IS + forward: análisis completo', 'IS + forward mode: full analysis')
-      : L('Modo global: sin forward no se puede validar fuera de muestra', 'Global mode: without forward there is no out-of-sample validation');
+    : preflightBlocked
+      ? t('preflight.note.warn')
+      : state.oosFile
+        ? L('Modo IS + forward: análisis completo', 'IS + forward mode: full analysis')
+        : L('Modo global: sin forward no se puede validar fuera de muestra', 'Global mode: without forward there is no out-of-sample validation');
 }
 
 function bindDropzone(zoneSel, inputSel, which) {
@@ -242,6 +371,7 @@ const PREFS_KEY = 'orometra.gates';
 const THEME_KEY = 'orometra.theme';
 const TEMAS = ['dark', 'light', 'cream'];
 let repaintMark = () => {};
+let emptySurface = null;
 
 /**
  * Tema de color. Se aplica en `documentElement` porque el `<head>` ya lo lee antes de
@@ -254,6 +384,7 @@ function setTheme(name, persist = true) {
   if (persist) {
     try { localStorage.setItem(THEME_KEY, t); } catch { /* modo privado */ }
   }
+  if (typeof window.__orometraSyncThemeColor === 'function') window.__orometraSyncThemeColor();
   // La figura de la marca se dibuja con los colores del tema: hay que repintarla.
   repaintMark();
 }
@@ -286,6 +417,7 @@ function resetSession() {
   state.analysis = null; state.isDemo = false; state.report = null;
   state.selectedPlateau = 0; state.selectedParam = 0;
   state.unseen = { plateauIndex: 0, values: {}, result: null, error: null };
+  state.preflight = { is: null, oos: null };
   state.tab = 'verdict';
   for (const [sel, key] of [['#isStatus', 'drop.is.status'], ['#oosStatus', 'drop.oos.status']]) {
     const el = $(sel); if (el) el.textContent = t(key);
@@ -293,6 +425,7 @@ function resetSession() {
   $$('.dropzone').forEach((d) => d.classList.remove('ready', 'error'));
   ['#isFile', '#oosFile'].forEach((sel) => { const el = $(sel); if (el) el.value = ''; });
   clearError();
+  renderPreflight();
   refreshAnalyzeButton();
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -406,14 +539,32 @@ function showProgress(pct, label) {
   $('#progressLabel').textContent = label;
 }
 
-function showError(message) {
+function showError(errOrMessage) {
+  const classified = typeof errOrMessage === 'string'
+    ? { code: CODE.DATA_ERROR, message: errOrMessage, details: {} }
+    : classifyError(errOrMessage);
+  const copy = errorCopy(classified.code, L);
   $('#errorBox').hidden = false;
-  $('#errorText').textContent = message;
+  const titleEl = $('#errorTitle');
+  if (titleEl) titleEl.textContent = copy.title;
+  $('#errorText').textContent = classified.message;
+  const hintEl = $('#errorHint');
+  if (hintEl) {
+    hintEl.textContent = copy.hint;
+    hintEl.hidden = !copy.hint;
+  }
   $('#statusBar').hidden = true;
+  $('#errorBox').dataset.code = classified.code;
 }
 
 function clearError() {
   $('#errorBox').hidden = true;
+  const hintEl = $('#errorHint');
+  if (hintEl) {
+    hintEl.textContent = '';
+    hintEl.hidden = true;
+  }
+  delete $('#errorBox').dataset.code;
 }
 
 function setBusy(busy) {
@@ -496,7 +647,11 @@ function runInWorker(payload) {
       if (msg.type === 'progress') { showProgress(msg.pct, msg.label); return; }
       finish();
       if (msg.type === 'done') resolve(msg.analysis);
-      else if (msg.type === 'error') reject(new Error(msg.message));
+      else if (msg.type === 'error') {
+        reject(msg.code
+          ? new AnalysisError(msg.code, msg.message, msg.details || {})
+          : new Error(msg.message));
+      }
     }
     // Red de seguridad por si el worker se queda mudo sin llegar a lanzar un error.
     const timer = setTimeout(() => {
@@ -543,7 +698,7 @@ async function runAudit() {
     const policy = readPolicy();
     let payload;
     if (state.isDemo && state.isTable) {
-      payload = { isTable: state.isTable, oosTable: state.oosTable, policy };
+      payload = { isTable: state.isTable, oosTable: state.oosTable, policy, locale: getLocale() };
     } else {
       const is = await prepareTable(state.isFile);
       const oos = state.oosFile ? await prepareTable(state.oosFile) : null;
@@ -555,6 +710,7 @@ async function runAudit() {
         oosBuffer: oos ? oos.buffer || null : null,
         oosName: oos ? oos.name : null,
         policy,
+        locale: getLocale(),
       };
     }
     const analysis = await runInWorker(payload);
@@ -587,7 +743,7 @@ async function runAudit() {
     setTab('verdict');
     updatePolicyPreview();
   } catch (error) {
-    showError(error && error.message ? error.message : String(error));
+    showError(error);
   } finally {
     setBusy(false);
   }
@@ -636,9 +792,26 @@ function render() {
   const resetBtn = $('#resetAll');
   if (resetBtn) resetBtn.hidden = !hayAnalisis && !state.isFile;
 
+  const idle = document.querySelector('.topbar-idle');
+  const report = document.querySelector('.topbar-report');
+  if (idle) idle.hidden = hayAnalisis;
+  if (report) report.hidden = !hayAnalisis;
+  if (hayAnalisis && state.analysis) {
+    const rt = $('#reportTitle');
+    const rm = $('#reportMeta');
+    if (rt) rt.textContent = state.analysis.verdict.headline;
+    if (rm && state.source) {
+      const parts = [state.source.is];
+      if (state.source.oos) parts.push(state.source.oos);
+      parts.push(`${int(state.analysis.meta.total)} ${L('configs', 'configs')}`);
+      rm.textContent = parts.join(' · ');
+    }
+  }
+
   const view = $('#view');
   // Metodologia y legal no necesitan analisis cargado: se pueden leer siempre.
   if (state.tab === 'method' || state.tab === 'legal') {
+    disposeEmptySurface();
     view.innerHTML = state.tab === 'legal' ? renderLegal() : renderMethod();
     bindViewEvents();
     return;
@@ -646,8 +819,10 @@ function render() {
   if (!state.analysis) {
     view.innerHTML = renderEmpty();
     bindViewEvents();
+    mountEmptySurface();
     return;
   }
+  disposeEmptySurface();
   const a = state.analysis;
   const map = {
     verdict: () => renderVerdict(a),
@@ -709,10 +884,33 @@ function bindViewEvents() {
   }));
 }
 
+function disposeEmptySurface() {
+  if (emptySurface && typeof emptySurface.dispose === 'function') emptySurface.dispose();
+  emptySurface = null;
+}
+
+function mountEmptySurface() {
+  disposeEmptySurface();
+  const canvas = $('#emptySurface');
+  if (!canvas) return;
+  emptySurface = mountHeroSurface(canvas);
+}
+
 // ---------------------------------------------------------------- vistas
 function renderEmpty() {
   return `<div class="empty-state">
-    <div class="empty-orbit"><div class="orbit-center">&#8767;</div></div>
+    <div class="lp-surface empty-surface" tabindex="0" role="img" aria-label="${esc(L('Superficie de parámetros: los picos caen y queda la meseta', 'Parameter surface: peaks collapse into the plateau'))}">
+      <canvas class="lp-surface-canvas" id="emptySurface" width="720" height="360" aria-hidden="true"></canvas>
+      <div class="lp-surface-caption">
+        <span class="lp-surface-peak">${esc(L('Pico aislado', 'Isolated peak'))}</span>
+        <span class="lp-surface-hint">${esc(
+          (typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches)
+            ? L('Pasa el ratón — los picos caen y queda la meseta', 'Hover — peaks collapse into the plateau')
+            : L('Mira — los picos caen y queda la meseta', 'Watch — peaks fall and the plateau remains')
+        )}</span>
+        <span class="lp-surface-ok">${esc(L('Meseta estable', 'Stable plateau'))}</span>
+      </div>
+    </div>
     <h2>${esc(t('empty.h2'))}</h2>
     <p>${esc(t('empty.p'))}</p>
     <div class="empty-steps">
@@ -740,33 +938,7 @@ function renderVerdict(a) {
   const v = a.verdict;
   const c = verdictCopy(v.level);
   const best = a.plateaus[0];
-  const kpis = [
-    [L('Configuraciones', 'Configurations'), int(a.meta.total),
-      L(`${a.meta.paramNames.length} parámetros · ${a.meta.optimisedDims} optimizados`,
-        `${a.meta.paramNames.length} parameters · ${a.meta.optimisedDims} optimised`),
-      L('Pasadas que se han podido emparejar entre los dos archivos y cuyos parámetros son legibles.',
-        'Passes that could be matched across both files and whose parameters are readable.')],
-    [L('Pasan los mínimos', 'Pass the minima'), int(a.meta.gatePassCount),
-      L(`${pct(a.meta.gatePassPct)} del total`, `${pct(a.meta.gatePassPct)} of total`),
-      L('Configuraciones que cumplen beneficio, factor de beneficio, drawdown y número de operaciones EN LOS DOS PERIODOS. Las demás quedan fuera del análisis, por muy arriba que salgan en tu tabla de MT5.',
-        'Configurations that meet profit, profit factor, drawdown and trade count IN BOTH PERIODS. Everything else is out of the analysis, no matter how high it ranks in your MT5 table.')],
-    [L('Operaciones por parámetro', 'Trades per parameter'),
-      a.meta.degreesOfFreedom && Number.isFinite(a.meta.degreesOfFreedom.perParam) ? int(a.meta.degreesOfFreedom.perParam) : '—',
-      L(`${int(a.meta.optimisedDims)} parámetros ajustados`, `${int(a.meta.optimisedDims)} fitted parameters`),
-      L('Cuánta evidencia sostiene cada parámetro que has optimizado, medida sobre el periodo de validación. Es la división más elemental de todas: ajustar trece parámetros con trescientas operaciones deja unas veinte por parámetro, y con eso la superficie que se mide es mayoritariamente ruido. Por debajo de unas decenas, todo lo demás se lee como provisional.',
-        'How much evidence supports each parameter you optimised, measured on the validation period. It is the most elementary division of all: fitting thirteen parameters on three hundred trades leaves about twenty per parameter, and with that the surface being measured is mostly noise. Below a few dozen, everything else should be read as provisional.')],
-    [L('Mesetas', 'Plateaus'), int(a.plateaus.length),
-      best
-        ? L(`la mayor con ${int(best.size)} configuraciones`, `largest with ${int(best.size)} configurations`)
-        : L('ninguna región estable', 'no stable region'),
-      L('Regiones conexas donde el cuartil bajo de la vecindad mantiene calidad buena y casi todas las vecinas pasan los mínimos. Una meseta no es un punto bueno: es un barrio bueno.',
-        'Connected regions where the lower quartile of the neighborhood keeps good quality and almost all neighbors pass the minima. A plateau is not a good point: it is a good neighborhood.')],
-    [L('Fragilidad de la selección', 'Selection fragility'),
-      Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—',
-      L('quedarse con la primera de la tabla', 'keeping the first in the table'),
-      L('De cada 100 veces que eliges la mejor configuración segun un periodo, cuántas acaba por debajo de la mediana del otro. Se mide en los DOS sentidos y se muestra el peor. Por encima de 50 el ranking te perjudica activamente. No es el PBO de la literatura: ese exige la curva de equity de cada configuración, que MT5 no exporta.',
-        'Of every 100 times you pick the best configuration by one period, how many end below the median of the other. Measured in BOTH directions; the worse is shown. Above 50 the ranking actively hurts you. This is not the PBO from the literature: that needs each configuration\'s equity curve, which MT5 does not export.')],
-  ];
+  const mainRisk = (v.findings || []).find((f) => f.severity === 'critical' || f.severity === 'warn');
   const demoNote = state.isDemo
     ? `<div class="demo-note">${L(
       `Estos datos son <strong>sintéticos</strong>, generados por la aplicacion para que puedas ver el flujo completo. La meseta real esta plantada en: ${esc(Object.entries(state.demoTruth.center).map(([k, val]) => `${k}=${val}`).join(', '))}.`,
@@ -787,28 +959,59 @@ function renderVerdict(a) {
       </div>`
     : '';
 
+  const pickBlock = best
+    ? `<div class="verdict-fact">
+        <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
+        <strong class="verdict-fact-value mono">Pass ${esc(best.record.id)}</strong>
+        <span class="verdict-fact-note">M${best.rank} · ${int(best.size)} ${L('configs', 'configs')} · ${num(best.robust, 0)} ${L('robustez', 'robustness')}</span>
+      </div>`
+    : `<div class="verdict-fact">
+        <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
+        <strong class="verdict-fact-value">${esc(t('verdict.nopick'))}</strong>
+      </div>`;
+
+  const riskBlock = mainRisk
+    ? `<div class="verdict-fact verdict-fact-risk">
+        <span class="verdict-fact-label">${esc(t('verdict.risk'))}</span>
+        <strong class="verdict-fact-value">${esc(mainRisk.title)}</strong>
+        <span class="verdict-fact-note">${esc(mainRisk.detail)}</span>
+      </div>`
+    : '';
+
   return `${demoNote}${stamp}
+  ${renderOutcomeBanner(a)}
   <section class="verdict-banner ${c.cls}">
-    <div class="verdict-stamp">${c.label}</div>
+    <div class="verdict-stamp-col">
+      <div class="verdict-stamp">${c.label}</div>
+    </div>
     <div class="verdict-body">
       <h2>${esc(v.headline)}</h2>
       ${v.summary ? `<p>${esc(v.summary)}</p>` : ''}
-      <p class="verdict-next"><strong>${esc(t('verdict.next'))}</strong> ${esc(v.nextStep)}</p>
+    </div>
+    <div class="verdict-aside">
+      ${pickBlock}
+      ${riskBlock}
+      <div class="verdict-fact verdict-fact-next">
+        <span class="verdict-fact-label">${esc(t('verdict.next'))}</span>
+        <strong class="verdict-fact-value">${esc(v.nextStep)}</strong>
+      </div>
     </div>
   </section>
 
-  <div class="kpi-row">
-    ${kpis.map((k) => `<div class="kpi"${k[3] ? ` title="${esc(k[3])}"` : ''}><div class="kpi-label">${esc(k[0])}${k[3] ? '<span class="kpi-help">?</span>' : ''}</div><div class="kpi-value">${k[1]}</div><div class="kpi-note">${esc(k[2])}</div></div>`).join('')}
-  </div>
+  ${renderEvidenceSheet(a, best)}
+
+  ${renderWhyGrade(a)}
+
+  ${best ? renderStableRanges(a, best) : ''}
 
   ${renderTop3(a)}
 
-  <section class="panel">
-    <div class="panel-head"><div><div class="panel-kicker">${L('Evidencia', 'Evidence')}</div><h2>${L('Por que este veredicto', 'Why this verdict')}</h2></div></div>
+  <section class="panel panel-evidence">
+    <div class="panel-head"><div><div class="panel-kicker">${L('Detalle', 'Detail')}</div><h2>${L('Hallazgos del motor', 'Engine findings')}</h2></div></div>
     <ul class="findings">
-      ${v.findings.map((f) => `<li class="finding f-${f.severity}">
+      ${v.findings.map((f) => `<li class="finding f-${f.severity === 'critical' ? 'block' : f.severity}">
         <div class="finding-mark" aria-hidden="true"></div>
-        <div><strong>${esc(f.title)}</strong><p>${esc(f.detail)}</p></div>
+        <div><strong>${esc(f.title)}</strong><p>${rich(f.detail)}</p></div>
       </li>`).join('')}
     </ul>
   </section>
@@ -831,6 +1034,188 @@ function renderVerdict(a) {
       )}</p>
     </section>
   </div>`;
+}
+
+function samplingLabel(sampling) {
+  return {
+    grid: L('rejilla completa', 'full grid'),
+    partial: L('cobertura parcial', 'partial coverage'),
+    sparse: L('muestreo disperso / genético', 'sparse / genetic sampling'),
+  }[sampling] || sampling;
+}
+
+function renderOutcomeBanner(a) {
+  const outcome = outcomeFromAnalysis(a);
+  if (outcome.code === CODE.ANALYSIS_SUCCESS) return '';
+  const copy = errorCopy(outcome.code, L);
+  const cls = {
+    [CODE.NO_QUALIFYING_CONFIGS]: 'outcome-no-qualifying',
+    [CODE.INSUFFICIENT_DATA]: 'outcome-insufficient',
+    [CODE.NO_PLATEAU]: 'outcome-no-plateau',
+  }[outcome.code] || 'outcome-other';
+  return `<section class="outcome-banner ${cls}" role="status">
+    <strong>${esc(copy.title)}</strong>
+    <p>${esc(copy.hint)}</p>
+  </section>`;
+}
+
+function renderEvidenceSheet(a, best) {
+  const hasF = a.meta.hasForward;
+  const cov = a.meta.coverage;
+  const covTxt = Number.isFinite(cov)
+    ? `${nf(cov >= 0.1 ? 1 : 4).format(cov * 100)} % · ${samplingLabel(a.meta.sampling)}`
+    : '—';
+  const nb = best && best.neighborhood;
+  let neighborsVal = '—';
+  let neighborsNote = L('Sin meseta seleccionada', 'No plateau selected');
+  if (nb) {
+    neighborsVal = `${int(nb.passing)} / ${int(nb.observed)}`;
+    const bits = [
+      L(`${int(nb.passing)} pasan mínimos`, `${int(nb.passing)} pass minima`),
+      L(`${int(nb.failing)} fallan`, `${int(nb.failing)} fail`),
+    ];
+    if (nb.slotsComplete && Number.isFinite(nb.gaps)) {
+      bits.push(L(`${int(nb.gaps)} huecos no observados (de ${int(nb.slots)})`, `${int(nb.gaps)} unobserved gaps (of ${int(nb.slots)})`));
+    } else {
+      bits.push(L('huecos no estimables en este muestreo', 'gaps not estimable for this sampling'));
+    }
+    neighborsNote = bits.join(' · ');
+  }
+
+  const retentionVal = best && Number.isFinite(best.medianRetention)
+    ? pct(best.medianRetention, 0)
+    : (best && hasF && Number.isFinite(best.record.retention) ? pct(best.record.retention, 0) : '—');
+  const retentionNote = hasF
+    ? L('Retención de calidad en el forward (participó en la selección)', 'Quality retention on forward (took part in selection)')
+    : L('Sin archivo forward', 'No forward file');
+
+  const boundaryVal = best
+    ? (best.boundary.length
+      ? L(`Sí · ${best.boundary.map((b) => b.name).join(', ')}`, `Yes · ${best.boundary.map((b) => b.name).join(', ')}`)
+      : L('No', 'No'))
+    : '—';
+  const boundaryNote = L(
+    'Si toca el borde, la meseta podría continuar fuera del rango que optimizaste.',
+    'If it touches the edge, the plateau may continue outside the range you optimized.',
+  );
+
+  const holdoutDone = Boolean(state.unseen && state.unseen.result);
+  const holdoutVal = holdoutDone
+    ? L('Comprobado', 'Checked')
+    : L('No aportado', 'Not supplied');
+  const holdoutNote = holdoutDone
+    ? L('Hay un periodo holdout independiente en esta sesión.', 'An independent holdout period is present in this session.')
+    : L('Validación independiente: aún no has cargado un periodo no visto.', 'Independent validation: you have not loaded an unseen period yet.');
+
+  const plateauVal = best
+    ? L(`Encontrada · M${best.rank} · ${int(best.size)} configs`, `Found · M${best.rank} · ${int(best.size)} configs`)
+    : L('No encontrada', 'Not found');
+
+  const rows = [
+    [L('Meseta', 'Plateau'), plateauVal, L('Región conexa con soporte local, no un pico aislado.', 'Connected region with local support, not an isolated peak.')],
+    [L('Cobertura de la optimización', 'Optimization coverage'), covTxt, L(
+      'Fracción del espacio teórico de parámetros que aparece en tus archivos. En muestreo genético una meseta es menos fiable.',
+      'Fraction of the theoretical parameter space present in your files. Under genetic sampling a plateau is less reliable.',
+    )],
+    [L('Vecinas (pasan / observadas)', 'Neighbors (pass / observed)'), neighborsVal, neighborsNote],
+    [L('Retención forward', 'Forward retention'), retentionVal, retentionNote],
+    [L('Toca borde del rango', 'Touches search boundary'), boundaryVal, boundaryNote],
+    [L('Holdout independiente', 'Independent holdout'), holdoutVal, holdoutNote],
+  ];
+
+  return `<section class="panel panel-evidence-sheet" aria-label="${esc(L('Hoja de evidencia', 'Evidence sheet'))}">
+    <div class="panel-head compact">
+      <div>
+        <div class="panel-kicker">${L('Evidencia', 'Evidence')}</div>
+        <h2>${L('Qué demuestran estos datos', 'What these data demonstrate')}</h2>
+      </div>
+    </div>
+    <div class="evidence-sheet">
+      ${rows.map(([label, value, note]) => `<div class="evidence-sheet-row" title="${esc(note)}">
+        <span>${esc(label)}</span>
+        <strong>${esc(value)}</strong>
+        <em>${esc(note)}</em>
+      </div>`).join('')}
+    </div>
+    <p class="chart-note">${L(
+      'Forward forma parte de la selección. Un holdout no visto es la comprobación limpia. Una meseta es estabilidad en tu muestra — no una promesa de beneficio futuro.',
+      'Forward takes part in selection. An unseen holdout is the clean check. A plateau is stability in your sample — not a promise of future profit.',
+    )}</p>
+  </section>`;
+}
+
+function renderWhyGrade(a) {
+  const findings = a.verdict.findings || [];
+  const pros = findings.filter((f) => f.severity === 'ok' || f.severity === 'info').slice(0, 4);
+  const cons = findings.filter((f) => f.severity === 'warn' || f.severity === 'critical').slice(0, 4);
+  if (!pros.length && !cons.length) return '';
+  const col = (title, items, cls) => `<div class="why-col ${cls}">
+    <h3>${esc(title)}</h3>
+    <ul>${items.length
+      ? items.map((f) => `<li><strong>${esc(f.title)}</strong><span>${esc(f.detail)}</span></li>`).join('')
+      : `<li class="why-empty">${L('Nada destacado', 'Nothing notable')}</li>`}
+    </ul>
+  </div>`;
+  return `<section class="panel panel-why">
+    <div class="panel-head compact">
+      <div>
+        <div class="panel-kicker">${L('Lectura', 'Reading')}</div>
+        <h2>${L('Por qué este grado de evidencia', 'Why this evidence grade')}</h2>
+      </div>
+    </div>
+    <div class="why-grid">
+      ${col(L('A favor', 'In favor'), pros, 'why-pros')}
+      ${col(L('En contra / límites', 'Against / limits'), cons, 'why-cons')}
+    </div>
+  </section>`;
+}
+
+function renderStableRanges(a, best) {
+  const sens = a.sensitivity || [];
+  const sensByName = new Map(sens.map((s) => [s.name, s]));
+  const rows = (best.refinement || []).filter((r) => !r.constant && !r.fixed && !r.categorical && r.levels > 1);
+  if (!rows.length) return '';
+  const sensLabel = (name) => {
+    const s = sensByName.get(name);
+    const v = s && Number.isFinite(s.effective) ? s.effective : (s && s.sensitivity);
+    if (!Number.isFinite(v)) return '—';
+    if (v < 0.2) return L('Baja', 'Low');
+    if (v < 0.45) return L('Media', 'Medium');
+    return L('Alta', 'High');
+  };
+  return `<section class="panel panel-ranges">
+    <div class="panel-head compact">
+      <div>
+        <div class="panel-kicker">${L('Rangos estables', 'Stable ranges')}</div>
+        <h2>${L('Cuánto puedes mover cada parámetro', 'How far you can move each parameter')}</h2>
+      </div>
+      <button class="ghost-btn" data-export="refine" data-plateau-index="${best.rank - 1}">${L('.set de refinamiento', 'Refinement .set')}</button>
+    </div>
+    <p class="chart-note">${L(
+      'Centro recomendado = Pass seleccionado. La zona es el rango de refinamiento alrededor de la meseta — no un intervalo de confianza.',
+      'Recommended center = selected Pass. The zone is the refinement range around the plateau — not a confidence interval.',
+    )}</p>
+    <div class="range-table-wrap">
+      <table class="range-table">
+        <thead>
+          <tr>
+            <th>${L('Parámetro', 'Parameter')}</th>
+            <th>${L('Centro', 'Center')}</th>
+            <th>${L('Zona estable', 'Stable zone')}</th>
+            <th>${L('Sensibilidad', 'Sensitivity')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map((r) => `<tr>
+            <td>${esc(r.name)}</td>
+            <td class="mono">${paramValue(r.center)}</td>
+            <td class="mono">${paramValue(r.start)} – ${paramValue(r.stop)}</td>
+            <td>${sensLabel(r.name)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
 }
 
 /**
@@ -864,12 +1249,12 @@ function renderTop3(a) {
     3: L('tres', 'three'),
   };
   const word = WORD[top.length] || String(top.length);
-  // Con una sola meseta no hay consenso que medir: coincidir consigo misma no
-  // demuestra nada, y anunciar "6 de 6" sería enganoso.
   const showConsensus = top.length >= 2;
   const hasF = a.meta.hasForward;
+  const featured = top[0];
+  const alts = top.slice(1);
 
-  const header = top.map((p, i) => {
+  const flagBadges = (p) => {
     const flags = [];
     if (p.invertedRisk && p.invertedRisk.length) {
       flags.push(`<span class="badge warn" title="${esc(L('Se apoya en un valor que el forward castiga', 'It relies on a value the forward punishes'))}">${L('valor castigado', 'punished value')}</span>`);
@@ -877,13 +1262,56 @@ function renderTop3(a) {
     if (p.boundary.length) {
       flags.push(`<span class="badge warn" title="${esc(L('Pegada al borde del rango probado', 'Stuck to the edge of the tested range'))}">${L('borde', 'edge')}</span>`);
     }
-    return `<th class="t3-col ${i === 0 ? 't3-best' : ''}">
+    return flags.join(' ') || `<span class="badge ok">${L('sin avisos', 'no warnings')}</span>`;
+  };
+
+  const featuredCard = `<article class="t3-featured">
+    <div class="t3-featured-head">
+      <div>
+        <div class="t3-rank">${L('Recomendada', 'Recommended')}</div>
+        <div class="t3-pass">Pass ${esc(featured.record.id)}</div>
+        <div class="t3-flags">${flagBadges(featured)}</div>
+      </div>
+      <div class="t3-score">${num(featured.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
+    </div>
+    <div class="t3-featured-metrics">
+      <div><span>${L('Meseta', 'Plateau')}</span><strong>M${featured.rank} · ${int(featured.size)}</strong></div>
+      <div><span>${L('Pasan / observadas', 'Pass / observed')}</span><strong>${featured.neighborhood
+        ? `${int(featured.neighborhood.passing)} / ${int(featured.neighborhood.observed)}`
+        : `${int(featured.stability.support)}`}</strong></div>
+      <div><span>${L('Calidad IS', 'IS quality')}</span><strong>${num(featured.record.qualityIs, 2)}</strong></div>
+      ${hasF ? `<div><span>${L('Calidad FW', 'FW quality')}</span><strong>${num(featured.record.qualityOos, 2)}</strong></div>` : ''}
+    </div>
+    <div class="t3-param-chips">
+      ${names.map((n, j) => `<span class="${agree[j] && showConsensus ? 't3-chip-agree' : ''}">${esc(n)} <b>${paramValue(featured.record.params[j])}</b></span>`).join('')}
+    </div>
+    <div class="t3-featured-actions">
+      <button class="primary-btn t3-btn-inline" data-export="set" data-plateau-index="${featured.rank - 1}">${L('Descargar .set', 'Download .set')}</button>
+      <button class="ghost-btn t3-btn-inline" data-copy="${featured.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
+      <button class="text-btn t3-btn-inline" data-plateau="${featured.rank - 1}">${L('Ver detalle →', 'View detail →')}</button>
+    </div>
+  </article>`;
+
+  const altCards = alts.length
+    ? `<div class="t3-alts">
+        ${alts.map((p, i) => `<article class="t3-alt">
+          <div class="t3-rank">${L(`Alternativa ${i + 1}`, `Alternative ${i + 1}`)}</div>
+          <div class="t3-pass">Pass ${esc(p.record.id)}</div>
+          <div class="t3-score t3-score-sm">${num(p.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
+          <div class="t3-flags">${flagBadges(p)}</div>
+          <p class="t3-alt-meta">M${p.rank} · ${int(p.size)} ${L('configs', 'configs')} · ${int(p.stability.support)} ${L('vecinas', 'neighbors')}</p>
+          <div class="t3-alt-actions">
+            <button class="ghost-btn t3-btn-inline" data-export="set" data-plateau-index="${p.rank - 1}">.set</button>
+            <button class="text-btn t3-btn-inline" data-plateau="${p.rank - 1}">${L('Detalle →', 'Detail →')}</button>
+          </div>
+        </article>`).join('')}
+      </div>`
+    : '';
+
+  const header = top.map((p, i) => `<th class="t3-col ${i === 0 ? 't3-best' : ''}">
       <div class="t3-rank">${i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`)}</div>
       <div class="t3-pass">Pass ${esc(p.record.id)}</div>
-      <div class="t3-score">${num(p.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
-      <div class="t3-flags">${flags.join(' ') || `<span class="badge ok">${L('sin avisos', 'no warnings')}</span>`}</div>
-    </th>`;
-  }).join('');
+    </th>`).join('');
 
   const metricRow = (label, fn, cls = '') => `<tr class="${cls}">
     <th class="t3-label">${esc(label)}</th>
@@ -895,7 +1323,7 @@ function renderTop3(a) {
     ${top.map((p, i) => `<td class="t3-col t3-value ${i === 0 ? 't3-best' : ''}">${paramValue(p.record.params[j])}</td>`).join('')}
   </tr>`).join('');
 
-  return `<section class="panel t3-panel">
+  return `<section class="panel t3-panel panel-recommend">
     <div class="panel-head">
       <div>
         <div class="panel-kicker">${L('Decisión', 'Decision')}</div>
@@ -919,21 +1347,21 @@ function renderTop3(a) {
            that performs most. With a single plateau there is no cross-region consensus to contrast.`,
         )
         : L(
-          `Cada columna sale de una meseta distinta y se elige por criterio maximin: es la configuración
-           cuyo <em>peor</em> vecino es el mejor posible, no la que más rinde. Las filas marcadas con
-           <span class="t3-tick">✓</span> son valores en los que coinciden las ${word}; eso los
-           convierte en la conclusión más solida del analisis. Donde discrepan, ese parámetro no decide
-           el resultado: eligelo por criterio operativo y deja de afinarlo.`,
-          `Each column comes from a different plateau and is chosen by maximin: the configuration
-           whose <em>worst</em> neighbor is the best possible, not the one that performs most. Rows marked with
-           <span class="t3-tick">✓</span> are values where the ${word} agree; that makes them
-           the most solid conclusion of the analysis. Where they disagree, that parameter does not decide
-           the result: pick it by operational criteria and stop fine-tuning it.`,
+          `La recomendada es la meseta más sólida por criterio maximin. Las alternativas son otras
+           regiones estables independientes: útiles si la recomendada choca con un criterio operativo.
+           Las filas con <span class="t3-tick">✓</span> son el consenso más sólido del análisis.`,
+          `The recommended pick is the strongest plateau by maximin. Alternatives are other
+           independent stable regions — useful if the recommended one conflicts with an operational constraint.
+           Rows with <span class="t3-tick">✓</span> are the most solid consensus in the analysis.`,
         )}
     </p>
-    <div class="table-wrap">
+    <div class="t3-podium">
+      ${featuredCard}
+      ${altCards}
+    </div>
+    ${showConsensus || top.length > 1 ? `<div class="table-wrap t3-compare-wrap">
       <table class="t3-table">
-        <thead><tr><th class="t3-label"></th>${header}</tr></thead>
+        <thead><tr><th class="t3-label">${L('Comparación', 'Comparison')}</th>${header}</tr></thead>
         <tbody>
           ${metricRow(L('Meseta', 'Plateau'), (p) => `M${p.rank} · ${int(p.size)} ${L('configs', 'configs')}${p.coreSize ? ` (${L('nucleo', 'core')} ${int(p.coreSize)})` : ''}`)}
           ${metricRow(L('Calidad in-sample', 'In-sample quality'), (p) => `${num(p.record.qualityIs, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityIs))}</em>`)}
@@ -944,18 +1372,8 @@ function renderTop3(a) {
           <tr class="t3-params-head"><th class="t3-label" colspan="${top.length + 1}">${L('Parámetros de entrada', 'Input parameters')}</th></tr>
           ${paramRows}
         </tbody>
-        <tfoot>
-          <tr>
-            <th class="t3-label"></th>
-            ${top.map((p, i) => `<td class="t3-col ${i === 0 ? 't3-best' : ''}">
-              <button class="ghost-btn t3-btn" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>
-              <button class="ghost-btn t3-btn" data-copy="${p.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
-              <button class="text-btn t3-btn" data-plateau="${p.rank - 1}">${L('Ver detalle →', 'View detail →')}</button>
-            </td>`).join('')}
-          </tr>
-        </tfoot>
       </table>
-    </div>
+    </div>` : ''}
   </section>`;
 }
 
@@ -976,9 +1394,14 @@ function renderRepCard(a, p) {
     <div class="evidence-list">
       <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(r.qualityIs, 2)} <em>${esc(qualityLabel(r.qualityIs))}</em></strong></div>
       ${hasF ? `<div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${num(r.qualityOos, 2)} <em>${esc(qualityLabel(r.qualityOos))}</em></strong></div>` : ''}
-      <div><span>${L('Vecinas observadas', 'Observed neighbors')}</span><strong>${int(p.stability.support)}</strong></div>
+      <div><span>${L('Vecinas observadas', 'Observed neighbors')}</span><strong>${p.neighborhood ? int(p.neighborhood.observed) : int(p.stability.support)}</strong></div>
+      <div><span>${L('Pasan mínimos / fallan', 'Pass minima / fail')}</span><strong>${p.neighborhood
+        ? `${int(p.neighborhood.passing)} / ${int(p.neighborhood.failing)}`
+        : pct(p.stability.fracPass, 0)}</strong></div>
+      ${p.neighborhood && p.neighborhood.slotsComplete
+        ? `<div><span>${L('Huecos no observados', 'Unobserved gaps')}</span><strong>${int(p.neighborhood.gaps)} <em>${L('de', 'of')} ${int(p.neighborhood.slots)}</em></strong></div>`
+        : ''}
       <div><span>${L('Suelo de su entorno (Q25)', 'Neighborhood floor (Q25)')}</span><strong>${num(p.stability.q25, 2)}</strong></div>
-      <div><span>${L('Vecinas que pasan mínimos', 'Neighbors that pass minima')}</span><strong>${pct(p.stability.fracPass, 0)}</strong></div>
       ${hasF ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}% / ${int(r.oos.trades)}</strong></div>` : ''}
       <div><span>${L('In-sample · PF / DD / ops', 'In-sample · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}% / ${int(r.is.trades)}</strong></div>
     </div>
@@ -2108,10 +2531,25 @@ function loadDemo() {
   state.isDemo = true;
   state.isFile = { name: demo.isTable.name };
   state.oosFile = { name: demo.oosTable.name };
+  const summarizeTable = (table) => {
+    const metrics = metricColumns(table);
+    const inferred = inferParamsSingle(table);
+    return {
+      ok: true,
+      name: table.name,
+      rows: table.rows.length,
+      cols: table.headers.length,
+      params: inferred.params.length,
+      metrics: Object.keys(metrics).length,
+      format: table.format || 'demo',
+    };
+  };
+  state.preflight = { is: summarizeTable(demo.isTable), oos: summarizeTable(demo.oosTable) };
   $('#isStatus').textContent = t('demo.loaded');
   $('#oosStatus').textContent = t('demo.loaded');
   $('#isDrop').classList.add('ready');
   $('#oosDrop').classList.add('ready');
+  renderPreflight();
   refreshAnalyzeButton();
   runAudit();
 }

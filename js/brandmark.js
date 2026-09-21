@@ -153,7 +153,7 @@ export function mountBrandMark(canvas) {
     last = 0;
     raf = requestAnimationFrame(frame);
   };
-  const host = canvas.closest('button') || canvas;
+  const host = canvas.closest('button, a') || canvas;
   host.addEventListener('pointerenter', () => { hover = true; wake(); });
   host.addEventListener('pointerleave', () => { hover = false; wake(); });
   host.addEventListener('focus', () => { hover = true; wake(); });

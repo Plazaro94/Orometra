@@ -534,6 +534,27 @@ export function buildNeighborhood(coords, activeDims, { dense, blockDims = [], o
 }
 
 /**
+ * Cuantas casillas de la bola de Manhattan caben DENTRO de la malla optimizada
+ * (sin contar el propio punto). Sirve para separar "vecino no observado" de
+ * "vecino observado que falla". Solo es fiable cuando la bola de offsets esta completa.
+ */
+export function countPossibleNeighbors(coord, activeDims, levels, radius, maxOffsets = Infinity) {
+  if (!activeDims.length || !(radius > 0)) return { slots: 0, complete: true };
+  const { offsets, complete } = buildOffsets(activeDims.length, radius, maxOffsets);
+  let slots = 0;
+  for (const off of offsets) {
+    let ok = true;
+    for (let d = 0; d < activeDims.length; d++) {
+      const j = activeDims[d];
+      const z = coord[j] + off[d];
+      if (z < 0 || z >= levels[j].length) { ok = false; break; }
+    }
+    if (ok) slots++;
+  }
+  return { slots, complete };
+}
+
+/**
  * Regularidad de la rejilla de cada parametro numerico.
  *
  * El motor trabaja con POSICIONES ordinales: el nivel 3 esta "a un paso" del 4 sea cual
@@ -644,7 +665,10 @@ export function localStability(neighbors, scores, passes, globalScale) {
       if (passes[k]) passCount++;
     }
     if (!vals.length) {
-      out[i] = { support: nb.length, fracPass: NaN, q25: NaN, q10: NaN, medianNb: NaN, worst: NaN, cliff: NaN, peakZ: NaN };
+      out[i] = {
+        support: nb.length, passCount: 0, failCount: nb.length,
+        fracPass: NaN, q25: NaN, q10: NaN, medianNb: NaN, worst: NaN, cliff: NaN, peakZ: NaN,
+      };
       continue;
     }
     const sorted = sortedCopy(vals);
@@ -653,6 +677,8 @@ export function localStability(neighbors, scores, passes, globalScale) {
     const own = scores[i];
     out[i] = {
       support: nb.length,
+      passCount,
+      failCount: nb.length - passCount,
       fracPass: nb.length ? passCount / nb.length : NaN,
       q25: quantileSorted(sorted, 0.25),
       q10: quantileSorted(sorted, 0.1),
