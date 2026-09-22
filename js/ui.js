@@ -1465,7 +1465,7 @@ function renderTop3(a) {
           <div class="t3-pass">Pass ${esc(p.record.id)}</div>
           <div class="t3-score t3-score-sm">${num(p.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
           <div class="t3-flags">${flagBadges(p)}</div>
-          <p class="t3-alt-meta">M${p.rank} · ${int(p.size)} ${L('configs', 'configs')} · ${int(p.stability.support)} ${L('vecinas', 'neighbors')}</p>
+          <p class="t3-alt-meta">M${p.rank} · ${int(p.size)} ${L('configs', 'configs')} · ${int(p.stability.support)} ${L('vecinos', 'neighbors')}</p>
           <div class="t3-alt-actions">
             <button class="ghost-btn t3-btn-inline" data-export="set" data-plateau-index="${p.rank - 1}">.set</button>
             <button class="text-btn t3-btn-inline" data-plateau="${p.rank - 1}">${L('Detalle →', 'Detail →')}</button>
@@ -1696,11 +1696,11 @@ function renderParams(a) {
       <div class="detail-kicker">${L('04 / Parámetros', '04 / Parameters')}</div>
       <h2>${L('Que parámetros mandan de verdad', 'Which parameters really matter')}</h2>
       <p>${L(
-        'La sensibilidad mide cuánto se mueve la calidad al recorrer los valores de un parametro. Los numericos que influyen <strong>miden la distancia</strong>. Los booleanos y las enumeraciones <strong>parten el espacio</strong>: dos configuraciones solo son vecinas si coinciden en ellos, porque activar o no un filtro no es un paso pequeño sino otra estrategia. Solo se ignora lo demostrablemente plano.',
+        'La sensibilidad mide cuánto se mueve la calidad al recorrer los valores de un parámetro. Los numéricos que influyen <strong>miden la distancia</strong>. Los booleanos y las enumeraciones <strong>parten el espacio</strong>: dos configuraciones solo son vecinas si coinciden en ellos, porque activar o no un filtro no es un paso pequeño sino otra estrategia. Solo se ignora lo demostrablemente plano.',
         'Sensitivity measures how much quality moves as you walk a parameter\'s values. Influential numerics <strong>measure distance</strong>. Booleans and enums <strong>partition the space</strong>: two configurations are neighbors only if they match on them, because enabling a filter is not a small step — it is another strategy. Only demonstrably flat axes are ignored.',
       )}</p>
       ${a.meta.releasedBlockNames && a.meta.releasedBlockNames.length ? `<div class="inline-warn">${L(
-        `Para conseguir vecinas suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, el menos influyente. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
+        `Para conseguir vecinos suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, el menos influyente. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
         `To get enough neighbors, partitioning was released on ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, the least influential. Configurations that differ only on ${a.meta.releasedBlockNames.length > 1 ? 'those parameters' : 'that parameter'} are treated as neighbors.`,
       )}</div>` : ''}
     </div>
@@ -1712,7 +1712,7 @@ function renderParams(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Aviso', 'Warning')}</div><h2>${L('Parámetros invertidos entre periodos', 'Parameters inverted across periods')}</h2></div>
         <span class="status-pill warn-pill">${int(a.inversions.length)} ${L('detectados', 'detected')}</span></div>
       <p class="panel-intro">${L(
-        'En estos parámetros, el valor que gana en el in-sample <strong>es de los que pierden en el forward</strong>. Es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al reves. Afinarlos sobre el in-sample es tiempo perdido; dejalos en un valor central y decide con los que si son coherentes entre periodos.',
+        'En estos parámetros, el valor que gana en el in-sample <strong>es de los que pierden en el forward</strong>. Es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al revés. Afinarlos sobre el in-sample es tiempo perdido; déjalos en un valor central y decide con los que sí son coherentes entre periodos.',
         'On these parameters, the value that wins in-sample <strong>is among those that lose on forward</strong>. That is the mechanical reason the ranking fails to transfer: the signal is not missing — it points the wrong way. Fine-tuning them on in-sample is wasted time; leave them at a central value and decide with the ones that are coherent across periods.',
       )}</p>
       <div class="table-wrap"><table>
@@ -1894,7 +1894,7 @@ function renderDiagnostics(a) {
         terminal esa cifra viniese anualizada, el umbral real sería más alto que el mostrado. Por eso
         <strong>suspender esta prueba es una señal fuerte, pero aprobarla no demuestra nada por si solo</strong>.
         El umbral con pruebas efectivas cuenta regiones distintas del espacio en lugar de configuraciones,
-        porque dos vecinas no son dos pruebas independientes.`,
+        porque dos vecinos no son dos pruebas independientes.`,
           `<strong>How to read the Sharpe contrast.</strong> The null hypothesis is that no configuration
         has an edge: then each observed Sharpe would be noise around zero, and the best of N trials
         would come out positive on its own. The typical error is computed from each configuration's
@@ -2052,7 +2052,7 @@ function renderSensitivityPanel(a) {
       <strong>Combinado</strong> deja fijos todos los demás parámetros y mide el recorrido a lo largo de este.
       Un parámetro cuyo efecto se invierte según otro sale plano en la primera medida y no en la segunda;
       por eso manda <strong>la mayor de las dos</strong>. Descartar un eje que sí influye haría pasar por
-      vecinas a configuraciones que no lo son, e inflaría las mesetas hasta fabricar una donde no hay ninguna.`,
+      vecinos a configuraciones que no lo son, e inflaría las mesetas hasta fabricar una donde no hay ninguna.`,
         `<strong>Isolated</strong> groups by the parameter value and averages over everything else.
       <strong>Combined</strong> holds all other parameters fixed and measures the range along this one.
       A parameter whose effect reverses depending on another looks flat on the first measure and not on the second;
@@ -2527,10 +2527,10 @@ function renderMethod() {
       L('Cada parámetro se convierte a su posicion entre los valores que probaste. Así un salto de 30 a 50 y otro de 0,1 a 0,2 son ambos un paso. El radio se amplia solo lo justo para conseguir soporte suficiente, y se informa del radio usado. Si tu rejilla tiene saltos desiguales -por ejemplo 10, 20, 30, 100, 500- la aplicación lo detecta y lo avisa, porque ahi esa equivalencia deja de ser inocente.',
         'Each parameter is converted to its position among the values you tested. So a jump from 30 to 50 and one from 0.1 to 0.2 are both one step. The radius expands just enough to get sufficient support, and the radius used is reported. If your grid has uneven steps — for example 10, 20, 30, 100, 500 — the app detects and warns, because there that equivalence stops being innocent.')],
     ['07', L('Un parámetro puede parecer plano y no serlo', 'A parameter can look flat and not be'),
-      L('La influencia se mide de dos formas. Aislada: se agrupa por el valor del parámetro y se promedia sobre todo lo demás. Combinada: se deja fijo todo lo demás y se mide el recorrido a lo largo de ese eje. Manda la MAYOR de las dos, y la razón es concreta: un parámetro cuyo efecto se invierte según otro -un filtro de regimen, por ejemplo- sale exactamente plano en la primera medida. Descartarlo haría pasar por vecinas a configuraciones que no lo son, inflaría el soporte y fabricaría una meseta donde no hay ninguna.',
+      L('La influencia se mide de dos formas. Aislada: se agrupa por el valor del parámetro y se promedia sobre todo lo demás. Combinada: se deja fijo todo lo demás y se mide el recorrido a lo largo de ese eje. Manda la MAYOR de las dos, y la razón es concreta: un parámetro cuyo efecto se invierte según otro -un filtro de régimen, por ejemplo- sale exactamente plano en la primera medida. Descartarlo haría pasar por vecinos a configuraciones que no lo son, inflaría el soporte y fabricaría una meseta donde no hay ninguna.',
         'Influence is measured two ways. Isolated: group by the parameter value and average over everything else. Combined: hold everything else fixed and measure the range along that axis. The LARGER of the two wins, for a concrete reason: a parameter whose effect reverses depending on another — a regime filter, for example — looks exactly flat on the first measure. Dropping it would treat non-neighbors as neighbors, inflate support and invent a plateau where none exists.')],
     ['08', L('Meseta y nucleo', 'Plateau and core'),
-      L('Pertenecer a una meseta exige que el cuartil bajo del entorno mantenga calidad buena, que casi todas las vecinas pasen los mínimos y que la robustez supere el umbral. El nucleo es la parte donde incluso el entorno es excelente, y de ahi sale la recomendacion.',
+      L('Pertenecer a una meseta exige que el cuartil bajo del entorno mantenga calidad buena, que casi todos los vecinos pasen los mínimos y que la robustez supere el umbral. El núcleo es la parte donde incluso el entorno es excelente, y de ahí sale la recomendación.',
         'Belonging to a plateau requires that the lower quartile of the neighborhood keeps good quality, that almost all neighbors pass the minima, and that robustness clears the threshold. The core is the part where even the neighborhood is excellent, and that is where the recommendation comes from.')],
     ['09', L('Se elige el centro, no la cima', 'The center is chosen, not the peak'),
       L('El representante se escoge por criterio maximin: es la configuración cuyo PEOR vecino es el mejor posible. La cima de una meseta suele estar en su borde y es justo la que peor envejece.',

@@ -43,12 +43,12 @@ export function buildVerdict(ctx) {
 
   // ---- Bloqueantes
   if (!gatePassCount) {
-    add(SEV.CRITICAL, L('Ninguna configuración pasa las puertas minimas', 'No configuration passes the minimum gates'),
-      L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple a la vez los mínimos en IS y en OOS. No hay nada que seleccionar: el problema no es la eleccion, es la estrategia.`,
+    add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration passes the minimum gates'),
+      L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple a la vez los mínimos en IS y en OOS. No hay nada que seleccionar: el problema no es la elección, es la estrategia.`,
         `Of ${total.toLocaleString(localeTag())} configurations, none meet the minima in both IS and OOS at once. There is nothing to select: the problem is not the choice, it is the strategy.`));
   } else if (gatePassCount / total < 0.02) {
     add(SEV.CRITICAL, L('Solo un resquicio del espacio sobrevive', 'Only a sliver of the space survives'),
-      L(`Apenas ${gatePassCount} de ${total.toLocaleString(localeTag())} configuraciones (${(100 * gatePassCount / total).toFixed(1)}%) pasan las puertas. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
+      L(`Apenas ${gatePassCount} de ${total.toLocaleString(localeTag())} configuraciones (${(100 * gatePassCount / total).toFixed(1)}%) pasan los mínimos. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
         `Barely ${gatePassCount} of ${total.toLocaleString(localeTag())} configurations (${(100 * gatePassCount / total).toFixed(1)}%) pass the gates. A strategy that only works at one specific point in parameter space is almost always an optimizer artifact.`));
   }
 
@@ -63,7 +63,7 @@ export function buildVerdict(ctx) {
     const periodoEn = d.basedOn === 'forward' ? 'the forward' : 'the in-sample';
     const tradesN = Math.round(d.basedOn === 'forward' ? d.tradesOos : d.tradesIs).toLocaleString(localeTag());
     const extraEs = Number.isFinite(d.trialsPerTrade) && d.trialsPerTrade > 1
-      ? ` Ademas has probado ${d.trialsPerTrade.toFixed(1)} configuraciones por cada operacion disponible para distinguirlas: hay mas alternativas que datos con los que separarlas.`
+      ? ` Además has probado ${d.trialsPerTrade.toFixed(1)} configuraciones por cada operación disponible para distinguirlas: hay más alternativas que datos con los que separarlas.`
       : '';
     const extraEn = Number.isFinite(d.trialsPerTrade) && d.trialsPerTrade > 1
       ? ` You have also tried ${d.trialsPerTrade.toFixed(1)} configurations for each trade available to tell them apart: there are more alternatives than data to separate them.`
@@ -86,7 +86,7 @@ export function buildVerdict(ctx) {
   if (!plateaus.length && underpowered) {
     // No es lo mismo "no hay meseta" que "no hay datos para saberlo".
     add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to pronounce on'),
-      L(`Solo ${gatePassCount} configuraciones superan los mínimos, y para que pudiera existir una meseta harían falta al menos ${viableNeededForPlateau}: una región estable necesita configuraciones con vecinas que también cumplan, es decir, necesita interior. Esto NO dice que tu EA sea malo; dice que con estos datos no se puede afirmar nada en ninguna direccion. Amplia el rango de los parámetros, anade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
+      L(`Solo ${gatePassCount} configuraciones superan los mínimos, y para que pudiera existir una meseta harían falta al menos ${viableNeededForPlateau}: una región estable necesita configuraciones con vecinos que también cumplan, es decir, necesita interior. Importante: esto no dice que tu EA sea malo; dice que con estos datos no se puede afirmar nada en ninguna dirección. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
         `Only ${gatePassCount} configurations clear the minima, and for a plateau to exist you would need at least ${viableNeededForPlateau}: a stable region needs configurations whose neighbors also pass, that is, it needs interior. This does NOT say your EA is bad; it says that with these data nothing can be asserted in either direction. Widen the parameter ranges, add intermediate values or relax the minima, and optimize again.`));
   } else if (!plateaus.length) {
     add(SEV.CRITICAL, L('No se ha encontrado ninguna meseta', 'No plateau was found'),
@@ -111,7 +111,7 @@ export function buildVerdict(ctx) {
   const hasRefuge = viableShare >= VIABLE_REFUGE && hasRegion;
   if (Number.isFinite(fragility)) {
     if (fragility >= 0.5 && hasRefuge) {
-      add(SEV.WARN, L(`Tu ranking MT5 (Result) esta invertido: falla el ${(100 * fragility).toFixed(0)}%`, `Your MT5 ranking (Result) is inverted: fails ${(100 * fragility).toFixed(0)}%`),
+      add(SEV.WARN, L(`Tu ranking MT5 (Result) está invertido: falla el ${(100 * fragility).toFixed(0)}%`, `Your MT5 ranking (Result) is inverted: fails ${(100 * fragility).toFixed(0)}%`),
         L(`Al quedarte con la mejor fila segun la columna Result de un periodo, cae por debajo de la mediana del otro el ${(100 * fragility).toFixed(0)}% de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quedate con la meseta de abajo.`,
           `When you keep the best row by the Result column of one period, it falls below the median of the other ${(100 * fragility).toFixed(0)}% of the time. That condemns your table order, not the quality region Orometra proposes. Ignore the ranking and keep the plateau below.`));
     } else if (fragility >= 0.5) {
@@ -120,7 +120,7 @@ export function buildVerdict(ctx) {
           `Choosing by the Result column fails ${(100 * fragility).toFixed(0)}% across periods, and there is no broad region to fall back on. Above 50% that ranking is worth less than a coin flip.`));
     } else if (fragility >= 0.3) {
       add(SEV.WARN, L(`Fragilidad del ranking Result: ${(100 * fragility).toFixed(0)}%`, `Result-ranking fragility: ${(100 * fragility).toFixed(0)}%`),
-        L('El orden de Result conserva algo de valor, pero no el suficiente para fiarte de la cima. Selecciona por meseta.',
+        L('El orden de Result conserva algo de valor, pero no el suficiente para fiarte del pico. Selecciona por meseta.',
           'Result order retains some value, but not enough to trust the top. Select by plateau.'));
     } else {
       add(SEV.OK, L(`Fragilidad del ranking Result: ${(100 * fragility).toFixed(0)}%`, `Result-ranking fragility: ${(100 * fragility).toFixed(0)}%`),
@@ -143,17 +143,17 @@ export function buildVerdict(ctx) {
 
   if (selectionMode === 'isThenOos' && hasForward) {
     add(SEV.INFO, L('Mesetas descubiertas in-sample y validadas en forward', 'Plateaus discovered in-sample and validated on forward'),
-      L('El motor busca regiones con calidad y puertas del in-sample; el forward no elige la meseta, la puntúa después. Así el forward no contamina la selección.',
+      L('El motor busca zonas con calidad y mínimos del in-sample; el forward no elige la meseta, la puntúa después. Así el forward no contamina la selección.',
         'The engine finds regions with in-sample quality and gates; forward does not choose the plateau, it scores it afterwards. Forward does not contaminate selection.'));
     const v = bestPlateau && bestPlateau.oosValidation;
     if (v && v.passFrac < 0.5) {
       add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${(100 * v.passFrac).toFixed(0)}% en forward`, `The recommended plateau only holds ${(100 * v.passFrac).toFixed(0)}% on forward`),
-        L('Muchas configs de la región fallan las puertas del forward. Trátala como provisional hasta un holdout limpio.',
+        L('Muchas configs de la región fallan los mínimos del forward. Trátala como provisional hasta un holdout limpio.',
           'Many configs in the region fail forward gates. Treat it as provisional until a clean holdout.'));
     }
   } else if (selectionMode === 'joint' && hasForward) {
     add(SEV.INFO, L('Modo joint: el forward participa en la selección', 'Joint mode: forward takes part in selection'),
-      L('Puertas y score usan min(IS, forward). Las cifras del forward ya están algo contaminadas.',
+      L('Los mínimos y la puntuación usan min(IS, forward). Las cifras del forward ya están algo contaminadas.',
         'Gates and score use min(IS, forward). Forward figures are already somewhat contaminated.'));
   }
 
@@ -167,7 +167,7 @@ export function buildVerdict(ctx) {
     const a = fragilityFolds.isToOos.value;
     const b = fragilityFolds.oosToIs.value;
     add(SEV.WARN, L('Los dos periodos no son intercambiables', 'The two periods are not interchangeable'),
-      L(`Elegir por in-sample y validar en forward falla el ${(100 * a).toFixed(0)} % de las veces; hacerlo al reves, el ${(100 * b).toFixed(0)} %. Esa diferencia de ${(100 * fragilityAsymmetry).toFixed(0)} puntos no la produce una ventaja real, que seria aproximadamente simetrica: la produce que uno de los dos tramos es mas facil o responde a otro regimen de mercado. Cualquier conclusion que saques depende de cual te toco de cual, asi que el periodo no visto deja de ser recomendable y pasa a ser imprescindible.`,
+      L(`Elegir por in-sample y validar en forward falla el ${(100 * a).toFixed(0)} % de las veces; hacerlo al revés, el ${(100 * b).toFixed(0)} %. Esa diferencia de ${(100 * fragilityAsymmetry).toFixed(0)} puntos no la produce una ventaja real, que sería aproximadamente simétrica: la produce que uno de los dos tramos es mas facil o responde a otro regimen de mercado. Cualquier conclusion que saques depende de cuál te tocó de cuál, así que el periodo no visto deja de ser recomendable y pasa a ser imprescindible.`,
         `Choosing by in-sample and validating on forward fails ${(100 * a).toFixed(0)}% of the time; doing it the other way, ${(100 * b).toFixed(0)}%. That ${(100 * fragilityAsymmetry).toFixed(0)}-point gap is not produced by a real edge, which would be roughly symmetric: it is produced by one of the two stretches being easier or responding to another market regime. Any conclusion you draw depends on which period fell where, so the unseen period stops being optional and becomes essential.`));
   }
 
@@ -284,7 +284,7 @@ export function buildVerdict(ctx) {
   // ---- Avisos metodologicos
   if (!hasForward) {
     add(SEV.CRITICAL, L('Sin periodo forward no hay validacion posible', 'Without a forward period there is no possible validation'),
-      L('Solo has subido el in-sample, asi que todo lo que ves esta medido sobre los mismos datos con los que se eligieron los parametros. Las mesetas son reales como estructura, pero nadie ha comprobado que sobrevivan fuera. Repite la optimizacion en MT5 con la opcion Forward activada: es la diferencia entre describir el pasado y predecir algo.',
+      L('Solo has subido el in-sample, así que todo lo que ves está medido sobre los mismos datos con los que se eligieron los parámetros. Las mesetas son reales como estructura, pero nadie ha comprobado que sobrevivan fuera. Repite la optimización en MT5 con la opción Forward activada: es la diferencia entre describir el pasado y predecir algo.',
         'You only uploaded the in-sample, so everything you see is measured on the same data used to choose the parameters. The plateaus are real as structure, but nobody has checked that they survive outside. Repeat the optimization in MT5 with Forward enabled: that is the difference between describing the past and predicting something.'));
   }
 
@@ -296,7 +296,7 @@ export function buildVerdict(ctx) {
    */
   if (hasForward) {
     add(SEV.INFO, L('Las cifras del forward ya se han usado para elegir', 'Forward figures have already been used for selection'),
-      L('Las puertas mínimas se aplican tambien al forward, y la puntuación de cada configuración es el peor de los dos periodos, así que el forward interviene en la selección. Eso hace que sus números salgan algo mejores de lo que serian sobre datos de verdad no vistos, igual que pasa con el in-sample. No es un defecto del metodo: aprovechar esa información es preferible a tirarla. Pero significa que el ÚNICO número no contaminado que vas a ver es el del periodo no visto, y por eso ese paso no es un extra.',
+      L('Los mínimos se aplican también al forward, y la puntuación de cada configuración es el peor de los dos periodos, así que el forward interviene en la selección. Eso hace que sus números salgan algo mejores de lo que serían sobre datos de verdad no vistos, igual que pasa con el in-sample. No es un defecto del método: aprovechar esa información es preferible a tirarla. Pero significa que el ÚNICO número no contaminado que vas a ver es el del periodo no visto, y por eso ese paso no es un extra.',
         'The minimum gates are also applied to the forward, and each configuration\'s score is the worse of the two periods, so the forward takes part in selection. That makes its numbers come out somewhat better than they would on truly unseen data, just as with the in-sample. That is not a flaw of the method: using that information is preferable to discarding it. But it means the ONLY uncontaminated number you will see is the unseen period\'s, and that is why that step is not optional.'));
   }
 
@@ -304,7 +304,7 @@ export function buildVerdict(ctx) {
     const listEs = rescuedDims.map((d) => `${d.name} (efecto aislado ${d.marginal.toFixed(2)}, combinado ${d.conditional.toFixed(2)})`).join('; ');
     const listEn = rescuedDims.map((d) => `${d.name} (isolated effect ${d.marginal.toFixed(2)}, combined ${d.conditional.toFixed(2)})`).join('; ');
     add(SEV.INFO, L(`${rescuedDims.length} parámetro(s) se han conservado por su efecto combinado`, `${rescuedDims.length} parameter(s) were kept for their combined effect`),
-      L(`${listEs}. Vistos por separado parecen planos, pero al dejar fijo todo lo demás si mueven el resultado: su efecto depende del valor de otros parámetros. Se mantienen en el espacio de búsqueda, porque descartarlos haría pasar por vecinas a configuraciones que no lo son e inflaría las mesetas.`,
+      L(`${listEs}. Vistos por separado parecen planos, pero al dejar fijo todo lo demás si mueven el resultado: su efecto depende del valor de otros parámetros. Se mantienen en el espacio de búsqueda, porque descartarlos haría pasar por vecinos a configuraciones que no lo son e inflaría las mesetas.`,
         `${listEn}. Seen alone they look flat, but with everything else held fixed they do move the result: their effect depends on the value of other parameters. They stay in the search space, because discarding them would treat non-neighbors as neighbors and inflate the plateaus.`));
   }
 
@@ -373,7 +373,7 @@ export function buildVerdict(ctx) {
 
   if (Number.isFinite(medianSupport) && medianSupport < 4) {
     add(SEV.WARN, L(`Soporte local insuficiente (mediana de ${medianSupport.toFixed(0)} vecinos)`, `Insufficient local support (median of ${medianSupport.toFixed(0)} neighbors)`),
-      L('La mayoria de configuraciones tiene muy pocas vecinas observadas. Cualquier afirmacion sobre mesetas es provisional hasta que refines con una rejilla.',
+      L('La mayoría de configuraciones tiene muy pocos vecinos observados. Cualquier afirmación sobre mesetas es provisional hasta que refines con una rejilla.',
         'Most configurations have very few observed neighbors. Any claim about plateaus is provisional until you refine with a grid.'));
   }
 
@@ -388,7 +388,7 @@ export function buildVerdict(ctx) {
           `Read carefully: ${(100 * gatePassCount / total).toFixed(0)}% of configurations meet the minima in both periods, so the strategy does have an edge. What has no value is the ORDER: which one ranks first in-sample does not predict which will rank first on the forward. Choose by a region stable in both periods, never by table rank.`));
     } else if (spearman < 0.1) {
       add(SEV.CRITICAL, L(`Correlación IS -> OOS prácticamente nula (rho = ${spearman.toFixed(2)})`, `IS -> OOS correlation practically null (rho = ${spearman.toFixed(2)})`),
-        L(`Solo el ${(100 * gatePassCount / total).toFixed(0)} % de las configuraciones cumple los mínimos y ademas el comportamiento en entrenamiento no dice nada sobre el de validacion. Es la firma de un sistema sin ventaja real.`,
+        L(`Solo el ${(100 * gatePassCount / total).toFixed(0)} % de las configuraciones cumple los mínimos y además el comportamiento en entrenamiento no dice nada sobre el de validación. Es la firma de un sistema sin ventaja real.`,
           `Only ${(100 * gatePassCount / total).toFixed(0)}% of configurations meet the minima and training behavior says nothing about validation. That is the signature of a system with no real edge.`));
     } else if (spearman < 0.3) {
       add(SEV.WARN, L(`Correlación IS -> OOS debil (rho = ${spearman.toFixed(2)})`, `Weak IS -> OOS correlation (rho = ${spearman.toFixed(2)})`),
@@ -407,7 +407,7 @@ export function buildVerdict(ctx) {
         `${(100 * viableShare).toFixed(0)}% of configurations meet the minima in both periods. Whatever the rest of the diagnosis, the result does not depend on having hit particular values, which is the most useful form of robustness.`));
   } else if (hasForward && hasRefuge) {
     add(SEV.OK, L('Hay una parte amplia del espacio que supera los mínimos', 'A broad part of the space clears the minima'),
-      L(`El ${(100 * viableShare).toFixed(0)} % de las configuraciones los cumple en los dos periodos, y se agrupan en ${plateaus.length} region(es) estables. No dependes de haber acertado un valor concreto: hay de donde elegir.`,
+      L(`El ${(100 * viableShare).toFixed(0)} % de las configuraciones los cumple en los dos periodos, y se agrupan en ${plateaus.length} zona(s) estables. No dependes de haber acertado un valor concreto: hay de donde elegir.`,
         `${(100 * viableShare).toFixed(0)}% of configurations meet them in both periods, and they cluster into ${plateaus.length} stable region(s). You do not depend on having hit a particular value: there is room to choose.`));
   }
 
@@ -415,8 +415,8 @@ export function buildVerdict(ctx) {
     const top = inversions.slice(0, 5);
     const listEs = top.map((x) => `${x.name}: el in-sample prefiere ${x.bestIs}, pero en el forward gana ${x.bestOos} (quedarte con el valor del in-sample tira el ${(100 * x.regretShare).toFixed(0)} % del margen disponible)`).join('; ');
     const listEn = top.map((x) => `${x.name}: in-sample prefers ${x.bestIs}, but on the forward ${x.bestOos} wins (keeping the in-sample value throws away ${(100 * x.regretShare).toFixed(0)}% of the available margin)`).join('; ');
-    add(SEV.WARN, L(`En ${inversions.length} parametro(s), el valor que gana en el in-sample es de los que pierden en el forward`, `In ${inversions.length} parameter(s), the value that wins in-sample is among those that lose on the forward`),
-      L(`${listEs}. Esta es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al reves. El óptimo de esos parámetros depende del regimen de mercado y no de la estrategia, así que afinarlos sobre el in-sample es tiempo perdido. Dejalos en un valor central y decide con los que si son coherentes entre periodos.`,
+    add(SEV.WARN, L(`En ${inversions.length} parámetro(s), el valor que gana en el in-sample es de los que pierden en el forward`, `In ${inversions.length} parameter(s), the value that wins in-sample is among those that lose on the forward`),
+      L(`${listEs}. Esta es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al revés. El óptimo de esos parámetros depende del régimen de mercado y no de la estrategia, así que afinarlos sobre el in-sample es tiempo perdido. Déjalos en un valor central y decide con los que sí son coherentes entre periodos.`,
         `${listEn}. This is the mechanical cause of the ranking not transferring: signal is not missing, it points the wrong way. The optimum of those parameters depends on market regime, not on the strategy, so tuning them on the in-sample is wasted time. Leave them at a central value and decide with those that are coherent across periods.`));
   }
 
@@ -425,14 +425,14 @@ export function buildVerdict(ctx) {
     if (Number.isFinite(medianQualityOos) && Number.isFinite(medianQualityIs)
       && medianQualityOos > medianQualityIs + 0.05 && passOosPct > passIsPct + 0.05) {
       add(SEV.WARN, L('El periodo forward fue más benigno que el in-sample', 'The forward period was more benign than the in-sample'),
-        L(`Calidad mediana ${medianQualityOos.toFixed(2)} en el forward frente a ${medianQualityIs.toFixed(2)} en el in-sample, y pasan los mínimos el ${(100 * passOosPct).toFixed(0)} % frente al ${(100 * passIsPct).toFixed(0)} %. Que casi todo funcione fuera de muestra puede deberse tanto a la solidez de la estrategia como a que le toco un tramo facil. No tomes el forward como prueba de fuego mientras no lo repitas en un tramo distinto.`,
+        L(`Calidad mediana ${medianQualityOos.toFixed(2)} en el forward frente a ${medianQualityIs.toFixed(2)} en el in-sample, y pasan los mínimos el ${(100 * passOosPct).toFixed(0)} % frente al ${(100 * passIsPct).toFixed(0)} %. Que casi todo funcione fuera de muestra puede deberse tanto a la solidez de la estrategia como a que le tocó un tramo fácil. No tomes el forward como prueba de fuego mientras no lo repitas en un tramo distinto.`,
           `Median quality ${medianQualityOos.toFixed(2)} on the forward versus ${medianQualityIs.toFixed(2)} in-sample, and ${(100 * passOosPct).toFixed(0)}% pass the minima versus ${(100 * passIsPct).toFixed(0)}%. That almost everything works out of sample may owe as much to the strategy's strength as to an easy stretch. Do not treat the forward as a trial by fire until you repeat it on a different stretch.`));
     }
   }
 
   if (tiedCount > 1) {
     add(SEV.INFO, L(`Las ${tiedCount === 2 ? 'dos' : tiedCount === 3 ? 'tres' : tiedCount} primeras mesetas estan empatadas`, `The first ${tiedCount === 2 ? 'two' : tiedCount === 3 ? 'three' : tiedCount} plateaus are tied`),
-      L(`${tiedRanks.map((r) => 'M' + r).join(', ')} puntuan practicamente igual: la diferencia esta dentro del ruido y el orden en que aparecen no significa que una sea mejor. Comparalas en la tabla del Top y elige por criterio operativo.`,
+      L(`${tiedRanks.map((r) => 'M' + r).join(', ')} puntúan prácticamente igual: la diferencia está dentro del ruido y el orden en que aparecen no significa que una sea mejor. Comparalas en la tabla del Top y elige por criterio operativo.`,
         `${tiedRanks.map((r) => 'M' + r).join(', ')} score practically the same: the difference is within noise and the order they appear does not mean one is better. Compare them in the Top table and choose by operational criteria.`));
   }
 
@@ -444,13 +444,13 @@ export function buildVerdict(ctx) {
       ? ` Plateau ${alternativePlateau.rank} (representative Pass ${alternativePlateau.record.id}) does not have that problem and is the natural alternative.`
       : '';
     add(SEV.WARN, L('La configuración propuesta se apoya en un valor que el forward castiga', 'The proposed configuration leans on a value the forward punishes'),
-      L(`${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: es el valor que gana en el in-sample, pero su nivel es de los peores en el forward. Que esta configuración concreta aguante ahi puede ser merito suyo o puede ser suerte, y no hay forma de distinguirlo con estos datos.${altEs}`,
+      L(`${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: es el valor que gana en el in-sample, pero su nivel es de los peores en el forward. Que esta configuración concreta aguante ahí puede ser mérito suyo o puede ser suerte, y no hay forma de distinguirlo con estos datos.${altEs}`,
         `${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: that is the value that wins in-sample, but its level is among the worst on the forward. That this specific configuration holds there may be its merit or may be luck, and there is no way to tell with these data.${altEn}`));
   }
 
   if (boundaryWorst && boundaryWorst.length) {
-    add(SEV.WARN, L('La configuración recomendada esta pegada al borde del rango probado', 'The recommended configuration sits on the edge of the tested range'),
-      L(`Afecta a: ${boundaryWorst.map((b) => `${b.name} = ${b.atMin ? b.min : b.max}`).join(', ')}. Mas alla de ese valor no has probado nada: la meseta puede continuar o puede caer en picado justo despues. Amplia el rango de esos parámetros y vuelve a optimizar.`,
+    add(SEV.WARN, L('La configuración recomendada está pegada al borde del rango probado', 'The recommended configuration sits on the edge of the tested range'),
+      L(`Afecta a: ${boundaryWorst.map((b) => `${b.name} = ${b.atMin ? b.min : b.max}`).join(', ')}. Más allá de ese valor no has probado nada: la meseta puede continuar o puede caer en picado justo después. Amplía el rango de esos parámetros y vuelve a optimizar.`,
         `Affects: ${boundaryWorst.map((b) => `${b.name} = ${b.atMin ? b.min : b.max}`).join(', ')}. Beyond that value you have tested nothing: the plateau may continue or may drop sharply right after. Widen the range of those parameters and optimize again.`));
   }
 
@@ -521,7 +521,7 @@ export function buildVerdict(ctx) {
   } else {
     level = LEVELS.STRONG;
     headline = L('Evidencia sólida', 'Solid evidence');
-    summary = L(`${regiones === 1 ? 'La región propuesta' : 'Las regiones propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinas que también superan tus mínimos, y el resultado aguanta al mover los umbrales. Es lo máximo que estos datos pueden respaldar.`,
+    summary = L(`${regiones === 1 ? 'La zona propuesta' : 'Las zonas propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinos que también superan tus mínimos, y el resultado aguanta al mover los umbrales. Es lo máximo que estos datos pueden respaldar.`,
       `${regiones === 1 ? 'The proposed region rests' : 'The proposed regions rest'} on neighbors that also clear your minima, and the result holds when thresholds are moved. That is the most these data can support.`);
   }
 
@@ -565,11 +565,11 @@ export function peakRejectReasons(p, opts = {}) {
   }
   if (!p.record.passes) {
     const fails = [...(p.record.failsIs || []), ...(p.record.failsOos || [])].join(', ');
-    reasons.push(L(`no pasa las puertas minimas (${fails})`, `does not clear minimum gates (${fails})`));
+    reasons.push(L(`no pasa los mínimos (${fails})`, `does not clear minimum gates (${fails})`));
   }
   if (Number.isFinite(p.st.fracPass) && p.st.fracPass < 0.9) {
     reasons.push(L(
-      `solo el ${(100 * p.st.fracPass).toFixed(0)}% de sus vecinos pasa las puertas`,
+      `solo el ${(100 * p.st.fracPass).toFixed(0)}% de sus vecinos pasa los mínimos`,
       `only ${(100 * p.st.fracPass).toFixed(0)}% of its neighbors clear the gates`,
     ));
   }
