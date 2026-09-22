@@ -1,6 +1,17 @@
 # Despliegue
 
-## Vercel
+## GitHub Pages (producción actual)
+
+Sitio estático servido desde el repo. Cada `push` a `main` dispara el workflow
+`.github/workflows/pages.yml` y publica en:
+
+https://plazaro94.github.io/Orometra/
+
+En el repo: **Settings → Pages → Source: GitHub Actions** (solo hace falta
+configurarlo una vez). En el plan gratuito de GitHub, Pages requiere el
+repositorio **público**.
+
+## Vercel (alternativa)
 
 Sitio estático: no necesita comando de compilación ni runtime de servidor. Sube la carpeta como
 proyecto nuevo y listo. El `vercel.json` incluido desactiva la caché de `index.html`, `.js` y
