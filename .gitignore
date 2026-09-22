@@ -23,6 +23,7 @@ tmp/
 
 # Local data exports (MT5)
 *.xml
+!sitemap.xml
 !**/fixtures/**/*.xml
 *.xlsx
 *.xls
