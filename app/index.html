@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<meta name="description" content="Audit MetaTrader 5 optimization results in your browser. Find parameter plateaus, Top 3 with reasons, evidence strength.">
+<title>Orometra App — MT5 Optimization Audit</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="apple-touch-icon" href="../favicon.svg">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="../styles.css">
+<script src="../js/theme-init.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#view" data-i18n="skip">Skip to content</a>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand brand-link" id="brandHome" href="../" data-i18n="brand.home" data-i18n-attr="title" title="Back to home">
+      <span class="brand-row">
+        <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
+        <span class="brand-name">Orometra</span>
+      </span>
+      <span class="brand-sub" data-i18n="brand.sub">MT5 optimization audit</span>
+    </a>
+
+    <div class="sidebar-scroll">
+    <nav class="sidebar-section" id="nav" aria-label="Analysis">
+      <div class="sidebar-label" data-i18n="nav.group.result">Result</div>
+      <button class="nav-item active" data-tab="verdict" disabled><span>01</span> <span data-i18n="nav.verdict">Verdict</span></button>
+
+      <div class="sidebar-label sidebar-label-gap" data-i18n="nav.group.evidence">Evidence</div>
+      <button class="nav-item" data-tab="plateaus" disabled><span>02</span> <span data-i18n="nav.plateaus">Plateaus</span></button>
+      <button class="nav-item" data-tab="rejected" disabled><span>03</span> <span data-i18n="nav.rejected">Rejected</span></button>
+      <button class="nav-item" data-tab="params" disabled><span>04</span> <span data-i18n="nav.params">Parameters</span></button>
+
+      <div class="sidebar-label sidebar-label-gap" data-i18n="nav.group.diagnostics">Diagnostics</div>
+      <button class="nav-item" data-tab="diagnostics" disabled><span>05</span> <span data-i18n="nav.diagnostics">Diagnostics</span></button>
+
+      <div class="sidebar-label sidebar-label-gap" data-i18n="nav.group.validation">Validation</div>
+      <button class="nav-item" data-tab="unseen" disabled><span>06</span> <span data-i18n="nav.unseen">Unseen period</span></button>
+      <button class="nav-item" data-tab="method"><span>07</span> <span data-i18n="nav.method">Methodology</span></button>
+    </nav>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
+        <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
+        <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
+      </div>
+      <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
+        <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" title="Dark" data-i18n="theme.dark" data-i18n-attr="title">
+          <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Dark</span>
+        </button>
+        <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" title="Light" data-i18n="theme.light" data-i18n-attr="title">
+          <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
+        </button>
+        <button class="theme-btn" data-theme-set="cream" role="radio" aria-checked="false" title="Cream" data-i18n="theme.cream" data-i18n-attr="title">
+          <span class="swatch cream" aria-hidden="true"></span><span data-i18n="theme.cream">Cream</span>
+        </button>
+      </div>
+      <div class="legal-links">
+        <button class="text-btn" data-tab="legal" type="button" data-i18n="legal.link">Legal notice &amp; privacy</button>
+      </div>
+      <div class="version" data-i18n="version">v2 · absolute plateau engine</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title topbar-idle">
+        <div class="eyebrow" data-i18n="top.eyebrow">Quantitative robustness analysis</div>
+        <h1 data-i18n-html="top.h1">Find <em>plateaus</em>, not peaks.</h1>
+      </div>
+      <div class="topbar-title topbar-report" hidden>
+        <div class="eyebrow" data-i18n="top.report.eyebrow">Audit report</div>
+        <h1 id="reportTitle">—</h1>
+        <p class="topbar-report-meta" id="reportMeta"></p>
+      </div>
+      <div class="top-actions">
+        <button class="ghost-btn" id="demoBtn" type="button" data-i18n="btn.demo">See a full analysis</button>
+        <button class="ghost-btn" id="policyBtn" type="button" aria-expanded="false" data-i18n="btn.policy">Minimum gates</button>
+        <button class="ghost-btn" id="resetAll" type="button" hidden data-i18n="hero.reset">Start over</button>
+        <button class="primary-btn" id="exportBtn" type="button" disabled data-i18n="btn.export">Export</button>
+      </div>
+    </header>
+
+    <section class="intake" aria-label="File upload" data-i18n="intake.label" data-i18n-attr="aria-label">
+      <div class="upload-grid">
+        <label class="dropzone" id="isDrop" for="isFile">
+          <input id="isFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
+          <div class="file-icon">IS</div>
+          <div class="drop-copy">
+            <strong><span data-i18n="drop.is.title">In-Sample</span></strong>
+            <span id="isStatus" data-i18n="drop.is.status">Drop both files anywhere on the page</span>
+          </div>
+          <div class="drop-action" data-i18n="drop.choose">Choose</div>
+        </label>
+
+        <label class="dropzone" id="oosDrop" for="oosFile">
+          <input id="oosFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
+          <div class="file-icon oos">OOS</div>
+          <div class="drop-copy">
+            <strong><span data-i18n="drop.oos.title">Forward</span></strong>
+            <span id="oosStatus" data-i18n="drop.oos.status">Detected by content, not by which box you use</span>
+          </div>
+          <div class="drop-action" data-i18n="drop.choose">Choose</div>
+        </label>
+
+        <button class="analyze-card" id="analyzeBtn" type="button" disabled>
+          <div class="analyze-icon" aria-hidden="true">&#8599;</div>
+          <div>
+            <strong id="analyzeLabel" data-i18n="analyze.label">Audit</strong>
+            <span id="analyzeSub" data-i18n="analyze.sub">Load at least the in-sample file</span>
+          </div>
+          <div class="analyze-arrow" aria-hidden="true">&rarr;</div>
+        </button>
+      </div>
+      <p class="set-hint" id="setHint">
+        <span data-i18n="drop.set.hint">Optional: drop the optimization .set (start||step||stop||Y) to contrast coverage vs the search range you asked MT5 for.</span>
+        <span id="setStatus" class="set-status"></span>
+      </p>
+
+      <div class="preflight" id="preflight" hidden>
+        <div class="preflight-head">
+          <span class="preflight-kicker" data-i18n="preflight.kicker">Data check</span>
+          <strong data-i18n="preflight.title">Ready to audit</strong>
+        </div>
+        <div class="preflight-grid" id="preflightGrid"></div>
+        <p class="preflight-note" id="preflightNote"></p>
+      </div>
+
+      <div class="policy-panel" id="policyPanel" hidden>
+        <div class="policy-head">
+          <h2 data-i18n="policy.h2">Minimums a configuration must meet</h2>
+          <p data-i18n-html="policy.p">Required in <strong>both periods</strong>. Anything that fails is out, no matter how high it ranks in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
+        </div>
+        <div class="policy-grid">
+          <label class="field">
+            <span data-i18n="policy.pf">Minimum profit factor</span>
+            <input type="number" id="gPf" step="0.01" min="0" value="1.20">
+          </label>
+          <label class="field">
+            <span data-i18n="policy.dd">Maximum drawdown (%)</span>
+            <input type="number" id="gDd" step="1" min="1" max="100" value="20">
+          </label>
+          <label class="field">
+            <span data-i18n="policy.trades">Minimum trades (in-sample)</span>
+            <input type="number" id="gTrades" step="10" min="0" value="100">
+          </label>
+          <label class="field checkbox">
+            <input type="checkbox" id="gProfit" checked>
+            <span data-i18n="policy.profit">Require positive profit</span>
+          </label>
+        </div>
+        <div class="policy-preview" id="policyPreview" hidden>
+          <div>
+            <strong id="policyPreviewCount">—</strong>
+            <span id="policyPreviewNote" data-i18n="policy.previewNote">configurations would pass these gates</span>
+          </div>
+          <button class="primary-btn" id="policyRerun" type="button" data-i18n="policy.rerun">Recalculate with these gates</button>
+        </div>
+      </div>
+
+      <div class="status-bar" id="statusBar" hidden>
+        <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+        <span id="progressLabel" data-i18n="progress">Analyzing…</span>
+      </div>
+
+      <div class="error-box" id="errorBox" hidden role="alert">
+        <strong id="errorTitle" data-i18n="error.title">Analysis failed</strong>
+        <span id="errorText"></span>
+        <span class="error-hint" id="errorHint"></span>
+      </div>
+    </section>
+
+    <section class="content" id="view" aria-live="polite"></section>
+  </main>
+</div>
+
+<div class="drop-overlay" id="dropOverlay" hidden aria-hidden="true">
+  <div class="drop-overlay-card">
+    <div class="drop-overlay-icon">&#8595;</div>
+    <strong data-i18n="drop.overlay.title">Drop files here</strong>
+    <span data-i18n="drop.overlay.body">Anywhere on the page. The app detects which file is in-sample and which is forward.</span>
+  </div>
+</div>
+
+<script type="module" src="../js/ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+# Dependencies / local
+node_modules/
+.npm/
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+.vscode/
+.idea/
+
+# Logs and caches
+*.log
+.cache/
+.temp/
+tmp/
+
+# Local data exports (MT5)
+*.xml
+!**/fixtures/**/*.xml
+*.xlsx
+*.xls
+*.opt
+
+# Build / deploy local
+.vercel/
+dist/
+build/

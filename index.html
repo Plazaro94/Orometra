@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<meta name="description" content="Find stable parameter plateaus in your MetaTrader 5 optimizations — not isolated peaks. Top 3 configurations with reasons. Analysis runs entirely in your browser.">
+<title>Orometra — MT5 Optimization Robustness Analyzer</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="canonical" href="https://orometra.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Orometra — MT5 Optimization Robustness Analyzer">
+<meta property="og:description" content="Stop choosing the best backtest. Start choosing robust parameter regions. Runs entirely in your browser.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://orometra.netlify.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Orometra — MT5 Optimization Robustness Analyzer">
+<meta name="twitter:description" content="Stop choosing the best backtest. Start choosing robust parameter regions.">
+<meta name="twitter:image" content="https://orometra.netlify.app/og-image.png">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="styles.css">
+<script src="js/theme-init.js"></script>
+</head>
+<body class="landing-page">
+<a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+
+<header class="lp-top">
+  <div class="lp-shell">
+    <a class="lp-brand" href="/">
+      <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
+      <span class="brand-name">Orometra</span>
+    </a>
+    <div class="lp-top-actions">
+      <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
+        <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
+        <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
+      </div>
+      <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
+        <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" type="button" title="Dark" data-i18n="theme.dark" data-i18n-attr="title">
+          <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Dark</span>
+        </button>
+        <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" type="button" title="Light" data-i18n="theme.light" data-i18n-attr="title">
+          <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
+        </button>
+        <button class="theme-btn" data-theme-set="cream" role="radio" aria-checked="false" type="button" title="Cream" data-i18n="theme.cream" data-i18n-attr="title">
+          <span class="swatch cream" aria-hidden="true"></span><span data-i18n="theme.cream">Cream</span>
+        </button>
+      </div>
+      <a class="ghost-btn lp-cta-top" href="app/" data-i18n="lp.cta">Open app</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="lp-main">
+  <section class="lp-hero" aria-labelledby="lp-hero-title" data-i18n="lp.hero.region" data-i18n-attr="aria-label">
+    <div class="lp-hero-copy">
+      <p class="lp-eyebrow" data-i18n="lp.eyebrow">MT5 optimization robustness</p>
+      <h1 id="lp-hero-title" data-i18n-html="lp.h1">Find <em>plateaus</em>, not peaks.</h1>
+      <p class="lp-lead" data-i18n-html="lp.lead">
+        You optimize thousands of configurations. MT5 sorts a table.
+        <strong>Orometra tells you which ones hold</strong> — and when the evidence is too weak to trust.
+      </p>
+      <div class="lp-actions">
+        <a class="primary-btn lp-cta-demo" href="app/?demo=1" data-i18n="lp.demo">See a full analysis</a>
+        <a class="ghost-btn" href="app/" data-i18n="lp.cta">Open app</a>
+      </div>
+      <p class="lp-privacy" data-i18n="lp.privacy">Your files never leave your browser. No accounts. No upload to a server.</p>
+      <p class="lp-proof" data-i18n-html="lp.proof">Includes a synthetic demo with a planted plateau — open <strong>See a full analysis</strong> to inspect a complete audit without uploading files.</p>
+    </div>
+
+    <div class="lp-hero-visual" aria-labelledby="lp-compare-title">
+      <p id="lp-compare-title" class="lp-compare-heading" data-i18n="lp.compare.title">From MT5 chaos to inspectable evidence</p>
+
+      <div class="lp-surface" id="heroSurfaceHost" tabindex="0" role="button" data-i18n="lp.surface.aria" data-i18n-attr="aria-label" aria-label="Parameter surface: isolated peaks collapse into a stable plateau">
+        <canvas class="lp-surface-canvas" id="heroSurface" width="1120" height="560" aria-hidden="true"></canvas>
+        <div class="lp-surface-caption">
+          <span class="lp-surface-peak" data-i18n="lp.compare.before.spark">Isolated peak</span>
+          <span class="lp-surface-hint" data-i18n="lp.surface.hint">Hover — peaks collapse into the plateau</span>
+          <span class="lp-surface-ok" data-i18n="lp.compare.after.spark">Stable plateau</span>
+        </div>
+        <span class="lp-sr-live" id="surfaceLive" aria-live="polite"></span>
+      </div>
+      <noscript>
+        <p class="lp-compare-caption">Enable JavaScript to see the interactive parameter surface (peaks collapsing into a plateau).</p>
+      </noscript>
+
+      <div class="lp-compare-strip">
+        <article class="lp-strip lp-strip-before">
+          <span class="lp-strip-kicker" data-i18n="lp.compare.before.kicker">Before · MT5</span>
+          <strong data-i18n="lp.compare.before.title">Optimization results</strong>
+          <p class="lp-mt5-meta" data-i18n="lp.compare.before.meta">12,482 passes · sorted by Result</p>
+          <table class="lp-mt5-table" aria-hidden="true">
+            <thead>
+              <tr>
+                <th data-i18n="lp.compare.col.rank">#</th>
+                <th data-i18n="lp.compare.col.pass">Pass</th>
+                <th data-i18n="lp.compare.col.result">Result</th>
+                <th data-i18n="lp.compare.col.pf">PF</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="is-best"><td>1</td><td>1842</td><td>4.71</td><td>4.71</td></tr>
+              <tr><td>2</td><td>991</td><td>3.02</td><td>2.41</td></tr>
+              <tr><td>3</td><td>4283</td><td>2.18</td><td>1.88</td></tr>
+            </tbody>
+          </table>
+          <div class="lp-strip-meta">
+            <span data-i18n="lp.compare.tag.best">Best</span>
+            <b>Pass 1842 · PF 4.71</b>
+          </div>
+        </article>
+        <article class="lp-strip lp-strip-after">
+          <span class="lp-strip-kicker" data-i18n="lp.compare.after.kicker">After · Orometra</span>
+          <strong data-i18n="lp.compare.after.title">Robustness audit</strong>
+          <div class="lp-strip-badges">
+            <span class="lp-stamp" data-i18n="lp.compare.after.stamp">MODERATE EVIDENCE</span>
+            <span class="lp-reject-pill" data-i18n="lp.compare.tag.rejected">#1 rejected</span>
+          </div>
+          <p data-i18n="lp.compare.after.selected.why">Plateau center · maximin · not the profit peak</p>
+          <div class="lp-strip-meta lp-strip-meta-ok">
+            <span data-i18n="lp.compare.after.selected">Selected instead</span>
+            <b>Pass 4283 · 31/36 · OOS 76%</b>
+          </div>
+        </article>
+      </div>
+      <p class="lp-compare-caption" data-i18n="lp.compare.caption">Illustrative example. Your audit explains why a configuration was selected or rejected — not just a score.</p>
+    </div>
+  </section>
+
+  <section class="lp-section lp-section-features" aria-labelledby="lp-what-title">
+    <span class="lp-section-kicker" data-i18n="lp.what.kicker">Product</span>
+    <h2 id="lp-what-title" data-i18n="lp.what.title">What you get</h2>
+    <ol class="lp-features">
+      <li>
+        <span class="lp-feat-num" aria-hidden="true">01</span>
+        <div>
+          <h3 data-i18n="lp.what.1.title">Stable regions, not luck</h3>
+          <p data-i18n="lp.what.1.body">Finds connected neighborhoods where neighboring parameters also work. An isolated spike is rejected, even if it topped your MT5 table.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-feat-num" aria-hidden="true">02</span>
+        <div>
+          <h3 data-i18n="lp.what.2.title">Top 3 with reasons</h3>
+          <p data-i18n="lp.what.2.body">Three concrete configurations, neighbor support, out-of-sample behaviour, and the risks that still apply.</p>
+        </div>
+      </li>
+      <li>
+        <span class="lp-feat-num" aria-hidden="true">03</span>
+        <div>
+          <h3 data-i18n="lp.what.3.title">Evidence strength</h3>
+          <p data-i18n="lp.what.3.body">Strong, moderate, weak, or insufficient. Orometra measures what your data can support — it does not promise future profits.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="lp-section lp-section-risk" aria-labelledby="lp-avoid-title">
+    <span class="lp-section-kicker" data-i18n="lp.avoid.kicker">Risk</span>
+    <h2 id="lp-avoid-title" data-i18n="lp.avoid.title">Three mistakes it prevents</h2>
+    <ul class="lp-risks">
+      <li>
+        <h3 data-i18n="lp.avoid.1.title">Trusting the #1 row</h3>
+        <p data-i18n="lp.avoid.1.body">The top of an MT5 table is often an isolated peak. Neighbors and out-of-sample behaviour stay invisible until you audit the surface.</p>
+      </li>
+      <li>
+        <h3 data-i18n="lp.avoid.2.title">Averaging away risk</h3>
+        <p data-i18n="lp.avoid.2.body">Orometra scores by the worse period and by maximin neighborhoods — not by an average that hides a fragile edge.</p>
+      </li>
+      <li>
+        <h3 data-i18n="lp.avoid.3.title">Confusing evidence with a GO</h3>
+        <p data-i18n="lp.avoid.3.body">A strong grade means the data can support a stable region. It is not permission to trade or a forecast of future profit.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="lp-section" aria-labelledby="lp-how-title">
+    <span class="lp-section-kicker" data-i18n="lp.how.kicker">Workflow</span>
+    <h2 id="lp-how-title" data-i18n="lp.how.title">How it works</h2>
+    <ol class="lp-steps">
+      <li>
+        <span class="lp-step-num" aria-hidden="true">1</span>
+        <span data-i18n-html="lp.how.1"><strong>Export</strong> your MT5 Optimization report (XML). Add Forward if you used it.</span>
+      </li>
+      <li>
+        <span class="lp-step-num" aria-hidden="true">2</span>
+        <span data-i18n-html="lp.how.2"><strong>Drop</strong> the files in the app. In-sample and forward are detected by content.</span>
+      </li>
+      <li>
+        <span class="lp-step-num" aria-hidden="true">3</span>
+        <span data-i18n-html="lp.how.3"><strong>Read</strong> the verdict, plateaus, and rejected peaks — then export a .set to refine in MT5.</span>
+      </li>
+    </ol>
+    <p class="lp-method-bridge" data-i18n-html="lp.method.bridge">How the engine decides — gates, plateaus, maximin — is documented in the <a href="methodology/">methodology</a>.</p>
+  </section>
+
+  <section class="lp-section" aria-labelledby="lp-not-title">
+    <span class="lp-section-kicker" data-i18n="lp.not.kicker">Limits</span>
+    <h2 id="lp-not-title" data-i18n="lp.not.title">What Orometra does not do</h2>
+    <ul class="lp-list">
+      <li data-i18n="lp.not.1">It does not predict the market or guarantee returns.</li>
+      <li data-i18n="lp.not.2">It does not pick the highest-profit pass by default.</li>
+      <li data-i18n="lp.not.3">It does not turn a weak EA into a strong one.</li>
+    </ul>
+  </section>
+
+  <section class="lp-section lp-final">
+    <h2 data-i18n="lp.final.title">Ready to audit an optimization?</h2>
+    <p data-i18n="lp.final.body">Open the app, load your MT5 results, and see whether the best rows deserve trust.</p>
+    <a class="primary-btn lp-cta-final" href="app/" data-i18n="lp.final.cta">Audit my optimization</a>
+  </section>
+</main>
+
+<footer class="lp-foot">
+  <div class="lp-shell lp-foot-inner">
+    <div class="lp-foot-brand">
+      <strong>Orometra</strong>
+      <span data-i18n="lp.foot.tagline">Plateaus over peaks. Analysis stays in your browser.</span>
+    </div>
+    <nav class="lp-foot-nav" aria-label="Footer">
+      <a href="methodology/" data-i18n="nav.method">Methodology</a>
+      <a href="privacy/" data-i18n="doc.privacy.nav">Privacy</a>
+      <a href="app/" data-i18n="lp.cta.footer">App</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module" src="js/landing.js"></script>
+</body>
+</html>

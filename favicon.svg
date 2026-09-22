@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Orometra">
+  <title>Orometra</title>
+  <!--
+    La meseta de curvas de nivel en su estado RESUELTO: los picos ya derrumbados y la
+    cima plana encendida. Es la misma figura que gira junto a la marca.
+
+    Disenado para 16 px PRIMERO, no para 64. Una primera version con cinco anillos
+    finos se veia bien grande y se convertia en un borron en la pestana: a ese tamano
+    solo caben tres bandas horizontales con separacion clara. De ahi los trazos gruesos,
+    los huecos amplios y que solo queden dos anillos y la cima.
+
+    El cuadrado oscuro no es decorativo: garantiza contraste tanto en pestanas blancas
+    como negras, que es donde de verdad se va a ver.
+  -->
+  <rect width="64" height="64" rx="13" fill="#0d1322"/>
+
+  <g fill="none" stroke="#3ed7d0" stroke-width="5.4" stroke-linecap="round">
+    <ellipse cx="32" cy="48" rx="24" ry="7.6" opacity=".45"/>
+    <ellipse cx="32" cy="38" rx="16.5" ry="5.4" opacity=".75"/>
+  </g>
+
+  <!-- La cima: PLANA y solida. Es lo que la aplicacion busca. -->
+  <ellipse cx="32" cy="26.5" rx="10.5" ry="4.2" fill="#6ee9e2"/>
+</svg>
