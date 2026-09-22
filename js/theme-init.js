@@ -10,7 +10,7 @@
     var meta = document.querySelector('meta[name="theme-color"]');
     if (!meta) return;
     var theme = document.documentElement.getAttribute('data-theme') || 'dark';
-    var map = { dark: '#070b14', light: '#f6f7f9' };
+    var map = { dark: '#070b14', light: '#dce6f2' };
     meta.setAttribute('content', map[theme] || map.dark);
   }
 

@@ -58,23 +58,23 @@
 [hidden]{display:none!important}
 
 /* ================================================================== TEMA CLARO
- *                              «informe»
- * Gris neutro, negro casi puro, acento turquesa profundo. Lee como documento
- * impreso: nada de azules en el texto, para que se distinga del tema oscuro a
- * primera vista y no parezca el mismo producto con la luz cambiada. */
+ *                         «cockpit diurno»
+ * Mismo ADN que el oscuro (azul frío + turquesa), en clave día: fondos con
+ * matiz slate, capas de profundidad y acento vivo. No es un Excel gris:
+ * es la sala de máquinas con la luz encendida. */
 [data-theme="light"]{
-  --bg:#f6f7f9;          --surface:#ffffff;     --surface-2:#eef1f5;   --surface-3:#e3e8ee;
-  --line-soft:#e8ecf1;   --line:#d5dbe3;        --line-strong:#b4bdc9;
-  --muted-3:#6e767f;     --muted-2:#646d78;     --muted:#58626e;
-  --text-2:#384049;      --text:#14181d;        --text-hi:#000000;
-  --ok-bg:#e4f4f5;       --ok-line:#a8d8db;     --ok:#0b6a73;     --ok-text:#0a5e66;     --ok-hi:#064047;
-  --warn-bg:#fbf1dd;     --warn-line:#e6cfa0;   --warn:#8a5b0a;   --warn-text:#7a5009;   --warn-hi:#5c3c06;
-  --danger-bg:#fbe9ef;   --danger-line:#efc2d2; --danger:#9b2f52; --danger-text:#8a2948; --danger-hi:#6b1f37;
-  --info-bg:#eaf0fc;     --info-line:#c0d2f2;   --info:#1f4fb0;   --info-text:#1c479e;   --info-hi:#133272;
-  --profit:#17794a;      --loss:#b3352a;
+  --bg:#dce6f2;          --surface:#f2f6fb;     --surface-2:#e4ecf6;   --surface-3:#d5e0ef;
+  --line-soft:#c5d2e4;   --line:#a8bad3;        --line-strong:#7f96b8;
+  --muted-3:#5a6f8c;     --muted-2:#4a607c;     --muted:#3d536e;
+  --text-2:#243247;      --text:#0e1726;        --text-hi:#060b14;
+  --ok-bg:#c8f0ef;       --ok-line:#3aafb0;     --ok:#0a8f96;     --ok-text:#087780;     --ok-hi:#04545c;
+  --warn-bg:#f7e8c4;     --warn-line:#d4a84a;   --warn:#9a6408;   --warn-text:#825406;   --warn-hi:#5c3a04;
+  --danger-bg:#f8dce6;   --danger-line:#e090ad; --danger:#b03058; --danger-text:#962848; --danger-hi:#6e1a34;
+  --info-bg:#d6e4fb;     --info-line:#7aa3e8;   --info:#1a56c4;   --info-text:#1649a8;   --info-hi:#0f3278;
+  --profit:#0f7a45;      --loss:#c03428;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#8a6a3c; --evidence-weak-bg:#f7f1e6; --evidence-weak-line:#dcc9a4; --evidence-weak-text:#6e5328;
+  --evidence-weak:#8a6230; --evidence-weak-bg:#f3e8d4; --evidence-weak-line:#d4b888; --evidence-weak-text:#6a4a20;
   --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
   --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
@@ -980,6 +980,39 @@ tr.sel td{color:var(--text-2)}
   animation:lp-rise .75s ease both;
 }
 [data-theme="dark"] .lp-surface{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+[data-theme="light"] .lp-surface{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.85),
+    0 10px 28px rgba(14, 35, 70, .10),
+    0 1px 0 rgba(14, 35, 70, .06);
+  border-color:var(--line-strong);
+}
+[data-theme="light"] .lp-top{
+  background:color-mix(in srgb, var(--surface) 88%, var(--ok-bg));
+  border-bottom-color:var(--line);
+}
+[data-theme="light"] .primary-btn{
+  background:var(--ok);
+  color:#f4fffe;
+  border-color:var(--ok-hi);
+}
+[data-theme="light"] .primary-btn:hover:not(:disabled){
+  background:var(--ok-text);
+  color:#ffffff;
+}
+[data-theme="light"] .lp-cta-demo{
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ok) 45%, transparent),
+    0 8px 22px color-mix(in srgb, var(--ok) 22%, transparent);
+}
+[data-theme="light"] .swatch.light{background:#f2f6fb;border-color:#7f96b8}
+[data-theme="light"] .shell,
+[data-theme="light"] .landing-page{
+  background-image:
+    radial-gradient(1200px 520px at 12% -10%, color-mix(in srgb, var(--ok) 14%, transparent), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, color-mix(in srgb, var(--info) 12%, transparent), transparent 55%);
+  background-attachment:fixed;
+}
 .lp-surface:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
 .lp-surface-canvas{display:block;width:100%;height:100%}
 .lp-surface-caption{
