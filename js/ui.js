@@ -441,7 +441,7 @@ const PREFS_KEY = 'orometra.gates';
 
 /** Los mínimos son una decisión del usuario: no debería repetirla cada sesión. */
 const THEME_KEY = 'orometra.theme';
-const TEMAS = ['dark', 'light', 'cream'];
+const TEMAS = ['dark', 'light'];
 let repaintMark = () => {};
 let emptySurface = null;
 
@@ -450,7 +450,8 @@ let emptySurface = null;
  * pintar para evitar el fogonazo al recargar.
  */
 function setTheme(name, persist = true) {
-  const t = TEMAS.includes(name) ? name : 'dark';
+  let t = name === 'cream' ? 'light' : name;
+  t = TEMAS.includes(t) ? t : 'dark';
   document.documentElement.dataset.theme = t;
   $$('[data-theme-set]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.themeSet === t)));
   if (persist) {

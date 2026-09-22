@@ -6,14 +6,15 @@ import { setLocale, getLocale, applyStaticI18n, t } from './i18n.js';
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 const THEME_KEY = 'orometra.theme';
-const TEMAS = ['dark', 'light', 'cream'];
+const TEMAS = ['dark', 'light'];
 
 function syncThemeColor() {
   if (typeof window.__orometraSyncThemeColor === 'function') window.__orometraSyncThemeColor();
 }
 
 function setTheme(name, persist = true) {
-  const next = TEMAS.includes(name) ? name : 'dark';
+  let next = name === 'cream' ? 'light' : name;
+  next = TEMAS.includes(next) ? next : 'dark';
   document.documentElement.dataset.theme = next;
   $$('[data-theme-set]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.themeSet === next)));
   syncThemeColor();

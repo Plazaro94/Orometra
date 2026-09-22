@@ -10,13 +10,17 @@
     var meta = document.querySelector('meta[name="theme-color"]');
     if (!meta) return;
     var theme = document.documentElement.getAttribute('data-theme') || 'dark';
-    var map = { dark: '#070b14', light: '#f6f7f9', cream: '#f6f2e9' };
+    var map = { dark: '#070b14', light: '#f6f7f9' };
     meta.setAttribute('content', map[theme] || map.dark);
   }
 
   try {
     var t = localStorage.getItem('orometra.theme');
-    if (t === 'light' || t === 'cream' || t === 'dark') document.documentElement.dataset.theme = t;
+    if (t === 'cream') {
+      t = 'light';
+      try { localStorage.setItem('orometra.theme', 'light'); } catch (eWrite) { /* privado */ }
+    }
+    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
   } catch (e) { /* modo privado */ }
   syncThemeColor();
 

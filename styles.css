@@ -81,29 +81,6 @@
   color-scheme:light;
 }
 
-/* ================================================================== TEMA CREMA
- *                             «cuaderno»
- * Sepia cálido, tinta marrón oscura, acento pino. Contraste algo menor a
- * propósito: está pensado para sesiones largas de lectura, no para deslumbrar. */
-[data-theme="cream"]{
-  --bg:#f6f2e9;          --surface:#fffdf7;     --surface-2:#f0ebdf;   --surface-3:#e7e0d0;
-  --line-soft:#eae3d4;   --line:#dbd2bf;        --line-strong:#c0b49c;
-  --muted-3:#6a6150;     --muted-2:#5c5344;     --muted:#534a3c;
-  --text-2:#4a4235;      --text:#2a251c;        --text-hi:#14100a;
-  --ok-bg:#e6f0e9;       --ok-line:#b7d2c5;     --ok:#2f6b5f;     --ok-text:#2b6055;     --ok-hi:#1e473e;
-  --warn-bg:#f8eeda;     --warn-line:#e3cda0;   --warn:#93601a;   --warn-text:#825416;   --warn-hi:#63400f;
-  --danger-bg:#f8e8e6;   --danger-line:#e8c6c2; --danger:#96363f; --danger-text:#863038; --danger-hi:#6b2229;
-  --info-bg:#eaf0f6;     --info-line:#c5d5e5;   --info:#37628c;   --info-text:#305680;   --info-hi:#223f5d;
-  --profit:#3e7a4a;      --loss:#a8402f;
-  --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
-  --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#7a5c32; --evidence-weak-bg:#f3ecdf; --evidence-weak-line:#d4c2a0; --evidence-weak-text:#5c4524;
-  --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
-  --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
-  --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
-  color-scheme:light;
-}
-
 /* Cifras de dinero. El unico sitio donde el verde y el rojo significan lo que un
    trader espera que signifiquen. */
 .money{font-variant-numeric:tabular-nums}
@@ -180,7 +157,6 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .swatch{width:11px;height:11px;border-radius:50%;border:1px solid var(--line-strong);flex:none}
 .swatch.dark{background:#0b1220}
 .swatch.light{background:#f2f5fa}
-.swatch.cream{background:#f3efe4}
 
 /* ------------------------------------------------------------ bloque de entrada */
 .hero{margin:0 0 30px}
