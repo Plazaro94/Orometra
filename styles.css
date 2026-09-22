@@ -63,18 +63,18 @@
  * matiz slate, capas de profundidad y acento vivo. No es un Excel gris:
  * es la sala de máquinas con la luz encendida. */
 [data-theme="light"]{
-  --bg:#dce6f2;          --surface:#f2f6fb;     --surface-2:#e4ecf6;   --surface-3:#d5e0ef;
-  --line-soft:#c5d2e4;   --line:#a8bad3;        --line-strong:#7f96b8;
-  --muted-3:#5a6f8c;     --muted-2:#4a607c;     --muted:#3d536e;
-  --text-2:#243247;      --text:#0e1726;        --text-hi:#060b14;
-  --ok-bg:#c8f0ef;       --ok-line:#3aafb0;     --ok:#0a8f96;     --ok-text:#087780;     --ok-hi:#04545c;
-  --warn-bg:#f7e8c4;     --warn-line:#d4a84a;   --warn:#9a6408;   --warn-text:#825406;   --warn-hi:#5c3a04;
-  --danger-bg:#f8dce6;   --danger-line:#e090ad; --danger:#b03058; --danger-text:#962848; --danger-hi:#6e1a34;
-  --info-bg:#d6e4fb;     --info-line:#7aa3e8;   --info:#1a56c4;   --info-text:#1649a8;   --info-hi:#0f3278;
-  --profit:#0f7a45;      --loss:#c03428;
+  --bg:#cfdced;          --surface:#eef4fb;     --surface-2:#dce7f4;   --surface-3:#cbd9ec;
+  --line-soft:#b4c5dc;   --line:#8ea6c4;        --line-strong:#6a86ab;
+  --muted-3:#4e6482;     --muted-2:#3f5470;     --muted:#334760;
+  --text-2:#1a2a40;      --text:#0a1220;        --text-hi:#04080f;
+  --ok-bg:#b4ebea;       --ok-line:#2a9fa3;     --ok:#078a92;     --ok-text:#06707a;     --ok-hi:#034850;
+  --warn-bg:#f5e0b0;     --warn-line:#c99630;   --warn:#8f5a06;   --warn-text:#784c05;   --warn-hi:#523404;
+  --danger-bg:#f6d0dc;   --danger-line:#d8789a; --danger:#a82850; --danger-text:#8e2044; --danger-hi:#681830;
+  --info-bg:#c8daf8;     --info-line:#6896e0;   --info:#154fc0;   --info-text:#1242a0;   --info-hi:#0c2e70;
+  --profit:#0c7040;      --loss:#b52c24;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#8a6230; --evidence-weak-bg:#f3e8d4; --evidence-weak-line:#d4b888; --evidence-weak-text:#6a4a20;
+  --evidence-weak:#825820; --evidence-weak-bg:#f0e0c4; --evidence-weak-line:#c8a870; --evidence-weak-text:#5e4018;
   --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
   --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
@@ -982,19 +982,20 @@ tr.sel td{color:var(--text-2)}
 [data-theme="dark"] .lp-surface{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 [data-theme="light"] .lp-surface{
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.85),
-    0 10px 28px rgba(14, 35, 70, .10),
-    0 1px 0 rgba(14, 35, 70, .06);
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 14px 36px rgba(10, 28, 58, .16),
+    0 2px 0 rgba(10, 28, 58, .08);
   border-color:var(--line-strong);
 }
 [data-theme="light"] .lp-top{
-  background:color-mix(in srgb, var(--surface) 88%, var(--ok-bg));
-  border-bottom-color:var(--line);
+  background:color-mix(in srgb, var(--surface) 78%, var(--ok-bg));
+  border-bottom-color:var(--line-strong);
 }
 [data-theme="light"] .primary-btn{
   background:var(--ok);
   color:#f4fffe;
   border-color:var(--ok-hi);
+  box-shadow:0 6px 18px color-mix(in srgb, var(--ok) 28%, transparent);
 }
 [data-theme="light"] .primary-btn:hover:not(:disabled){
   background:var(--ok-text);
@@ -1002,16 +1003,23 @@ tr.sel td{color:var(--text-2)}
 }
 [data-theme="light"] .lp-cta-demo{
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--ok) 45%, transparent),
-    0 8px 22px color-mix(in srgb, var(--ok) 22%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--ok) 55%, transparent),
+    0 10px 28px color-mix(in srgb, var(--ok) 32%, transparent);
 }
-[data-theme="light"] .swatch.light{background:#f2f6fb;border-color:#7f96b8}
+[data-theme="light"] .swatch.light{background:#eef4fb;border-color:#6a86ab}
 [data-theme="light"] .shell,
 [data-theme="light"] .landing-page{
   background-image:
-    radial-gradient(1200px 520px at 12% -10%, color-mix(in srgb, var(--ok) 14%, transparent), transparent 60%),
-    radial-gradient(900px 480px at 100% 0%, color-mix(in srgb, var(--info) 12%, transparent), transparent 55%);
+    radial-gradient(1300px 560px at 8% -8%, color-mix(in srgb, var(--ok) 24%, transparent), transparent 62%),
+    radial-gradient(1000px 520px at 100% 0%, color-mix(in srgb, var(--info) 20%, transparent), transparent 58%),
+    radial-gradient(800px 400px at 50% 100%, color-mix(in srgb, var(--ok) 10%, transparent), transparent 55%);
   background-attachment:fixed;
+}
+[data-theme="light"] .panel,
+[data-theme="light"] .card,
+[data-theme="light"] .verdict-card,
+[data-theme="light"] .dropzone{
+  box-shadow:0 8px 22px rgba(10, 28, 58, .07);
 }
 .lp-surface:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
 .lp-surface-canvas{display:block;width:100%;height:100%}

@@ -57,9 +57,9 @@ export function mountHeroSurface(canvas) {
     return {
       lightish,
       // En claro reforzamos trazo y relleno para que la superficie no se “lave”.
-      fillMul: lightish ? 2.55 : 1,
-      strokeMul: lightish ? 1.85 : 1,
-      vig: lightish ? 0.12 : 0.22,
+      fillMul: lightish ? 2.9 : 1,
+      strokeMul: lightish ? 2.1 : 1,
+      vig: lightish ? 0.16 : 0.22,
     };
   }
 
