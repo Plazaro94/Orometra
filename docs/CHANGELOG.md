@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-09-24 — CI + Pages Lite
+
+- `.github/workflows/ci.yml`: `npm test` en push/PR a `main` (Node 22, sin Electron).
+- `.github/workflows/static.yml`: deploy a Pages solo tras tests verdes; artifact = sitio Lite (sin desktop/tests/mql5).
+
 ## 2026-09-24 — Fases 2–6 (estado)
 
 ### Fase 2 — Runner MT5 — **hecho (código); aceptación MT5 real pendiente**

@@ -3,9 +3,15 @@
 ## GitHub Pages (producción actual)
 
 Sitio estático servido desde el repo. Cada `push` a `main` dispara el workflow
-`.github/workflows/static.yml` y publica en:
+`.github/workflows/static.yml`: primero corre `npm test` y, si pasa, publica
+**solo Lite** (`app/`, `js/`, `core/`, landing, methodology, privacy, assets) en:
 
 https://plazaro94.github.io/Orometra/
+
+No se suben a Pages `desktop/`, `tests/`, `mql5/`, `docs/` ni `node_modules/`.
+
+Además, `.github/workflows/ci.yml` ejecuta los mismos tests en cada push y PR a
+`main` (aunque no haya deploy).
 
 En el repo: **Settings → Pages → Source: GitHub Actions** (solo hace falta
 configurarlo una vez). En el plan gratuito de GitHub, Pages requiere el
