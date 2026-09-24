@@ -32,6 +32,7 @@ export function registerIpc(ctx) {
   ipcMain.handle('ledger:listExperiments', call('listExperiments'));
   ipcMain.handle('ledger:getExperiment', call('getExperiment'));
   ipcMain.handle('ledger:getSearchCounter', call('getSearchCounter'));
+  ipcMain.handle('ledger:createEaVersion', call('createEaVersion'));
   ipcMain.handle('ledger:exportLedger', call('exportLedger'));
   ipcMain.handle('ledger:savePreregistration', call('createPreregistration'));
 

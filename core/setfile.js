@@ -221,3 +221,37 @@ export function looksLikeSetFile(name, text) {
   // Al menos una linea name=...||...||...||...||Y/N
   return /^[A-Za-z_][\w]*\s*=\s*.+\|\|.+\|\|.+\|\|.+\|\|[YN]/im.test(head);
 }
+
+/**
+ * Convierte params de parseSetText al formato [TesterInputs] de buildTesterIni.
+ * Añade OrometraExperimentId fijo si se pasa experimentId.
+ */
+export function setParamsToTesterInputs(setFile, opts = {}) {
+  const params = setFile?.params || [];
+  const inputs = params.map((p) => {
+    if (p.hasRange && p.enabled) {
+      return {
+        name: p.name,
+        value: p.value ?? p.start,
+        start: p.start,
+        step: p.step,
+        stop: p.stop,
+        optimize: true,
+      };
+    }
+    return {
+      name: p.name,
+      value: p.value,
+      optimize: false,
+    };
+  });
+  if (opts.experimentId) {
+    inputs.push({
+      name: 'OrometraExperimentId',
+      value: String(opts.experimentId),
+      optimize: false,
+    });
+  }
+  return inputs;
+}
+

@@ -18,7 +18,9 @@ import {
 import { instrumentEa } from './mt5/instrument.js';
 import { compileMq5, findMetaEditor as findMetaEditorCompile } from './mt5/compile.js';
 import { readOrfFile } from './mt5/orf-read.js';
-import { analyzeOrfDoc, ensureDecodedOrf } from './mt5/orf-matrix.js';
+import { analyzeOrfDoc, ensureDecodedOrf, orfDocToMatrix } from './mt5/orf-matrix.js';
+import { incubationBands, compareIncubation } from '../../core/incubation.js';
+import { parseSetText, setParamsToTesterInputs, looksLikeSetFile } from '../../core/setfile.js';
 import { runAnalysis } from '../../core/analysis.js';
 import { DEFAULT_POLICY } from '../../core/metrics.js';
 import { setLocale } from '../../js/i18n.js';
@@ -223,6 +225,10 @@ export function registerMt5Ipc(ctx) {
     oosReportBasePath = null,
     locale = 'es',
     policy = null,
+    allowIsOnly = false,
+    extraSummary = null,
+    eaVersionId = null,
+    preregistrationId = null,
   } = {}) => {
     if (!strategyId) throw new Error('Elige una estrategia.');
     const collected = collectOptimizationReports(reportBasePath);
@@ -242,7 +248,7 @@ export function registerMt5Ipc(ctx) {
         backtest: backtest || null,
       };
     }
-    if (!oosTable) {
+    if (!oosTable && !allowIsOnly) {
       return {
         ok: false,
         message: 'Hace falta también el informe Forward (OOS) para importar como en Lite.',
@@ -252,14 +258,25 @@ export function registerMt5Ipc(ctx) {
     }
 
     setLocale(locale === 'en' ? 'en' : 'es');
-    const analysis = runAnalysis({
-      isTable,
-      oosTable,
-      policy: policy || DEFAULT_POLICY,
-    });
-    const summary = compactSummary(analysis);
+    const analysis = oosTable
+      ? runAnalysis({
+        isTable,
+        oosTable,
+        policy: policy || DEFAULT_POLICY,
+      })
+      : runAnalysis({
+        isTable,
+        oosTable: null,
+        policy: policy || DEFAULT_POLICY,
+      });
+    const summary = {
+      ...compactSummary(analysis),
+      ...(extraSummary || {}),
+    };
     const isFile = paths.xml[0] || reportBasePath;
-    const oosFile = paths.xml.find((p) => /forward|oos/i.test(path.basename(p))) || paths.xml[1] || isFile;
+    const oosFile = oosTable
+      ? (paths.xml.find((p) => /forward|oos/i.test(path.basename(p))) || paths.xml[1] || null)
+      : null;
     const saved = await ledger.call('importOptimization', {
       strategyId,
       isPath: isFile,
@@ -267,11 +284,14 @@ export function registerMt5Ipc(ctx) {
       type: 'optimization',
       nPasses: analysis.meta?.total ?? null,
       seed: null,
+      eaVersionId,
+      preregistrationId,
       config: {
         source: 'mt5-runner',
         reportBasePath,
         files: paths,
         policy: analysis.meta?.policy || policy || DEFAULT_POLICY,
+        allowIsOnly: Boolean(allowIsOnly && !oosTable),
       },
       summary,
       status: 'completed',
@@ -283,6 +303,7 @@ export function registerMt5Ipc(ctx) {
       summary,
       verdict: analysis.verdict,
       collected,
+      hasForward: Boolean(oosTable),
     };
   });
 
@@ -294,9 +315,13 @@ export function registerMt5Ipc(ctx) {
   });
 
   ipcMain.handle('mt5:compileMq5', async (_e, opts = {}) => {
+    let termDir = opts.terminalPath || null;
+    if (termDir && fs.existsSync(termDir) && !fs.statSync(termDir).isDirectory()) {
+      termDir = path.dirname(termDir);
+    }
     const editor = opts.metaEditorPath
       || findMetaEditorCompile({ terminalPath: opts.terminalPath })
-      || findMetaEditor(opts.terminalPath ? path.dirname(opts.terminalPath) : null);
+      || findMetaEditor(termDir);
     return compileMq5({ ...opts, metaEditorPath: editor || undefined });
   });
 
@@ -311,7 +336,6 @@ export function registerMt5Ipc(ctx) {
       nPasses: doc.nPasses,
       version: doc.version,
       passIds: (doc.passes || []).map((p) => p.passId),
-      // no devolver floats crudos al renderer (pesan); basta metadatos
       passes: (doc.passes || []).map((p) => ({
         passId: p.passId,
         nActiveDays: p.nActiveDays,
@@ -355,9 +379,234 @@ export function registerMt5Ipc(ctx) {
     verdict: integratedVerdict(ctx),
   }));
 
+  ipcMain.handle('mt5:parseSetFile', async (_e, { filePath } = {}) => {
+    if (!filePath || !fs.existsSync(filePath)) {
+      throw new Error(`Archivo .set no encontrado: ${filePath}`);
+    }
+    const text = fs.readFileSync(filePath, 'utf8');
+    if (!looksLikeSetFile(filePath, text)) {
+      return { ok: false, message: 'No parece un .set de MT5.' };
+    }
+    const setFile = parseSetText(text);
+    const optimised = setFile.params.filter((p) => p.hasRange && p.enabled).length;
+    return {
+      ok: true,
+      filePath,
+      setFile,
+      optimised,
+      totalParams: setFile.params.length,
+    };
+  });
+
+  ipcMain.handle('mt5:setToInputs', async (_e, { setFile, experimentId } = {}) => ({
+    ok: true,
+    inputs: setParamsToTesterInputs(setFile, { experimentId }),
+  }));
+
+  /**
+   * Tras un job: ORF → matrix/veredicto, XML → ledger, effectiveTrials en summary.
+   */
+  ipcMain.handle('mt5:finishValidate', async (_e, {
+    strategyId,
+    reportBasePath,
+    experimentId = null,
+    orfPath = null,
+    profile = null,
+    preregistrationHash = null,
+    eaVersionId = null,
+    preregistrationId = null,
+    locale = 'es',
+    allowIsOnly = true,
+  } = {}) => {
+    if (!strategyId) throw new Error('Falta strategyId');
+    const out = {
+      ok: true,
+      orf: null,
+      import: null,
+      counter: null,
+      incubationPreview: null,
+    };
+
+    let resolvedOrf = orfPath;
+    if (!resolvedOrf && experimentId) {
+      resolvedOrf = findOrfCandidates(experimentId)[0] || null;
+    }
+
+    let matrixSummary = {};
+    if (resolvedOrf && fs.existsSync(resolvedOrf)) {
+      const doc = ensureDecodedOrf(readOrfFile(resolvedOrf));
+      const analyzed = analyzeOrfDoc(doc, {
+        profile: profile || undefined,
+        preregistrationHash,
+      });
+      out.orf = {
+        filePath: resolvedOrf,
+        usable: analyzed.usable,
+        T: analyzed.T,
+        N: analyzed.N,
+        verdict: analyzed.verdict,
+        pbo: analyzed.pbo?.usable ? analyzed.pbo.pbo : null,
+        dsr: analyzed.dsr?.usable ? analyzed.dsr.dsr : null,
+        effectiveTrials: analyzed.effectiveTrials || null,
+        bestPassId: analyzed.bestPassId ?? null,
+        riskVeto: analyzed.risk?.riskVeto ?? false,
+      };
+      matrixSummary = {
+        effectiveTrialsN: analyzed.effectiveTrials?.nEffective ?? null,
+        effectiveTrials: analyzed.effectiveTrials || null,
+        pbo: out.orf.pbo,
+        dsr: out.orf.dsr,
+        integratedVerdict: analyzed.verdict?.level ?? null,
+        orfPath: resolvedOrf,
+        matrixTN: { T: analyzed.T, N: analyzed.N },
+      };
+
+      // Bandas de incubación a partir de la mejor columna (si hay matriz usable)
+      if (analyzed.usable && analyzed.dsr?.returns) {
+        /* dsr no expone returns; reconstruir desde doc */
+      }
+      try {
+        const { matrix, T, N } = orfDocToMatrix(doc);
+        if (T >= 10 && N >= 1) {
+          let bestJ = 0;
+          let bestMean = -Infinity;
+          for (let j = 0; j < N; j++) {
+            let s = 0;
+            for (let t = 0; t < T; t++) s += matrix[t][j];
+            const m = s / T;
+            if (m > bestMean) { bestMean = m; bestJ = j; }
+          }
+          const series = matrix.map((row) => row[bestJ]);
+          const bands = incubationBands(series, { painDd: profile?.painDd ?? null });
+          out.incubationPreview = bands;
+          matrixSummary.incubationBands = bands.usable ? {
+            fixedAt: bands.fixedAt,
+            painDd: bands.painDd,
+            minTradesToJudge: bands.minTradesToJudge,
+            horizons: bands.horizons,
+          } : null;
+        }
+      } catch { /* ignore band errors */ }
+    }
+
+    // Import inline (reuse logic without nested invoke)
+    if (reportBasePath) {
+      const collected = collectOptimizationReports(reportBasePath);
+      let { isTable, oosTable, paths } = collected;
+      if (isTable) {
+        setLocale(locale === 'en' ? 'en' : 'es');
+        const analysis = runAnalysis({
+          isTable,
+          oosTable: oosTable || null,
+          policy: DEFAULT_POLICY,
+        });
+        const summary = {
+          ...compactSummary(analysis),
+          ...matrixSummary,
+          plateauOk: (analysis.plateaus?.length || 0) > 0,
+        };
+        const isFile = paths.xml[0] || reportBasePath;
+        const oosFile = oosTable
+          ? (paths.xml.find((p) => /forward|oos/i.test(path.basename(p))) || paths.xml[1] || null)
+          : null;
+        if (oosTable || allowIsOnly) {
+          out.import = await ledger.call('importOptimization', {
+            strategyId,
+            isPath: isFile,
+            oosPath: oosFile,
+            type: 'optimization',
+            nPasses: analysis.meta?.total ?? matrixSummary.matrixTN?.N ?? null,
+            eaVersionId,
+            preregistrationId,
+            config: {
+              source: 'mt5-validate',
+              reportBasePath,
+              experimentId,
+              orfPath: resolvedOrf,
+              hasForward: Boolean(oosTable),
+            },
+            summary,
+            status: 'completed',
+          });
+          if (out.orf?.verdict) {
+            out.import.integratedVerdict = out.orf.verdict;
+            out.import.liteVerdict = analysis.verdict;
+          }
+        } else {
+          out.import = {
+            ok: false,
+            needForward: true,
+            message: 'Sin forward; ORF sí analizado si existía.',
+            collected,
+          };
+        }
+      } else if (!resolvedOrf) {
+        out.import = {
+          ok: false,
+          message: 'Sin tabla XML ni ORF.',
+          collected,
+        };
+      } else {
+        // Solo ORF: guardar resultado mínimo en ledger
+        out.import = await ledger.call('importOptimization', {
+          strategyId,
+          isPath: resolvedOrf,
+          oosPath: null,
+          type: 'orf_matrix',
+          nPasses: matrixSummary.matrixTN?.N ?? null,
+          eaVersionId,
+          preregistrationId,
+          config: {
+            source: 'mt5-validate-orf',
+            experimentId,
+            orfPath: resolvedOrf,
+          },
+          summary: {
+            ...matrixSummary,
+            verdictLevel: out.orf?.verdict?.level ?? null,
+          },
+          status: 'completed',
+        });
+      }
+    } else if (resolvedOrf && out.orf) {
+      out.import = await ledger.call('importOptimization', {
+        strategyId,
+        isPath: resolvedOrf,
+        oosPath: null,
+        type: 'orf_matrix',
+        nPasses: matrixSummary.matrixTN?.N ?? null,
+        eaVersionId,
+        preregistrationId,
+        config: {
+          source: 'mt5-validate-orf',
+          experimentId,
+          orfPath: resolvedOrf,
+        },
+        summary: {
+          ...matrixSummary,
+          verdictLevel: out.orf?.verdict?.level ?? null,
+        },
+        status: 'completed',
+      });
+    }
+
+    out.counter = await ledger.call('getSearchCounter', { strategyId });
+    out.ok = Boolean(out.orf || out.import?.experiment);
+    return out;
+  });
+
+  ipcMain.handle('mt5:incubationBands', async (_e, { returns, opts } = {}) => ({
+    ok: true,
+    bands: incubationBands(returns || [], opts || {}),
+  }));
+
+  ipcMain.handle('mt5:compareIncubation', async (_e, { realized, bands, stopRules } = {}) => ({
+    ok: true,
+    comparison: compareIncubation(realized || {}, bands || {}, stopRules || {}),
+  }));
+
   /**
    * Prepara Validar: instrumenta+compila .mq5 o marca caja negra .ex5.
-   * No lanza el tester (eso lo hace enqueueJob).
    */
   ipcMain.handle('mt5:prepareValidate', async (_e, {
     eaPath,
@@ -365,6 +614,7 @@ export function registerMt5Ipc(ctx) {
     terminalPath = null,
     experimentId = 'orometra',
     outDir = null,
+    strategyId = null,
   } = {}) => {
     if (!eaPath) throw new Error('Falta la ruta del EA.');
     const ext = path.extname(eaPath).toLowerCase();
@@ -383,7 +633,6 @@ export function registerMt5Ipc(ctx) {
     }
     if (!dataPath) throw new Error('Elige la carpeta de datos MT5 (dataPath) para instalar la sonda.');
 
-    // Siempre escribir la copia instrumentada bajo MQL5/Experts/Orometra para que el Tester la encuentre.
     const expertsOut = outDir || path.join(dataPath, 'MQL5', 'Experts', 'Orometra');
     fs.mkdirSync(expertsOut, { recursive: true });
 
@@ -399,6 +648,17 @@ export function registerMt5Ipc(ctx) {
       expertRel = path.basename(inst.instrumentedPath, path.extname(inst.instrumentedPath));
     }
 
+    let eaVersion = null;
+    if (strategyId && ledger?.call) {
+      try {
+        eaVersion = await ledger.call('createEaVersion', {
+          strategyId,
+          path: inst.instrumentedPath,
+          note: `instrumented ${experimentId}`,
+        });
+      } catch { /* optional */ }
+    }
+
     return {
       ok: compile.ok,
       mode: 'instrumented',
@@ -406,6 +666,7 @@ export function registerMt5Ipc(ctx) {
       instrument: inst,
       compile,
       expertRel,
+      eaVersion,
       suggestedInputs: [
         { name: 'OrometraExperimentId', value: experimentId, optimize: false },
       ],

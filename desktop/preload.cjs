@@ -38,7 +38,13 @@ contextBridge.exposeInMainWorld('orometraDesktop', {
   mt5AnalyzeOrf: (args) => ipcRenderer.invoke('mt5:analyzeOrf', args),
   mt5IntegratedVerdict: (ctx) => ipcRenderer.invoke('mt5:integratedVerdict', ctx),
   mt5PrepareValidate: (args) => ipcRenderer.invoke('mt5:prepareValidate', args),
+  mt5ParseSetFile: (filePath) => ipcRenderer.invoke('mt5:parseSetFile', { filePath }),
+  mt5SetToInputs: (args) => ipcRenderer.invoke('mt5:setToInputs', args),
+  mt5FinishValidate: (args) => ipcRenderer.invoke('mt5:finishValidate', args),
+  mt5IncubationBands: (args) => ipcRenderer.invoke('mt5:incubationBands', args),
+  mt5CompareIncubation: (args) => ipcRenderer.invoke('mt5:compareIncubation', args),
   mt5FindMetaEditor: (terminalDir) => ipcRenderer.invoke('mt5:findMetaEditor', { terminalDir }),
+  createEaVersion: (args) => ipcRenderer.invoke('ledger:createEaVersion', args),
   onMt5JobProgress: (cb) => {
     const handler = (_e, payload) => cb(payload);
     ipcRenderer.on('mt5:jobProgress', handler);

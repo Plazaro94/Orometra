@@ -86,7 +86,7 @@ console.log('\n=== ledger: importar dos optimizaciones + contador ===');
   const counter = getSearchCounter(db, s.id);
   check('2 experimentos', counter.experiments === 2);
   check('pasadas sumadas', counter.totalPasses === (a.meta.total + 100));
-  check('effectiveTrials null hasta fase 4', counter.effectiveTrials === null);
+  check('effectiveTrials null sin ORF en summary', counter.effectiveTrials === null);
   check('lista experimentos 2', listExperiments(db, s.id).length === 2);
   check('mismo veredicto demo que motor', summary.verdictLevel === a.verdict.level);
 }
@@ -126,6 +126,30 @@ console.log('\n=== ledger: pre-registro ===');
     hash: 'hash2',
   });
   check('acepta thresholdsJson', viaJson.hash === 'hash2');
+}
+
+console.log('\n=== ledger: effectiveTrials desde summary ===');
+{
+  const s = createStrategy(db, {
+    name: 'Eff',
+    priorSearchNote: '0',
+  });
+  importOptimization(db, {
+    strategyId: s.id,
+    isPath: '/tmp/a.xml',
+    oosPath: '/tmp/b.xml',
+    nPasses: 100,
+    summary: { effectiveTrialsN: 12, verdictLevel: 'moderate' },
+  });
+  importOptimization(db, {
+    strategyId: s.id,
+    isPath: '/tmp/c.xml',
+    nPasses: 50,
+    summary: { effectiveTrials: { nEffective: 8, nRaw: 50 } },
+  });
+  const c = getSearchCounter(db, s.id);
+  check('effectiveTrials suma 20', c.effectiveTrials === 20, String(c.effectiveTrials));
+  check('nota sum_orf', c.effectiveTrialsNote === 'sum_orf_effective_trials');
 }
 
 closeLedger(db);

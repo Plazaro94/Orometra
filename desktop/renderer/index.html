@@ -16,16 +16,21 @@
         <div class="brand-sub">Desktop · registro de investigación</div>
       </div>
       <nav class="desk-nav">
-        <button type="button" class="nav-item active" data-view="strategies">Estrategias</button>
-        <button type="button" class="nav-item" data-view="import">Importar XML</button>
-        <button type="button" class="nav-item" data-view="mt5">MT5 / Runner</button>
-        <button type="button" class="nav-item" id="btnWizard">Asistente validar</button>
-        <button type="button" class="nav-item" id="btnOpenAudit">Abrir análisis (como Lite)</button>
+        <button type="button" class="nav-item active" data-view="strategies" data-i18n-desk="nav.strategies">Estrategias</button>
+        <button type="button" class="nav-item" data-view="import" data-i18n-desk="nav.import">Importar XML</button>
+        <button type="button" class="nav-item" data-view="mt5" data-i18n-desk="nav.mt5">MT5 / Runner</button>
+        <button type="button" class="nav-item" data-view="incubate" data-i18n-desk="nav.incubate">Incubación</button>
+        <button type="button" class="nav-item" id="btnWizard" data-i18n-desk="nav.wizard">Asistente validar</button>
+        <button type="button" class="nav-item" id="btnOpenAudit" data-i18n-desk="nav.audit">Abrir análisis (como Lite)</button>
       </nav>
       <div class="desk-side-foot">
+        <div class="lang-row">
+          <button type="button" class="text-btn" data-desk-lang="es">ES</button>
+          <button type="button" class="text-btn" data-desk-lang="en">EN</button>
+        </div>
         <button type="button" class="text-btn" id="btnBackup">Exportar ledger…</button>
         <button type="button" class="text-btn" id="btnRestore">Importar ledger…</button>
-        <p class="desk-hint">Los datos no salen de este PC. SQLite local.</p>
+        <p class="desk-hint" data-i18n-desk="hint.local">Los datos no salen de este PC. SQLite local.</p>
       </div>
     </aside>
 
@@ -170,6 +175,33 @@
           <button type="button" class="btn primary" id="btnCollectImport">Importar al ledger</button>
         </div>
         <pre id="runnerLog" class="import-log" hidden></pre>
+      </section>
+
+      <section id="viewIncubate" class="desk-view" hidden>
+        <header class="desk-header">
+          <h1 data-i18n-desk="inc.title">Incubación</h1>
+        </header>
+        <p class="muted" data-i18n-desk="inc.lead">Compara el resultado realizado con bandas fijadas antes de incubar. Nunca sustituye un holdout limpio.</p>
+        <div class="import-form">
+          <label>Estrategia
+            <select id="incStrategy"></select>
+          </label>
+          <p class="muted" id="incBandsMeta">Sin bandas cargadas. Genera un Validar con ORF o pega retornos OOS abajo.</p>
+          <label>Retornos OOS (JSON array, opcional si ya hay bandas)
+            <textarea id="incReturns" rows="3" placeholder="[0.1, -0.05, 0.2, …]"></textarea>
+          </label>
+          <button type="button" class="btn" id="btnIncBands">Fijar bandas</button>
+          <hr>
+          <label>Horizonte
+            <select id="incHorizon"><option value="m1">1 mes</option><option value="m3" selected>3 meses</option><option value="m6">6 meses</option></select>
+          </label>
+          <label>Net profit realizado <input type="number" id="incNet" step="any"></label>
+          <label>Max DD realizado <input type="number" id="incDd" step="any"></label>
+          <label>Trades <input type="number" id="incTrades" min="0" step="1"></label>
+          <button type="button" class="btn primary" id="btnIncCompare">Comparar</button>
+        </div>
+        <pre id="incLog" class="import-log" hidden></pre>
+        <div id="incAlerts" class="wiz-result" hidden></div>
       </section>
 
       <dialog id="dlgStrategy">

@@ -15,6 +15,8 @@ function showView(name) {
   $('#viewImport').hidden = name !== 'import';
   const mt5 = $('#viewMt5') || $('#viewRunner');
   if (mt5) mt5.hidden = name !== 'mt5' && name !== 'runner';
+  const inc = $('#viewIncubate');
+  if (inc) inc.hidden = name !== 'incubate';
   document.querySelectorAll('.desk-nav .nav-item[data-view]').forEach((b) => {
     b.classList.toggle('active', b.dataset.view === name);
   });
@@ -23,6 +25,7 @@ function showView(name) {
     loadPortableInfo();
     refreshQueue();
   }
+  if (name === 'incubate') fillIncubation();
 }
 
 function fmtCounter(c) {
@@ -31,7 +34,7 @@ function fmtCounter(c) {
     ? String(c.declaredPriorSearch.approx)
     : (c.declaredPriorSearch?.note || '—');
   const effective = c.effectiveTrials == null
-    ? 'n/d (fase 4)'
+    ? `n/d (${c.effectiveTrialsNote || 'sin ORF'})`
     : String(c.effectiveTrials);
   return `
     <div class="cell"><strong>${c.experiments}</strong><span>Experimentos</span></div>
@@ -41,6 +44,124 @@ function fmtCounter(c) {
     <div class="cell"><strong>${prior}</strong><span>Declarado fuera</span></div>
   `;
 }
+
+const DESK_I18N = {
+  es: {
+    'nav.strategies': 'Estrategias',
+    'nav.import': 'Importar XML',
+    'nav.mt5': 'MT5 / Runner',
+    'nav.incubate': 'Incubación',
+    'nav.wizard': 'Asistente validar',
+    'nav.audit': 'Abrir análisis (como Lite)',
+    'hint.local': 'Los datos no salen de este PC. SQLite local.',
+    'inc.title': 'Incubación',
+    'inc.lead': 'Compara el resultado realizado con bandas fijadas antes de incubar. Nunca sustituye un holdout limpio.',
+  },
+  en: {
+    'nav.strategies': 'Strategies',
+    'nav.import': 'Import XML',
+    'nav.mt5': 'MT5 / Runner',
+    'nav.incubate': 'Incubation',
+    'nav.wizard': 'Validation wizard',
+    'nav.audit': 'Open analysis (Lite)',
+    'hint.local': 'Data stays on this PC. Local SQLite.',
+    'inc.title': 'Incubation',
+    'inc.lead': 'Compare realized results with bands fixed before incubating. Never replaces a clean holdout.',
+  },
+};
+
+function applyDeskLang(lang) {
+  const pack = DESK_I18N[lang] || DESK_I18N.es;
+  document.documentElement.setAttribute('lang', lang);
+  document.querySelectorAll('[data-i18n-desk]').forEach((el) => {
+    const k = el.getAttribute('data-i18n-desk');
+    if (pack[k]) el.textContent = pack[k];
+  });
+  try { localStorage.setItem('orometra.lang', lang); } catch { /* */ }
+}
+
+let incubationBandsState = null;
+
+function fillIncubation() {
+  const sel = $('#incStrategy');
+  if (!sel) return;
+  sel.innerHTML = strategies.map((s) =>
+    `<option value="${s.id}">${escapeHtml(s.name)}</option>`,
+  ).join('') || '<option value="">—</option>';
+  try {
+    const raw = sessionStorage.getItem('orometra.incubationBands');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      incubationBandsState = parsed.bands;
+      const meta = $('#incBandsMeta');
+      if (meta) {
+        meta.textContent = `Bandas cargadas (${parsed.at || ''}). painDd=${incubationBandsState?.painDd ?? '—'}`;
+      }
+      if (parsed.strategyId) sel.value = parsed.strategyId;
+    }
+  } catch { /* */ }
+}
+
+$('#btnIncBands')?.addEventListener('click', async () => {
+  const log = $('#incLog');
+  log.hidden = false;
+  try {
+    let returns = [];
+    const raw = ($('#incReturns')?.value || '').trim();
+    if (raw) returns = JSON.parse(raw);
+    if (!Array.isArray(returns) || returns.length < 10) {
+      log.textContent = 'Haz falta un array JSON con ≥10 retornos OOS, o bandas previas de Validar.';
+      return;
+    }
+    const r = await api.mt5IncubationBands({ returns });
+    incubationBandsState = r.bands;
+    sessionStorage.setItem('orometra.incubationBands', JSON.stringify({
+      strategyId: $('#incStrategy')?.value,
+      bands: r.bands,
+      at: new Date().toISOString(),
+    }));
+    log.textContent = r.bands.usable
+      ? `Bandas fijadas. painDd=${r.bands.painDd}`
+      : 'Bandas no usables (serie corta).';
+    $('#incBandsMeta').textContent = log.textContent;
+  } catch (err) {
+    log.textContent = String(err.message || err);
+  }
+});
+
+$('#btnIncCompare')?.addEventListener('click', async () => {
+  const log = $('#incLog');
+  const box = $('#incAlerts');
+  log.hidden = false;
+  if (!incubationBandsState?.usable) {
+    log.textContent = 'Primero fija bandas.';
+    return;
+  }
+  try {
+    const r = await api.mt5CompareIncubation({
+      bands: incubationBandsState,
+      realized: {
+        netProfit: Number($('#incNet').value),
+        maxDd: Number($('#incDd').value),
+        trades: Number($('#incTrades').value),
+        horizon: $('#incHorizon').value,
+      },
+    });
+    const c = r.comparison;
+    log.textContent = JSON.stringify(c, null, 2);
+    box.hidden = false;
+    const alerts = (c.alerts || []).map((a) =>
+      `<div class="wiz-card ${a.severity === 'stop' ? 'red' : 'yellow'}"><strong>${a.code}</strong><span>${a.message}</span></div>`,
+    ).join('');
+    box.innerHTML = `
+      <h2>Posición: ${c.position}</h2>
+      <p class="muted">underpowered=${c.underpowered} · DD límite=${c.ddLimit}</p>
+      <div class="wiz-cards">${alerts || '<div class="wiz-card green"><strong>ok</strong><span>Sin alertas de parada.</span></div>'}</div>
+    `;
+  } catch (err) {
+    log.textContent = String(err.message || err);
+  }
+});
 
 function renderList() {
   const box = $('#strategyList');
@@ -491,5 +612,16 @@ api.onMt5JobProgress?.((p) => {
 
 defaultDates();
 detectMt5().catch(() => {});
+
+document.querySelectorAll('[data-desk-lang]').forEach((b) => {
+  b.addEventListener('click', () => applyDeskLang(b.dataset.deskLang));
+});
+try {
+  const lang = localStorage.getItem('orometra.lang');
+  if (lang === 'en' || lang === 'es') applyDeskLang(lang);
+  else applyDeskLang(document.documentElement.getAttribute('lang') === 'en' ? 'en' : 'es');
+} catch {
+  applyDeskLang('es');
+}
 
 await refresh();

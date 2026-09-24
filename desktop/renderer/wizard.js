@@ -9,6 +9,9 @@ const state = {
   experimentId: null,
   lastJobId: null,
   unsubProgress: null,
+  setFile: null,
+  setPath: null,
+  eaVersionId: null,
 };
 
 const $ = (s) => document.querySelector(s);
@@ -170,6 +173,28 @@ $('#pickEa')?.addEventListener('click', async () => {
   }
 });
 
+$('#pickSet')?.addEventListener('click', async () => {
+  if (!api?.pickFiles || !api.mt5ParseSetFile) return;
+  const files = await api.pickFiles({
+    title: 'Archivo .set',
+    filters: [{ name: 'MT5 set', extensions: ['set'] }],
+  });
+  if (!files[0]) return;
+  try {
+    const parsed = await api.mt5ParseSetFile(files[0]);
+    if (!parsed.ok) {
+      alert(parsed.message || 'No se pudo leer el .set');
+      return;
+    }
+    state.setPath = files[0];
+    state.setFile = parsed.setFile;
+    $('#wSet').value = files[0];
+    $('#wSetInfo').textContent = `${parsed.optimised} params en Y · ${parsed.totalParams} totales. Con Optimization≥1 se lanza malla.`;
+  } catch (err) {
+    alert(err.message || err);
+  }
+});
+
 $('#btnPickInstall')?.addEventListener('click', async () => {
   if (!api?.mt5PickTerminal) return;
   const r = await api.mt5PickTerminal();
@@ -318,6 +343,7 @@ $('#btnValidate').addEventListener('click', async () => {
       dataPath: install.dataPath,
       terminalPath: install.terminalPath,
       experimentId: state.experimentId,
+      strategyId: strategy.id,
     });
     log(prep.message || prep.mode);
     if (prep.instrument?.warnings?.length) {
@@ -329,6 +355,7 @@ $('#btnValidate').addEventListener('click', async () => {
       return;
     }
     log(`Expert relativo: ${prep.expertRel}`);
+    state.eaVersionId = prep.eaVersion?.id || null;
 
     const from = $('#wFrom').value;
     const to = $('#wTo').value;
@@ -337,24 +364,61 @@ $('#btnValidate').addEventListener('click', async () => {
       return;
     }
 
+    let opt = Number($('#wOpt')?.value ?? 1);
+    let inputs = prep.suggestedInputs || [];
+    if (state.setFile) {
+      const mapped = await api.mt5SetToInputs({
+        setFile: state.setFile,
+        experimentId: state.experimentId,
+      });
+      inputs = mapped.inputs || inputs;
+      const nY = inputs.filter((i) => i.optimize).length;
+      log(`.set → ${inputs.length} inputs (${nY} a optimizar)`);
+      if (nY === 0 && opt > 0) {
+        log('Ningún param en Y en el .set: se fuerza Optimization=0.');
+        opt = 0;
+      }
+    } else if (opt > 0) {
+      log('Sin .set no hay malla: se fuerza Optimization=0 (1 pasada).');
+      opt = 0;
+    }
+
+    const forwardMode = Number($('#wForward')?.value ?? 0);
     const testerOpts = {
       expert: prep.expertRel,
       symbol: $('#wSymbol').value.trim() || 'XAUUSD',
       period: $('#wTf').value || 'H1',
       model: 1,
-      // Sin rejilla en el wizard: 1 pasada (backtest). Para malla, usa el runner MT5.
-      optimization: 0,
+      optimization: opt,
       fromDate: from,
       toDate: to,
       deposit: 10000,
       currency: 'USD',
       leverage: '1:100',
       executionMode: 0,
-      forwardMode: 0,
-      inputs: prep.suggestedInputs || [],
+      forwardMode,
+      inputs,
     };
 
-    log('Encolando backtest instrumentado (Optimization=0). Para optimización completa usa la vista MT5 del Registro.');
+    if (api.mt5EstimateCost) {
+      try {
+        const cost = await api.mt5EstimateCost({
+          inputs,
+          secondsPerPassEstimate: 2,
+        });
+        const box = $('#wCostBox');
+        if (box) box.textContent = cost.message || JSON.stringify(cost);
+        log(`Coste: ${cost.message || ''}`);
+        if (cost.tooLarge && !confirm(`${cost.message}\n¿Encolar igual?`)) {
+          log('Cancelado por coste.');
+          return;
+        }
+      } catch (e) {
+        log(`Estimación coste: ${e.message || e}`);
+      }
+    }
+
+    log(`Encolando Optimization=${opt} ForwardMode=${forwardMode}…`);
     let enq = await api.mt5EnqueueJob({
       terminalPath: install.terminalPath,
       portable: Boolean(install.portable),
@@ -383,39 +447,59 @@ $('#btnValidate').addEventListener('click', async () => {
     log('Esperando a que termine MT5…');
 
     await waitForJob(enq.id);
-    log('Tester terminado. Buscando .orf e informes…');
+    log('Tester terminado. Cerrando circuito (ORF + XML → ledger)…');
 
-    const found = await api.mt5FindOrf(state.experimentId);
-    let orfPath = found.candidates?.[0] || null;
-    if (!orfPath) {
-      log('No apareció .orf automáticamente. Puedes usar «Analizar .orf…» cuando lo tengas.');
-    } else {
-      log(`ORF: ${orfPath}`);
-      const analyzed = await api.mt5AnalyzeOrf({
-        filePath: orfPath,
-        profile: state.prereg,
-        preregistrationHash: state.preregHash,
-        plateauOk: null,
-        reservedOk: null,
-      });
-      log(`Matriz T=${analyzed.T} N=${analyzed.N} usable=${analyzed.usable}`);
-      if (analyzed.pbo?.usable) log(`PBO=${(100 * analyzed.pbo.pbo).toFixed(1)} %`);
-      if (analyzed.dsr?.usable) log(`DSR=${analyzed.dsr.dsr.toFixed(3)}`);
-      if (analyzed.effectiveTrials) {
-        log(`Pruebas efectivas ≈ ${analyzed.effectiveTrials.nEffective}/${analyzed.effectiveTrials.nRaw}`);
+    const finished = await api.mt5FinishValidate({
+      strategyId: strategy.id,
+      reportBasePath: enq.reportPath,
+      experimentId: state.experimentId,
+      profile: state.prereg,
+      preregistrationHash: state.preregHash,
+      eaVersionId: state.eaVersionId,
+      allowIsOnly: true,
+    });
+
+    if (finished.orf) {
+      log(`ORF T=${finished.orf.T} N=${finished.orf.N} usable=${finished.orf.usable}`);
+      if (finished.orf.pbo != null) log(`PBO=${(100 * finished.orf.pbo).toFixed(1)} %`);
+      if (finished.orf.dsr != null) log(`DSR=${finished.orf.dsr.toFixed(3)}`);
+      if (finished.orf.effectiveTrials) {
+        log(`Pruebas efectivas ≈ ${finished.orf.effectiveTrials.nEffective}/${finished.orf.effectiveTrials.nRaw}`);
       }
-      renderVerdict(analyzed.verdict);
+      renderVerdict(finished.orf.verdict);
+    } else {
+      log('Sin .orf (¿Optimization con pocas pasadas o sonda no escribió?). Usa «Analizar .orf…» si aparece después.');
     }
 
-    // Intentar import Lite si hay XML IS+FW (a menudo Optimization=0 no genera forward)
-    try {
-      const collected = await api.mt5CollectReports(enq.reportPath);
-      log(`Informes: xml=${(collected.paths?.xml || []).length} htm=${(collected.paths?.htm || []).length}`);
-    } catch (e) {
-      log(`Collect: ${e.message || e}`);
+    if (finished.import?.experiment) {
+      log(`Ledger: experimento ${finished.import.experiment.id}`);
+      if (finished.import.hasForward === false || finished.import.config?.hasForward === false) {
+        log('Importado sin forward (allowIsOnly).');
+      }
+    } else if (finished.import?.message) {
+      log(`Import: ${finished.import.message}`);
     }
 
-    log('Validar (pipeline) listo. Si N<2 en el ORF, lanza una optimización con malla desde la vista MT5.');
+    if (finished.counter) {
+      const c = finished.counter;
+      log(`Contador: ${c.experiments} exp · ${c.totalPasses} pasadas · efectivas ${c.effectiveTrials ?? 'n/d'} (${c.effectiveTrialsNote})`);
+    }
+
+    if (finished.incubationPreview?.usable) {
+      try {
+        sessionStorage.setItem(
+          'orometra.incubationBands',
+          JSON.stringify({
+            strategyId: strategy.id,
+            bands: finished.incubationPreview,
+            at: new Date().toISOString(),
+          }),
+        );
+        log('Bandas de incubación guardadas (vista Incubación del Registro).');
+      } catch { /* private */ }
+    }
+
+    log('Validar cerrado.');
   } catch (err) {
     log(`Error: ${err.message || err}`);
   }

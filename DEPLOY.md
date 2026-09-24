@@ -13,6 +13,10 @@ No se suben a Pages `desktop/`, `tests/`, `mql5/`, `docs/` ni `node_modules/`.
 Además, `.github/workflows/ci.yml` ejecuta los mismos tests en cada push y PR a
 `main` (aunque no haya deploy).
 
+Desktop: `npm run desktop`. El asistente Validar puede lanzar malla vía `.set`;
+tras el job importa ORF/XML al ledger. La verificación E2E con MetaTrader real
+sigue documentada como pendiente en `docs/MT5_ASSUMPTIONS.md` y el CHANGELOG.
+
 En el repo: **Settings → Pages → Source: GitHub Actions** (solo hace falta
 configurarlo una vez). En el plan gratuito de GitHub, Pages requiere el
 repositorio **público**.

@@ -1,6 +1,7 @@
 // Cobertura vs .set + parser de rangos MT5.
 import {
   parseSetText, parseSetToken, levelsFromRange, coverageAgainstSet, looksLikeSetFile,
+  setParamsToTesterInputs,
 } from '../core/setfile.js';
 import { runAnalysis } from '../core/analysis.js';
 import { DEFAULT_POLICY } from '../core/metrics.js';
@@ -31,6 +32,10 @@ InpMode=Fast
   check('levelsFromRange 5..20 step 5', levelsFromRange(5, 5, 20).join(',') === '5,10,15,20');
   check('looksLikeSetFile por nombre', looksLikeSetFile('opt.set', ''));
   check('looksLikeSetFile por contenido', looksLikeSetFile('x.txt', 'InpA=1||0||1||10||Y\n'));
+  const inputs = setParamsToTesterInputs(p, { experimentId: 'exp1' });
+  check('setParamsToTesterInputs length', inputs.length === 4);
+  check('Y → optimize', inputs[0].optimize === true && inputs[0].start === 5);
+  check('OrometraExperimentId añadido', inputs.some((i) => i.name === 'OrometraExperimentId' && i.value === 'exp1'));
 }
 
 section('coverageAgainstSet vs demo (set = malla observada)');

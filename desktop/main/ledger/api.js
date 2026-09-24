@@ -9,7 +9,7 @@ function parseJson(s, fallback = null) {
   try { return JSON.parse(s); } catch { return fallback; }
 }
 
-/** Contador de búsqueda honesto por estrategia (effectiveTrials = n/d hasta Fase 4). */
+/** Contador de búsqueda honesto por estrategia. */
 export function getSearchCounter(db, strategyId) {
   const experiments = db.prepare(
     'SELECT COUNT(*) AS n FROM experiment WHERE strategy_id = ?',
@@ -21,6 +21,29 @@ export function getSearchCounter(db, strategyId) {
     'SELECT COALESCE(SUM(n_passes), 0) AS n FROM experiment WHERE strategy_id = ? AND n_passes IS NOT NULL',
   ).get(strategyId).n;
   const strategy = db.prepare('SELECT * FROM strategy WHERE id = ?').get(strategyId);
+
+  // Suma pruebas efectivas guardadas en summaries (ORF / matrix). Si no hay, null.
+  const summaries = db.prepare(`
+    SELECT r.summary_json AS summary_json
+    FROM result r
+    JOIN experiment e ON e.id = r.experiment_id
+    WHERE e.strategy_id = ?
+  `).all(strategyId);
+  let effSum = 0;
+  let effFound = false;
+  for (const row of summaries) {
+    const s = parseJson(row.summary_json, {}) || {};
+    const n = Number(
+      s.effectiveTrialsN
+      ?? s.effectiveTrials?.nEffective
+      ?? (typeof s.effectiveTrials === 'number' ? s.effectiveTrials : NaN),
+    );
+    if (Number.isFinite(n) && n >= 0) {
+      effSum += n;
+      effFound = true;
+    }
+  }
+
   const priorApprox = strategy?.prior_search_approx;
   const priorNote = strategy?.prior_search_note ?? '';
   return {
@@ -28,14 +51,12 @@ export function getSearchCounter(db, strategyId) {
     experiments,
     eaVersions,
     totalPasses: passes,
-    // Fase 4 calculará el nº efectivo de pruebas; hasta entonces no se inventa.
-    effectiveTrials: null,
-    effectiveTrialsNote: 'pending_phase_4',
+    effectiveTrials: effFound ? Math.round(effSum) : null,
+    effectiveTrialsNote: effFound ? 'sum_orf_effective_trials' : 'no_orf_matrix_yet',
     declaredPriorSearch: {
       note: priorNote,
       approx: priorApprox == null ? null : priorApprox,
     },
-    // Suma declarada + pasadas en Orometra (honesto: lo declarado es aparte).
     displayTotal: {
       inOrometraPasses: passes,
       declaredOutside: priorApprox,
@@ -196,6 +217,9 @@ export function importOptimization(db, {
   config = {},
   summary = {},
   status = 'completed',
+  eaVersionId = null,
+  datasetId = null,
+  preregistrationId = null,
 }) {
   if (!strategyId) throw new Error('Indica a qué estrategia pertenece esta importación.');
   if (!getStrategy(db, strategyId)) throw new Error('Estrategia no encontrada.');
@@ -217,8 +241,21 @@ export function importOptimization(db, {
   const tx = db.transaction(() => {
     db.prepare(`
       INSERT INTO experiment (id, strategy_id, ea_version_id, dataset_id, type, config_json, n_passes, seed, status, preregistration_id, created_at, finished_at)
-      VALUES (?, ?, NULL, NULL, ?, ?, ?, ?, ?, NULL, ?, ?)
-    `).run(expId, strategyId, type, configJson, nPasses, seed, status, createdAt, createdAt);
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      expId,
+      strategyId,
+      eaVersionId,
+      datasetId,
+      type,
+      configJson,
+      nPasses,
+      seed,
+      status,
+      preregistrationId,
+      createdAt,
+      createdAt,
+    );
     db.prepare(`
       INSERT INTO result (id, experiment_id, paths_json, summary_json, created_at)
       VALUES (?, ?, ?, ?, ?)
@@ -229,6 +266,7 @@ export function importOptimization(db, {
   return {
     experiment: db.prepare('SELECT * FROM experiment WHERE id = ?').get(expId),
     result: db.prepare('SELECT * FROM result WHERE id = ?').get(resId),
+    experimentId: expId,
     counter: getSearchCounter(db, strategyId),
   };
 }

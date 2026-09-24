@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-09-24 — Plan cerrado (malla Validar → incubación → CSP)
+
+### Hecho
+- **Validar malla:** el asistente acepta `.set`, Optimization 0/1/2, ForwardMode; estima coste; fuerza Opt=0 si no hay params Y.
+- **Post-MT5:** `mt5:finishValidate` analiza ORF (PBO/DSR/effectiveTrials), importa XML (IS-only permitido con aviso), guarda summary en ledger; contador suma `effectiveTrials`.
+- **Incubación UI:** vista Desktop con fijar bandas / comparar realizado; bandas también desde Validar (sessionStorage).
+- **Desktop hardening:** CSP en sesión Electron + `sandbox: true`; i18n ES/EN básico del shell.
+- IPC nuevos: `parseSetFile`, `setToInputs`, `finishValidate`, `incubationBands`, `compareIncubation`, `createEaVersion`.
+
+### Pendiente (MT5 real / no inventado)
+- Verificar en terminal real: compile MetaEditor, escritura `.orf` en Common\Files\Orometra, Forward XML de Optimization=1, INI-*.
+- Malla genética con inputs enormes: el usuario debe confirmar coste; no hay auto-recorte de rejilla.
+- Fase 7: no iniciada.
+
 ## 2026-09-24 — Validar cableado (Fases 3–5 parcial)
 
 - IPC: `mt5:instrumentEa`, `compileMq5`, `readOrf`, `findOrf`, `analyzeOrf`, `prepareValidate`, `integratedVerdict`.
