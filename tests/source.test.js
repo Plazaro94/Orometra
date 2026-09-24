@@ -25,7 +25,6 @@ function check(name, cond, detail = '') {
 const sources = [
   ...fs.readdirSync(path.join(ROOT, 'js')).filter((f) => f.endsWith('.js')).map((f) => 'js/' + f),
   ...fs.readdirSync(path.join(ROOT, 'core')).filter((f) => f.endsWith('.js')).map((f) => 'core/' + f),
-  ...['desktop/main/main.js', 'desktop/main/ipc.js', 'desktop/main/ledger/db.js', 'desktop/main/ledger/api.js', 'desktop/main/ledger/client.js', 'desktop/main/ledger/host.js', 'desktop/main/mt5/instrument.js', 'desktop/main/mt5/compile.js', 'desktop/main/mt5/orf-read.js', 'desktop/renderer/shell.js'],
   'index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'styles.css', 'tools/audit.js',
 ];
 

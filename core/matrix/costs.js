@@ -3,7 +3,7 @@
  * Resta coste extra por volumen/operaciones diarias.
  */
 
-import { mean, cumsum, maxDrawdown, numRows, numCols, column } from './util.js';
+import { maxDrawdown } from './util.js';
 
 /**
  * @param opts.dailyVolume [T] lotes

@@ -1,5 +1,64 @@
 # Changelog
 
+## 2026-09-24 — Recorte de alcance: fuera Desktop, sonda MQL5 y walk-forward
+
+Decisión del usuario, no técnica: Orometra se queda como **una sola cosa, en el
+navegador**. Se retira todo lo construido en la sesión anterior (entrada de más
+arriba) que dependía de instalar algo fuera del navegador.
+
+### Retirado
+- **`desktop/`** entero: app Electron, ledger SQLite (`better-sqlite3`), runner que
+  detectaba/lanzaba MT5 (`detect.js`, `launch.js`, `ini.js`, `queue.js`), IPC.
+- **`mql5/`** entero: `OrometraProbe.mqh` y el EA de ejemplo instrumentado. Con ella se
+  iba el único camino que existía hacia PBO/CSCV real y DSR publicado (necesitan la
+  curva de equity de cada configuración de la rejilla, y el export de optimización de
+  MT5 nunca la trae).
+- `core/orf.js` (lector del `.orf`), `core/incubation.js`, `core/verdict-integrated.js`
+  (solo los usaba el asistente de Desktop).
+- `core/matrix/cscv.js` (PBO real), `core/matrix/wfo.js` (walk-forward multiventana),
+  `core/matrix/dsr.js` (DSR publicado + nº efectivo de pruebas por clustering): los
+  tres necesitaban la matriz T×N de retornos por configuración que solo daba la sonda.
+- `core/matrix/risk.js`: se quedó solo con el aviso de dominancia del swap
+  (`dataWarnings`). La auditoría de estructura de riesgo (martingala, grid, sin stop)
+  necesitaba el lote y el SL de cada posición abierta — datos de la sonda, no del
+  informe HTML de MT5 — y no se reintroduce con datos a medias.
+- Dependencias `electron`, `@electron/rebuild`, `better-sqlite3`: el proyecto vuelve a
+  tener **cero dependencias** en tiempo de ejecución y de compilación.
+
+### Añadido — de las 6 cifras a las operaciones una a una
+El informe HTML de backtest de una sola configuración ya traía la lista de operaciones
+(`core/report.js#deals`) desde la Fase 0, pero solo se usaba para contar cuántas había.
+`core/matrix/from-deals.js` las agrupa por día de cierre y con eso, en el periodo no
+visto, sin ninguna instalación adicional:
+- **Monte Carlo** (`bootstrap.js`, ya existía): 10.000 simulaciones por bootstrap
+  estacionario (Politis & Romano 1994) sobre las operaciones reales del usuario. Los
+  horizontes de pérdida a 3/6/12 meses solo se muestran si el tramo cubre esos
+  63/126/252 días enteros; si no, se marca «—» en vez de repetir el mismo número bajo
+  tres etiquetas distintas.
+- **Tamaño de muestra / potencia** (`sample.js`, ya existía): ¿se distingue el
+  resultado medio diario de cero con esta cantidad de días?
+- **Stress de costes** (`costs.js`, ya existía): escenarios base/moderado/severo de
+  spread, slippage y comisión extra, y el punto de equilibrio.
+- **Aviso de swap** (`risk.js`): si el swap pesa más de un 15 % sobre el neto. Se
+  separó `swap` de `commission` en `core/report.js#parseDeals` para poder calcularlo
+  (antes iban sumados en un único `cost`).
+
+Los tres primeros módulos (`bootstrap.js`, `sample.js`, `costs.js`) ya estaban escritos
+para el pipeline de Desktop+sonda: trabajaban sobre series genéricas de retornos/PnL,
+no sobre la matriz T×N, así que no hizo falta reescribirlos — solo un adaptador
+(`from-deals.js`) y engancharlos en `js/ui-unseen.js`, en la pestaña «Periodo no
+visto», justo debajo de la ficha del informe cargado.
+
+### Nuevas pruebas
+`tests/deals-matrix.test.js` (agrupación por día, casos no usables, swap dominante) y
+`tests/matrix.test.js` recortado a lo que sobrevive.
+
+### Documentación
+`docs/SPEC.md` reescrito (la versión anterior era el plan de Desktop/Fases 1-7, ya no
+aplica). `docs/MT5_ASSUMPTIONS.md` sin las filas `INI-*`/`FRAME-*`/`ORF-1`/`PROBE-1`.
+
+---
+
 ## 2026-09-24 — Plan cerrado (malla Validar → incubación → CSP)
 
 ### Hecho

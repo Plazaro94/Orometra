@@ -29,7 +29,11 @@ export const state = {
   isDemo: false,
   busy: false,
   // Periodo no visto: lo que el usuario teclea y el último resultado calculado.
-  unseen: { plateauIndex: 0, values: {}, result: null, error: null },
+  // `tradesAudit`: Monte Carlo / muestra / costes calculados sobre las operaciones del
+  // informe cargado (core/matrix/from-deals.js), independiente del contraste numérico.
+  unseen: {
+    plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: null,
+  },
   report: null,
   preflight: { is: null, oos: null },
   searchSet: null,

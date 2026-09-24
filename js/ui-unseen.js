@@ -2,8 +2,9 @@
 
 import { evaluateUnseen } from '../core/unseen.js';
 import { parseBacktestReport, compareParams } from '../core/report.js';
+import { auditUnseenTrades } from '../core/matrix/from-deals.js';
 import { L, localeTag } from './i18n.js';
-import { state, api, $, num, int, esc, rawValue, paramValue, decodeHead } from './ui-state.js';
+import { state, api, $, num, int, pct, esc, rawValue, paramValue, decodeHead } from './ui-state.js';
 
 export async function setReport(file) {
   try {
@@ -20,6 +21,12 @@ export async function setReport(file) {
     };
     state.unseen.result = null;
     state.unseen.error = null;
+    // A partir de la lista de operaciones (no de los seis campos agregados), y solo si
+    // el informe trae suficientes: Monte Carlo, tamaño de muestra y stress de costes.
+    // Ver core/matrix/from-deals.js.
+    state.unseen.tradesAudit = report.deals && report.deals.length
+      ? auditUnseenTrades(report.deals)
+      : null;
     api.clearError();
     if (state.analysis) {
       api.setTab('unseen');
@@ -128,6 +135,156 @@ export function renderReportCard(a, plateau) {
   </section>`;
 }
 
+/**
+ * Robustez calculada a partir de las operaciones una a una del informe: lo único que
+ * el export de optimización nunca trae. Independiente del contraste numérico de arriba
+ * (no hace falta rellenar ni pulsar "Comprobar"): basta con haber soltado el informe.
+ */
+export function renderTradesAudit() {
+  const rep = state.report;
+  if (!rep || !rep.deals.length) return '';
+  const aud = state.unseen.tradesAudit;
+  if (!aud) return '';
+
+  const head = `<div class="panel-head compact">
+      <div><div class="panel-kicker">${L('Desde tus operaciones', 'From your trades')}</div><h2>${L('Robustez frente a costes y muestra', 'Robustness against costs and sample size')}</h2></div>
+    </div>`;
+
+  if (!aud.usable) {
+    const reason = aud.reason === 'pocos_dias'
+      ? L(
+        `Solo ${int(aud.days)} días con operaciones: hacen falta al menos 5 para simular algo. No es un fallo, es
+        que el tramo es demasiado corto para esto en concreto (el contraste de arriba sigue siendo válido).`,
+        `Only ${int(aud.days)} days with trades: at least 5 are needed to simulate anything. It's not a
+        failure, this particular check just needs a longer segment (the contrast above still stands).`,
+      )
+      : L(
+        'El informe no trae fechas de cierre reconocibles, así que no se puede agrupar por día sin inventar un reparto.',
+        "The report doesn't have recognizable closing dates, so trades can't be grouped by day without making one up.",
+      );
+    return `<section class="panel"><div class="panel-head compact"><div><h2>${L('Desde tus operaciones', 'From your trades')}</h2></div></div><p class="muted">${esc(reason)}</p></section>`;
+  }
+
+  const { bootstrap: bs, sample: sa, costs, breakEven, warnings } = aud;
+
+  // El bootstrap acorta cada horizonte a los días que de verdad hay (core/matrix/
+  // bootstrap.js: h = min(dias, 63|126|252)). Con menos de 63 días los tres horizontes
+  // se calculan sobre el mismo tramo y darian el mismo numero con etiquetas distintas:
+  // eso es peor que no mostrarlo. Solo se enseña el horizonte que el tramo cubre entero.
+  const horizon = (days, threshold, value) => (days >= threshold ? pct(value) : '—');
+  const shortHorizons = bs.usable && aud.days < 252;
+
+  const mc = bs.usable
+    ? `<div class="evidence-list">
+        <div><span>${L('Resultado si repites un tramo así (mediana de 10.000 simulaciones)', 'Result if you repeat a segment like this (median of 10,000 simulations)')}</span><strong>${num(bs.returnCi.p50, 2)}</strong></div>
+        <div><span>${L('Rango habitual (P05–P95)', 'Typical range (P05–P95)')}</span><strong>${num(bs.returnCi.p05, 2)} &ndash; ${num(bs.returnCi.p95, 2)}</strong></div>
+        <div><span>${L('Drawdown máximo esperado (mediana)', 'Expected maximum drawdown (median)')}</span><strong>${num(bs.maxDdCi.p50, 2)}</strong></div>
+        <div><span>${L('Probabilidad de pérdida a 3 meses (~63 días)', 'Probability of a loss at 3 months (~63 days)')}</span><strong>${horizon(aud.days, 63, bs.probLoss.m3)}</strong></div>
+        <div><span>${L('a 6 meses (~126 días)', 'at 6 months (~126 days)')}</span><strong>${horizon(aud.days, 126, bs.probLoss.m6)}</strong></div>
+        <div><span>${L('a 12 meses (~252 días)', 'at 12 months (~252 days)')}</span><strong>${horizon(aud.days, 252, bs.probLoss.m12)}</strong></div>
+      </div>
+      <p class="chart-note">${L(
+        `Reordena tus propias operaciones al azar 10.000 veces (bootstrap estacionario, Politis &amp;
+        Romano 1994), respetando bloques para no romper la dependencia entre operaciones seguidas. No
+        inventa una distribución: solo baraja lo que ya pasó.
+        ${shortHorizons ? `Con ${int(aud.days)} días de histórico, algún horizonte queda por encima de lo que el
+        tramo cubre y se marca con «—» en vez de repetir el mismo número con otra etiqueta.` : ''}`,
+        `Your own trades reshuffled at random 10,000 times (stationary bootstrap, Politis &amp; Romano
+        1994), keeping blocks intact so it doesn't break the dependence between consecutive trades. It
+        doesn't invent a distribution: it only reshuffles what already happened.
+        ${shortHorizons ? `With ${int(aud.days)} days of history, some horizon is longer than what the
+        segment covers and is marked "—" instead of repeating the same number under another label.` : ''}`,
+      )}</p>`
+    : `<p class="muted">${L('Muy pocos días para simular con garantías.', 'Too few days to simulate reliably.')}</p>`;
+
+  const sufficient = sa.verdictHint === 'sample_ok';
+  const sampleRow = `<div class="evidence-list">
+      <div><span>${L('Días de datos', 'Days of data')}</span><strong>${int(sa.n)}</strong></div>
+      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${sufficient ? 'ok' : 'warn'}">${sa.power.usable ? pct(sa.power.power) : '—'}</strong></div>
+      <div><span>${L('Intervalo de confianza del resultado diario medio', 'Confidence interval of the average daily result')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 3)} &ndash; ${num(sa.meanCi.ci.p95, 3)}` : '—'}</strong></div>
+    </div>
+    <p class="chart-note">${sufficient
+      ? L(
+        'Con estos días, el resultado medio diario se distingue de cero con razonable seguridad.',
+        "With this many days, the average daily result is distinguishable from zero with reasonable confidence.",
+      )
+      : L(
+        `Con estos días <strong>no se puede distinguir con confianza el resultado medio de cero</strong>: podría
+        ser ventaja real, podría ser ruido. No es un veredicto negativo, es una advertencia sobre el tamaño
+        de la muestra.`,
+        `With this many days <strong>the average result cannot be confidently distinguished from zero</strong>:
+        it could be a real edge, it could be noise. It isn't a negative verdict, it's a warning about
+        sample size.`,
+      )}</p>`;
+
+  const scenLabel = { base: L('Base (tal cual)', 'Base (as is)'), moderate: L('Moderado', 'Moderate'), severe: L('Severo', 'Severe') };
+  const costRows = ['base', 'moderate', 'severe'].map((k) => {
+    const c = costs[k];
+    return `<tr>
+      <td class="strong">${scenLabel[k]}</td>
+      <td>${num(c.stressedNet, 2)}</td>
+      <td>${pct(c.degradation, 1)}</td>
+      <td>${num(c.maxDrawdownStressed, 2)}</td>
+      <td><span class="badge ${c.stillProfitable ? 'ok' : 'bad'}">${c.stillProfitable ? L('sí', 'yes') : L('no', 'no')}</span></td>
+    </tr>`;
+  }).join('');
+
+  const costs2 = `<div class="table-wrap"><table>
+      <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Drawdown máx.', 'Max drawdown')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
+      <tbody>${costRows}</tbody>
+    </table></div>
+    <p class="chart-note">${L(
+      `Resta spread, slippage y comisión extra a cada operación (escenarios orientativos, no los costes
+      exactos de tu bróker) y recalcula. El escenario base es tal cual lo mediste; moderado y severo
+      preguntan qué pasa si tus costes reales en vivo son peores que los que usaste al optimizar.
+      ${breakEven.usable ? `El coste extra por operación que anularía toda la ventaja es de <strong>${num(breakEven.breakEven, 2)}</strong>.` : ''}`,
+      `Subtracts extra spread, slippage and commission from every trade (orientative scenarios, not your
+      broker's exact costs) and recalculates. The base scenario is as measured; moderate and severe ask
+      what happens if your real live costs are worse than the ones you optimized with.
+      ${breakEven.usable ? `The extra cost per trade that would wipe out the whole edge is <strong>${num(breakEven.breakEven, 2)}</strong>.` : ''}`,
+    )}</p>`;
+
+  // `dataWarnings` (core/matrix/risk.js) es un módulo puro y devuelve `detail` en un
+  // solo idioma: no le corresponde saber en qué idioma está la interfaz. El texto que
+  // se muestra se decide aquí, por `code`, igual que el resto de esta pantalla.
+  const WARNING_TEXT = {
+    SWAP_DOMINANCE: L(
+      'El tester aplica los swaps actuales a todo el histórico simulado: el swap pesa una parte grande del resultado neto.',
+      'The tester applies current swap rates to the whole simulated history: swap accounts for a large share of the net result.',
+    ),
+    MIXED_TICKS: L(
+      'Heurística: el periodo podría mezclar tramos con ticks reales y generados.',
+      'Heuristic: the period may mix segments with real and generated ticks.',
+    ),
+    DATA_FINGERPRINT: L(
+      'La huella de datos difiere entre experimentos de la misma estrategia.',
+      'The data fingerprint differs between experiments of the same strategy.',
+    ),
+  };
+  const swapWarn = warnings.length
+    ? `<div class="inline-warn">${warnings.map((w) => esc(WARNING_TEXT[w.code] || w.detail)).join(' ')}</div>`
+    : '';
+
+  return `<section class="panel">
+    ${head}
+    <p class="panel-intro">${L(
+      `Esto no sale de las seis cifras que rellenaste arriba, sino de las <strong>${int(rep.deals.length)}
+      operaciones una a una</strong> que trae el informe: es el único dato de MT5 que permite esto sin
+      inventar nada.`,
+      `This doesn't come from the six figures filled in above, but from the
+      <strong>${int(rep.deals.length)} individual trades</strong> in the report: it's the only piece of
+      MT5 data that allows this without making anything up.`,
+    )}</p>
+    <h3>${L('Monte Carlo', 'Monte Carlo')}</h3>
+    ${mc}
+    <h3>${L('¿Alcanza la muestra?', 'Is the sample enough?')}</h3>
+    ${sampleRow}
+    <h3>${L('Si tus costes reales son peores', 'If your real costs are worse')}</h3>
+    ${costs2}
+    ${swapWarn}
+  </section>`;
+}
+
 export function renderUnseen(a) {
   const fieldsDef = unseenFields();
   const head = `<div class="detail-head">
@@ -167,6 +324,7 @@ export function renderUnseen(a) {
     </label>`).join('');
 
   const reportCard = renderReportCard(a, p);
+  const tradesAudit = renderTradesAudit();
 
   const form = `<section class="panel">
     <div class="panel-head compact">
@@ -202,7 +360,7 @@ export function renderUnseen(a) {
     </div>
   </section>`;
 
-  if (!res) return `${head}${reportCard}${form}${params}`;
+  if (!res) return `${head}${reportCard}${tradesAudit}${form}${params}`;
 
   // Si el informe es de OTRA configuracion, el contraste es aritmeticamente correcto
   // pero no valida nada: seria enganoso ensenarlo en verde. Se degrada a aviso y se
@@ -266,7 +424,7 @@ export function renderUnseen(a) {
       <ul class="limits">${res.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
     </section>`;
 
-  return `${head}${reportCard}${form}${result}${params}`;
+  return `${head}${reportCard}${tradesAudit}${form}${result}${params}`;
 }
 
 export function readUnseenForm() {

@@ -206,15 +206,22 @@ function parseDeals(rows) {
   if (headerAt < 0) return [];
 
   const deals = [];
-  const costOf = (c) => {
+  const commissionOf = (c) => {
     const com = cols.commission >= 0 ? toNumber(c[cols.commission]) : 0;
+    return Number.isFinite(com) ? com : 0;
+  };
+  const swapOf = (c) => {
     const swp = cols.swap >= 0 ? toNumber(c[cols.swap]) : 0;
-    return (Number.isFinite(com) ? com : 0) + (Number.isFinite(swp) ? swp : 0);
+    return Number.isFinite(swp) ? swp : 0;
   };
   // La comision de una operacion se reparte entre su apertura y su cierre, y solo el
   // cierre lleva el beneficio. Se arrastran los costes de las aperturas hasta el cierre
-  // siguiente: asi cada operacion queda con su coste completo y la suma cuadra.
-  let carry = 0;
+  // siguiente: asi cada operacion queda con su coste completo y la suma cuadra. Comision
+  // y swap se arrastran por separado porque el aviso de dominancia del swap (core/matrix/
+  // risk.js) necesita distinguirlos: uno lo fija el bróker, el otro lo aplica el tester
+  // con la tasa ACTUAL a todo el histórico.
+  let carryCommission = 0;
+  let carrySwap = 0;
 
   for (let i = headerAt + 1; i < rows.length; i++) {
     const c = rows[i];
@@ -225,19 +232,25 @@ function parseDeals(rows) {
     // Solo el cierre materializa el resultado. Si el informe no trae direccion, se
     // acepta cualquier fila con beneficio distinto de cero.
     if (cols.direction >= 0 && !/out/.test(dir)) {
-      carry += costOf(c);
+      carryCommission += commissionOf(c);
+      carrySwap += swapOf(c);
       continue;
     }
     const profit = toNumber(c[cols.profit]);
     if (!Number.isFinite(profit)) continue;
-    const cost = costOf(c) + carry;
-    carry = 0;
+    const commission = commissionOf(c) + carryCommission;
+    const swap = swapOf(c) + carrySwap;
+    carryCommission = 0;
+    carrySwap = 0;
+    const cost = commission + swap;
     deals.push({
       time: c[cols.time] || '',
       // `profit` es el resultado bruto de la operacion; `net` le descuenta comision y
       // swap, que es lo que de verdad entra en la cuenta. La suma de los `net` reproduce
       // exactamente el beneficio neto del informe.
       profit,
+      commission,
+      swap,
       cost,
       net: profit + cost,
       volume: cols.volume >= 0 ? toNumber(c[cols.volume]) : NaN,

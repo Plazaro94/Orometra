@@ -25,9 +25,8 @@ jobs:
           node-version: "22"
           cache: npm
 
-      # better-sqlite3 (ledger tests) needs a native build; Electron is not required.
       - name: Install dependencies
-        run: npm ci --omit=dev
+        run: npm ci
 
       - name: Run tests
         run: npm test

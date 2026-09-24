@@ -95,6 +95,12 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   configuración elegida sobre un tramo que no se haya usado ni para optimizar ni para
   validar, y se comprueba si son *normales para ese EA* comparándolos con el recorrido
   que la meseta entera demostró.
+- **A partir de las operaciones una a una del informe** (agrupadas por día): Monte Carlo
+  por bootstrap estacionario (Politis & Romano 1994) sobre el periodo no visto —
+  distribución de resultado, drawdown esperado y probabilidad de pérdida a 3/6/12 meses,
+  solo cuando el tramo cubre ese horizonte entero—, tamaño de muestra y potencia
+  estadística, stress de costes (spread/slippage/comisión extra, por escenarios, con
+  punto de equilibrio) y aviso si el swap pesa una parte grande del resultado neto.
 - Exportación: `.set` de la configuración propuesta, `.set` de **rango de refinamiento**
   acotado a un número de combinaciones ejecutable, informe JSON y CSV completo.
 - **Vista previa de los mínimos** y **aviso de empate** entre mesetas casi igualadas.
@@ -109,16 +115,6 @@ node tools/serve.js
 ```
 
 Después abre `http://localhost:3000`. Acepta otro puerto como argumento: `node tools/serve.js 8080`.
-
-### Orometra Desktop (Fase 1)
-
-```bash
-npm run desktop
-```
-
-Abre el registro de investigación (estrategias, contador de búsqueda, importar XML al ledger)
-y puede abrir la misma UI de análisis que la web. Los datos viven en un SQLite local
-(no salen del PC).
 
 ## Pruebas
 
@@ -149,16 +145,20 @@ MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/run.js
 
 - No sustituye a una prueba en un periodo que no se haya usado ni para optimizar ni para
   validar. En cuanto eliges mirando el forward, ese forward deja de ser ciego.
-- Trabaja con las métricas agregadas del probador, no con la curva de capital ni con las
-  operaciones una a una. Por eso la **fragilidad de la selección** es un remuestreo de
-  configuraciones y no el CSCV original sobre series temporales (no se llama PBO).
-- No conoce las fechas de los periodos: la duración relativa del forward se estima con el
-  número de operaciones.
+- La rejilla de optimización solo trae métricas agregadas por pasada, no la curva de
+  capital de cada una. Por eso la **fragilidad de la selección** es un remuestreo de
+  configuraciones y no el CSCV original sobre series temporales (no se llama PBO), y por
+  eso el Monte Carlo y el stress de costes solo existen para la **configuración elegida**,
+  sobre las operaciones una a una del periodo no visto — no para la rejilla entera.
+- No conoce las fechas de los periodos de la rejilla: la duración relativa del forward se
+  estima con el número de operaciones (el periodo no visto sí trae fechas reales, del
+  informe HTML).
 - El contraste del Sharpe asume que MT5 estima esa cifra sobre las operaciones registradas
   (supuesto SR-1 en `docs/MT5_ASSUMPTIONS.md`). Suspenderlo es una señal fuerte; aprobarlo
   no demuestra nada por sí solo.
-- Aún no cubre walk-forward con varias ventanas.
-- Sin la lista de operaciones no es posible un Monte Carlo serio, y el export de optimización no la trae.
+- No hace walk-forward con varias ventanas ni PBO/DSR publicados: exigirían lanzar y volver
+  a lanzar el backtest por ventana, o una curva de equity por configuración de la rejilla,
+  y eso escapa a «sube un archivo, todo ocurre en tu navegador» (ver `docs/SPEC.md`).
 
 ## Temas
 

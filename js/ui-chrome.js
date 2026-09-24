@@ -62,7 +62,9 @@ export function resetSession() {
   state.analysis = null; state.isDemo = false; state.report = null;
   state.searchSet = null; state.searchSetName = null;
   state.selectedPlateau = 0; state.selectedParam = 0;
-  state.unseen = { plateauIndex: 0, values: {}, result: null, error: null };
+  state.unseen = {
+    plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: null,
+  };
   state.preflight = { is: null, oos: null };
   state.tab = 'verdict';
   for (const [sel, key] of [['#isStatus', 'drop.is.status'], ['#oosStatus', 'drop.oos.status']]) {
@@ -282,13 +284,16 @@ export function bindViewEvents() {
     state.report = null;
     state.unseen.values = {};
     state.unseen.result = null;
+    state.unseen.tradesAudit = null;
     render();
   });
   const unseenBtn = $('#unseenCheck');
   if (unseenBtn) unseenBtn.addEventListener('click', () => api.runUnseenCheck());
   const unseenClear = $('#unseenClear');
   if (unseenClear) unseenClear.addEventListener('click', () => {
-    state.unseen = { plateauIndex: state.unseen.plateauIndex, values: {}, result: null, error: null };
+    state.unseen = {
+      plateauIndex: state.unseen.plateauIndex, values: {}, result: null, error: null, tradesAudit: state.unseen.tradesAudit,
+    };
     render();
   });
   $$('[data-copy]').forEach((b) => b.addEventListener('click', (e) => {
