@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-24 — Validar cableado (Fases 3–5 parcial)
+
+- IPC: `mt5:instrumentEa`, `compileMq5`, `readOrf`, `findOrf`, `analyzeOrf`, `prepareValidate`, `integratedVerdict`.
+- `desktop/main/mt5/orf-matrix.js`: ORF → matriz T×N + PBO/DSR/WFO/costes + `integratedVerdict`.
+- Asistente: Validar instrumenta/compila `.mq5`, encola backtest, busca `.orf`, muestra tarjetas; `.ex5` → import XML caja negra; botón «Analizar .orf…».
+- Progreso MT5 se emite a todas las ventanas Electron.
+- Pendiente: malla de optimización desde el wizard, auto-import forward, UI incubación.
+
 ## 2026-09-24 — CI + Pages Lite
 
 - `.github/workflows/ci.yml`: `npm test` en push/PR a `main` (Node 22, sin Electron).

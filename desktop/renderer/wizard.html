@@ -43,9 +43,15 @@
     </section>
 
     <section class="wiz-panel" data-panel="2" hidden>
+      <label>Instalación MT5
+        <div class="file-row">
+          <select id="wInstall"></select>
+          <button type="button" class="btn" id="btnPickInstall">Elegir…</button>
+        </div>
+      </label>
       <label>Símbolo <input id="wSymbol" value="XAUUSD"></label>
       <label>Timeframe
-        <select id="wTf"><option>M15</option><option>H1</option><option>H4</option><option>D1</option></select>
+        <select id="wTf"><option>M15</option><option selected>H1</option><option>H4</option><option>D1</option></select>
       </label>
       <label>Desde <input id="wFrom" type="date"></label>
       <label>Hasta <input id="wTo" type="date"></label>
@@ -54,7 +60,7 @@
         <label><input type="radio" name="mode" value="fixed" checked> Parámetros fijos (WFO es diagnóstico)</label>
         <label><input type="radio" name="mode" value="reopt"> Reoptimizar cada cierto tiempo (WFO es evidencia principal)</label>
       </fieldset>
-      <p class="muted">El WFO valida un procedimiento de reoptimización, no un set fijo de parámetros.</p>
+      <p class="muted">El asistente lanza un backtest instrumentado (1 pasada). Para malla/optimización completa usa la vista MT5 del Registro tras instrumentar.</p>
     </section>
 
     <section class="wiz-panel" data-panel="3" hidden>
@@ -79,10 +85,12 @@
 
     <footer class="wiz-foot">
       <button type="button" class="btn" id="btnPrev" hidden>Atrás</button>
+      <button type="button" class="btn" id="btnAnalyzeOrf">Analizar .orf…</button>
       <button type="button" class="btn primary" id="btnNext">Siguiente</button>
       <button type="button" class="btn primary" id="btnValidate" hidden>Validar</button>
     </footer>
     <pre id="wizLog" class="import-log" hidden></pre>
+    <div id="wizResult" class="wiz-result" hidden></div>
   </div>
   <script type="module" src="./wizard.js"></script>
 </body>

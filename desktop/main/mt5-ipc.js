@@ -1,8 +1,9 @@
-// IPC del runner MT5 (Fase 2).
+// IPC del runner MT5 (Fase 2) + sonda / ORF / Validar (Fases 3–5).
 
-import { ipcMain, app } from 'electron';
+import { ipcMain, app, BrowserWindow } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { listInstallations, listExperts, isTerminalRunning, findMetaEditor } from './mt5/detect.js';
 import { buildTesterIni, estimateCombinations } from './mt5/ini.js';
 import { estimateJobCost } from './mt5/cost.js';
@@ -14,9 +15,14 @@ import {
   copyPortableHint,
   shallowCheckMt5Dir,
 } from './mt5/portable.js';
+import { instrumentEa } from './mt5/instrument.js';
+import { compileMq5, findMetaEditor as findMetaEditorCompile } from './mt5/compile.js';
+import { readOrfFile } from './mt5/orf-read.js';
+import { analyzeOrfDoc, ensureDecodedOrf } from './mt5/orf-matrix.js';
 import { runAnalysis } from '../../core/analysis.js';
 import { DEFAULT_POLICY } from '../../core/metrics.js';
 import { setLocale } from '../../js/i18n.js';
+import { integratedVerdict } from '../../core/verdict-integrated.js';
 
 function compactSummary(analysis) {
   if (!analysis) return {};
@@ -44,10 +50,44 @@ export function registerMt5Ipc(ctx) {
   const userData = app.getPath('userData');
 
   function sendProgress(payload) {
-    const win = getMainWindow?.();
-    if (win && !win.isDestroyed()) {
-      win.webContents.send('mt5:jobProgress', payload);
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (win && !win.isDestroyed()) {
+        try { win.webContents.send('mt5:jobProgress', payload); } catch { /* ignore */ }
+      }
     }
+    // compat: también la ventana principal si el listado estuviera vacío en tests
+    const main = getMainWindow?.();
+    if (main && !main.isDestroyed()) {
+      try { main.webContents.send('mt5:jobProgress', payload); } catch { /* ignore */ }
+    }
+  }
+
+  function findOrfCandidates(experimentId) {
+    const id = String(experimentId || 'default').replace(/[^\w.-]+/g, '_');
+    const roots = [];
+    const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+    roots.push(path.join(appData, 'MetaQuotes', 'Terminal', 'Common', 'Files', 'Orometra'));
+    const local = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    roots.push(path.join(local, 'Temp'));
+    const found = [];
+    for (const root of roots) {
+      if (!fs.existsSync(root)) continue;
+      const direct = path.join(root, `${id}.orf`);
+      if (fs.existsSync(direct)) found.push(direct);
+      try {
+        for (const ent of fs.readdirSync(root, { withFileTypes: true })) {
+          if (ent.isFile() && ent.name.toLowerCase().endsWith('.orf')) {
+            const full = path.join(root, ent.name);
+            if (!found.includes(full)) found.push(full);
+          }
+          if (ent.isDirectory()) {
+            const nested = path.join(root, ent.name, `${id}.orf`);
+            if (fs.existsSync(nested) && !found.includes(nested)) found.push(nested);
+          }
+        }
+      } catch { /* ignore */ }
+    }
+    return found;
   }
 
   ipcMain.handle('mt5:listInstallations', async () => listInstallations());
@@ -243,6 +283,135 @@ export function registerMt5Ipc(ctx) {
       summary,
       verdict: analysis.verdict,
       collected,
+    };
+  });
+
+  // --- Fase 3–5: instrumentar / compilar / ORF / veredicto integrado ---
+
+  ipcMain.handle('mt5:instrumentEa', async (_e, opts = {}) => {
+    const result = instrumentEa(opts);
+    return { ok: true, ...result, expertRel: path.basename(result.instrumentedPath, '.mq5') };
+  });
+
+  ipcMain.handle('mt5:compileMq5', async (_e, opts = {}) => {
+    const editor = opts.metaEditorPath
+      || findMetaEditorCompile({ terminalPath: opts.terminalPath })
+      || findMetaEditor(opts.terminalPath ? path.dirname(opts.terminalPath) : null);
+    return compileMq5({ ...opts, metaEditorPath: editor || undefined });
+  });
+
+  ipcMain.handle('mt5:readOrf', async (_e, { filePath } = {}) => {
+    if (!filePath || !fs.existsSync(filePath)) {
+      throw new Error(`Archivo .orf no encontrado: ${filePath}`);
+    }
+    const doc = ensureDecodedOrf(readOrfFile(filePath));
+    return {
+      ok: true,
+      filePath,
+      nPasses: doc.nPasses,
+      version: doc.version,
+      passIds: (doc.passes || []).map((p) => p.passId),
+      // no devolver floats crudos al renderer (pesan); basta metadatos
+      passes: (doc.passes || []).map((p) => ({
+        passId: p.passId,
+        nActiveDays: p.nActiveDays,
+        totalNetPnl: p.totalNetPnl,
+        totalClosedTrades: p.totalClosedTrades,
+        lotVaries: p.lotVaries,
+        maxConcurrent: p.maxConcurrent,
+        tradesWithoutSl: p.tradesWithoutSl,
+      })),
+    };
+  });
+
+  ipcMain.handle('mt5:findOrf', async (_e, { experimentId } = {}) => ({
+    candidates: findOrfCandidates(experimentId),
+  }));
+
+  ipcMain.handle('mt5:analyzeOrf', async (_e, {
+    filePath,
+    profile = null,
+    preregistrationHash = null,
+    plateauOk = null,
+    reservedOk = null,
+    searchCounter = null,
+  } = {}) => {
+    if (!filePath || !fs.existsSync(filePath)) {
+      throw new Error(`Archivo .orf no encontrado: ${filePath}`);
+    }
+    const doc = ensureDecodedOrf(readOrfFile(filePath));
+    const result = analyzeOrfDoc(doc, {
+      profile: profile || undefined,
+      preregistrationHash,
+      plateauOk: plateauOk == null ? undefined : plateauOk,
+      reservedOk,
+      searchCounter,
+    });
+    return { ok: true, filePath, ...result };
+  });
+
+  ipcMain.handle('mt5:integratedVerdict', async (_e, ctx = {}) => ({
+    ok: true,
+    verdict: integratedVerdict(ctx),
+  }));
+
+  /**
+   * Prepara Validar: instrumenta+compila .mq5 o marca caja negra .ex5.
+   * No lanza el tester (eso lo hace enqueueJob).
+   */
+  ipcMain.handle('mt5:prepareValidate', async (_e, {
+    eaPath,
+    dataPath,
+    terminalPath = null,
+    experimentId = 'orometra',
+    outDir = null,
+  } = {}) => {
+    if (!eaPath) throw new Error('Falta la ruta del EA.');
+    const ext = path.extname(eaPath).toLowerCase();
+
+    if (ext === '.ex5') {
+      return {
+        ok: true,
+        mode: 'blackbox',
+        message: 'EA compilado (.ex5): modo caja negra. Importa XML IS+Forward (Lite) o usa el runner sin sonda.',
+        eaPath,
+        experimentId,
+      };
+    }
+    if (ext !== '.mq5') {
+      throw new Error('El EA debe ser .mq5 (sonda) o .ex5 (caja negra).');
+    }
+    if (!dataPath) throw new Error('Elige la carpeta de datos MT5 (dataPath) para instalar la sonda.');
+
+    // Siempre escribir la copia instrumentada bajo MQL5/Experts/Orometra para que el Tester la encuentre.
+    const expertsOut = outDir || path.join(dataPath, 'MQL5', 'Experts', 'Orometra');
+    fs.mkdirSync(expertsOut, { recursive: true });
+
+    const inst = instrumentEa({ eaPath, dataPath, outDir: expertsOut });
+    const compile = compileMq5({
+      mq5Path: inst.instrumentedPath,
+      terminalPath: terminalPath || undefined,
+    });
+
+    const expertsRoot = path.join(dataPath, 'MQL5', 'Experts');
+    let expertRel = path.relative(expertsRoot, inst.instrumentedPath).replace(/\\/g, '/').replace(/\.mq5$/i, '');
+    if (expertRel.startsWith('..')) {
+      expertRel = path.basename(inst.instrumentedPath, path.extname(inst.instrumentedPath));
+    }
+
+    return {
+      ok: compile.ok,
+      mode: 'instrumented',
+      experimentId,
+      instrument: inst,
+      compile,
+      expertRel,
+      suggestedInputs: [
+        { name: 'OrometraExperimentId', value: experimentId, optimize: false },
+      ],
+      message: compile.ok
+        ? `Instrumentado y compilado: Experts/${expertRel}`
+        : (compile.plainSummary || 'Falló la compilación.'),
     };
   });
 

@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "node tools/serve.js 3000",
     "desktop": "electron .",
-    "test": "node tests/source.test.js && node tests/smoke.test.js && node tests/audit-fixes.test.js && node tests/set-coverage.test.js && node tests/regression.test.js && node tests/ledger.test.js && node tests/matrix.test.js && node tests/verdict-incubation.test.js && node tests/orf.test.js && node tests/mt5-ini.test.js && node tests/mt5-detect.test.js && node tests/instrument.test.js && node tests/run.js && node tests/stress.js && node tests/method.test.js && node tests/xlsx.test.js && node tests/unseen.test.js && node tests/report.test.js && node tests/invariance.js"
+    "test": "node tests/source.test.js && node tests/smoke.test.js && node tests/audit-fixes.test.js && node tests/set-coverage.test.js && node tests/regression.test.js && node tests/ledger.test.js && node tests/matrix.test.js && node tests/orf-matrix.test.js && node tests/verdict-incubation.test.js && node tests/orf.test.js && node tests/mt5-ini.test.js && node tests/mt5-detect.test.js && node tests/instrument.test.js && node tests/run.js && node tests/stress.js && node tests/method.test.js && node tests/xlsx.test.js && node tests/unseen.test.js && node tests/report.test.js && node tests/invariance.js"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3"

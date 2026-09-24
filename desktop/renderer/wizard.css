@@ -53,4 +53,44 @@
 .wiz-foot {
   display: flex;
   gap: 0.6rem;
+  flex-wrap: wrap;
 }
+.wiz-result {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--border, #2a3548);
+  border-radius: 8px;
+}
+.wiz-result h2 { margin: 0 0 0.4rem; font-size: 1.15rem; }
+.wiz-cards {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.85rem 0;
+}
+.wiz-card {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--border, #2a3548);
+  font-size: 0.9rem;
+}
+.wiz-card.green { border-color: #1f6b4a; }
+.wiz-card.yellow { border-color: #8a6a1f; }
+.wiz-card.red { border-color: #8a2f2f; }
+.wiz-reasons {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  color: var(--muted, #8b95a8);
+}
+.file-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.file-row select,
+.file-row input {
+  flex: 1;
+}
+
