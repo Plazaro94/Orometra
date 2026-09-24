@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /app/
 
-Sitemap: https://plazaro94.github.io/Orometra/sitemap.xml
+Sitemap: https://orometra.netlify.app/sitemap.xml

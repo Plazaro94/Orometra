@@ -1,8 +1,8 @@
 // El análisis corre fuera del hilo principal: una rejilla completa de 100.000
 // pasadas bloquearia la pestana durante segundos si se ejecutase en la interfaz.
 
-import { parseTable } from './parse.js';
-import { runAnalysis } from './analysis.js';
+import { parseTable } from '../core/parse.js';
+import { runAnalysis } from '../core/analysis.js';
 import { setLocale } from './i18n.js';
 
 self.onmessage = (event) => {

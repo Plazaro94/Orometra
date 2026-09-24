@@ -13,8 +13,8 @@ function syncThemeColor() {
 }
 
 function setTheme(name, persist = true) {
-  let next = name === 'cream' ? 'light' : name;
-  next = TEMAS.includes(next) ? next : 'dark';
+  const raw = name === 'cream' ? 'light' : name;
+  const next = TEMAS.includes(raw) ? raw : 'dark';
   document.documentElement.dataset.theme = next;
   $$('[data-theme-set]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.themeSet === next)));
   syncThemeColor();

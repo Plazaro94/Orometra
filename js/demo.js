@@ -10,6 +10,8 @@
 // se generan datos de verdad, con una meseta plantada en un sitio conocido y picos
 // de ruido, para poder comprobar que el motor encuentra lo uno y descarta lo otro.
 
+import { makeRng } from '../core/rng.js';
+
 const PARAMS = [
   { name: 'InpFastMA', values: [8, 10, 12, 14, 16, 18] },
   { name: 'InpSlowMA', values: [40, 50, 60, 70, 80, 90, 100] },
@@ -22,15 +24,6 @@ const PARAMS = [
 // Centro de la meseta real, en índices de nivel.
 const CENTER = [3, 3, 2, 3, 2, 1];
 
-function makeRng(seed) {
-  let s = seed >>> 0;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 const gauss = (r) => Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r());
 
 function metrics(goodness, noise, tradesBase) {

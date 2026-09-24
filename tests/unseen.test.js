@@ -5,8 +5,8 @@
 // Lo que hay que demostrar: que el contraste mide NORMALIDAD y no excelencia, y que
 // corrige por duracion. Esto ultimo es lo que separa el metodo de mirarlo a ojo.
 
-import { runAnalysis } from '../js/analysis.js';
-import { evaluateUnseen, buildReference } from '../js/unseen.js';
+import { runAnalysis } from '../core/analysis.js';
+import { evaluateUnseen, buildReference } from '../core/unseen.js';
 import { buildDemoTables } from '../js/demo.js';
 
 let failures = 0;

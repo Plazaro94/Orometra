@@ -1,9 +1,9 @@
 // Cobertura vs .set + parser de rangos MT5.
 import {
   parseSetText, parseSetToken, levelsFromRange, coverageAgainstSet, looksLikeSetFile,
-} from '../js/setfile.js';
-import { runAnalysis } from '../js/analysis.js';
-import { DEFAULT_POLICY } from '../js/metrics.js';
+} from '../core/setfile.js';
+import { runAnalysis } from '../core/analysis.js';
+import { DEFAULT_POLICY } from '../core/metrics.js';
 import { buildDemoTables } from '../js/demo.js';
 
 let failures = 0;

@@ -1,7 +1,7 @@
 // Graficos en SVG generados como cadena. Sin dependencias ni canvas: se imprimen
 // bien, se copian bien y heredan el tema por CSS.
 
-import { median, quantile, extent } from './stats.js';
+import { median, quantile, extent } from '../core/stats.js';
 import { L } from './i18n.js';
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

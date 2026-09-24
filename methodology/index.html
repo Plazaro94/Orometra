@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
-<meta name="description" content="How Orometra decides: minima, plateaus, evidence strength — and what it does not claim.">
+<meta name="description" content="How Orometra evaluates MetaTrader 5 optimizations: absolute gates, plateaus, maximin selection, and what the tool cannot claim.">
 <title>Methodology — Orometra</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-<link rel="canonical" href="https://plazaro94.github.io/Orometra/methodology/">
+<link rel="canonical" href="https://orometra.netlify.app/methodology/">
 <meta property="og:title" content="Methodology — Orometra">
 <meta property="og:description" content="How Orometra turns MT5 optimization tables into inspectable robustness evidence.">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://plazaro94.github.io/Orometra/og-image.png">
+<meta property="og:image" content="https://orometra.netlify.app/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://plazaro94.github.io/Orometra/og-image.png">
+<meta name="twitter:image" content="https://orometra.netlify.app/og-image.png">
 <meta name="color-scheme" content="dark">
 <link rel="stylesheet" href="../styles.css">
 <script src="../js/theme-init.js"></script>
@@ -48,13 +48,13 @@
 <main id="main" class="lp-main lp-doc">
   <p class="lp-eyebrow" data-i18n="doc.method.eyebrow">Methodology</p>
   <h1 data-i18n="doc.method.h1">How the engine decides</h1>
-  <p class="lp-lead" data-i18n="doc.method.lead">We do not re-rank your MT5 table. We look for stable zones — and tell you how strong the evidence is.</p>
+  <p class="lp-lead" data-i18n="doc.method.lead">Orometra does not re-rank your MT5 table. It measures whether strong results sit inside stable parameter regions — and how much evidence supports that claim.</p>
 
   <ol class="lp-pipeline" aria-label="Engine pipeline">
     <li>
       <span class="lp-pipe-num">01</span>
       <strong data-i18n="doc.method.pipe.1.title">Gates</strong>
-      <span data-i18n="doc.method.pipe.1.body">Your minima in both periods</span>
+      <span data-i18n="doc.method.pipe.1.body">Absolute minima in both periods</span>
     </li>
     <li>
       <span class="lp-pipe-num">02</span>
@@ -64,17 +64,17 @@
     <li>
       <span class="lp-pipe-num">03</span>
       <strong data-i18n="doc.method.pipe.3.title">Neighborhood</strong>
-      <span data-i18n="doc.method.pipe.3.body">Do neighbors also hold?</span>
+      <span data-i18n="doc.method.pipe.3.body">Local stability measured</span>
     </li>
     <li>
       <span class="lp-pipe-num">04</span>
       <strong data-i18n="doc.method.pipe.4.title">Plateau</strong>
-      <span data-i18n="doc.method.pipe.4.body">Connected good zones</span>
+      <span data-i18n="doc.method.pipe.4.body">Connected good regions</span>
     </li>
     <li>
       <span class="lp-pipe-num">05</span>
-      <strong data-i18n="doc.method.pipe.5.title">Pick</strong>
-      <span data-i18n="doc.method.pipe.5.body">Center of the plateau, not the peak</span>
+      <strong data-i18n="doc.method.pipe.5.title">Representative</strong>
+      <span data-i18n="doc.method.pipe.5.body">Maximin, not the peak</span>
     </li>
     <li>
       <span class="lp-pipe-num">06</span>
@@ -84,38 +84,40 @@
   </ol>
 
   <section class="lp-doc-block">
-    <h2 data-i18n="doc.method.s1.title">1. Minima before rankings</h2>
-    <p data-i18n="doc.method.s1.body">A setup only enters if it clears your floors (PF, drawdown, trades, profit) in both periods. Rankings always invent a “top 5%” — even when everything loses.</p>
+    <h2 data-i18n="doc.method.s1.title">1. Absolute gates before rankings</h2>
+    <p data-i18n="doc.method.s1.body">A configuration enters the analysis only if it clears minimums you set (profit factor, drawdown, trades, positive profit) in both periods. Percentiles always invent a “top 5%”, even when everything loses money. Absolute floors can say: there is nothing here.</p>
   </section>
 
   <section class="lp-doc-block">
-    <h2 data-i18n="doc.method.s2.title">2. Quality without Result</h2>
-    <p data-i18n="doc.method.s2.body">MT5’s Result column is whatever you optimized for. We rebuild quality from objective exports (PF, recovery, Sharpe, drawdown, trades). Score = worse of in-sample and forward — not the average.</p>
+    <h2 data-i18n="doc.method.s2.title">2. Quality without the Result column</h2>
+    <p data-i18n="doc.method.s2.body">MT5’s Result column is whatever criterion you optimized for. It changes meaning between runs and is contaminated by selection. Orometra rebuilds quality from objective columns MT5 always exports: profit factor, recovery, Sharpe, drawdown and trade count. Combined quality is the minimum of in-sample and forward — not the average.</p>
   </section>
 
   <section class="lp-doc-block">
     <h2 data-i18n="doc.method.s3.title">3. Plateaus, not peaks</h2>
-    <p data-i18n="doc.method.s3.body">Isolated spikes are rejected. A plateau is a zone where neighbors also clear your minima. We pick the center (maximin), not the profit tip.</p>
+    <p data-i18n="doc.method.s3.body">Neighboring configurations are compared in parameter steps. A plateau is a connected region where the lower quartile of the neighborhood stays good and almost all neighbors pass your gates. The representative is chosen by maximin: the point whose worst neighbor is as good as possible — the center of the ridge, not the tip.</p>
   </section>
 
   <section class="lp-doc-block">
-    <h2 data-i18n="doc.method.s4.title">4. Evidence strength — not a trade signal</h2>
-    <p data-i18n="doc.method.s4.body">The verdict is strong / moderate / weak / insufficient. It never means “go trade”. Too little data is not the same as “no plateau”.</p>
+    <h2 data-i18n="doc.method.s4.title">4. Evidence strength, not GO / NO-GO</h2>
+    <p data-i18n="doc.method.s4.body">The verdict grades how strong the evidence is (strong / moderate / weak / insufficient). It does not tell you to trade. It can also say the dataset is too small to conclude anything — which is different from “no plateau found”.</p>
   </section>
 
   <section class="lp-doc-block">
-    <h2 data-i18n="doc.method.s5.title">5. What we do not claim</h2>
+    <h2 data-i18n="doc.method.s5.title">5. What we deliberately do not claim</h2>
     <ul class="lp-list">
-      <li data-i18n="doc.method.s5.1">A plateau is stability in your sample — not proof of future edge.</li>
-      <li data-i18n="doc.method.s5.2">We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.</li>
-      <li data-i18n="doc.method.s5.3">Forward already helps select, so it is slightly “contaminated”; the cleanest check is a true unseen period.</li>
-      <li data-i18n="doc.method.s5.4">We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.</li>
+      <li data-i18n="doc.method.s5.1">We do not run classic CSCV / published PBO: MT5 optimization exports lack per-configuration equity curves.</li>
+      <li data-i18n="doc.method.s5.2">We do not run White’s Reality Check or Hansen’s SPA for the same reason.</li>
+      <li data-i18n="doc.method.s5.3">Forward figures already participate in selection, so they are slightly contaminated; the cleanest check is an unseen period you fix criteria for in advance.</li>
+      <li data-i18n="doc.method.s5.4">A plateau is evidence of parameter stability in your sample — not proof of future edge.</li>
+      <li data-i18n="doc.method.s5.5">Coverage on “seen levels” is not coverage of the .set search range; drop the optimization .set to contrast them.</li>
+      <li data-i18n="doc.method.s5.6">“Trades per fitted parameter” is an evidence-density check, not formal degrees of freedom. Sharpe uses Lo (2002) chance thresholds — not classic Bailey deflated Sharpe as approval.</li>
     </ul>
   </section>
 
   <section class="lp-doc-cta">
-    <a class="primary-btn" href="../app/" data-i18n="doc.method.cta">Try it with my files</a>
-    <a class="ghost-btn" href="../app/#method" data-i18n="doc.method.full">Full technical detail in the app →</a>
+    <a class="primary-btn" href="../app/" data-i18n="lp.cta">Open app</a>
+    <a class="ghost-btn" href="../app/#method" data-i18n="doc.method.full">Full in-app methodology →</a>
   </section>
 </main>
 

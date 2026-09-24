@@ -5,9 +5,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseTable } from '../js/parse.js';
-import { runAnalysis } from '../js/analysis.js';
-import { DEFAULT_POLICY, qualityLabel } from '../js/metrics.js';
+import { parseTable } from '../core/parse.js';
+import { runAnalysis } from '../core/analysis.js';
+import { DEFAULT_POLICY, qualityLabel } from '../core/metrics.js';
 import { buildReport } from '../js/export.js';
 import { dimRole } from '../js/charts.js';
 

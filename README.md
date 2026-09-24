@@ -1,0 +1,171 @@
+# Orometra
+
+**Encuentra las zonas estables de tu EA de MetaTrader 5, no los picos.**
+
+El nombre viene de la *orometría*, la rama de la geografía que mide el relieve. Sus dos
+magnitudes centrales son la **prominencia** —cuánto se eleva una cima sobre el collado más
+bajo que la conecta con terreno más alto— y el **aislamiento**. Es exactamente lo que hace
+el motor sobre la superficie de parámetros: decidir si una cima está sola o forma parte de
+terreno alto y ancho.
+
+Auditoría anti-sobreajuste para optimizaciones de MetaTrader 5. Aplicación web estática:
+todo el análisis se ejecuta en el navegador y ningún archivo sale del equipo.
+
+Su función no es ordenar tu tabla de resultados de otra manera. Es **hacer de árbitro entre
+el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más valiosa es
+«no, y aquí están los números».
+
+## Principios de diseño
+
+1. **Los parámetros no se reconocen por su nombre, sino por su estructura.** Para un mismo
+   `Pass`, un parámetro vale lo mismo en el archivo in-sample y en el forward; una métrica no,
+   porque se midió sobre otro periodo. Así funciona con cualquier EA y en cualquier idioma del
+   terminal.
+2. **Nunca se juzga con la vara con la que se optimizó.** La columna `Result` es el criterio
+   que eligió el usuario (Balance, Recovery, Complex Criterion…): significa algo distinto en
+   cada optimización y está contaminada por la selección. La calidad se reconstruye con las
+   columnas objetivas que MT5 exporta siempre: factor de beneficio, recuperación, Sharpe,
+   drawdown y número de operaciones.
+3. **Umbrales absolutos, no percentiles.** Un percentil siempre encuentra un «mejor 5 %»,
+   incluso donde todo pierde dinero. Con mínimos absolutos la aplicación puede decir que no
+   hay nada.
+4. **La calidad combinada es el mínimo de los dos periodos, no la media.** Una configuración
+   vale lo que vale su peor periodo.
+5. **Se elige el centro de la meseta, no su cima**, por criterio maximin: la configuración
+   cuyo *peor* vecino es el mejor posible.
+6. **Solo se ignora lo demostrablemente plano, medido de dos formas.** La influencia de un
+   parámetro se mide *aislada* (agrupando por su valor y promediando el resto) y *combinada*
+   (dejando fijo todo lo demás), y manda la mayor de las dos. Un parámetro cuyo efecto se
+   invierte según otro —un filtro de régimen, por ejemplo— sale **exactamente plano** en la
+   primera medida. Descartarlo haría pasar por vecinas a configuraciones que no lo son,
+   inflaría el soporte y fabricaría una meseta donde no hay ninguna.
+
+7. **Lo que no se puede calcular, no se calcula, y se dice cuál es.** El CSCV de Bailey y
+   López de Prado necesita la curva de equity de cada configuración, y la exportación de
+   optimización de MT5 solo trae métricas agregadas por pasada. Aquí se mide otra cosa —la
+   fragilidad de la regla de selección, en los dos sentidos de la partición— y por eso **no se
+   llama PBO**. Lo mismo con el Reality Check de White y el SPA de Hansen: no se ejecutan, y
+   se explica por qué.
+
+8. **La herramienta se audita a sí misma.** Los umbrales internos son juicios calibrados, no
+   cantidades derivadas. La búsqueda se repite 50 veces moviéndolos al azar un ±20 % y se
+   informa de cuántas veces sigue ganando la misma región. Si una recomendación solo sobrevive
+   con los números exactos que elegimos nosotros, no es una recomendación.
+
+## Qué calcula
+
+- Lectura nativa de **XML Spreadsheet 2003**, que es lo que MT5 escribe al exportar los
+  resultados de una optimización, tanto si guardas con extensión `.xml` (la que propone por
+  defecto) como si la cambias a `.xls`: el contenido es idéntico y la extensión da igual.
+  También CSV/TSV, y `.xlsx` real mediante un lector opcional que solo se carga si hace falta.
+- **El `.opt` no se admite, y es deliberado.** Es la caché binaria del probador, sin formato
+  documentado y con estructura que cambia entre builds de MT5. Leerlo obligaría a adivinar el
+  diseño de cada versión, y un fallo ahí no daría un error visible sino números equivocados.
+- Comprobación de integridad: emparejado por `Pass`, duplicados y **prueba de procedencia**
+  (el resultado del backtest del archivo forward debe reproducir el del in-sample). Aviso si
+  el forward trae claramente menos filas que el in-sample (posible subconjunto de las mejores).
+- Detección del método de optimización por cobertura (`probadas / espacio cartesiano`):
+  rejilla completa, parcial o muestreo disperso de algoritmo genético.
+- Vecindad ordinal con radio adaptativo, estabilidad local, detección de **acantilados** y de
+  **picos aislados**. Los desplazamientos cubren la **bola** de Manhattan completa —cualquier
+  número de ejes a la vez— y no solo la cruz de uno o dos ejes; cuando el espacio es tan grande
+  que enumerarla no cabe en el presupuesto, se degrada a la aproximación anterior **avisando**.
+- Detección de **rejillas con saltos desiguales** (`10, 20, 30, 100, 500`): el motor cuenta
+  posiciones, no distancias, así que ahí la continuidad de una meseta puede ser un espejismo.
+- El tamaño de una meseta se tope por el **volumen del espacio que abarca**, no por cuántas
+  configuraciones se muestrearon: con algoritmo genético, la densidad mide dónde miró el
+  optimizador tanto como dónde hay estabilidad.
+- Mesetas como componentes conexas con suelo de calidad absoluto, y su **núcleo**.
+- **Fragilidad de la selección**: fracción de veces que la regla «quédate con la primera de
+  la tabla» falla al remuestrear configuraciones (en ambos sentidos de la partición IS/OOS).
+  No es el PBO publicado (CSCV); ese exige curvas de equity por pasada.
+- **Contraste de selección sobre el Sharpe (adaptación)**: compara el mejor Sharpe observado
+  con el máximo que cabría esperar por azar tras N pruebas, usando el error típico de Lo
+  (2002). No es el Deflated Sharpe Ratio publicado.
+- **Calificación de la FUERZA DE LA EVIDENCIA**, no de la estrategia: sólida / moderada /
+  débil / insuficiente. La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
+  contienen unos datos, no si un EA va a funcionar. Distingue «no hay región conexa»
+  de «no hay datos suficientes para saberlo», que son hechos, y deja la decisión al usuario.
+- **Lectura del informe de backtest de MT5** (`Informe → HTML`): se suelta en la app y
+  rellena solo la validación del periodo no visto. Trae tres cosas que el export de
+  optimización no tiene: las **fechas reales** del periodo, **todos los parámetros de
+  entrada** —con los que comprueba que el backtest se lanzó con la configuración
+  propuesta y avisa si no— y la **lista de operaciones una a una**.
+- **Validación en periodo no visto**: se introducen los resultados del backtest de la
+  configuración elegida sobre un tramo que no se haya usado ni para optimizar ni para
+  validar, y se comprueba si son *normales para ese EA* comparándolos con el recorrido
+  que la meseta entera demostró.
+- Exportación: `.set` de la configuración propuesta, `.set` de **rango de refinamiento**
+  acotado a un número de combinaciones ejecutable, informe JSON y CSV completo.
+- **Vista previa de los mínimos** y **aviso de empate** entre mesetas casi igualadas.
+
+## Ejecutar en local
+
+Necesita un servidor HTTP: usa módulos ES y un Web Worker, que el navegador bloquea sobre
+`file://`. El proyecto trae uno sin dependencias:
+
+```bash
+node tools/serve.js
+```
+
+Después abre `http://localhost:3000`. Acepta otro puerto como argumento: `node tools/serve.js 8080`.
+
+### Orometra Desktop (Fase 1)
+
+```bash
+npm run desktop
+```
+
+Abre el registro de investigación (estrategias, contador de búsqueda, importar XML al ledger)
+y puede abrir la misma UI de análisis que la web. Los datos viven en un SQLite local
+(no salen del PC).
+
+## Pruebas
+
+```bash
+npm test
+```
+
+- **`tests/source.test.js`** revisa el propio código (tildes en identificadores, clases CSS, ids).
+- **`tests/regression.test.js`** compara el JSON canónico de la demo con un fixture fijo (Fase 0).
+- **`tests/run.js`**, **`tests/stress.js`**, **`tests/method.test.js`**, etc.: motor, invariantes y lecturas.
+
+Para incluir archivos reales, colócalos como `IS(1).xls` y `OOS(1).xls` en tu carpeta de
+descargas, o indica la ruta:
+
+```bash
+MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/run.js
+```
+
+## Accesibilidad y soporte
+
+- Funciona con teclado: las zonas de carga son enfocables y se activan con Enter o
+  espacio. Los archivos se sueltan en cualquier punto de la página.
+- En móvil la barra lateral se convierte en una tira horizontal de pestañas.
+- Hoja de estilos de impresión propia.
+- Los mínimos exigidos se recuerdan entre sesiones; cada sección tiene enlace (`#mesetas`, …).
+
+## Límites conocidos
+
+- No sustituye a una prueba en un periodo que no se haya usado ni para optimizar ni para
+  validar. En cuanto eliges mirando el forward, ese forward deja de ser ciego.
+- Trabaja con las métricas agregadas del probador, no con la curva de capital ni con las
+  operaciones una a una. Por eso la **fragilidad de la selección** es un remuestreo de
+  configuraciones y no el CSCV original sobre series temporales (no se llama PBO).
+- No conoce las fechas de los periodos: la duración relativa del forward se estima con el
+  número de operaciones.
+- El contraste del Sharpe asume que MT5 estima esa cifra sobre las operaciones registradas
+  (supuesto SR-1 en `docs/MT5_ASSUMPTIONS.md`). Suspenderlo es una señal fuerte; aprobarlo
+  no demuestra nada por sí solo.
+- Aún no cubre walk-forward con varias ventanas.
+- Sin la lista de operaciones no es posible un Monte Carlo serio, y el export de optimización no la trae.
+
+## Temas
+
+Dos: oscuro y claro. Todo el color pasa por una escala semántica de tokens
+definida en el bloque `:root` de `styles.css`; **no se escribe ningún color literal fuera
+de ahí**. Los nombres describen el papel y no el color (`--ok-text` es «texto verde
+legible sobre su fondo»), para que al invertir el tema sigan significando lo mismo.
+
+El tema elegido se guarda en `localStorage` y se aplica en un script del `<head>` antes de
+pintar, porque si no se ve un fogonazo del tema contrario al recargar.

@@ -8,9 +8,9 @@
 //   - muestreo disperso / huecos: ausente ≠ fallo
 //   - dos ejecuciones identicas → mismo fingerprint
 
-import { runAnalysis } from '../js/analysis.js';
-import { DEFAULT_POLICY } from '../js/metrics.js';
-import { CODE, outcomeFromAnalysis } from '../js/errors.js';
+import { runAnalysis } from '../core/analysis.js';
+import { DEFAULT_POLICY } from '../core/metrics.js';
+import { CODE, outcomeFromAnalysis } from '../core/errors.js';
 
 let failures = 0;
 let checks = 0;

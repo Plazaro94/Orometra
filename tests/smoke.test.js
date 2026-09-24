@@ -10,9 +10,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDemoTables } from '../js/demo.js';
-import { runAnalysis } from '../js/analysis.js';
-import { DEFAULT_POLICY } from '../js/metrics.js';
-import { CODE, AnalysisError, classifyError, errorCopy, outcomeFromAnalysis } from '../js/errors.js';
+import { runAnalysis } from '../core/analysis.js';
+import { DEFAULT_POLICY } from '../core/metrics.js';
+import { CODE, AnalysisError, classifyError, errorCopy, outcomeFromAnalysis } from '../core/errors.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let failures = 0;
@@ -32,7 +32,11 @@ function section(t) {
 
 const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
 const appHtml = fs.readFileSync(path.join(ROOT, 'app/index.html'), 'utf8');
-const uiSrc = fs.readFileSync(path.join(ROOT, 'js/ui.js'), 'utf8');
+const uiSrc = fs.readdirSync(path.join(ROOT, 'js'))
+  .filter((f) => /^ui.*\.js$/.test(f))
+  .sort()
+  .map((f) => fs.readFileSync(path.join(ROOT, 'js', f), 'utf8'))
+  .join('\n');
 
 // ---------------------------------------------------------------- 1. CSS [hidden]
 section('1. [hidden] no puede ser anulado por display:flex/grid');
