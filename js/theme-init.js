@@ -16,10 +16,9 @@
 
   try {
     var t = localStorage.getItem('orometra.theme');
-    // Crema eliminado: migrar a claro si quedó guardado.
     if (t === 'cream') {
       t = 'light';
-      try { localStorage.setItem('orometra.theme', 'light'); } catch (e0) { /* */ }
+      try { localStorage.setItem('orometra.theme', 'light'); } catch (eWrite) { /* privado */ }
     }
     if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
   } catch (e) { /* modo privado */ }
