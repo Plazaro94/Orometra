@@ -13,7 +13,7 @@
 
 ## 1. Qué es Orometra y a dónde va
 
-Orometra ya existe como aplicación web estática (vanilla JS, módulos ES, Web Worker, sin servidor) que analiza el export XML de una optimización de MT5 y busca **mesetas** de parámetros robustas en lugar de picos aislados. Tiene un motor serio (`js/engine.js`, `js/analysis.js`, `js/stats.js`), pruebas sólidas y una metodología honesta. Todo eso se conserva.
+Orometra ya existe como aplicación web estática (vanilla JS, módulos ES, Web Worker, sin servidor) que analiza el export XML de una optimización de MT5 y busca **mesetas** de parámetros robustas en lugar de picos aislados. Tiene un motor serio (`core/engine.js`, `core/analysis.js`, `core/stats.js`; la UI Lite vive en `js/`), pruebas sólidas y una metodología honesta. Todo eso se conserva.
 
 **Objetivo final:** que un trader retail sin conocimientos técnicos pueda responder, con el mínimo esfuerzo y con rigor cuantitativo real, a esta pregunta:
 
