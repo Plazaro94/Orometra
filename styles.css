@@ -16,7 +16,12 @@
    */
   --bg:#070b14;          --surface:#0d1322;     --surface-2:#131c2f;   --surface-3:#1a2438;
   --line-soft:#1b2740;   --line:#2a3853;        --line-strong:#3b4c6b;
-  --muted-3:#6f8098;     --muted-2:#738aa4;     --muted:#8fa3bd;
+  /* Los tres "muted" pasaban el mínimo de WCAG AA (4.5:1) sobre --surface, pero caían
+   * por debajo sobre --surface-3 (donde vive una insignia o una pestaña activa) y se
+   * notaba a poco brillo de pantalla. Recalibrados por contraste, no a ojo: 8/7/6:1
+   * sobre el fondo más claro que realmente usan, conservando el matiz y el orden
+   * muted > muted-2 > muted-3. */
+  --muted-3:#96a2b4;     --muted-2:#a0b0c1;     --muted:#adbccf;
   --text-2:#c0cede;      --text:#eaf1f9;        --text-hi:#ffffff;
   --ok-bg:#052220;       --ok-line:#15514e;     --ok:#3ed7d0;     --ok-text:#8ae9e3;     --ok-hi:#c8fffb;
   --warn-bg:#2a2113;     --warn-line:#5a4728;   --warn:#f2c26b;   --warn-text:#f7dba8;   --warn-hi:#ffeccb;
@@ -65,7 +70,7 @@
 [data-theme="light"]{
   --bg:#f6f7f9;          --surface:#ffffff;     --surface-2:#eef1f5;   --surface-3:#e3e8ee;
   --line-soft:#e8ecf1;   --line:#d5dbe3;        --line-strong:#b4bdc9;
-  --muted-3:#6e767f;     --muted-2:#646d78;     --muted:#58626e;
+  --muted-3:#51565d;     --muted-2:#464c54;     --muted:#3d444c;
   --text-2:#384049;      --text:#14181d;        --text-hi:#000000;
   --ok-bg:#e4f4f5;       --ok-line:#a8d8db;     --ok:#0b6a73;     --ok-text:#0a5e66;     --ok-hi:#064047;
   --warn-bg:#fbf1dd;     --warn-line:#e6cfa0;   --warn:#8a5b0a;   --warn-text:#7a5009;   --warn-hi:#5c3c06;
@@ -131,13 +136,13 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
    (ver `brandmark.js`), asi que el tamano del lienzo es el tamano que se ve. */
 .brand-mark{width:34px;height:34px;flex:none;display:block}
 .brand-name{display:block;font-weight:700;font-size:21px;letter-spacing:-.025em;transition:color .18s;line-height:1}
-.brand-sub{display:block;font-size:11.5px;color:var(--muted-2);margin-top:1px}
+.brand-sub{display:block;font-size:12.5px;color:var(--muted-2);margin-top:1px}
 
 /* ------------------------------------------------------------- idioma + tema */
 .lang-row{display:flex;gap:4px;padding:0 4px 8px}
 .lang-btn{
   flex:1;border:1px solid var(--line);background:none;color:var(--muted-2);
-  border-radius:9px;padding:7px 4px;font:inherit;font-size:11px;font-weight:700;
+  border-radius:9px;padding:7px 4px;font:inherit;font-size:12px;font-weight:700;
   letter-spacing:.06em;cursor:pointer;transition:border-color .15s,color .15s,background .15s;
 }
 .lang-btn:hover{border-color:var(--line-strong);color:var(--text-2)}
@@ -148,7 +153,7 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .theme-btn{
   flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
   background:none;border:1px solid var(--line);color:var(--muted-2);
-  border-radius:9px;padding:6px 4px;font:inherit;font-size:10.5px;cursor:pointer;
+  border-radius:9px;padding:6px 4px;font:inherit;font-size:11.5px;cursor:pointer;
   transition:border-color .15s,color .15s;
 }
 .theme-btn:hover{border-color:var(--line-strong);color:var(--text-2)}
@@ -186,7 +191,7 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .skip-link:focus{left:8px}
 .hero-back{display:flex;gap:10px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
 .legal-links{padding:10px 8px 0}
-.legal-links .text-btn{font-size:11px;color:var(--muted-2)}
+.legal-links .text-btn{font-size:12px;color:var(--muted-2)}
 .legal-links .text-btn:hover{color:var(--ok-text)}
 .legal-panel .limits li{margin-bottom:11px}
 .legal-panel .limits strong{color:var(--text)}
@@ -224,20 +229,23 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 }
 .has-analysis .demo-note{margin-top:0}
 .sidebar-section{padding:0 4px;display:flex;flex-direction:column}
-.sidebar-label{font-size:10px;letter-spacing:.16em;font-weight:700;color:var(--muted-2);text-transform:uppercase;padding:0 8px 8px}
+.sidebar-label{font-size:11px;letter-spacing:.16em;font-weight:700;color:var(--muted-2);text-transform:uppercase;padding:0 8px 8px}
 .sidebar-label-gap{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
 .nav-item{
   display:flex;align-items:center;gap:11px;width:100%;border:0;background:transparent;
-  color:var(--text-2);text-align:left;padding:9px 10px;border-radius:9px;margin:1px 0;font-size:13.5px;
+  color:var(--text-2);text-align:left;padding:9px 10px;border-radius:9px;margin:1px 0;font-size:14.5px;
   transition:background .15s,color .15s;
 }
-.nav-item span{font-size:10.5px;color:var(--muted-3);width:20px;font-variant-numeric:tabular-nums}
+.nav-item span{font-size:11.5px;color:var(--muted-3);width:20px;font-variant-numeric:tabular-nums}
 .nav-item:hover:not(:disabled){background:var(--surface-2);color:var(--text)}
 .nav-item.active{background:var(--surface-3);color:var(--text-hi);font-weight:600}
 .nav-item.active span{color:var(--accent)}
 .nav-item:disabled{opacity:.34;cursor:default}
 .sidebar-bottom{margin-top:auto}
-.version{font-size:10px;color:var(--line-strong);padding:12px 8px 0}
+/* Antes usaba --line-strong (un tono para bordes, no para texto): 2,15:1 de contraste,
+ * practicamente invisible a poco brillo. --muted-3 es el mismo espiritu de marca de
+ * agua pero sigue siendo texto legible. */
+.version{font-size:11px;color:var(--muted-3);padding:12px 8px 0}
 
 /* ---------------------------------------------------------------- main */
 .main{padding:32px 36px 60px;min-width:0}
@@ -815,7 +823,7 @@ tr.sel td{color:var(--text-2)}
   .sidebar-label{display:none}
   .sidebar-label-gap{display:none;margin:0;padding:0;border:0}
   .sidebar-section{flex-direction:row;padding:6px 10px;gap:6px}
-  .nav-item{width:auto;white-space:nowrap;margin:0;padding:8px 13px;font-size:13px;border-radius:999px;background:var(--surface-2)}
+  .nav-item{width:auto;white-space:nowrap;margin:0;padding:8px 13px;font-size:14px;border-radius:999px;background:var(--surface-2)}
   .nav-item span{display:none}
   .nav-item.active{background:var(--accent);color:var(--surface)}
   /* El pie ya no necesita quedarse abajo del todo: en movil es otra fila compacta,
