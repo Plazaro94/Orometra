@@ -70,7 +70,9 @@ console.log('\n=== mt5-detect: defaultSearchRoots ===');
     'ProgramFiles(x86)': 'C:\\PF86',
     LOCALAPPDATA: 'C:\\Local',
   });
-  check('incluye Program Files', roots.some((r) => r.startsWith('C:\\PF\\')));
+  // path.join en Linux trata `\` como carácter, no separador: normalizamos a `/`.
+  const norm = (p) => String(p).replace(/\\/g, '/');
+  check('incluye Program Files', roots.some((r) => norm(r).startsWith('C:/PF/')));
   check('varias raíces', roots.length >= 6);
 }
 
