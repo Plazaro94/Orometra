@@ -104,12 +104,17 @@
   </section>
 
   <section class="lp-doc-block">
-    <h2 data-i18n="doc.method.s5.title">5. What we do not claim</h2>
+    <h2 data-i18n="doc.method.s5.title">5. Stress-tested on your actual trades</h2>
+    <p data-i18n="doc.method.s5.body">The optimization grid only has aggregated per-pass metrics — never enough for a real Monte Carlo. But the backtest report of your chosen configuration on the unseen period does carry the trade-by-trade list, and that unlocks three checks the grid alone cannot give you: a stationary-bootstrap Monte Carlo over your real trades, a sample-size check (can this many days actually tell your edge from noise?), and a cost-stress table for what happens if your real live spread, slippage or commission are worse than what you optimized with. Drop the report — a real MT5 backtest, not an optimization export — anywhere on the "Unseen period" step.</p>
+  </section>
+
+  <section class="lp-doc-block">
+    <h2 data-i18n="doc.method.s6.title">6. What we do not claim</h2>
     <ul class="lp-list">
-      <li data-i18n="doc.method.s5.1">A plateau is stability in your sample — not proof of future edge.</li>
-      <li data-i18n="doc.method.s5.2">We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.</li>
-      <li data-i18n="doc.method.s5.3">Forward already helps select, so it is slightly “contaminated”; the cleanest check is a true unseen period.</li>
-      <li data-i18n="doc.method.s5.4">We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.</li>
+      <li data-i18n="doc.method.s6.1">A plateau is stability in your sample — not proof of future edge.</li>
+      <li data-i18n="doc.method.s6.2">We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.</li>
+      <li data-i18n="doc.method.s6.3">Forward already helps select, so it is slightly “contaminated”; the cleanest check is a true unseen period.</li>
+      <li data-i18n="doc.method.s6.4">We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.</li>
     </ul>
   </section>
 

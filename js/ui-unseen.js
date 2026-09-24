@@ -99,6 +99,18 @@ export function renderReportCard(a, plateau) {
         correct configuration.`,
         )}
       </p>
+      <p class="panel-intro">
+        ${L(
+          `Ese mismo informe trae algo que el export de optimización nunca tiene: la lista de
+        operaciones una a una. Con ella, debajo aparecerán un <strong>Monte Carlo</strong> sobre tus
+        operaciones reales, un aviso de si la <strong>muestra alcanza</strong>, y una tabla de
+        <strong>stress de costes</strong> — sin instalar nada más.`,
+          `That same report carries something the optimization export never has: the trade-by-trade
+        list. With it, a <strong>Monte Carlo</strong> over your real trades, a
+        <strong>sample-size</strong> check, and a <strong>cost-stress</strong> table will appear
+        below — nothing else to install.`,
+        )}
+      </p>
     </section>`;
   }
 
