@@ -17,3 +17,7 @@ Thumbs.db
 dist/
 .vercel/
 .netlify/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+desktop/.cache/

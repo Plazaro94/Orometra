@@ -23,7 +23,9 @@ function check(name, cond, detail = '') {
 }
 
 const sources = [
-  ...fs.readdirSync(path.join(ROOT, 'js')).map((f) => 'js/' + f),
+  ...fs.readdirSync(path.join(ROOT, 'js')).filter((f) => f.endsWith('.js')).map((f) => 'js/' + f),
+  ...fs.readdirSync(path.join(ROOT, 'core')).filter((f) => f.endsWith('.js')).map((f) => 'core/' + f),
+  ...['desktop/main/main.js', 'desktop/main/ipc.js', 'desktop/main/ledger/db.js', 'desktop/main/ledger/api.js', 'desktop/main/ledger/client.js', 'desktop/main/ledger/host.js', 'desktop/main/mt5/instrument.js', 'desktop/main/mt5/compile.js', 'desktop/main/mt5/orf-read.js', 'desktop/renderer/shell.js'],
   'index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'styles.css', 'tools/audit.js',
 ];
 
@@ -188,7 +190,8 @@ check('sin tildes en el codigo', offenders.length === 0, offenders.slice(0, 6).j
 console.log('\n2. Las clases CSS que usa la interfaz estan definidas');
 const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
 const used = new Set();
-for (const rel of ['index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'js/ui.js', 'js/charts.js', 'js/landing.js']) {
+const uiFiles = fs.readdirSync(path.join(ROOT, 'js')).filter((f) => /^ui.*\.js$/.test(f)).map((f) => 'js/' + f);
+for (const rel of ['index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'js/charts.js', 'js/landing.js', ...uiFiles]) {
   const s = fs.readFileSync(path.join(ROOT, rel), 'utf8');
   for (const m of s.matchAll(/class="([^"$]*)"/g)) {
     for (const c of m[1].split(/\s+/)) if (c) used.add(c);
@@ -199,7 +202,7 @@ check('todas las clases tienen estilo', undefinedClasses.length === 0, undefined
 
 console.log('\n3. Los ids que busca la interfaz existen en el HTML o los crea ella misma');
 const html = fs.readFileSync(path.join(ROOT, 'app/index.html'), 'utf8');
-const ui = fs.readFileSync(path.join(ROOT, 'js/ui.js'), 'utf8');
+const ui = uiFiles.map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
 const wanted = new Set([...ui.matchAll(/\$\('#([A-Za-z0-9_-]+)'\)/g)].map((m) => m[1]));
 const createdInUi = new Set([...ui.matchAll(/id="([A-Za-z0-9_-]+)"/g)].map((m) => m[1]));
 createdInUi.add('exportMenu');

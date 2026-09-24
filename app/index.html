@@ -56,9 +56,6 @@
         <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" title="Light" data-i18n="theme.light" data-i18n-attr="title">
           <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
         </button>
-        <button class="theme-btn" data-theme-set="cream" role="radio" aria-checked="false" title="Cream" data-i18n="theme.cream" data-i18n-attr="title">
-          <span class="swatch cream" aria-hidden="true"></span><span data-i18n="theme.cream">Cream</span>
-        </button>
       </div>
       <div class="legal-links">
         <button class="text-btn" data-tab="legal" type="button" data-i18n="legal.link">Legal notice &amp; privacy</button>
@@ -89,20 +86,20 @@
     <section class="intake" aria-label="File upload" data-i18n="intake.label" data-i18n-attr="aria-label">
       <div class="upload-grid">
         <label class="dropzone" id="isDrop" for="isFile">
-          <input id="isFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm" multiple hidden>
+          <input id="isFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
           <div class="file-icon">IS</div>
           <div class="drop-copy">
-            <strong><span data-i18n="drop.is.title">In-Sample</span> <span class="req" data-i18n="drop.is.req">required</span></strong>
+            <strong><span data-i18n="drop.is.title">In-Sample</span></strong>
             <span id="isStatus" data-i18n="drop.is.status">Drop both files anywhere on the page</span>
           </div>
           <div class="drop-action" data-i18n="drop.choose">Choose</div>
         </label>
 
         <label class="dropzone" id="oosDrop" for="oosFile">
-          <input id="oosFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm" multiple hidden>
+          <input id="oosFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
           <div class="file-icon oos">OOS</div>
           <div class="drop-copy">
-            <strong><span data-i18n="drop.oos.title">Forward</span> <span class="opt" data-i18n="drop.oos.opt">recommended</span></strong>
+            <strong><span data-i18n="drop.oos.title">Forward</span></strong>
             <span id="oosStatus" data-i18n="drop.oos.status">Detected by content, not by which box you use</span>
           </div>
           <div class="drop-action" data-i18n="drop.choose">Choose</div>
@@ -117,6 +114,10 @@
           <div class="analyze-arrow" aria-hidden="true">&rarr;</div>
         </button>
       </div>
+      <p class="set-hint" id="setHint">
+        <span data-i18n="drop.set.hint">Optional: drop the optimization .set (start||step||stop||Y) to contrast coverage vs the search range you asked MT5 for.</span>
+        <span id="setStatus" class="set-status"></span>
+      </p>
 
       <div class="preflight" id="preflight" hidden>
         <div class="preflight-head">

@@ -17,7 +17,7 @@
 // Solo se emite la segunda clase de afirmacion. Los hallazgos concretos -acantilados,
 // bordes de rango, inversiones, puertas inertes- se conservan intactos: son lo valioso.
 
-import { L, localeTag } from './i18n.js';
+import { L, localeTag } from '../js/i18n.js';
 
 export const LEVELS = {
   STRONG: 'strong',            // region amplia y bien sostenida
@@ -35,7 +35,7 @@ export function buildVerdict(ctx) {
   const add = (severity, title, detail) => findings.push({ severity, title, detail });
 
   const { gatePassCount, total, plateaus, fragility, fragilityQuality, fragilityFolds, fragilityAsymmetry,
-    fragilityWorstDirection, sharpeTest, spearman, coverage, medianSupport,
+    fragilityWorstDirection, sharpeTest, spearman, coverage, searchCoverage, medianSupport,
     periodRatio, integrity, sampling, boundaryWorst, bestPlateau, inversions, periodComparison,
     hasForward, invertedRisk, alternativePlateau, underpowered, viableNeededForPlateau,
     tiedCount, tiedRanks, stabilityCheck, irregularGrids, rescuedDims, offsetsComplete,
@@ -53,9 +53,8 @@ export function buildVerdict(ctx) {
   }
 
   /*
-   * GRADOS DE LIBERTAD. Va de los primeros porque condiciona la lectura de todo lo demas:
-   * si no hay observaciones suficientes por parametro ajustado, los contrastes de mas
-   * abajo estan midiendo la forma del ruido.
+   * Densidad de evidencia (ops / parámetros ajustados). No son "grados de libertad"
+   * formales: condicionan la lectura de todo lo demas.
    */
   if (degreesOfFreedom && Number.isFinite(degreesOfFreedom.perParam) && degreesOfFreedom.params > 0) {
     const d = degreesOfFreedom;
@@ -70,15 +69,15 @@ export function buildVerdict(ctx) {
       ? ` You have also tried ${d.trialsPerTrade.toFixed(1)} configurations for each trade available to tell them apart: there are more alternatives than data to separate them.`
       : '';
     if (per < 15) {
-      add(SEV.CRITICAL, L(`Solo ${per.toFixed(0)} operaciones por parámetro ajustado`, `Only ${per.toFixed(0)} trades per fitted parameter`),
-        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones: ${per.toFixed(0)} por parámetro. Con esa proporcion, la superficie que estamos midiendo es mayoritariamente ruido, y cualquier meseta que aparezca puede serlo del ruido. No es un defecto de tu EA: es que no hay datos para pronunciarse sobre tantos parámetros a la vez. Reduce los parámetros que optimizas, o alarga el periodo.${extraEs}`,
-          `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades: ${per.toFixed(0)} per parameter. At that ratio, the surface we are measuring is mostly noise, and any plateau that appears may be noise too. This is not a flaw in your EA: there is not enough data to speak about so many parameters at once. Reduce the parameters you optimize, or lengthen the period.${extraEn}`));
+      add(SEV.CRITICAL, L(`Poca evidencia: ~${per.toFixed(0)} operaciones por parámetro`, `Thin evidence: ~${per.toFixed(0)} trades per parameter`),
+        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones: ~${per.toFixed(0)} por parámetro. Con esa proporcion, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
+          `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades: ~${per.toFixed(0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`));
     } else if (per < 50) {
-      add(SEV.WARN, L(`${per.toFixed(0)} operaciones por parámetro ajustado`, `${per.toFixed(0)} trades per fitted parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Es poco: hay pocas operaciones por parámetro y todo lo que sigue debe leerse como provisional.${extraEs}`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. That is little: few trades per parameter and everything that follows should be read as provisional.${extraEn}`));
+      add(SEV.WARN, L(`Evidencia limitada: ~${per.toFixed(0)} operaciones por parámetro`, `Limited evidence: ~${per.toFixed(0)} trades per parameter`),
+        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Todo lo que sigue debe leerse como provisional.${extraEs}`,
+          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. Everything that follows should be read as provisional.${extraEn}`));
     } else if (per >= 100) {
-      add(SEV.OK, L(`${per.toFixed(0)} operaciones por parámetro ajustado`, `${per.toFixed(0)} trades per fitted parameter`),
+      add(SEV.OK, L(`~${per.toFixed(0)} operaciones por parámetro ajustado`, `~${per.toFixed(0)} trades per fitted parameter`),
         L(`${d.params} parámetros frente a ${tradesN} operaciones en ${periodoEs}. Hay operaciones de sobra por parámetro para que las conclusiones se sostengan.`,
           `${d.params} parameters versus ${tradesN} trades in ${periodoEn}. There are enough trades per parameter for the conclusions to hold.`));
     }
@@ -264,21 +263,20 @@ export function buildVerdict(ctx) {
     // distintas exploradas, porque las configuraciones vecinas no son pruebas nuevas.
     const bar = Math.max(chanceMax, chanceMaxEffective);
     if (observedMax <= bar) {
-      add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar', 'The best Sharpe does not beat the chance threshold'),
+      add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar (Lo)', 'Best Sharpe does not beat the chance threshold (Lo)'),
         L(`Con ${trials.toLocaleString(localeTag())} pruebas, el Sharpe máximo esperable sin ninguna ventaja real es ${bar.toFixed(2)}. El mejor observado es ${observedMax.toFixed(2)}. Probar muchas combinaciones produce buenos resultados por si solo, y este no destaca sobre ese ruido.`,
           `With ${trials.toLocaleString(localeTag())} trials, the maximum Sharpe expected with no real edge is ${bar.toFixed(2)}. The best observed is ${observedMax.toFixed(2)}. Trying many combinations produces good results on its own, and this one does not stand out above that noise.`));
     } else {
-      const deflatedEs = Number.isFinite(deflated) ? ` (Sharpe deflactado: ${(100 * deflated).toFixed(1)} %)` : '';
-      const deflatedEn = Number.isFinite(deflated) ? ` (deflated Sharpe: ${(100 * deflated).toFixed(1)}%)` : '';
-      add(SEV.OK, L('El mejor Sharpe supera el umbral del azar', 'The best Sharpe beats the chance threshold'),
-        L(`Sharpe máximo ${observedMax.toFixed(2)} frente a ${bar.toFixed(2)} esperable sin ventaja real tras ${trials.toLocaleString(localeTag())} pruebas${deflatedEs}. Superar este contraste es condicion necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
-          `Maximum Sharpe ${observedMax.toFixed(2)} versus ${bar.toFixed(2)} expected with no real edge after ${trials.toLocaleString(localeTag())} trials${deflatedEn}. Passing this contrast is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`));
-      // El contraste publicado usa una dispersión mayor. Si el resultado cae entre los dos
-      // umbrales, no se puede presentar como aprobado sin matizar.
+      const vsChanceEs = Number.isFinite(deflated) ? ` (prob. bajo azar Lo: ${(100 * deflated).toFixed(1)} %)` : '';
+      const vsChanceEn = Number.isFinite(deflated) ? ` (Lo chance-prob: ${(100 * deflated).toFixed(1)}%)` : '';
+      add(SEV.OK, L('El mejor Sharpe supera el umbral del azar (Lo)', 'Best Sharpe beats the chance threshold (Lo)'),
+        L(`Sharpe máximo ${observedMax.toFixed(2)} frente a ${bar.toFixed(2)} esperable sin ventaja real tras ${trials.toLocaleString(localeTag())} pruebas${vsChanceEs}. Superar este contraste es condicion necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
+          `Maximum Sharpe ${observedMax.toFixed(2)} versus ${bar.toFixed(2)} expected with no real edge after ${trials.toLocaleString(localeTag())} trials${vsChanceEn}. Passing this contrast is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`));
+      // El contraste publicado Bailey usa otra dispersión. Si el resultado cae entre umbrales, matizar.
       if (Number.isFinite(chanceMaxConservative) && observedMax <= chanceMaxConservative) {
         add(SEV.WARN, L('El Sharpe aprueba con nuestro criterio, no con el más estricto', 'Sharpe passes our criterion, not the stricter one'),
-          L(`Aqui se usa como referencia el error de estimación de un Sharpe (Lo, 2002): umbral ${bar.toFixed(2)}, superado. El contraste publicado de Sharpe deflactado usa la dispersión de los Sharpe entre configuraciones, que en una malla densa es mucho mayor: con ese criterio el umbral sube a ${chanceMaxConservative.toFixed(2)} y tu ${observedMax.toFixed(2)} NO lo alcanza. Nos apartamos de el a proposito, porque esa dispersión la produce la forma de la superficie de parámetros y no el ruido, y usarla castigaria mas cuanta mas señal real hubiera. Pero la distancia entre ambos umbrales es tuya para juzgarla, no nuestra para esconderla.`,
-            `Here the reference is the estimation error of a Sharpe (Lo, 2002): threshold ${bar.toFixed(2)}, cleared. The published deflated Sharpe contrast uses the dispersion of Sharpes across configurations, which on a dense grid is much larger: under that criterion the threshold rises to ${chanceMaxConservative.toFixed(2)} and your ${observedMax.toFixed(2)} does NOT reach it. We depart from it on purpose, because that dispersion is produced by the shape of the parameter surface rather than noise, and using it would punish more the more real signal there was. But the gap between both thresholds is yours to judge, not ours to hide.`));
+          L(`Aqui se usa el error de estimación de un Sharpe (Lo, 2002): umbral ${bar.toFixed(2)}, superado. El contraste publicado tipo Bailey (dispersión entre configuraciones) es otra cosa y, en malla densa, más duro: umbral ${chanceMaxConservative.toFixed(2)}; tu ${observedMax.toFixed(2)} NO lo alcanza. Nos apartamos a proposito: esa dispersión la produce la forma de la superficie, no solo el ruido. La distancia entre umbrales es tuya para juzgarla.`,
+            `Here the reference is Sharpe estimation error (Lo, 2002): threshold ${bar.toFixed(2)}, cleared. The published Bailey-style contrast (dispersion across configurations) is different and, on a dense grid, stricter: threshold ${chanceMaxConservative.toFixed(2)}; your ${observedMax.toFixed(2)} does NOT reach it. We depart on purpose: that dispersion comes from the parameter surface shape, not only noise. The gap between thresholds is yours to judge.`));
       }
     }
   }
@@ -332,9 +330,45 @@ export function buildVerdict(ctx) {
   }
 
   if (sampling === 'sparse') {
-    add(SEV.WARN, L(`Muestreo disperso: ${(100 * coverage).toFixed(4)}% del espacio`, `Sparse sampling: ${(100 * coverage).toFixed(4)}% of the space`),
+    add(SEV.WARN, L(`Muestreo disperso (sobre niveles vistos): ${(100 * coverage).toFixed(4)}%`, `Sparse sampling (on seen levels): ${(100 * coverage).toFixed(4)}%`),
       L('Has optimizado con algoritmo genetico, no con rejilla completa. El GA concentra las pruebas donde el in-sample era bueno, así que la densidad de vecinos mide donde miro el optimizador tanto como donde hay estabilidad. Usa el rango de refinamiento que propone la app y repite con rejilla completa.',
         'You optimized with a genetic algorithm, not a full grid. The GA concentrates trials where the in-sample was good, so neighbor density measures where the optimizer looked as much as where there is stability. Use the refinement range the app proposes and repeat with a full grid.'));
+  }
+
+  if (searchCoverage && searchCoverage.usable && Number.isFinite(searchCoverage.coverageSearch)) {
+    const cs = searchCoverage.coverageSearch;
+    const obs = Number.isFinite(coverage) ? coverage : NaN;
+    if (cs < 0.02) {
+      add(SEV.WARN, L(`Solo ${(100 * cs).toFixed(2)}% del rango del .set`, `Only ${(100 * cs).toFixed(2)}% of the .set search range`),
+        L(`El .set pide un espacio de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} combinaciones; tus archivos cubren ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas. La cobertura “alta” sobre niveles vistos no implica que hayas explorado el rango que pediste en MT5.`,
+          `The .set asks for a space of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} combinations; your files cover ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells. High coverage on seen levels does not mean you explored the range you asked MT5 for.`));
+    } else if (Number.isFinite(obs) && obs >= 0.5 && cs < obs * 0.5) {
+      add(SEV.WARN, L('La cobertura observada engaña frente al .set', 'Observed coverage misleads vs the .set'),
+        L(`Sobre niveles vistos cubres el ${(100 * obs).toFixed(1)}%; frente al rango del .set, solo el ${(100 * cs).toFixed(2)}%. Un genético denso en un rincón produce exactamente esa discrepancia.`,
+          `On seen levels you cover ${(100 * obs).toFixed(1)}%; versus the .set range, only ${(100 * cs).toFixed(2)}%. A genetic dense in a corner produces exactly that gap.`));
+    } else if (cs >= 0.95) {
+      add(SEV.OK, L(`Cobertura del .set: ${(100 * cs).toFixed(1)}%`, `.set coverage: ${(100 * cs).toFixed(1)}%`),
+        L('Las pasadas cubren casi todo el espacio de búsqueda declarado en el .set.',
+          'Passes cover almost the entire search space declared in the .set.'));
+    } else {
+      add(SEV.INFO, L(`Cobertura del .set: ${(100 * cs).toFixed(2)}%`, `.set coverage: ${(100 * cs).toFixed(2)}%`),
+        L(`${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} pedidas en el .set.`,
+          `${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} asked in the .set.`));
+    }
+    if (searchCoverage.outsideAny) {
+      add(SEV.WARN, L('Hay pasadas fuera del rango del .set', 'Some passes fall outside the .set range'),
+        L('Algunos valores observados no encajan en inicio/paso/fin del .set aportado. Puede ser otro .set, un redondeo, o una optimización distinta.',
+          'Some observed values do not fit the .set start/step/stop. It may be another .set, rounding, or a different optimization.'));
+    }
+    if (searchCoverage.missingInSet && searchCoverage.missingInSet.length) {
+      add(SEV.INFO, L(`${searchCoverage.missingInSet.length} parámetro(s) del archivo no están en el .set`, `${searchCoverage.missingInSet.length} file parameter(s) missing from the .set`),
+        L(`No se contrastaron: ${searchCoverage.missingInSet.slice(0, 6).join(', ')}${searchCoverage.missingInSet.length > 6 ? '…' : ''}.`,
+          `Not contrasted: ${searchCoverage.missingInSet.slice(0, 6).join(', ')}${searchCoverage.missingInSet.length > 6 ? '…' : ''}.`));
+    }
+  } else if (!searchCoverage || !searchCoverage.present) {
+    add(SEV.INFO, L('Sin .set de optimización: cobertura solo sobre niveles vistos', 'No optimization .set: coverage is on seen levels only'),
+      L('Suelta el .set con el que lanzaste la optimización (inicio||paso||fin||Y) para medir qué fracción del rango pedido cubren tus archivos.',
+        'Drop the .set you launched the optimization with (start||step||stop||Y) to measure what fraction of the requested range your files cover.'));
   }
 
   if (Number.isFinite(medianSupport) && medianSupport < 4) {
@@ -438,13 +472,24 @@ export function buildVerdict(ctx) {
         L(`En ${integrity.provenance.mismatches} filas el resultado del backtest del archivo forward no coincide con el del archivo in-sample. Revisa que no hayas mezclado exportaciones.`,
           `In ${integrity.provenance.mismatches} rows the forward file's backtest result does not match the in-sample file. Check that you have not mixed exports.`));
     }
+    if (integrity.forwardSelectionSuspect) {
+      const pct = Number.isFinite(integrity.forwardRowRatio)
+        ? (100 * integrity.forwardRowRatio).toFixed(0)
+        : '?';
+      add(SEV.WARN,
+        L('El forward parece un subconjunto del in-sample (posible sesgo de selección)',
+          'Forward looks like a subset of in-sample (possible selection bias)'),
+        L(`El export forward trae ${integrity.oosRows} filas frente a ${integrity.isRows} del in-sample (~${pct} %). Si MT5 solo reexportó las mejores pasadas, las mesetas y la fragilidad en forward se miden solo entre candidatas ya preseleccionadas: la validación queda sesgada al alza. Interpreta el OOS con cautela; idealmente el forward debería cubrir las mismas pasadas que el IS.`,
+          `The forward export has ${integrity.oosRows} rows versus ${integrity.isRows} in-sample (~${pct}%). If MT5 only re-exported the best passes, plateaus and forward fragility are measured only among already pre-selected candidates: validation is biased upward. Treat OOS with caution; ideally forward should cover the same passes as IS.`));
+    }
     if (integrity.duplicateIds > 0) {
       add(SEV.WARN, L(`${integrity.duplicateIds} identificadores duplicados`, `${integrity.duplicateIds} duplicate identifiers`),
         L('Se ha conservado la primera aparicion de cada Pass duplicado.',
           'The first appearance of each duplicate Pass was kept.'));
     }
     if (integrity.unmatchedIs > 0) {
-      add(SEV.INFO, L(`${integrity.unmatchedIs} pasadas sin pareja`, `${integrity.unmatchedIs} unpaired passes`),
+      const sev = (integrity.isRows > 0 && integrity.unmatchedIs / integrity.isRows > 0.05) ? SEV.WARN : SEV.INFO;
+      add(sev, L(`${integrity.unmatchedIs} pasadas sin pareja`, `${integrity.unmatchedIs} unpaired passes`),
         L('Estas filas existen en un archivo y no en el otro, y se han descartado del analisis.',
           'These rows exist in one file and not the other, and were discarded from the analysis.'));
     }
@@ -471,10 +516,12 @@ export function buildVerdict(ctx) {
       `With ${gatePassCount} configurations above your minima there is not enough mass for a stable region to exist; at least ${viableNeededForPlateau} would be needed. This says nothing about your EA: it says these data do not allow a pronouncement in either direction.`);
   } else if (criticas.length) {
     level = LEVELS.WEAK;
-    headline = L('Evidencia débil', 'Weak evidence');
+    headline = regiones
+      ? L('Evidencia débil (hay región)', 'Weak evidence (region found)')
+      : L('Evidencia débil', 'Weak evidence');
     summary = regiones
-      ? L(`Estas son las ${regiones === 1 ? 'la región más estable que contienen' : 'regiones más estables que contienen'} tus datos, pero ${criticas.length === 1 ? 'hay una limitación seria' : `hay ${criticas.length} limitaciones serias`} en lo que las sostiene. Léelas antes de darles peso.`,
-          `These are the ${regiones === 1 ? 'most stable region' : 'most stable regions'} your data contain, but ${criticas.length === 1 ? 'there is one serious limitation' : `there are ${criticas.length} serious limitations`} in what supports them. Read them before giving them weight.`)
+      ? L(`Sí hay ${regiones === 1 ? 'una región estable' : `${regiones} regiones estables`} en tus datos (abajo). Lo que es débil no es “que no exista zona”, sino el peso que puedes darle: ${criticas.length === 1 ? 'hay una limitación seria' : `hay ${criticas.length} limitaciones serias`} en lo que la sostiene. Léela antes de decidir.`,
+          `There ${regiones === 1 ? 'is a stable region' : `are ${regiones} stable regions`} in your data (below). What is weak is not “that no zone exists”, but how much weight you can give it: ${criticas.length === 1 ? 'there is one serious limitation' : `there are ${criticas.length} serious limitations`} in what supports it. Read it before deciding.`)
       : L('No hay ninguna región conexa en estos datos: lo que hay son configuraciones sueltas. Abajo tienes las mejores, pero un punto aislado no es una zona estable.',
           'There is no connected region in these data: what there is are isolated configurations. Below you have the best ones, but an isolated point is not a stable zone.');
   } else if (warnings.length) {
@@ -500,8 +547,8 @@ export function buildVerdict(ctx) {
   } else if (!bestPlateau) {
     nextStep = L('Refina la optimizacion antes de seguir.', 'Refine the optimization before continuing.');
   } else if (Number.isFinite(fragility) && fragility >= 0.5) {
-    nextStep = L('Descarta el orden de tu tabla: aquí perjudica. Exporta el .set de la configuración representativa, que sale de la región estable en ambos periodos, y pruebala en un tramo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptacion ANTES de mirar el resultado.',
-      'Discard the order of your table: here it hurts. Export the .set of the representative configuration, which comes from the region stable in both periods, and test it on a stretch you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
+    nextStep = L('Ignora el orden de tu tabla de MT5: aquí engaña. La región de abajo sigue siendo el hallazgo; exporta el .set de la configuración representativa y pruébala en un tramo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptación ANTES de mirar el resultado.',
+      'Ignore the order of your MT5 table: here it misleads. The region below is still the finding; export the .set of the representative configuration and test it on a stretch you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
   } else {
     nextStep = L('Exporta el .set de la configuración representativa y pruebala en un periodo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptacion ANTES de mirar el resultado.',
       'Export the .set of the representative configuration and test it on a period you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
@@ -511,6 +558,111 @@ export function buildVerdict(ctx) {
     level, headline, summary, findings, nextStep,
     counts: { critical: criticas.length, warnings: warnings.length },
   };
+}
+
+/** Motivos de descarte de picos (bilingües; se pueden regenerar al cambiar idioma). */
+export function peakRejectReasons(p, opts = {}) {
+  const minSupport = opts.minSupport ?? 4;
+  const plateauFloorQuality = opts.plateauFloorQuality ?? 0.42;
+  const reasons = [];
+  if (p.st.support < minSupport) {
+    reasons.push(L(`solo ${p.st.support} vecinos observados`, `only ${p.st.support} neighbors observed`));
+  }
+  if (Number.isFinite(p.st.peakZ) && p.st.peakZ > 2) {
+    reasons.push(L(`sobresale ${p.st.peakZ.toFixed(1)}σ sobre su vecindad`, `stands out ${p.st.peakZ.toFixed(1)}σ above its neighborhood`));
+  }
+  if (Number.isFinite(p.st.cliff) && p.st.cliff > 1.5) {
+    reasons.push(L('acantilado a un paso', 'cliff one step away'));
+  }
+  if (!p.record.passes) {
+    const fails = [...(p.record.failsIs || []), ...(p.record.failsOos || [])].join(', ');
+    reasons.push(L(`no pasa las puertas minimas (${fails})`, `does not clear minimum gates (${fails})`));
+  }
+  if (Number.isFinite(p.st.fracPass) && p.st.fracPass < 0.9) {
+    reasons.push(L(
+      `solo el ${(100 * p.st.fracPass).toFixed(0)}% de sus vecinos pasa las puertas`,
+      `only ${(100 * p.st.fracPass).toFixed(0)}% of its neighbors clear the gates`,
+    ));
+  }
+  if (Number.isFinite(p.st.q25) && p.st.q25 < plateauFloorQuality) {
+    reasons.push(L(
+      `el cuartil bajo de su entorno se queda en ${p.st.q25.toFixed(2)}`,
+      `the lower quartile of its surroundings sits at ${p.st.q25.toFixed(2)}`,
+    ));
+  }
+  if (!reasons.length) {
+    reasons.push(L(
+      'no alcanza el umbral de robustez con soporte suficiente',
+      'does not reach the robustness threshold with enough support',
+    ));
+  }
+  return reasons;
+}
+
+/**
+ * Regenera el veredicto (y textos de picos) en el idioma activo, sin reanalizar.
+ * Usar tras setLocale() cuando ya hay un informe en pantalla.
+ */
+export function rebuildLocalizedCopy(analysis) {
+  if (!analysis || !analysis.meta) return analysis;
+  const m = analysis.meta;
+  const s = analysis.stats || {};
+  const plateaus = analysis.plateaus || [];
+  const bestPlateau = plateaus[0] || null;
+  const tied = plateaus.filter((p) => p.tied);
+  const tiedList = tied.length > 1 ? tied : [];
+  const verdict = buildVerdict({
+    gatePassCount: m.gatePassCount,
+    discoverPassCount: m.discoverPassCount,
+    total: m.total,
+    plateaus,
+    fragility: s.fragility,
+    fragilityQuality: s.fragilityQuality,
+    fragilityMargin: s.fragilityMargin,
+    fragilityFolds: s.fragilityFolds,
+    fragilityAsymmetry: s.fragilityAsymmetry,
+    fragilityWorstDirection: s.fragilityWorstDirection,
+    sharpeTest: s.sharpeTest,
+    spearman: s.spearmanCriterion,
+    spearmanQuality: s.spearmanQuality,
+    coverage: m.coverage,
+    searchCoverage: m.searchCoverage,
+    medianSupport: m.medianSupport,
+    periodRatio: m.periodRatio,
+    integrity: analysis.integrity,
+    sampling: m.sampling,
+    selectionMode: m.selectionMode,
+    inversions: analysis.inversions || [],
+    periodComparison: analysis.periodComparison,
+    hasForward: m.hasForward,
+    underpowered: m.underpowered,
+    viableNeededForPlateau: m.viableNeededForPlateau,
+    stabilityCheck: s.stabilityCheck,
+    degreesOfFreedom: m.degreesOfFreedom,
+    gateInfluence: m.gateInfluence,
+    irregularGrids: m.irregularGrids,
+    rescuedDims: m.rescuedDims,
+    offsetsComplete: m.offsetsComplete,
+    spansIrregular: bestPlateau ? bestPlateau.spansIrregular : [],
+    tiedCount: m.tiedCount != null ? m.tiedCount : tiedList.length,
+    tiedRanks: m.tiedRanks || tiedList.map((p) => p.rank),
+    boundaryWorst: bestPlateau ? bestPlateau.boundary : [],
+    invertedRisk: bestPlateau ? bestPlateau.invertedRisk : [],
+    alternativePlateau: bestPlateau && bestPlateau.invertedRisk && bestPlateau.invertedRisk.length
+      ? plateaus.find((p) => p.rank !== bestPlateau.rank && !(p.invertedRisk && p.invertedRisk.length)) || null
+      : null,
+    bestPlateau,
+  });
+  const peakOpts = {
+    minSupport: (m.policy && m.policy.minSupport) || 4,
+    plateauFloorQuality: 0.42,
+  };
+  // ENGINE opts live on analysis via meta if we stored them; use defaults matching engine.
+  const peaks = (analysis.peaks || []).map((p) => ({
+    ...p,
+    reasons: peakRejectReasons(p, peakOpts),
+  }));
+  return { ...analysis, verdict, peaks };
 }
 
 export { SEV };

@@ -8,7 +8,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseBacktestReport, looksLikeReport, compareParams } from '../js/report.js';
+import { parseBacktestReport, looksLikeReport, compareParams } from '../core/report.js';
 
 let failures = 0;
 let checks = 0;

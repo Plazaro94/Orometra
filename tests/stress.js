@@ -11,7 +11,7 @@
 // Cada escenario comprueba primero los INVARIANTES que deben cumplirse siempre, y
 // despues lo especifico del caso.
 
-import { runAnalysis } from '../js/analysis.js';
+import { runAnalysis } from '../core/analysis.js';
 
 let failures = 0;
 let checks = 0;

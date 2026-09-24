@@ -9,7 +9,7 @@
 
 import zlib from 'node:zlib';
 import { parseXlsx } from '../js/xlsx.js';
-import { finishTable } from '../js/parse.js';
+import { finishTable } from '../core/parse.js';
 
 let failures = 0;
 let checks = 0;

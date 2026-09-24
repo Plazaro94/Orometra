@@ -1,9 +1,9 @@
 // Regresiones de la auditoría P0/P1 (procedencia, roles, dedupe, sampling, fmt).
-import { pairTables, roleFromTable, inferParamsSingle } from '../js/schema.js';
+import { pairTables, roleFromTable, inferParamsSingle } from '../core/schema.js';
 import { formatSetValue, fingerprintAnalysis, buildReport } from '../js/export.js';
-import { runAnalysis } from '../js/analysis.js';
-import { DEFAULT_POLICY } from '../js/metrics.js';
-import { CODE } from '../js/errors.js';
+import { runAnalysis } from '../core/analysis.js';
+import { DEFAULT_POLICY } from '../core/metrics.js';
+import { CODE } from '../core/errors.js';
 import { buildDemoTables } from '../js/demo.js';
 
 let failures = 0;

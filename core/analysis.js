@@ -16,8 +16,9 @@ import {
   median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum,
   sharpeStandardError, normCdf, mean, stdev, extent, makeRng,
 } from './stats.js';
-import { buildVerdict } from './verdict.js';
-import { L } from './i18n.js';
+import { buildVerdict, peakRejectReasons } from './verdict.js';
+import { coverageAgainstSet } from './setfile.js';
+import { L } from '../js/i18n.js';
 
 const METRIC_KEYS = ['profit', 'profitFactor', 'recoveryFactor', 'sharpe', 'drawdown', 'trades', 'expectedPayoff'];
 
@@ -34,9 +35,9 @@ function progress(cb, pct, label) {
 }
 
 /**
- * @param {{isTable:object, oosTable?:object, policy?:object, opts?:object, onProgress?:Function}} input
+ * @param {{isTable:object, oosTable?:object, policy?:object, opts?:object, searchSet?:object, onProgress?:Function}} input
  */
-export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POLICY, opts = ENGINE_DEFAULTS, onProgress } = {}) {
+export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POLICY, opts = ENGINE_DEFAULTS, searchSet = null, onProgress } = {}) {
   const started = Date.now();
   // Las anclas de la puntuacion se derivan de los minimos que ha pedido el usuario, para
   // no imponerle nuestra escala de riesgo. Ver `resolvePolicy`.
@@ -53,6 +54,20 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   if (hasForward) {
     const paired = pairTables(isTable, oosTable);
     integrity = paired.integrity;
+    // FWD-1: si el forward trae menos filas que el IS, MT5 puede haber exportado solo
+    // un subconjunto (p. ej. las mejores). Emparejar y medir mesetas OOS sobre ese
+    // subconjunto sesga la validación. Ver docs/MT5_ASSUMPTIONS.md.
+    const isN = integrity.isRows || 0;
+    const oosN = integrity.oosRows || 0;
+    const matchedN = integrity.matchedRows || 0;
+    const forwardRowRatio = isN > 0 ? oosN / isN : NaN;
+    const matchRatio = isN > 0 ? matchedN / isN : NaN;
+    integrity.forwardRowRatio = forwardRowRatio;
+    integrity.matchRatio = matchRatio;
+    integrity.forwardSelectionSuspect = Number.isFinite(forwardRowRatio)
+      && isN >= 20
+      && (oosN < isN - 5)
+      && forwardRowRatio < 0.95;
     const prov = integrity.provenance;
     // Hard-fail: mezclar optimizaciones distintas no puede producir una "meseta".
     if (prov && prov.checked && prov.compared >= 5 && prov.ratio < 0.98) {
@@ -209,25 +224,25 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const paramValues = paramNames.map((_, j) => records.map((r) => r.params[j]));
   let { coords, levels } = buildCoordinates(paramValues, paramTypes);
   const cartesian = levels.reduce((a, l) => a * Math.max(1, l.length), 1);
+  // Cobertura OBSERVADA: pasadas / producto de niveles vistos en el archivo.
+  // No es el espacio que pediste en MT5; para eso hace falta el .set (abajo).
   const coverage = cartesian > 0 ? records.length / cartesian : 0;
   const optimisedDims = levels.filter((l) => l.length > 1).length;
   // "grid" solo si la malla OBSERVADA esta casi llena. Cobertura media sobre niveles
   // vistos (antes denseCoverage=0.35) mentía en GA densos en un rincón.
   const sampling = coverage >= 0.95 ? 'grid' : coverage >= 0.02 ? 'partial' : 'sparse';
 
+  const searchCoverage = coverageAgainstSet(
+    paramNames,
+    records.map((r) => r.params),
+    searchSet,
+  );
+
   /*
-   * GRADOS DE LIBERTAD: cuanta evidencia sostiene cada parametro que has ajustado.
-   *
-   * Es la division mas elemental de todas y la aplicacion no la hacia. Ajustar 13
-   * parametros con 363 operaciones son 28 observaciones por parametro: con eso no se
-   * puede afirmar nada sobre la forma de una superficie de 13 dimensiones, por bonita que
-   * salga la meseta. Todos los contrastes de mas abajo se apoyan en que esta cifra sea
-   * razonable, asi que conviene darla antes que ellos.
-   *
-   * No hay un numero magico y no se finge que lo haya. Lo que si se puede afirmar es que
-   * por debajo de unas pocas decenas de operaciones por parametro se esta midiendo sobre
-   * todo ruido, y que la referencia relevante es el periodo de VALIDACION, porque el
-   * in-sample ya se gasto en elegir.
+   * DENSIDAD DE EVIDENCIA (no "grados de libertad" estadísticos): operaciones
+   * disponibles por parametro que has ajustado. Ajustar 13 parametros con 363
+   * operaciones son ~28 ops/parametro: con eso no se puede afirmar la forma de
+   * una superficie 13D. La referencia relevante es el periodo de validacion.
    */
   const tradesIsMedian = median(records.map((r) => r.is.trades).filter(Number.isFinite));
   const tradesOosMedian = hasForward ? median(records.map((r) => r.oos.trades).filter(Number.isFinite)) : NaN;
@@ -507,17 +522,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const peaks = byCriterion
     .slice(0, 80)
     .filter((p) => inPlateau[p.index] < 0)
-    .map((p) => {
-      const reasons = [];
-      if (p.st.support < opts.minSupport) reasons.push(`solo ${p.st.support} vecinos observados`);
-      if (Number.isFinite(p.st.peakZ) && p.st.peakZ > 2) reasons.push(`sobresale ${p.st.peakZ.toFixed(1)}σ sobre su vecindad`);
-      if (Number.isFinite(p.st.cliff) && p.st.cliff > 1.5) reasons.push('acantilado a un paso');
-      if (!p.record.passes) reasons.push(`no pasa las puertas minimas (${[...p.record.failsIs, ...p.record.failsOos].join(', ')})`);
-      if (Number.isFinite(p.st.fracPass) && p.st.fracPass < 0.9) reasons.push(`solo el ${(100 * p.st.fracPass).toFixed(0)}% de sus vecinos pasa las puertas`);
-      if (Number.isFinite(p.st.q25) && p.st.q25 < opts.plateauFloorQuality) reasons.push(`el cuartil bajo de su entorno se queda en ${p.st.q25.toFixed(2)}`);
-      if (!reasons.length) reasons.push('no alcanza el umbral de robustez con soporte suficiente');
-      return { ...p, reasons };
-    })
+    .map((p) => ({ ...p, reasons: peakRejectReasons(p, opts) }))
     .slice(0, 12);
 
   progress(onProgress, 90, L('Contrastes estadisticos', 'Statistical contrasts'));
@@ -780,7 +785,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const stabilityCheck = assessStability(bestPlateau);
 
   progress(onProgress, 96, L('Emitiendo veredicto', 'Issuing verdict'));
-  const verdict = buildVerdict({
+  const verdictCtx = {
     gatePassCount,
     discoverPassCount,
     total: records.length,
@@ -795,6 +800,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     spearman: rho,
     spearmanQuality: rhoQuality,
     coverage,
+    searchCoverage,
     medianSupport: nb.medianSupport,
     periodRatio,
     integrity,
@@ -820,7 +826,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       ? plateaus.find((p) => p.rank !== bestPlateau.rank && !p.invertedRisk.length) || null
       : null,
     bestPlateau,
-  });
+  };
+  const verdict = buildVerdict(verdictCtx);
 
   progress(onProgress, 100, L('Listo', 'Done'));
   return {
@@ -838,6 +845,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       levelCounts: levels.map((l) => l.length),
       cartesian,
       coverage,
+      coverageObserved: coverage,
+      searchCoverage,
       sampling,
       radius: nb.radius,
       activeDims,
@@ -861,6 +870,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       viableNeededForPlateau,
       degreesOfFreedom,
       gateInfluence,
+      tiedCount: tied.length,
+      tiedRanks: tied.map((p) => p.rank),
       scale: globalScale,
       periodRatio,
       gatePassCount,

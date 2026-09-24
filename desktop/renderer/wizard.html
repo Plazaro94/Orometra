@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Orometra — Asistente</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="./shell.css">
+<link rel="stylesheet" href="./wizard.css">
+<script src="../../js/theme-init.js"></script>
+</head>
+<body class="desktop-shell">
+  <div class="wiz">
+    <header class="wiz-top">
+      <a href="./index.html" class="text-btn">← Registro</a>
+      <h1>Validar estrategia</h1>
+      <p class="muted">Cuatro pasos. El listón se congela antes de ver resultados.</p>
+    </header>
+
+    <ol class="wiz-steps" id="stepNav">
+      <li class="active" data-step="1">1. Estrategia</li>
+      <li data-step="2">2. Qué probar</li>
+      <li data-step="3">3. Tu listón</li>
+      <li data-step="4">4. Periodo reservado</li>
+    </ol>
+
+    <section class="wiz-panel" data-panel="1">
+      <label>Estrategia (nombre)
+        <input id="wName" required placeholder="Mi EA XAU">
+      </label>
+      <label>Hipótesis (una frase)
+        <textarea id="wHyp" rows="2" placeholder="Qué ineficiencia y en qué mercados"></textarea>
+      </label>
+      <label>Búsqueda previa fuera de Orometra
+        <input id="wPrior" required placeholder="0 · no lo sé · ~200">
+      </label>
+      <label>EA (.mq5 o .ex5)
+        <div class="file-row">
+          <input id="wEa" readonly placeholder="Sin archivo">
+          <button type="button" class="btn" id="pickEa">Elegir…</button>
+        </div>
+      </label>
+      <p class="muted" id="blackBoxNote" hidden>Solo .ex5: modo caja negra (Lite). Sin sonda ni PBO/DSR reales hasta tener fuente.</p>
+    </section>
+
+    <section class="wiz-panel" data-panel="2" hidden>
+      <label>Símbolo <input id="wSymbol" value="XAUUSD"></label>
+      <label>Timeframe
+        <select id="wTf"><option>M15</option><option>H1</option><option>H4</option><option>D1</option></select>
+      </label>
+      <label>Desde <input id="wFrom" type="date"></label>
+      <label>Hasta <input id="wTo" type="date"></label>
+      <fieldset>
+        <legend>¿Cómo operarás?</legend>
+        <label><input type="radio" name="mode" value="fixed" checked> Parámetros fijos (WFO es diagnóstico)</label>
+        <label><input type="radio" name="mode" value="reopt"> Reoptimizar cada cierto tiempo (WFO es evidencia principal)</label>
+      </fieldset>
+      <p class="muted">El WFO valida un procedimiento de reoptimización, no un set fijo de parámetros.</p>
+    </section>
+
+    <section class="wiz-panel" data-panel="3" hidden>
+      <fieldset>
+        <legend>Perfil de listón (se congela al confirmar)</legend>
+        <label><input type="radio" name="profile" value="prudent"> Prudente</label>
+        <label><input type="radio" name="profile" value="standard" checked> Estándar</label>
+        <label><input type="radio" name="profile" value="exploratory"> Exploratorio</label>
+      </fieldset>
+      <pre id="profilePreview" class="import-log"></pre>
+      <p class="muted">Cambiar el listón después de ver resultados crea un nuevo pre-registro visible en el informe.</p>
+    </section>
+
+    <section class="wiz-panel" data-panel="4" hidden>
+      <p>Se reserva el tramo más reciente (~20 % del periodo) y <strong>no se usa</strong> hasta el final.</p>
+      <label>Fraction reservada
+        <input id="wHoldout" type="number" min="0.1" max="0.4" step="0.05" value="0.2">
+      </label>
+      <p class="muted">Si ya miraste ese tramo antes, no es ciego. La única prueba totalmente limpia es la incubación.</p>
+      <div id="preregBox" class="counter-card"></div>
+    </section>
+
+    <footer class="wiz-foot">
+      <button type="button" class="btn" id="btnPrev" hidden>Atrás</button>
+      <button type="button" class="btn primary" id="btnNext">Siguiente</button>
+      <button type="button" class="btn primary" id="btnValidate" hidden>Validar</button>
+    </footer>
+    <pre id="wizLog" class="import-log" hidden></pre>
+  </div>
+  <script type="module" src="./wizard.js"></script>
+</body>
+</html>

@@ -6,12 +6,12 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseTable, toNumber } from '../js/parse.js';
-import { runAnalysis } from '../js/analysis.js';
+import { parseTable, toNumber } from '../core/parse.js';
+import { runAnalysis } from '../core/analysis.js';
 import { buildDemoTables } from '../js/demo.js';
-import { DEFAULT_POLICY } from '../js/metrics.js';
+import { DEFAULT_POLICY } from '../core/metrics.js';
 import { buildSetFile } from '../js/export.js';
-import { expectedMaximum, expectedMaxZ, sharpeStandardError, normInv, quantile, spearman } from '../js/stats.js';
+import { expectedMaximum, expectedMaxZ, sharpeStandardError, normInv, quantile, spearman } from '../core/stats.js';
 
 let failures = 0;
 let checks = 0;

@@ -8,18 +8,6 @@ bajo que la conecta con terreno más alto— y el **aislamiento**. Es exactament
 el motor sobre la superficie de parámetros: decidir si una cima está sola o forma parte de
 terreno alto y ancho.
 
-## Temas
-
-Tres: oscuro, claro y crema. Todo el color pasa por una escala semántica de 28 tokens
-definida en el bloque `:root` de `styles.css`; **no se escribe ningún color literal fuera
-de ahí**. Antes había 168 sueltos por la hoja, lo que hacía imposible cualquier tema
-alternativo. Los nombres describen el papel y no el color (`--ok-text` es «texto verde
-legible sobre su fondo»), para que al invertir el tema sigan significando lo mismo.
-
-El tema elegido se guarda en `localStorage` y se aplica en un script del `<head>` antes de
-pintar, porque si no se ve un fogonazo del tema contrario al recargar.
-
-
 Auditoría anti-sobreajuste para optimizaciones de MetaTrader 5. Aplicación web estática:
 todo el análisis se ejecuta en el navegador y ningún archivo sale del equipo.
 
@@ -74,7 +62,8 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   documentado y con estructura que cambia entre builds de MT5. Leerlo obligaría a adivinar el
   diseño de cada versión, y un fallo ahí no daría un error visible sino números equivocados.
 - Comprobación de integridad: emparejado por `Pass`, duplicados y **prueba de procedencia**
-  (el resultado del backtest del archivo forward debe reproducir el del in-sample).
+  (el resultado del backtest del archivo forward debe reproducir el del in-sample). Aviso si
+  el forward trae claramente menos filas que el in-sample (posible subconjunto de las mejores).
 - Detección del método de optimización por cobertura (`probadas / espacio cartesiano`):
   rejilla completa, parcial o muestreo disperso de algoritmo genético.
 - Vecindad ordinal con radio adaptativo, estabilidad local, detección de **acantilados** y de
@@ -87,38 +76,28 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   configuraciones se muestrearon: con algoritmo genético, la densidad mide dónde miró el
   optimizador tanto como dónde hay estabilidad.
 - Mesetas como componentes conexas con suelo de calidad absoluto, y su **núcleo**.
-- **PBO**: probabilidad de sobreajuste en la selección, por remuestreo de configuraciones.
-- **Contraste de Sharpe deflactado**: el mejor Sharpe que cabría esperar sin ninguna ventaja
-  real tras N pruebas, usando el error típico de Lo (2002).
+- **Fragilidad de la selección**: fracción de veces que la regla «quédate con la primera de
+  la tabla» falla al remuestrear configuraciones (en ambos sentidos de la partición IS/OOS).
+  No es el PBO publicado (CSCV); ese exige curvas de equity por pasada.
+- **Contraste de selección sobre el Sharpe (adaptación)**: compara el mejor Sharpe observado
+  con el máximo que cabría esperar por azar tras N pruebas, usando el error típico de Lo
+  (2002). No es el Deflated Sharpe Ratio publicado.
 - **Calificación de la FUERZA DE LA EVIDENCIA**, no de la estrategia: sólida / moderada /
   débil / insuficiente. La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
-  contienen unos datos, no si un EA va a funcionar. Decir «no recomendado» era opinar sobre
-  algo que nunca se midió —y reventó con un EA real, donde se emitió NO-GO mientras 2.925 de
-  2.925 configuraciones eran rentables fuera de muestra—. Distingue «no hay región conexa»
+  contienen unos datos, no si un EA va a funcionar. Distingue «no hay región conexa»
   de «no hay datos suficientes para saberlo», que son hechos, y deja la decisión al usuario.
 - **Lectura del informe de backtest de MT5** (`Informe → HTML`): se suelta en la app y
   rellena solo la validación del periodo no visto. Trae tres cosas que el export de
   optimización no tiene: las **fechas reales** del periodo, **todos los parámetros de
   entrada** —con los que comprueba que el backtest se lanzó con la configuración
-  propuesta y avisa si no— y la **lista de operaciones una a una**. El resultado neto de
-  cada operación arrastra la comisión de su apertura, de modo que la suma reproduce
-  exactamente el beneficio declarado por MT5.
+  propuesta y avisa si no— y la **lista de operaciones una a una**.
 - **Validación en periodo no visto**: se introducen los resultados del backtest de la
   configuración elegida sobre un tramo que no se haya usado ni para optimizar ni para
   validar, y se comprueba si son *normales para ese EA* comparándolos con el recorrido
-  que la meseta entera demostró. El drawdown máximo y el factor de recuperación se
-  corrigen por duración, porque dependen del número de operaciones: un tramo con la
-  cuarta parte de operaciones debería mostrar la mitad de drawdown, y compararlos en
-  crudo lleva a la conclusión contraria.
+  que la meseta entera demostró.
 - Exportación: `.set` de la configuración propuesta, `.set` de **rango de refinamiento**
-  acotado a un número de combinaciones ejecutable, informe JSON y CSV completo. Los
-  parámetros también se copian al portapapeles con un clic.
-- **Vista previa de los mínimos**: al mover los umbrales se ve al instante cuántas
-  configuraciones sobrevivirían, sin rehacer el análisis. Las puertas son una función
-  pura de las métricas ya cargadas; lo caro es la topología, y esa solo se recalcula si
-  se pide. Responde de un vistazo a «¿esto aguanta si aprieto un poco más?».
-- **Aviso de empate**: cuando las primeras mesetas puntúan casi igual, se dice
-  explícitamente en lugar de sugerir una jerarquía que los datos no sostienen.
+  acotado a un número de combinaciones ejecutable, informe JSON y CSV completo.
+- **Vista previa de los mínimos** y **aviso de empate** entre mesetas casi igualadas.
 
 ## Ejecutar en local
 
@@ -131,50 +110,25 @@ node tools/serve.js
 
 Después abre `http://localhost:3000`. Acepta otro puerto como argumento: `node tools/serve.js 8080`.
 
+### Orometra Desktop (Fase 1)
+
+```bash
+npm run desktop
+```
+
+Abre el registro de investigación (estrategias, contador de búsqueda, importar XML al ledger)
+y puede abrir la misma UI de análisis que la web. Los datos viven en un SQLite local
+(no salen del PC).
+
 ## Pruebas
 
 ```bash
 npm test
 ```
 
-Son cuatro bancos con propósitos distintos:
-
-- **`tests/source.test.js`** revisa el propio código: que ninguna tilde haya caído dentro
-  de un identificador, que toda clase CSS usada esté definida, que no queden ids
-  huérfanos ni restos de depuración. Existe porque al restituir las tildes del texto
-  visible tres de ellas acabaron dentro de nombres de propiedad (`indices:` pasó a ser
-  `índices:`) y rompieron la aplicación en silencio.
-
-- **`tests/run.js`** valida que el motor acierta cuando se conoce la respuesta: mesetas
-  plantadas en un centro conocido, EAs perdedores, ruido, parametros inertes, booleanos
-  y enumeraciones, mas los archivos reales de MT5 si estan disponibles.
-- **`tests/stress.js`** valida que el modelo se comporta bien en *cualquier* caso, que es
-  lo que de verdad importa cuando lo usa gente distinta: de 1 a 20 parametros, de 16 a
-  100.000 configuraciones, con y sin forward, con columnas de metricas ausentes,
-  superficies planas, EAs sin operaciones suficientes y rangos degenerados. Cada escenario
-  comprueba primero los invariantes que deben cumplirse siempre (veredicto valido, mesetas
-  coherentes y ordenadas, refinamiento ejecutable, ningun texto con NaN) y despues lo suyo.
-- **`tests/report.test.js`** valida el lector de informes: fechas, parámetros uno por
-  fila, entidades HTML, y que la suma de los resultados netos cuadre al céntimo con el
-  beneficio declarado.
-- **`tests/unseen.test.js`** valida la corrección por duración del periodo no visto, con
-  la demostración clave: un mismo drawdown del 12,99 % es normal con 1.274 operaciones y
-  anómalo con 318.
-
-## Accesibilidad y soporte
-
-- Funciona con teclado: las zonas de carga son enfocables y se activan con Enter o
-  espacio. Los archivos se sueltan en cualquier punto de la página.
-- En móvil la barra lateral se convierte en una tira horizontal de pestañas: las siete
-  secciones siguen siendo alcanzables.
-- Hoja de estilos de impresión propia: el informe sale legible en papel, con salto de
-  página por sección.
-- Los mínimos exigidos se recuerdan entre sesiones, y cada sección tiene su propio
-  enlace (`#mesetas`, `#descartes`…).
-
-Cubre las primitivas estadísticas, la conversión numérica regional, una rejilla con una meseta
-plantada en un centro conocido, un EA perdedor, ruido puro, parámetros constantes e inertes, el
-ejemplo sintético de la aplicación y, si están presentes, archivos reales de MT5.
+- **`tests/source.test.js`** revisa el propio código (tildes en identificadores, clases CSS, ids).
+- **`tests/regression.test.js`** compara el JSON canónico de la demo con un fixture fijo (Fase 0).
+- **`tests/run.js`**, **`tests/stress.js`**, **`tests/method.test.js`**, etc.: motor, invariantes y lecturas.
 
 Para incluir archivos reales, colócalos como `IS(1).xls` y `OOS(1).xls` en tu carpeta de
 descargas, o indica la ruta:
@@ -183,16 +137,35 @@ descargas, o indica la ruta:
 MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/run.js
 ```
 
+## Accesibilidad y soporte
+
+- Funciona con teclado: las zonas de carga son enfocables y se activan con Enter o
+  espacio. Los archivos se sueltan en cualquier punto de la página.
+- En móvil la barra lateral se convierte en una tira horizontal de pestañas.
+- Hoja de estilos de impresión propia.
+- Los mínimos exigidos se recuerdan entre sesiones; cada sección tiene enlace (`#mesetas`, …).
+
 ## Límites conocidos
 
 - No sustituye a una prueba en un periodo que no se haya usado ni para optimizar ni para
   validar. En cuanto eliges mirando el forward, ese forward deja de ser ciego.
 - Trabaja con las métricas agregadas del probador, no con la curva de capital ni con las
-  operaciones una a una. Por eso el PBO es una aproximación por remuestreo de configuraciones
-  y no el CSCV original sobre series temporales.
+  operaciones una a una. Por eso la **fragilidad de la selección** es un remuestreo de
+  configuraciones y no el CSCV original sobre series temporales (no se llama PBO).
 - No conoce las fechas de los periodos: la duración relativa del forward se estima con el
   número de operaciones.
-- El contraste del Sharpe asume que MT5 estima esa cifra sobre las operaciones registradas.
-  Suspenderlo es una señal fuerte; aprobarlo no demuestra nada por sí solo.
+- El contraste del Sharpe asume que MT5 estima esa cifra sobre las operaciones registradas
+  (supuesto SR-1 en `docs/MT5_ASSUMPTIONS.md`). Suspenderlo es una señal fuerte; aprobarlo
+  no demuestra nada por sí solo.
 - Aún no cubre walk-forward con varias ventanas.
 - Sin la lista de operaciones no es posible un Monte Carlo serio, y el export de optimización no la trae.
+
+## Temas
+
+Dos: oscuro y claro. Todo el color pasa por una escala semántica de tokens
+definida en el bloque `:root` de `styles.css`; **no se escribe ningún color literal fuera
+de ahí**. Los nombres describen el papel y no el color (`--ok-text` es «texto verde
+legible sobre su fondo»), para que al invertir el tema sigan significando lo mismo.
+
+El tema elegido se guarda en `localStorage` y se aplica en un script del `<head>` antes de
+pintar, porque si no se ve un fogonazo del tema contrario al recargar.

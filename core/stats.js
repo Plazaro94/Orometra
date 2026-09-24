@@ -171,16 +171,8 @@ export function sharpeStandardError(sharpe, observations) {
   return Math.sqrt((1 + 0.5 * sharpe * sharpe) / (observations - 1));
 }
 
-/** Generador congruencial: el remuestreo debe ser reproducible entre ejecuciones. */
-export function makeRng(seed = 20260919) {
-  let s = seed >>> 0;
-  return function next() {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { makeRng } from './rng.js';
+export { makeRng };
 
 /**
  * FRAGILIDAD DE LA REGLA DE SELECCION.

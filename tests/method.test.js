@@ -9,10 +9,10 @@
 import {
   buildCoordinates, classifyParams, parameterSensitivity, conditionalSensitivity,
   selectDims, buildNeighborhood, gridRegularity, componentExtent, ENGINE_DEFAULTS,
-} from '../js/engine.js';
-import { selectionFragility } from '../js/stats.js';
-import { periodQuality, resolvePolicy, DEFAULT_POLICY } from '../js/metrics.js';
-import { runAnalysis } from '../js/analysis.js';
+} from '../core/engine.js';
+import { selectionFragility } from '../core/stats.js';
+import { periodQuality, resolvePolicy, DEFAULT_POLICY } from '../core/metrics.js';
+import { runAnalysis } from '../core/analysis.js';
 
 let failures = 0;
 let checks = 0;

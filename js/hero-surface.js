@@ -53,7 +53,7 @@ export function mountHeroSurface(canvas) {
 
   function themeBoost() {
     const theme = root.dataset.theme || 'dark';
-    const lightish = theme === 'light' || theme === 'cream';
+    const lightish = theme === 'light';
     return {
       lightish,
       fillMul: lightish ? 2.1 : 1,

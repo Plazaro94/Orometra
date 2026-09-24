@@ -1,12 +1,12 @@
 // El análisis corre fuera del hilo principal: una rejilla completa de 100.000
 // pasadas bloquearia la pestana durante segundos si se ejecutase en la interfaz.
 
-import { parseTable } from './parse.js';
-import { runAnalysis } from './analysis.js';
+import { parseTable } from '../core/parse.js';
+import { runAnalysis } from '../core/analysis.js';
 import { setLocale } from './i18n.js';
 
 self.onmessage = (event) => {
-  const { id, isBuffer, oosBuffer, isName, oosName, policy, locale } = event.data;
+  const { id, isBuffer, oosBuffer, isName, oosName, policy, locale, searchSet } = event.data;
   const post = (type, payload) => self.postMessage({ id, type, ...payload });
   try {
     // Sin esto, L() en el worker cae siempre a español (no hay document).
@@ -20,6 +20,7 @@ self.onmessage = (event) => {
       isTable,
       oosTable,
       policy,
+      searchSet: searchSet || null,
       onProgress: (p) => post('progress', p),
     });
     // Los arrays por configuración se quedan aquí salvo los que la interfaz dibuja.
