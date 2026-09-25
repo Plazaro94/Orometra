@@ -109,7 +109,7 @@ const STRINGS = {
     'version': 'v2 · absolute plateau engine',
 
     'top.eyebrow': 'Quantitative robustness analysis',
-    'top.h1': 'See which configuration survives — before you trust it with <em>real money</em>.',
+    'top.h1': 'See which configuration survives,<br>before you trust it with <em>real money</em>.',
     'top.report.eyebrow': 'Audit report',
     'btn.demo': 'See a full analysis',
     'btn.policy': 'Minimum gates',
@@ -343,7 +343,7 @@ const STRINGS = {
     'version': 'v2 · motor de mesetas absoluto',
 
     'top.eyebrow': 'Análisis cuantitativo de robustez',
-    'top.h1': 'Descubre qué configuración aguanta — antes de confiarle tu <em>dinero real</em>.',
+    'top.h1': 'Descubre qué configuración aguanta,<br>antes de confiarle tu <em>dinero real</em>.',
     'top.report.eyebrow': 'Informe de auditoría',
     'btn.demo': 'Ver un análisis completo',
     'btn.policy': 'Mínimos exigidos',
