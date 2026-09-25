@@ -52,7 +52,7 @@ function formatTick(v) {
 
 /** Dispersión calidad IS frente a calidad OOS. La diagonal marca "no se degrada". */
 export function scatterIsOos(analysis) {
-  const W = 620; const H = 380; const pad = { l: 52, r: 16, t: 16, b: 44 };
+  const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 44 };
   if (!analysis.meta.hasForward) return '<p class="muted">Sin periodo forward no hay comparacion IS/OOS.</p>';
   const xScale = (v) => pad.l + v * (W - pad.l - pad.r);
   const yScale = (v) => H - pad.b - v * (H - pad.t - pad.b);
@@ -121,7 +121,7 @@ export function parameterProfile(analysis, paramIndex) {
 export function degradationChart(analysis) {
   const rows = analysis.stats.degradation;
   if (!rows.length) return '<p class="muted">No hay suficientes datos para el análisis por deciles.</p>';
-  const W = 620; const H = 280; const pad = { l: 52, r: 16, t: 16, b: 48 };
+  const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 48 };
   const allVals = rows.flatMap((r) => [r.oosMedian, r.oosQ25]).filter(Number.isFinite);
   let [lo, hi] = extent(allVals);
   const span = hi - lo || 1;
@@ -218,7 +218,11 @@ export function plateauHeatmap(analysis, dimA, dimB) {
     if (a >= 0 && b >= 0 && Number.isFinite(analysis.scores[i])) cells[a][b].push(analysis.scores[i]);
   });
   const cw = 46; const ch = 30; const pad = { l: 72, t: 34, r: 16, b: 34 };
-  const W = pad.l + la.length * cw + pad.r;
+  // Suelo de 620 en el ancho del viewBox: con pocos niveles el grid es mas estrecho que
+  // los demas graficos (620 fijo en el resto), y como .chart escala por ancho el mismo
+  // font-size en unidades SVG se ve mas grande aqui que en "Profile" al lado. Igualando
+  // el ancho de referencia, el texto sale al mismo tamano fisico en toda la pestana.
+  const W = Math.max(620, pad.l + la.length * cw + pad.r);
   const H = pad.t + lb.length * ch + pad.b;
   let body = '';
   for (let a = 0; a < la.length; a++) {

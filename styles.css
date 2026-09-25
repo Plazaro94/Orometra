@@ -262,7 +262,10 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .nav-item.active{background:var(--surface-3);color:var(--text-hi);font-weight:600}
 .nav-item.active span{color:var(--accent)}
 .nav-item:disabled{opacity:.34;cursor:default}
-.sidebar-bottom{margin-top:auto}
+/* margin-top:auto empuja esto al fondo cuando sobra alto, pero en ventanas bajas el
+   sobrante puede llegar a 0 y la pestana activa queda pegada al idioma/tema. padding-top
+   + border-top garantizan un hueco minimo pase lo que pase con el alto disponible. */
+.sidebar-bottom{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft)}
 /* Antes usaba --line-strong (un tono para bordes, no para texto): 2,15:1 de contraste,
  * practicamente invisible a poco brillo. --muted-3 es el mismo espiritu de marca de
  * agua pero sigue siendo texto legible. */
@@ -340,7 +343,7 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .policy-panel{margin-top:11px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:18px}
 .policy-head h2{font-size:15px;margin-bottom:5px}
 .policy-head p{margin:0 0 15px;color:var(--muted);font-size:13.5px;max-width:760px}
-.policy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.policy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:14px}
 .field{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
 .field input[type=number]{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px;font-variant-numeric:tabular-nums}
 .field.checkbox{flex-direction:row;align-items:center;gap:9px}
