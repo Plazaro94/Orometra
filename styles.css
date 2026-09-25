@@ -253,7 +253,11 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
   color:var(--text-2);text-align:left;padding:9px 10px;border-radius:9px;margin:1px 0;font-size:14.5px;
   transition:background .15s,color .15s;
 }
-.nav-item span{font-size:11.5px;color:var(--muted-3);width:20px;font-variant-numeric:tabular-nums}
+/* Solo el numero ("01"): antes esto tambien alcanzaba al span de la etiqueta, y como
+   .nav-item es flex, ese `width:20px` SI se aplica a un span (se "blockifica" como hijo
+   flex) -- apretaba el texto de la pestana en una caja de 20px que se desbordaba sobre
+   la siguiente pestana en la tira horizontal de movil. */
+.nav-item span:first-child{font-size:11.5px;color:var(--muted-3);width:20px;font-variant-numeric:tabular-nums}
 .nav-item:hover:not(:disabled){background:var(--surface-2);color:var(--text)}
 .nav-item.active{background:var(--surface-3);color:var(--text-hi);font-weight:600}
 .nav-item.active span{color:var(--accent)}
@@ -875,11 +879,25 @@ tr.sel td{color:var(--text-2)}
   .sidebar-label{display:none}
   .sidebar-label-gap{display:none;margin:0;padding:0;border:0}
   .sidebar-section{flex-direction:row;padding:6px 10px;gap:6px}
-  .nav-item{width:auto;white-space:nowrap;margin:0;padding:8px 13px;font-size:14px;border-radius:999px;background:var(--surface-2)}
+  /* flex-shrink:0 es el arreglo real: sin el, flexbox encogia las 7 pestanas para que
+     cupieran todas en el ancho visible (¡46px cada una!) antes de recurrir al scroll
+     horizontal que .sidebar-scroll ya ofrece, y "Diagnostics"/"Unseen period"/
+     "Methodology" con white-space:nowrap se desbordaban unas sobre otras. */
+  .nav-item{width:auto;flex-shrink:0;white-space:nowrap;margin:0;padding:8px 13px;font-size:14px;border-radius:999px;background:var(--surface-2)}
   /* Solo se oculta el numero ("01"): el nombre de la pestana es lo unico que la
      identifica en la tira horizontal, y ocultar los dos span dejaba pildoras sin texto. */
   .nav-item span:first-child{display:none}
-  .nav-item.active{background:var(--accent);color:var(--surface)}
+  /* `.sidebar-section` de mas en el selector (no solo `.nav-item.active`): con la misma
+     especificidad que la regla de escritorio (linea ~262), cual gana dependia de en que
+     pestana se entraba primero -- en la carga inicial ganaba esta, pero tras un click
+     real (con su scrollIntoView) volvia a ganar la de escritorio y la pestana activa se
+     quedaba con el fondo oscuro de siempre en vez del relleno solido que se ve aqui. Con
+     mas especificidad no hay ambiguedad posible. */
+  .sidebar-section .nav-item.active{background:var(--accent);color:var(--surface)}
+  /* La regla de base pinta el span de accent para que el "01" resalte sobre el fondo
+     oscuro del escritorio; aqui el fondo YA es accent, asi que ese mismo color deja el
+     texto invisible (accent sobre accent). El span visible hereda el color del boton. */
+  .sidebar-section .nav-item.active span{color:inherit}
   /* El pie ya no necesita quedarse abajo del todo: en movil es otra fila compacta,
      con el mismo scroll horizontal por si el espacio aprieta. */
   .sidebar-bottom{
