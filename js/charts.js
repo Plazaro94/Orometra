@@ -177,8 +177,11 @@ export function sensitivityBars(analysis) {
   const rows = [...analysis.sensitivity].sort((a, b) => eff(b) - eff(a));
   const rowH = 26;
   const W = 620; const H = rows.length * rowH + 30; const labelW = 190;
+  // Deja hueco a la derecha para el texto largo ("(0.87 · aislado 0.67)"), que si no
+  // se sale del viewBox: .chart tiene overflow:visible y no se recorta solo.
+  const rightMargin = 170;
   const [, maxS] = extent(rows.map(eff));
-  const scale = (v) => (maxS > 0 ? (v / maxS) * (W - labelW - 60) : 0);
+  const scale = (v) => (maxS > 0 ? (v / maxS) * (W - labelW - rightMargin) : 0);
   const body = rows.map((r, k) => {
     const role = dimRole(analysis, r);
     const cls = role === 'distancia' ? 'ch-sens-active' : role === 'particion' ? 'ch-sens-block' : 'ch-sens-flat';
