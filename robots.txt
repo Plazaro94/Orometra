@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://plazaro94.github.io/Orometra/sitemap.xml
+Sitemap: https://orometra.com/sitemap.xml
