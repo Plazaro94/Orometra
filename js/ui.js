@@ -114,7 +114,8 @@ $('#policyRerun').addEventListener('click', () => {
 // Ancla inicial y botón de atrás del navegador.
 window.addEventListener('hashchange', () => {
   const tab = HASH_TAB[location.hash.replace('#', '')];
-  if (tab && tab !== state.tab && (state.analysis || tab === 'method')) setTab(tab, true);
+  const noAnalysisNeeded = tab === 'method' || tab === 'legal' || tab === 'verdict';
+  if (tab && tab !== state.tab && (state.analysis || noAnalysisNeeded)) setTab(tab, true);
 });
 {
   const initial = HASH_TAB[location.hash.replace('#', '')];
