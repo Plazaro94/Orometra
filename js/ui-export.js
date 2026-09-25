@@ -125,8 +125,12 @@ export function doExport(kind, plateauIndex) {
     // sobre blanco) sobre la pestana Verdict, que ya es el resumen curado: veredicto,
     // por que, top 3 y periodo no visto. Sin libreria de PDF: "Guardar como PDF" del
     // propio dialogo de impresion del navegador hace el resto.
+    // window.print() debe llamarse de forma SINCRONA dentro del gesto del usuario:
+    // Safari en iOS lo ignora en silencio si hay un setTimeout de por medio, por
+    // pequeno que sea. setTab() ya renderiza de forma sincrona, así que no hace falta
+    // esperar nada.
     if (state.tab !== 'verdict') api.setTab('verdict');
-    setTimeout(() => window.print(), 60);
+    window.print();
   }
 }
 
