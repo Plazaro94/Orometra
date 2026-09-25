@@ -109,7 +109,7 @@ const STRINGS = {
     'version': 'v2 · absolute plateau engine',
 
     'top.eyebrow': 'Quantitative robustness analysis',
-    'top.h1': 'Find <em>plateaus</em>, not peaks.',
+    'top.h1': 'Your backtest looked perfect. Then it <em>died live</em>.',
     'top.report.eyebrow': 'Audit report',
     'btn.demo': 'See a full analysis',
     'btn.policy': 'Minimum gates',
@@ -191,9 +191,9 @@ const STRINGS = {
 
     'demo.loaded': 'Synthetic example loaded',
 
-    'lp.eyebrow': 'MT5 optimization robustness',
-    'lp.h1': 'Find <em>plateaus</em>, not peaks.',
-    'lp.lead': 'You optimize thousands of configurations. MT5 sorts a table. <strong>Orometra tells you which ones hold</strong> — and when the evidence is too weak to trust.',
+    'lp.eyebrow': 'MT5 optimization · overfitting audit',
+    'lp.h1': 'Your backtest looked perfect. Then it <em>died live</em>.',
+    'lp.lead': 'MT5 sorts thousands of configurations by profit and hands you a winner. Orometra finds the one that survives when the market shifts — the stable <strong>plateau</strong>, not the lucky <strong>peak</strong>.',
     'lp.cta': 'Open app',
     'lp.cta.footer': 'App',
     'lp.demo': 'See a full analysis',
@@ -343,7 +343,7 @@ const STRINGS = {
     'version': 'v2 · motor de mesetas absoluto',
 
     'top.eyebrow': 'Análisis cuantitativo de robustez',
-    'top.h1': 'Busca <em>mesetas</em>, no picos.',
+    'top.h1': 'Tu backtest parecía perfecto. Y <em>murió en real</em>.',
     'top.report.eyebrow': 'Informe de auditoría',
     'btn.demo': 'Ver un análisis completo',
     'btn.policy': 'Mínimos exigidos',
@@ -425,9 +425,9 @@ const STRINGS = {
 
     'demo.loaded': 'Ejemplo sintético cargado',
 
-    'lp.eyebrow': 'Robustez de optimizaciones MT5',
-    'lp.h1': 'Busca <em>mesetas</em>, no picos.',
-    'lp.lead': 'Optimizas miles de configuraciones. MT5 te ordena una tabla. <strong>Orometra te dice cuál aguanta</strong> — y cuándo la evidencia es demasiado débil.',
+    'lp.eyebrow': 'Optimización MT5 · auditoría de sobreajuste',
+    'lp.h1': 'Tu backtest parecía perfecto. Y <em>murió en real</em>.',
+    'lp.lead': 'MT5 ordena miles de configuraciones por beneficio y te da un ganador. Orometra encuentra la que aguanta cuando el mercado cambia — la <strong>meseta</strong> estable, no el <strong>pico</strong> con suerte.',
     'lp.cta': 'Abrir la app',
     'lp.cta.footer': 'App',
     'lp.demo': 'Ver un análisis completo',
