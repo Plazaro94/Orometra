@@ -158,6 +158,7 @@ export function setFile(which, file) {
   }
   state[which === 'is' ? 'isFile' : 'oosFile'] = file;
   state.isDemo = false;
+  document.body.classList.remove('intake-collapsed'); // cambiar de archivo reabre el detalle
   api.clearError(); // el fallo anterior ya no describe lo que hay cargado
   statusEl.textContent = `${file.name} · ${(file.size / 1048576).toFixed(1)} MB`;
   boxEl.classList.remove('error');

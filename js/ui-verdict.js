@@ -102,6 +102,7 @@ export function renderVerdict(a) {
       <span class="verdict-fact-label">${L('Holdout', 'Holdout')}</span>
       <strong class="verdict-fact-value">${esc(hold.value)}</strong>
       <span class="verdict-fact-note">${esc(hold.note)}</span>
+      ${!hold.done ? `<button class="text-btn verdict-fact-cta" data-goto="unseen">${L('Ir al periodo no visto &rarr;', 'Go to unseen period &rarr;')}</button>` : ''}
     </div>`;
 
   const riskBlock = mainRisk
@@ -111,6 +112,13 @@ export function renderVerdict(a) {
         <span class="verdict-fact-note">${esc(mainRisk.detail)}</span>
       </div>`
     : '';
+
+  // "Why this evidence grade" ya abre con los primeros 4 pros y 4 contras; el resto de
+  // hallazgos (o todos, si no hubo highlights) va en "More engine findings" mas abajo,
+  // sin repetir el mismo texto dos veces en la misma pestana.
+  const highlights = whyGradeHighlights(a);
+  const shown = new Set([...highlights.pros, ...highlights.cons]);
+  const restFindings = v.findings.filter((f) => !shown.has(f));
 
   return `${demoNote}${stamp}
   ${renderOutcomeBanner(a)}
@@ -135,21 +143,21 @@ export function renderVerdict(a) {
 
   ${renderEvidenceSheet(a, best)}
 
-  ${renderWhyGrade(a)}
+  ${renderWhyGrade(a, highlights)}
 
   ${best ? renderStableRanges(a, best) : ''}
 
   ${renderTop3(a)}
 
-  <section class="panel panel-evidence">
-    <div class="panel-head"><div><div class="panel-kicker">${L('Detalle', 'Detail')}</div><h2>${L('Hallazgos del motor', 'Engine findings')}</h2></div></div>
+  ${restFindings.length ? `<section class="panel panel-evidence">
+    <div class="panel-head"><div><div class="panel-kicker">${L('Detalle', 'Detail')}</div><h2>${L('Más hallazgos del motor', 'More engine findings')}</h2></div></div>
     <ul class="findings">
-      ${v.findings.map((f) => `<li class="finding f-${f.severity === 'critical' ? 'block' : f.severity}">
+      ${restFindings.map((f) => `<li class="finding f-${f.severity === 'critical' ? 'block' : f.severity}">
         <div class="finding-mark" aria-hidden="true"></div>
         <div><strong>${esc(f.title)}</strong><p>${rich(f.detail)}</p></div>
       </li>`).join('')}
     </ul>
-  </section>
+  </section>` : ''}
 
   <div class="grid-secondary">
     <section class="panel">
@@ -264,7 +272,7 @@ export function renderEvidenceSheet(a, best) {
   const rows = [
     [L('Meseta', 'Plateau'), plateauVal, L('Región conexa con soporte local, no un pico aislado.', 'Connected region with local support, not an isolated peak.')],
     [L('Cobertura de la optimización', 'Optimization coverage'), covTxt, covNote],
-    [L('Vecinas (pasan / observadas)', 'Neighbors (pass / observed)'), neighborsVal, neighborsNote],
+    [L('Vecinos (pasan / observados)', 'Neighbors (pass / observed)'), neighborsVal, neighborsNote],
     [L('Retención forward', 'Forward retention'), retentionVal, retentionNote],
     [L('Toca borde del rango', 'Touches search boundary'), boundaryVal, boundaryNote],
     [L('Holdout independiente', 'Independent holdout'), holdoutVal, holdoutNote],
@@ -291,10 +299,18 @@ export function renderEvidenceSheet(a, best) {
   </section>`;
 }
 
-export function renderWhyGrade(a) {
+/** Primeros 4 pros y 4 contras: lo que abre "Why this evidence grade". Se calcula
+ * aparte para poder excluirlos de "Engine findings" y no repetir el mismo texto dos
+ * veces en la misma pestana. */
+export function whyGradeHighlights(a) {
   const findings = a.verdict.findings || [];
   const pros = findings.filter((f) => f.severity === 'ok' || f.severity === 'info').slice(0, 4);
   const cons = findings.filter((f) => f.severity === 'warn' || f.severity === 'critical').slice(0, 4);
+  return { pros, cons };
+}
+
+export function renderWhyGrade(a, highlights) {
+  const { pros, cons } = highlights;
   if (!pros.length && !cons.length) return '';
   const col = (title, items, cls) => `<div class="why-col ${cls}">
     <h3>${esc(title)}</h3>
@@ -515,7 +531,7 @@ export function renderTop3(a) {
           ${hasF ? metricRow(L('Calidad forward', 'Forward quality'), (p) => `${num(p.record.qualityOos, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityOos))}</em>`) : ''}
           ${hasF ? metricRow(L('Forward · PF / DD / ops', 'Forward · PF / DD / trades'), (p) => `${num(p.record.oos.profitFactor, 3)} / ${num(p.record.oos.drawdown, 1)}% / ${int(p.record.oos.trades)}`) : ''}
           ${metricRow(L('In-sample · PF / DD / ops', 'In-sample · PF / DD / trades'), (p) => `${num(p.record.is.profitFactor, 3)} / ${num(p.record.is.drawdown, 1)}% / ${int(p.record.is.trades)}`)}
-          ${metricRow(L('Vecinas / suelo Q25', 'Neighbors / Q25 floor'), (p) => `${int(p.stability.support)} / ${num(p.stability.q25, 2)}`, 't3-sep')}
+          ${metricRow(L('Vecinos / suelo Q25', 'Neighbors / Q25 floor'), (p) => `${int(p.stability.support)} / ${num(p.stability.q25, 2)}`, 't3-sep')}
           <tr class="t3-params-head"><th class="t3-label" colspan="${top.length + 1}">${L('Parámetros de entrada', 'Input parameters')}</th></tr>
           ${paramRows}
         </tbody>

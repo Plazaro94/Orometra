@@ -84,6 +84,10 @@
     </header>
 
     <section class="intake" aria-label="File upload" data-i18n="intake.label" data-i18n-attr="aria-label">
+      <div class="intake-summary" id="intakeSummary">
+        <span id="intakeSummaryText"></span>
+        <button class="text-btn" id="intakeExpandBtn" type="button" data-i18n="intake.change">Change files</button>
+      </div>
       <div class="upload-grid">
         <label class="dropzone" id="isDrop" for="isFile">
           <input id="isFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
