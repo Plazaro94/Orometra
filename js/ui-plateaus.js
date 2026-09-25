@@ -5,7 +5,23 @@ import { topInfluentialPair, buildAxisPairGrid } from '../core/surface.js';
 import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L } from './i18n.js';
-import { state, $, num, int, pct, esc, nf, paramValue, roleBadge } from './ui-state.js';
+import { state, $, num, int, pct, esc, rich, nf, paramValue, roleBadge, findingsForCategory } from './ui-state.js';
+
+/**
+ * Hallazgos del motor que narran en prosa el mismo numero que esta tabla muestra en
+ * crudo (ver js/ui-state.js#categorizeFinding). Se pintan pegados a su tabla en vez de
+ * en una lista aparte en Verdict, para no explicar el mismo dato dos veces sin conexion
+ * visible entre ambos.
+ */
+function findingsNote(findings) {
+  if (!findings.length) return '';
+  return `<ul class="findings findings-inline">
+    ${findings.map((f) => `<li class="finding f-${f.severity === 'critical' ? 'block' : f.severity}">
+      <div class="finding-mark" aria-hidden="true"></div>
+      <div><strong>${esc(f.title)}</strong><p>${rich(f.detail)}</p></div>
+    </li>`).join('')}
+  </ul>`;
+}
 
 export function mostSensitiveIndex(a) {
   let best = 0;
@@ -377,6 +393,12 @@ export function renderDiagnostics(a) {
     ? L('factor de beneficio', 'profit factor')
     : name === 'drawdown' ? 'drawdown' : L('operaciones', 'trades'));
 
+  const findings = (a.verdict && a.verdict.findings) || [];
+  const integrityFindings = findingsForCategory(findings, 'integrity');
+  const coverageFindings = findingsForCategory(findings, 'coverage');
+  const gatesFindings = findingsForCategory(findings, 'gates');
+  const statsFindings = findingsForCategory(findings, 'stats');
+
   return `<div class="detail-head">
       <div class="detail-kicker">${L('05 / Diagnostico', '05 / Diagnostics')}</div>
       <h2>${L('Que se ha leido y con que se ha juzgado', 'What was read and what it was judged by')}</h2>
@@ -400,6 +422,7 @@ export function renderDiagnostics(a) {
           'La procedencia se confirma comprobando que el resultado del backtest que trae el archivo forward reproduce exactamente el del archivo in-sample, pasada por pasada.',
           'Provenance is confirmed by checking that the backtest result in the forward file exactly reproduces the in-sample file, pass by pass.',
         )}</p>
+        ${findingsNote(integrityFindings)}
       </section>
 
       <section class="panel">
@@ -414,6 +437,7 @@ export function renderDiagnostics(a) {
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del in-sample', ' of in-sample') : '—'}</strong></div>
         </div>
         <p class="chart-note">${esc(samplingCopy)}</p>
+        ${findingsNote(coverageFindings)}
       </section>
     </div>
 
@@ -457,6 +481,7 @@ export function renderDiagnostics(a) {
         <div><span>· ${gateName(gi.name)}: ${L('descarta ella sola', 'rejects on its own')}</span><strong>${gi.sole ? int(gi.sole) + L(' configuraciones', ' configurations') : `<em>${L('ninguna (no filtra nada)', 'none (filters nothing)')}</em>`}</strong></div>`).join('')}
         <div><span>${L('Se exigen en', 'Required in')}</span><strong>${a.meta.hasForward ? L('los dos periodos', 'both periods') : L('el in-sample', 'in-sample')}</strong></div>
       </div>
+      ${findingsNote(gatesFindings)}
     </section>
 
     <details class="panel">
@@ -480,6 +505,7 @@ export function renderDiagnostics(a) {
         <div><span>${L('Prob. bajo azar (Lo)', 'Chance probability (Lo)')}</span><strong>${Number.isFinite(a.stats.sharpeTest.deflated) ? pct(a.stats.sharpeTest.deflated, 1) : '—'}</strong></div>` : ''}
         <div><span>${L('Tiempo de calculo', 'Compute time')}</span><strong>${int(a.meta.elapsedMs)} ms</strong></div>
       </div>
+      ${findingsNote(statsFindings)}
       <p class="chart-note">
         ${L(
           `<strong>Como leer el contraste del Sharpe.</strong> La hipotesis nula es que ninguna configuración
@@ -598,6 +624,7 @@ export function renderStabilityPanel(a) {
         )}</p>`}
       </div>
     </div>
+    ${findingsNote(findingsForCategory((a.verdict && a.verdict.findings) || [], 'stability'))}
     <p class="chart-note">
       ${L(
         `La fila que importa es <strong>gana la misma región</strong>. Si la recomendación es una propiedad de la

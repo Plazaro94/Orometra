@@ -47,6 +47,40 @@ export const state = {
 /** Cableado tardío entre módulos UI para evitar imports circulares. */
 export const api = {};
 
+/**
+ * A que panel de Diagnostico/Parametros pertenece un hallazgo del motor, cuando ese
+ * panel ya muestra en crudo el mismo numero que el hallazgo narra en prosa. Clasificar
+ * por texto (no por un campo del motor) evita tocar core/verdict.js: cada hallazgo se
+ * genera ya en el idioma activo, así que las expresiones cubren ambos.
+ *
+ * `null` = no tiene una tabla que lo explique en otro sitio; se queda como hallazgo
+ * suelto en Verdict. 'plateau' = ya lo explican los badges de Top 3 / la tarjeta de
+ * Plateaus con más contexto (que config exacta y que parametro); no hace falta
+ * repetirlo en ningun lado, se descarta sin más.
+ */
+const FINDING_CATEGORY_PATTERNS = [
+  ['stats', /(?=.*\bresult\b)(?=.*(ranking|regla|rule|fragilidad|fragility))|no transfiere|does not transfer|periodos no son intercambiables|periods are not interchangeable|\bsharpe\b|correlaci[oó]n is|is -> oos correlation/i],
+  ['stability', /variaciones de (umbral|tus m[ií]nimos)|(threshold|minima) variations|propios umbrales|own thresholds|mueven? la recomendaci[oó]n|move(s)? the recommendation|m[ií]nimos que elijas|minima you choose|efecto de tus m[ií]nimos|effect of your minima/i],
+  ['coverage', /\.set|muestreo disperso|sparse sampling|soporte local insuficiente|insufficient local support|periodo oos es (muy corto|m[aá]s largo)|oos period is (very short|longer)/i],
+  ['gates', /no est[aá]n? filtrando nada|not filtering anything/i],
+  ['sensitivity', /efecto combinado|combined effect|saltos desiguales|uneven steps/i],
+  ['parameters', /gana en el in-sample es de los que pierden|wins in-sample is among those that lose/i],
+  ['integrity', /misma optimizacion|same optimization|subconjunto del in-sample|subset of in-sample|identificadores duplicados|duplicate identifiers|pasadas sin pareja|unpaired passes/i],
+  ['plateau', /apoya en un valor que el forward castiga|leans on a value the forward punishes|pegada al borde del rango probado|sits on the edge of the tested range/i],
+];
+
+export function categorizeFinding(f) {
+  const text = `${f.title} ${f.detail}`;
+  for (const [cat, re] of FINDING_CATEGORY_PATTERNS) {
+    if (re.test(text)) return cat;
+  }
+  return null;
+}
+
+export function findingsForCategory(findings, cat) {
+  return (findings || []).filter((f) => categorizeFinding(f) === cat);
+}
+
 // ---------------------------------------------------------------- formato
 export const nf = (d = 2) => new Intl.NumberFormat(localeTag(), { minimumFractionDigits: d, maximumFractionDigits: d });
 export const num = (v, d = 2) => (Number.isFinite(v) ? nf(d).format(v) : '—');
