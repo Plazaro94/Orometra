@@ -286,7 +286,7 @@ export function renderParams(a) {
         'Sensitivity measures how much quality moves as you walk a parameter\'s values. Influential numerics <strong>measure distance</strong>. Booleans and enums <strong>partition the space</strong>: two configurations are neighbors only if they match on them, because enabling a filter is not a small step — it is another strategy. Only demonstrably flat axes are ignored.',
       )}</p>
       ${a.meta.releasedBlockNames && a.meta.releasedBlockNames.length ? `<div class="inline-warn">${L(
-        `Para conseguir vecinas suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, el menos influyente. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
+        `Para conseguir vecinos suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, el menos influyente. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
         `To get enough neighbors, partitioning was released on ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, the least influential. Configurations that differ only on ${a.meta.releasedBlockNames.length > 1 ? 'those parameters' : 'that parameter'} are treated as neighbors.`,
       )}</div>` : ''}
     </div>
@@ -488,7 +488,7 @@ export function renderDiagnostics(a) {
         terminal esa cifra viniese anualizada, el umbral real sería más alto que el mostrado. Por eso
         <strong>suspender esta prueba es una señal fuerte, pero aprobarla no demuestra nada por si solo</strong>.
         El umbral con pruebas efectivas cuenta regiones distintas del espacio en lugar de configuraciones,
-        porque dos vecinas no son dos pruebas independientes.`,
+        porque dos vecinos no son dos pruebas independientes.`,
           `<strong>How to read the Sharpe contrast.</strong> The null hypothesis is that no configuration
         has an edge: then each observed Sharpe would be noise around zero, and the best of N trials
         would come out positive on its own. The typical error is computed from each configuration's
@@ -646,7 +646,7 @@ export function renderSensitivityPanel(a) {
       <strong>Combinado</strong> deja fijos todos los demás parámetros y mide el recorrido a lo largo de este.
       Un parámetro cuyo efecto se invierte según otro sale plano en la primera medida y no en la segunda;
       por eso manda <strong>la mayor de las dos</strong>. Descartar un eje que sí influye haría pasar por
-      vecinas a configuraciones que no lo son, e inflaría las mesetas hasta fabricar una donde no hay ninguna.`,
+      vecinos a configuraciones que no lo son, e inflaría las mesetas hasta fabricar una donde no hay ninguna.`,
         `<strong>Isolated</strong> groups by the parameter value and averages over everything else.
       <strong>Combined</strong> holds all other parameters fixed and measures the range along this one.
       A parameter whose effect reverses depending on another looks flat on the first measure and not on the second;

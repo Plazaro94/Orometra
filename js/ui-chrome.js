@@ -507,58 +507,37 @@ export function renderLegal() {
 
 export function renderMethod() {
   const steps = [
-    ['01', L('Lectura sin suposiciones', 'Reading without assumptions'),
-      L('MT5 guarda los resultados como XML Spreadsheet, tanto si la extension es .xml como si la cambias a .xls. Se lee de forma nativa, con tolerancia a formatos numericos regionales, y se avisa de cada fila descartada.',
-        'MT5 stores results as XML Spreadsheet, whether the extension is .xml or you rename it to .xls. It is read natively, with tolerance for regional numeric formats, and every dropped row is reported.')],
-    ['02', L('Que es parámetro y que es métrica', 'What is a parameter and what is a metric'),
-      L('No se decide por el nombre de la columna, que depende del EA y del idioma. Se decide por estructura: para un mismo Pass, un parámetro vale lo mismo en el in-sample y en el forward; una métrica no, porque se midio sobre otro periodo.',
-        'It is not decided by column name, which depends on the EA and language. It is decided by structure: for the same Pass, a parameter has the same value in-sample and forward; a metric does not, because it was measured on another period.')],
-    ['03', L('Nunca se juzga con la vara del usuario', 'Never judged by the user\'s yardstick'),
-      L('La columna Result es el criterio que elegiste en MT5: significa algo distinto en cada optimizacion y esta contaminada por la seleccion. La calidad se reconstruye con las columnas objetivas que MT5 exporta siempre: factor de beneficio, recuperacion, Sharpe, drawdown y número de operaciones.',
-        'The Result column is the criterion you chose in MT5: it means something different in every optimization and is contaminated by selection. Quality is rebuilt from the objective columns MT5 always exports: profit factor, recovery, Sharpe, drawdown and trade count.')],
-    ['04', L('Mínimos absolutos antes que rankings', 'Absolute minima before rankings'),
-      L('Una configuración solo entra en el análisis si supera unos mínimos en los dos periodos. Esto es lo que permite decir que no hay nada: un percentil siempre encontraria un mejor 5 %, incluso en una optimizacion donde todo pierde dinero.',
-        'A configuration only enters the analysis if it clears minima in both periods. That is what allows saying there is nothing: a percentile would always find a top 5 %, even in an optimization where everything loses money.')],
-    ['05', L('El peor de los dos periodos', 'The worse of the two periods'),
-      L('La calidad combinada es el mínimo entre in-sample y forward, no su media. Una configuración vale lo que vale su peor periodo; promediar dejaria que un in-sample espectacular tapase un forward malo.',
-        'Combined quality is the minimum of in-sample and forward, not their average. A configuration is worth what its worse period is worth; averaging would let a spectacular in-sample hide a bad forward.')],
-    ['06', L('Vecindad en pasos, no en unidades', 'Neighborhood in steps, not units'),
-      L('Cada parámetro se convierte a su posicion entre los valores que probaste. Así un salto de 30 a 50 y otro de 0,1 a 0,2 son ambos un paso. El radio se amplia solo lo justo para conseguir soporte suficiente, y se informa del radio usado. Si tu rejilla tiene saltos desiguales -por ejemplo 10, 20, 30, 100, 500- la aplicación lo detecta y lo avisa, porque ahi esa equivalencia deja de ser inocente.',
-        'Each parameter is converted to its position among the values you tested. So a jump from 30 to 50 and one from 0.1 to 0.2 are both one step. The radius expands just enough to get sufficient support, and the radius used is reported. If your grid has uneven steps — for example 10, 20, 30, 100, 500 — the app detects and warns, because there that equivalence stops being innocent.')],
-    ['07', L('Un parámetro puede parecer plano y no serlo', 'A parameter can look flat and not be'),
-      L('La influencia se mide de dos formas. Aislada: se agrupa por el valor del parámetro y se promedia sobre todo lo demás. Combinada: se deja fijo todo lo demás y se mide el recorrido a lo largo de ese eje. Manda la MAYOR de las dos, y la razón es concreta: un parámetro cuyo efecto se invierte según otro -un filtro de regimen, por ejemplo- sale exactamente plano en la primera medida. Descartarlo haría pasar por vecinas a configuraciones que no lo son, inflaría el soporte y fabricaría una meseta donde no hay ninguna.',
-        'Influence is measured two ways. Isolated: group by the parameter value and average over everything else. Combined: hold everything else fixed and measure the range along that axis. The LARGER of the two wins, for a concrete reason: a parameter whose effect reverses depending on another — a regime filter, for example — looks exactly flat on the first measure. Dropping it would treat non-neighbors as neighbors, inflate support and invent a plateau where none exists.')],
-    ['08', L('Meseta y nucleo', 'Plateau and core'),
-      L('Pertenecer a una meseta exige que el cuartil bajo del entorno mantenga calidad buena, que casi todas las vecinas pasen los mínimos y que la robustez supere el umbral. El nucleo es la parte donde incluso el entorno es excelente, y de ahi sale la recomendacion.',
-        'Belonging to a plateau requires that the lower quartile of the neighborhood keeps good quality, that almost all neighbors pass the minima, and that robustness clears the threshold. The core is the part where even the neighborhood is excellent, and that is where the recommendation comes from.')],
-    ['09', L('Se elige el centro, no la cima', 'The center is chosen, not the peak'),
-      L('El representante se escoge por criterio maximin: es la configuración cuyo PEOR vecino es el mejor posible. La cima de una meseta suele estar en su borde y es justo la que peor envejece.',
-        'The representative is chosen by maximin: the configuration whose WORST neighbor is the best possible. The peak of a plateau usually sits on its edge and is exactly the one that ages worst.')],
-    ['10', L('Acantilados y picos', 'Cliffs and peaks'),
-      L('Se mide cuánto cae la calidad al dar un solo paso, en unidades de la dispersión entre configuraciones viables, y cuánto sobresale un punto sobre su propio entorno. Un máximo rodeado de resultados peores pierde el respaldo y se lista como descarte.',
-        'It measures how much quality drops in a single step, in units of dispersion among viable configurations, and how much a point sticks out above its own neighborhood. A maximum surrounded by worse results loses support and is listed as a rejection.')],
-    ['11', L('Cuanto vale tu ranking, en los dos sentidos', 'What your ranking is worth, both ways'),
-      L('Se remuestrea el conjunto de configuraciones miles de veces: se elige la mejor segun un periodo y se mira donde cae en el otro. Y se hace en las DOS direcciones, no solo in-sample a forward. El motivo no es academico: si el tramo forward resulto ser mas facil, elegir por in-sample y validar en forward sale bien por el motivo equivocado. Una ventaja real es aproximadamente simetrica; una diferencia de regimen no lo es.',
-        'The set of configurations is resampled thousands of times: pick the best by one period and see where it falls in the other. And it is done in BOTH directions, not only in-sample to forward. The reason is not academic: if the forward segment happened to be easier, choosing by in-sample and validating on forward looks good for the wrong reason. A real edge is approximately symmetric; a regime difference is not.')],
-    ['12', L('El precio de haber probado mucho', 'The cost of having tried a lot'),
-      L('Probar miles de combinaciones produce buenos resultados por si solo. Se calcula el mejor Sharpe que cabria esperar por puro azar con ese número de pruebas, y se compara con el que has obtenido.',
-        'Trying thousands of combinations produces good results on its own. The best Sharpe you could expect by pure chance with that many trials is computed and compared with what you obtained.')],
-    ['13', L('El periodo no visto se juzga por normalidad', 'The unseen period is judged by normality'),
-      L('El último paso no pregunta si los numeros son buenos, sino si son normales PARA ESTE EA: se comparan con el recorrido que la meseta entera ya demostro en los dos periodos. Un tramo corto puede tocar una mala racha sin que eso invalide nada; lo que invalida es que sea peor que cualquier cosa ya atravesada.',
-        'The last step does not ask whether the numbers are good, but whether they are normal FOR THIS EA: they are compared with the range the whole plateau already showed in both periods. A short segment can hit a bad streak without invalidating anything; what invalidates is being worse than anything already traversed.')],
-    ['14', L('Corregir por duración antes de comparar', 'Correct for duration before comparing'),
-      L('El drawdown máximo y el factor de recuperacion dependen del número de operaciones: el primero crece con la raiz del recuento y el segundo tambien. Un tramo con la cuarta parte de operaciones debería mostrar la mitad de drawdown. Compararlos en crudo contra un periodo más largo lleva justo a la conclusión contraria, y es el error que se comete al mirarlo a ojo. Esa correccion se aplica en el periodo no visto, donde comparamos tramos de duración muy distinta; NO se aplica a la puntuación de in-sample y forward, porque la ley de la raiz supone un paseo sin deriva y una estrategia rentable si la tiene.',
-        'Maximum drawdown and recovery factor depend on trade count: the first grows with the square root of the count and so does the second. A segment with a quarter of the trades should show half the drawdown. Comparing them raw against a longer period leads to exactly the opposite conclusion, and that is the mistake of eyeballing it. That correction is applied on the unseen period, where we compare segments of very different length; it is NOT applied to in-sample and forward scores, because the square-root law assumes a driftless walk and a profitable strategy does have drift.')],
-    ['15', L('Auditar nuestros propios umbrales', 'Audit our own thresholds'),
-      L('Los cortes internos (suelo de calidad, robustez minima, soporte minimo) son juicios calibrados, no cantidades derivadas. Así que la búsqueda se repite decenas de veces moviendolos al azar un ±20 % y se cuenta cuantas veces sigue ganando la misma región. Si una recomendacion solo sobrevive con los números exactos que elegimos nosotros, no es una recomendacion, y se dice.',
-        'Internal cuts (quality floor, minimum robustness, minimum support) are calibrated judgments, not derived quantities. So the search is repeated dozens of times moving them at random by ±20 % and counting how often the same region still wins. If a recommendation only survives with the exact numbers we chose, it is not a recommendation — and that is said.')],
+    ['01', L('Lectura del export', 'Reading the export'),
+      L('Lee el XML Spreadsheet de MT5 (.xml/.xls), con formatos numéricos regionales, y avisa de cada fila descartada.',
+        'Reads MT5’s XML Spreadsheet (.xml/.xls), with regional number formats, and reports every dropped row.')],
+    ['02', L('Parámetro vs métrica', 'Parameter vs metric'),
+      L('No se fía del nombre de columna. Misma Pass → un parámetro coincide en IS y forward; una métrica no.',
+        'It does not trust column names. Same Pass → a parameter matches in IS and forward; a metric does not.')],
+    ['03', L('Calidad sin Result', 'Quality without Result'),
+      L('Result es tu criterio de optimización y está sesgado. La calidad se reconstruye con PF, recuperación, Sharpe, drawdown y operaciones. Puntuación = el peor de IS y forward.',
+        'Result is your optimization criterion and is biased. Quality is rebuilt from PF, recovery, Sharpe, drawdown and trades. Score = the worse of IS and forward.')],
+    ['04', L('Mínimos antes que rankings', 'Minima before rankings'),
+      L('Solo entran configs que superan tus suelos en ambos periodos. Un percentil siempre inventa un “top 5 %”, aunque todo pierda.',
+        'Only setups that clear your floors in both periods enter. A percentile always invents a “top 5%”, even if everything loses.')],
+    ['05', L('Vecinos en pasos', 'Neighbors in steps'),
+      L('La distancia es en pasos de tu rejilla (30→50 y 0,1→0,2 = un paso). Si la rejilla es irregular, se avisa.',
+        'Distance is in steps of your grid (30→50 and 0.1→0.2 = one step). Uneven grids get a warning.')],
+    ['06', L('Meseta y centro', 'Plateau and center'),
+      L('Meseta = zona donde los vecinos también pasan mínimos. Se elige el centro (maximin: el peor vecino, lo mejor posible), no el pico de beneficio.',
+        'Plateau = a zone where neighbors also clear minima. We pick the center (maximin: best worst-neighbor), not the profit peak.')],
+    ['07', L('Descartes y ranking', 'Rejects and ranking'),
+      L('Picos aislados y caídas bruscas se listan como descartes. Se mide cuánto vale tu ranking IS↔forward en los dos sentidos.',
+        'Isolated peaks and sharp drops are listed as rejects. Your IS↔forward ranking is tested both ways.')],
+    ['08', L('Azar, umbrales y no visto', 'Chance, thresholds and unseen'),
+      L('Se compara tu Sharpe con lo esperable por azar al probar mucho. Se mueven umbrales ±20 % para ver si la misma zona aguanta. El periodo no visto se juzga por normalidad para este EA, no por “números bonitos”.',
+        'Your Sharpe is compared with what chance alone can produce after many trials. Thresholds are nudged ±20% to see if the same zone holds. The unseen period is judged by normality for this EA — not by “pretty numbers”.')],
   ];
   return `<div class="detail-head">
       <div class="detail-kicker">${L('07 / Metodología', '07 / Methodology')}</div>
-      <h2>${L('Como decide el motor', 'How the engine decides')}</h2>
+      <h2>${L('Cómo decide el motor', 'How the engine decides')}</h2>
       <p>${L(
-        'Todo es determinista: los mismos archivos y los mínimos producen siempre el mismo veredicto. Los dos remuestreos que hay -el de fragilidad de la selección y el de estabilidad frente a los umbrales- usan semilla fija.',
-        'Everything is deterministic: the same files and minima always produce the same verdict. The two resamples — selection fragility and threshold stability — use a fixed seed.',
+        'Misma idea que la página pública, con el detalle operativo. Determinista: mismos archivos y mínimos → mismo veredicto (semilla fija en los remuestreos).',
+        'Same idea as the public page, with operational detail. Deterministic: same files and minima → same verdict (fixed seed on resamples).',
       )}</p>
     </div>
     <section class="panel">
@@ -567,39 +546,27 @@ export function renderMethod() {
       </div>
     </section>
     <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${L('Lo que esta herramienta no puede hacer', 'What this tool cannot do')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${L('Lo que no hace', 'What it does not do')}</h2></div></div>
       <ul class="limits">
         <li>${L(
-          'No sustituye a una prueba en un periodo que no hayas usado ni para optimizar ni para validar. En cuánto eliges mirando el forward, ese forward deja de ser ciego.',
-          'It does not replace a test on a period you have not used for optimizing or validating. As soon as you choose looking at the forward, that forward stops being blind.',
+          'No sustituye un periodo verdaderamente no visto. Si eliges mirando el forward, ese forward deja de ser ciego.',
+          'It does not replace a truly unseen period. If you choose while looking at forward, that forward is no longer blind.',
         )}</li>
         <li>${L(
-          `No ve la curva de capital de cada configuración: la exportación de optimización solo trae métricas agregadas por pasada. Esa es una limitación del fichero de entrada, no nuestra, y tiene una consecuencia concreta: el CSCV original de Bailey y López de Prado, que parte las series temporales en bloques, es <strong>imposible</strong> de calcular aquí. Lo que se mide es la fragilidad de la regla de selección, en los dos sentidos de la partición, y por eso no se llama PBO.`,
-          `It does not see each configuration's equity curve: the optimization export only brings aggregated metrics per pass. That is a limitation of the input file, not ours, and it has a concrete consequence: the original CSCV of Bailey and López de Prado, which splits time series into blocks, is <strong>impossible</strong> to compute here. What is measured is the fragility of the selection rule, in both partition directions, and that is why it is not called PBO.`,
+          'No calcula PBO / Reality Check / SPA clásicos: el export de MT5 no trae curvas de equity por config. Mide fragilidad de la regla de selección — y por eso no se llama PBO.',
+          'It does not compute classic PBO / Reality Check / SPA: MT5 exports lack per-config equity curves. It measures selection-rule fragility — which is why it is not called PBO.',
         )}</li>
         <li>${L(
-          'Tampoco se ejecutan los contrastes de White (Reality Check) ni el SPA de Hansen, por la misma razón: necesitan las series de rendimientos de todas las estrategias a la vez.',
-          'Neither White\'s Reality Check nor Hansen\'s SPA is run, for the same reason: they need the return series of all strategies at once.',
+          'El forward ya filtra y puntúa, así que está algo inflado (igual que el IS). El número más limpio es el del periodo no visto.',
+          'Forward already filters and scores, so it is somewhat inflated (like IS). The cleanest number is the unseen period.',
         )}</li>
         <li>${L(
-          'Las cifras del forward participan en la selección (filtran y puntúan), así que están algo infladas, igual que las del in-sample. Es preferible a desperdiciar esa información, pero implica que el único número limpio que verás es el del periodo no visto.',
-          'Forward figures participate in selection (they filter and score), so they are somewhat inflated, just like in-sample. That is preferable to wasting that information, but it means the only clean number you will see is the unseen period.',
+          'No juzga la lógica del EA, la calidad del histórico ni el spread/comisión. Un backtest optimista de origen sigue siendo optimista aquí.',
+          'It does not judge EA logic, history quality, or spread/commission. An optimistic source backtest stays optimistic here.',
         )}</li>
         <li>${L(
-          'Con muchos parámetros optimizados, enumerar todos los desplazamientos dentro del radio se vuelve costoso y la vecindad pasa a considerar solo los que mueven uno o dos a la vez. Es conservador -puede subestimar el soporte, nunca inventarlo- y se avisa cuando ocurre.',
-          'With many optimised parameters, enumerating all displacements within the radius becomes costly and the neighborhood only considers those that move one or two at a time. That is conservative — it may underestimate support, never invent it — and it is reported when it happens.',
-        )}</li>
-        <li>${L(
-          'Con optimización genética, la densidad de configuraciones probadas mide dónde miró el optimizador tanto como dónde hay estabilidad. Para cortar esa circularidad, el tamaño de una meseta se tope por el volumen del espacio que abarca de verdad, no por cuántas veces se muestreó.',
-          'With genetic optimization, the density of tested configurations measures where the optimizer looked as much as where there is stability. To cut that circularity, plateau size is capped by the volume of space it truly covers, not by how many times it was sampled.',
-        )}</li>
-        <li>${L(
-          'No conoce las fechas de tus periodos. La duración relativa del forward se estima con el número de operaciones.',
-          'It does not know your period dates. Relative forward duration is estimated from trade count.',
-        )}</li>
-        <li>${L(
-          'No juzga la lógica de tu estrategia, la calidad de tus datos historicos ni el spread o la comision que usaste. Un backtest optimista de origen seguira siendo optimista aqui.',
-          'It does not judge your strategy logic, the quality of your historical data, or the spread or commission you used. An optimistic backtest at the source will still be optimistic here.',
+          'Con muchos parámetros o genética, la vecindad y el tamaño de meseta se acotan de forma conservadora (puede subestimar soporte; no lo inventa) y se avisa cuando ocurre.',
+          'With many parameters or genetic search, neighborhood and plateau size are capped conservatively (may underestimate support; never invents it) and that is reported.',
         )}</li>
       </ul>
     </section>`;
