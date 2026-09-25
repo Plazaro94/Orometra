@@ -426,8 +426,8 @@ details.panel > summary::after{
 }
 details.panel[open] > summary::after{content:'\2212'}
 details.panel > summary:hover::after{color:var(--text)}
-/* Deja hueco al +/- del summary para que no tape una badge situada a la derecha del titulo. */
-details.panel > summary.panel-head.compact{padding-right:26px}
+/* Deja hueco al +/- del summary para que no toque una badge situada a la derecha del titulo. */
+details.panel > summary.panel-head.compact{padding-right:44px}
 details.panel > .panel-body{padding:0 20px 20px}
 .panel-evidence{border-color:var(--info-line);background:var(--info-bg)}
 .panel-risk{border-color:var(--warn-line);background:var(--warn-bg)}
