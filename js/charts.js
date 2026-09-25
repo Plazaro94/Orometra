@@ -113,7 +113,7 @@ export function parameterProfile(analysis, paramIndex) {
     ${gy}${bars}${labels}${counts}
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
     <line class="ch-axis" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}"/>
-    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(sens.name)} — valor probado (abajo, nº de configuraciones)</text>
+    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(sens.name)} ${esc(L('— valor probado (abajo, nº de configuraciones)', '— tested value (below, number of configurations)'))}</text>
   </svg>`;
 }
 

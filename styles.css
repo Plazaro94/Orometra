@@ -233,6 +233,18 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
   border-top:1px solid var(--line);padding-top:8px;
 }
 .has-analysis .demo-note{margin-top:0}
+.intake-summary{display:none}
+/* Colapsado: mismo trader que ya audito no necesita ver de nuevo las dropzones y la
+   ficha de "Data check" en cada pestana -- solo un resumen de una linea con salida
+   para volver a expandir si quiere cambiar de archivo. */
+.has-analysis.intake-collapsed .intake .upload-grid,
+.has-analysis.intake-collapsed .intake .set-hint,
+.has-analysis.intake-collapsed .intake #preflight{display:none}
+.has-analysis.intake-collapsed .intake-summary{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  font-size:12.5px;color:var(--muted);
+}
+.intake-summary strong{color:var(--text-2);font-weight:600}
 .sidebar-section{padding:0 4px;display:flex;flex-direction:column}
 .sidebar-label{font-size:11px;letter-spacing:.16em;font-weight:700;color:var(--muted-2);text-transform:uppercase;padding:0 8px 8px}
 .sidebar-label-gap{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
@@ -399,6 +411,18 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 /* ---------------------------------------------------------------- content */
 .content{min-height:420px}
 .panel{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:20px;min-width:0;margin-bottom:12px}
+/* Paneles plegables de Diagnostico: el resumen ya dice lo esencial en la cabecera,
+   el detalle estadistico denso se abre solo si alguien lo pide. */
+details.panel{padding:0}
+details.panel > summary{padding:20px;margin:0;cursor:pointer;list-style:none;position:relative}
+details.panel > summary::-webkit-details-marker{display:none}
+details.panel > summary::after{
+  content:'+';position:absolute;right:20px;top:18px;color:var(--muted-2);
+  font-size:20px;font-weight:400;line-height:1;
+}
+details.panel[open] > summary::after{content:'\2212'}
+details.panel > summary:hover::after{color:var(--text)}
+details.panel > .panel-body{padding:0 20px 20px}
 .panel-evidence{border-color:var(--info-line);background:var(--info-bg)}
 .panel-risk{border-color:var(--warn-line);background:var(--warn-bg)}
 .panel-recommend{border-color:var(--ok-line);background:var(--surface)}
@@ -465,6 +489,7 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .v-no .verdict-fact-risk .verdict-fact-value{color:var(--danger-text)}
 .v-weak .verdict-fact-risk .verdict-fact-value{color:var(--evidence-weak-text)}
 .verdict-fact-next .verdict-fact-value{font-weight:600;color:var(--text)}
+.verdict-fact-cta{align-self:flex-start;margin-top:2px;font-weight:600}
 
 .kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:12px}
 .kpi{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:15px}
@@ -851,7 +876,9 @@ tr.sel td{color:var(--text-2)}
   .sidebar-label-gap{display:none;margin:0;padding:0;border:0}
   .sidebar-section{flex-direction:row;padding:6px 10px;gap:6px}
   .nav-item{width:auto;white-space:nowrap;margin:0;padding:8px 13px;font-size:14px;border-radius:999px;background:var(--surface-2)}
-  .nav-item span{display:none}
+  /* Solo se oculta el numero ("01"): el nombre de la pestana es lo unico que la
+     identifica en la tira horizontal, y ocultar los dos span dejaba pildoras sin texto. */
+  .nav-item span:first-child{display:none}
   .nav-item.active{background:var(--accent);color:var(--surface)}
   /* El pie ya no necesita quedarse abajo del todo: en movil es otra fila compacta,
      con el mismo scroll horizontal por si el espacio aprieta. */

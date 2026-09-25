@@ -41,7 +41,7 @@ export function renderRepCard(a, p) {
     <div class="evidence-list">
       <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(r.qualityIs, 2)} <em>${esc(qualityLabel(r.qualityIs))}</em></strong></div>
       ${hasF ? `<div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${num(r.qualityOos, 2)} <em>${esc(qualityLabel(r.qualityOos))}</em></strong></div>` : ''}
-      <div><span>${L('Vecinas observadas', 'Observed neighbors')}</span><strong>${p.neighborhood ? int(p.neighborhood.observed) : int(p.stability.support)}</strong></div>
+      <div><span>${L('Vecinos observados', 'Observed neighbors')}</span><strong>${p.neighborhood ? int(p.neighborhood.observed) : int(p.stability.support)}</strong></div>
       <div><span>${L('Pasan mínimos / fallan', 'Pass minima / fail')}</span><strong>${p.neighborhood
         ? `${int(p.neighborhood.passing)} / ${int(p.neighborhood.failing)}`
         : pct(p.stability.fracPass, 0)}</strong></div>
@@ -261,7 +261,7 @@ export function renderRejected(a) {
     </div>
     <section class="panel">
       <div class="table-wrap"><table>
-        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>Pass</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinas', 'Neighbors')}</th><th>${L('Suelo entorno', 'Neighborhood floor')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
+        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>Pass</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinos', 'Neighbors')}</th><th>${L('Suelo entorno', 'Neighborhood floor')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
         <tbody>${a.peaks.map((p) => `<tr>
           <td><span class="rank-mini">#${int(p.criterionRank)}</span></td>
           <td class="mono">${esc(p.record.id)}</td>
@@ -410,7 +410,7 @@ export function renderDiagnostics(a) {
           <div><span>${L('Cobertura (niveles vistos)', 'Coverage (seen levels)')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(5).format(a.meta.coverage * 100) + ' %' : '—'}</strong></div>
           <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(4).format(a.meta.searchCoverage.coverageSearch * 100) + ' %' : L('sin .set', 'no .set')}</strong></div>
           <div><span>${L('Radio de vecindad', 'Neighborhood radius')}</span><strong>${int(a.meta.radius)} ${L('paso(s)', 'step(s)')}</strong></div>
-          <div><span>${L('Vecinas por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
+          <div><span>${L('Vecinos por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del in-sample', ' of in-sample') : '—'}</strong></div>
         </div>
         <p class="chart-note">${esc(samplingCopy)}</p>
@@ -459,8 +459,9 @@ export function renderDiagnostics(a) {
       </div>
     </section>
 
-    <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Contraste', 'Contrast')}</div><h2>${L('Pruebas estadísticas', 'Statistical tests')}</h2></div></div>
+    <details class="panel">
+      <summary class="panel-head compact"><div><div class="panel-kicker">${L('Contraste', 'Contrast')}</div><h2>${L('Pruebas estadísticas', 'Statistical tests')}</h2></div></summary>
+      <div class="panel-body">
       <div class="evidence-list">
         <div><span>${L('Correlación de rangos IS &rarr; forward', 'Rank correlation IS &rarr; forward')}</span><strong>${num(a.stats.spearmanCriterion, 3)}</strong></div>
         <div><span>${L('Fragilidad de la selección (peor sentido)', 'Selection fragility (worse direction)')}</span><strong>${Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—'}${Number.isFinite(a.stats.fragilityMargin) ? ` <em>±${nf(0).format(a.stats.fragilityMargin * 100)}</em>` : ''}</strong></div>
@@ -533,7 +534,8 @@ export function renderDiagnostics(a) {
         that is not ours.`,
         )}
       </p>
-    </section>
+      </div>
+    </details>
 
     ${renderStabilityPanel(a)}
     ${renderSensitivityPanel(a)}`;
@@ -553,11 +555,12 @@ export function renderStabilityPanel(a) {
   const pctRegion = 100 * internal.regionRate;
   const tone = internal.regionRate >= 0.8 ? 'ok' : internal.regionRate >= 0.5 ? 'warn' : 'bad';
   const gTone = gates ? (gates.regionRate >= 0.8 ? 'ok' : gates.regionRate >= 0.5 ? 'warn' : 'bad') : '';
-  return `<section class="panel">
-    <div class="panel-head compact">
+  return `<details class="panel">
+    <summary class="panel-head compact">
       <div><div class="panel-kicker">${L('Auditoría interna', 'Internal audit')}</div><h2>${L('¿Y si moviéramos nuestros propios umbrales?', 'What if we moved our own thresholds?')}</h2></div>
       <div class="stability-badge ${tone}">${pctRegion.toFixed(0)} %</div>
-    </div>
+    </summary>
+    <div class="panel-body">
     <p class="panel-intro">
       ${L(
         `Los umbrales de meseta (suelo de calidad, robustez mínima, soporte mínimo, tamaño mínimo…) son
@@ -621,7 +624,8 @@ export function renderStabilityPanel(a) {
       matters most, so it is audited too.`,
       )}
     </p>
-  </section>`;
+    </div>
+  </details>`;
 }
 
 /**

@@ -99,7 +99,13 @@ $('#policyBtn').addEventListener('click', () => {
   const panel = $('#policyPanel');
   panel.hidden = !panel.hidden;
   $('#policyBtn').setAttribute('aria-expanded', String(!panel.hidden));
-  if (!panel.hidden) updatePolicyPreview();
+  if (!panel.hidden) {
+    document.body.classList.remove('intake-collapsed');
+    updatePolicyPreview();
+  }
+});
+$('#intakeExpandBtn').addEventListener('click', () => {
+  document.body.classList.remove('intake-collapsed');
 });
 ['#gPf', '#gDd', '#gTrades', '#gProfit'].forEach((sel) => {
   $(sel).addEventListener('input', () => {

@@ -3,7 +3,7 @@
 import { parseTable } from '../core/parse.js';
 import { AnalysisError, CODE, classifyError, errorCopy } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
-import { state, api, $, $$ } from './ui-state.js';
+import { state, api, $, $$, esc } from './ui-state.js';
 
 export function showProgress(pct, label) {
   $('#statusBar').hidden = false;
@@ -219,6 +219,14 @@ export async function runAudit() {
     };
     const mark = analysis.verdict.level === 'strong' ? '✓' : analysis.verdict.level === 'moderate' ? '!' : '·';
     document.title = `${mark} ${state.source.is} · Orometra`;
+    // Primer analisis de la sesion: colapsa la ficha de carga de archivos, que si no
+    // se repite entera en cada una de las 7 pestanas. Un reanalisis (mismos archivos,
+    // otros minimos) no toca el estado expandido/colapsado que ya eligio el usuario.
+    if (!document.body.classList.contains('has-analysis')) document.body.classList.add('intake-collapsed');
+    const summaryText = $('#intakeSummaryText');
+    if (summaryText) {
+      summaryText.innerHTML = `<strong>${esc(state.source.is)}</strong>${state.source.oos ? ` · ${esc(state.source.oos)}` : ''}`;
+    }
     state.selectedPlateau = 0;
     // El informe NO se descarta al reanalizar: es habitual soltar los tres archivos a
     // la vez, y si no correspondiese al EA analizado la comparacion de parametros lo
