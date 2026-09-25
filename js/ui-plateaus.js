@@ -353,19 +353,18 @@ export function renderParams(a) {
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Rangos', 'Ranges')}</div><h2>${L('Valores probados', 'Values tested')}</h2></div></div>
+      <p class="chart-note">${L(
+        'La influencia de cada parámetro (aislada, combinada, efectiva) está en el gráfico de arriba y en el desglose completo de Diagnóstico. Aquí, solo lo que no sale en ningún otro sitio: qué valores probaste de verdad y qué papel juega cada uno en el motor.',
+        "Each parameter's influence (isolated, combined, effective) is in the chart above and in the full breakdown in Diagnostics. Here, only what appears nowhere else: which values you actually tested and what role each plays in the engine.",
+      )}</p>
       <div class="table-wrap"><table>
-        <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Niveles', 'Levels')}</th><th>${L('Sensibilidad (efectivo)', 'Sensitivity (effective)')}</th><th>${L('Papel en el motor', 'Role in the engine')}</th><th>${L('Valores', 'Values')}</th></tr></thead>
-        <tbody>${a.sensitivity.map((s) => {
-          const effVal = Number.isFinite(s.effective) ? s.effective : s.sensitivity;
-          const rescued = !s.constant && Number.isFinite(s.conditional) && effVal - (s.sensitivity || 0) > 0.05;
-          return `<tr>
+        <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Niveles', 'Levels')}</th><th>${L('Papel en el motor', 'Role in the engine')}</th><th>${L('Valores', 'Values')}</th></tr></thead>
+        <tbody>${a.sensitivity.map((s) => `<tr>
           <td class="mono">${esc(s.name)}${a.meta.paramTypes && a.meta.paramTypes[s.index] !== 'number' ? ` <span class="badge">${esc(a.meta.paramTypes[s.index] === 'bool' ? 'bool' : 'enum')}</span>` : ''}</td>
           <td>${int(s.levels)}</td>
-          <td>${s.constant ? '—' : `${num(effVal, 2)}${rescued ? ` <em title="${esc(L('Aislado (solo este parámetro)', 'Isolated (this parameter alone)'))}">(${L('aislado', 'isolated')} ${num(s.sensitivity, 2)})</em>` : ''}`}</td>
           <td>${roleBadge(dimRole(a, s))}</td>
           <td class="values">${(s.values || []).map(paramValue).join(' · ')}</td>
-        </tr>`;
-        }).join('')}</tbody>
+        </tr>`).join('')}</tbody>
       </table></div>
     </section>`;
 }
