@@ -1290,6 +1290,11 @@ tr.sel td{color:var(--text-2)}
 }
 @media (max-width:720px){
   .lp-shell{padding:0 16px}
+  /* Mismo tamano que .brand-mark/.brand-name en movil dentro de la app (linea ~873):
+     sin esto el logo de la portada se queda fijo a tamano de escritorio y "salta" de
+     tamano justo al entrar en la app, dando sensacion de cabeceras sin cuidar. */
+  .lp-brand .brand-mark{width:28px;height:28px}
+  .lp-brand .brand-name{font-size:16px}
   .lp-main{padding:18px 16px 40px}
   .lp-cta-top{display:none}
   .lp-compare-strip{grid-template-columns:1fr;gap:18px}
