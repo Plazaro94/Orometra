@@ -883,8 +883,11 @@ tr.sel td{color:var(--text-2)}
   /* El pie ya no necesita quedarse abajo del todo: en movil es otra fila compacta,
      con el mismo scroll horizontal por si el espacio aprieta. */
   .sidebar-bottom{
-    flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:nowrap;
-    padding:6px 10px;border-top:1px solid var(--line-soft);
+    /* Sin `display:flex` aqui, `flex-direction:row` no hacia nada: idioma, tema y aviso
+       legal caian cada uno como bloque de ancho completo, apilados en tres filas altas
+       en vez de una sola tira compacta. */
+    display:flex;flex-direction:row;align-items:center;justify-content:flex-start;flex-wrap:nowrap;
+    padding:6px 10px;border-top:1px solid var(--line-soft);gap:10px;
     overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
   }
   .sidebar-bottom::-webkit-scrollbar{display:none}
