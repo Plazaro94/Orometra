@@ -443,9 +443,9 @@ export function renderTop3(a) {
       <div><span>${L('Calidad IS', 'IS quality')}</span><strong>${num(featured.record.qualityIs, 2)}</strong></div>
       ${hasF ? `<div><span>${L('Calidad FW', 'FW quality')}</span><strong>${num(featured.record.qualityOos, 2)}</strong></div>` : ''}
     </div>
-    <div class="t3-param-chips">
-      ${names.map((n, j) => `<span class="${agree[j] && showConsensus ? 't3-chip-agree' : ''}">${esc(n)} <b>${paramValue(featured.record.params[j])}</b></span>`).join('')}
-    </div>
+    ${alts.length ? '' : `<div class="t3-param-chips">
+      ${names.map((n, j) => `<span>${esc(n)} <b>${paramValue(featured.record.params[j])}</b></span>`).join('')}
+    </div>`}
     <div class="t3-featured-actions">
       <button class="primary-btn t3-btn-inline" data-export="set" data-plateau-index="${featured.rank - 1}">${L('Descargar .set', 'Download .set')}</button>
       <button class="ghost-btn t3-btn-inline" data-copy="${featured.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>

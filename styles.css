@@ -612,8 +612,6 @@ details.panel > .panel-body{padding:0 20px 20px}
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:4px 7px;
 }
 .t3-param-chips b{color:var(--text-hi);font-weight:700}
-.t3-chip-agree{border-color:var(--ok-line) !important;color:var(--ok-text) !important}
-.t3-chip-agree b{color:var(--ok-hi) !important}
 .t3-featured-actions,.t3-alt-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .t3-btn-inline{width:auto;margin:0;display:inline-flex}
 .t3-alts{display:flex;flex-direction:column;gap:10px;min-width:0}
