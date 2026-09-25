@@ -43,12 +43,12 @@ export function buildVerdict(ctx) {
 
   // ---- Bloqueantes
   if (!gatePassCount) {
-    add(SEV.CRITICAL, L('Ninguna configuración pasa las puertas minimas', 'No configuration passes the minimum gates'),
+    add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration passes the minimum gates'),
       L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple a la vez los mínimos en IS y en OOS. No hay nada que seleccionar: el problema no es la eleccion, es la estrategia.`,
         `Of ${total.toLocaleString(localeTag())} configurations, none meet the minima in both IS and OOS at once. There is nothing to select: the problem is not the choice, it is the strategy.`));
   } else if (gatePassCount / total < 0.02) {
     add(SEV.CRITICAL, L('Solo un resquicio del espacio sobrevive', 'Only a sliver of the space survives'),
-      L(`Apenas ${gatePassCount} de ${total.toLocaleString(localeTag())} configuraciones (${(100 * gatePassCount / total).toFixed(1)}%) pasan las puertas. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
+      L(`Apenas ${gatePassCount} de ${total.toLocaleString(localeTag())} configuraciones (${(100 * gatePassCount / total).toFixed(1)}%) pasan los mínimos. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
         `Barely ${gatePassCount} of ${total.toLocaleString(localeTag())} configurations (${(100 * gatePassCount / total).toFixed(1)}%) pass the gates. A strategy that only works at one specific point in parameter space is almost always an optimizer artifact.`));
   }
 
@@ -86,7 +86,7 @@ export function buildVerdict(ctx) {
   if (!plateaus.length && underpowered) {
     // No es lo mismo "no hay meseta" que "no hay datos para saberlo".
     add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to pronounce on'),
-      L(`Solo ${gatePassCount} configuraciones superan los mínimos, y para que pudiera existir una meseta harían falta al menos ${viableNeededForPlateau}: una región estable necesita configuraciones con vecinas que también cumplan, es decir, necesita interior. Esto NO dice que tu EA sea malo; dice que con estos datos no se puede afirmar nada en ninguna direccion. Amplia el rango de los parámetros, anade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
+      L(`Solo ${gatePassCount} configuraciones superan los mínimos, y para que pudiera existir una meseta harían falta al menos ${viableNeededForPlateau}: una región estable necesita configuraciones con vecinos que también cumplan, es decir, necesita interior. Esto NO dice que tu EA sea malo; dice que con estos datos no se puede afirmar nada en ninguna direccion. Amplia el rango de los parámetros, anade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
         `Only ${gatePassCount} configurations clear the minima, and for a plateau to exist you would need at least ${viableNeededForPlateau}: a stable region needs configurations whose neighbors also pass, that is, it needs interior. This does NOT say your EA is bad; it says that with these data nothing can be asserted in either direction. Widen the parameter ranges, add intermediate values or relax the minima, and optimize again.`));
   } else if (!plateaus.length) {
     add(SEV.CRITICAL, L('No se ha encontrado ninguna meseta', 'No plateau was found'),
@@ -143,12 +143,12 @@ export function buildVerdict(ctx) {
 
   if (selectionMode === 'isThenOos' && hasForward) {
     add(SEV.INFO, L('Mesetas descubiertas in-sample y validadas en forward', 'Plateaus discovered in-sample and validated on forward'),
-      L('El motor busca regiones con calidad y puertas del in-sample; el forward no elige la meseta, la puntúa después. Así el forward no contamina la selección.',
+      L('El motor busca zonas con calidad y mínimos del in-sample; el forward no elige la meseta, la puntúa después. Así el forward no contamina la selección.',
         'The engine finds regions with in-sample quality and gates; forward does not choose the plateau, it scores it afterwards. Forward does not contaminate selection.'));
     const v = bestPlateau && bestPlateau.oosValidation;
     if (v && v.passFrac < 0.5) {
       add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${(100 * v.passFrac).toFixed(0)}% en forward`, `The recommended plateau only holds ${(100 * v.passFrac).toFixed(0)}% on forward`),
-        L('Muchas configs de la región fallan las puertas del forward. Trátala como provisional hasta un holdout limpio.',
+        L('Muchas configs de la región fallan los mínimos del forward. Trátala como provisional hasta un holdout limpio.',
           'Many configs in the region fail forward gates. Treat it as provisional until a clean holdout.'));
     }
   } else if (selectionMode === 'joint' && hasForward) {
@@ -296,7 +296,7 @@ export function buildVerdict(ctx) {
    */
   if (hasForward) {
     add(SEV.INFO, L('Las cifras del forward ya se han usado para elegir', 'Forward figures have already been used for selection'),
-      L('Las puertas mínimas se aplican tambien al forward, y la puntuación de cada configuración es el peor de los dos periodos, así que el forward interviene en la selección. Eso hace que sus números salgan algo mejores de lo que serian sobre datos de verdad no vistos, igual que pasa con el in-sample. No es un defecto del metodo: aprovechar esa información es preferible a tirarla. Pero significa que el ÚNICO número no contaminado que vas a ver es el del periodo no visto, y por eso ese paso no es un extra.',
+      L('Los mínimos se aplican también al forward, y la puntuación de cada configuración es el peor de los dos periodos, así que el forward interviene en la selección. Eso hace que sus números salgan algo mejores de lo que serian sobre datos de verdad no vistos, igual que pasa con el in-sample. No es un defecto del metodo: aprovechar esa información es preferible a tirarla. Pero significa que el ÚNICO número no contaminado que vas a ver es el del periodo no visto, y por eso ese paso no es un extra.',
         'The minimum gates are also applied to the forward, and each configuration\'s score is the worse of the two periods, so the forward takes part in selection. That makes its numbers come out somewhat better than they would on truly unseen data, just as with the in-sample. That is not a flaw of the method: using that information is preferable to discarding it. But it means the ONLY uncontaminated number you will see is the unseen period\'s, and that is why that step is not optional.'));
   }
 
@@ -304,7 +304,7 @@ export function buildVerdict(ctx) {
     const listEs = rescuedDims.map((d) => `${d.name} (efecto aislado ${d.marginal.toFixed(2)}, combinado ${d.conditional.toFixed(2)})`).join('; ');
     const listEn = rescuedDims.map((d) => `${d.name} (isolated effect ${d.marginal.toFixed(2)}, combined ${d.conditional.toFixed(2)})`).join('; ');
     add(SEV.INFO, L(`${rescuedDims.length} parámetro(s) se han conservado por su efecto combinado`, `${rescuedDims.length} parameter(s) were kept for their combined effect`),
-      L(`${listEs}. Vistos por separado parecen planos, pero al dejar fijo todo lo demás si mueven el resultado: su efecto depende del valor de otros parámetros. Se mantienen en el espacio de búsqueda, porque descartarlos haría pasar por vecinas a configuraciones que no lo son e inflaría las mesetas.`,
+      L(`${listEs}. Vistos por separado parecen planos, pero al dejar fijo todo lo demás si mueven el resultado: su efecto depende del valor de otros parámetros. Se mantienen en el espacio de búsqueda, porque descartarlos haría pasar por vecinos a configuraciones que no lo son e inflaría las mesetas.`,
         `${listEn}. Seen alone they look flat, but with everything else held fixed they do move the result: their effect depends on the value of other parameters. They stay in the search space, because discarding them would treat non-neighbors as neighbors and inflate the plateaus.`));
   }
 
@@ -373,7 +373,7 @@ export function buildVerdict(ctx) {
 
   if (Number.isFinite(medianSupport) && medianSupport < 4) {
     add(SEV.WARN, L(`Soporte local insuficiente (mediana de ${medianSupport.toFixed(0)} vecinos)`, `Insufficient local support (median of ${medianSupport.toFixed(0)} neighbors)`),
-      L('La mayoria de configuraciones tiene muy pocas vecinas observadas. Cualquier afirmacion sobre mesetas es provisional hasta que refines con una rejilla.',
+      L('La mayoría de configuraciones tiene muy pocos vecinos observados. Cualquier afirmación sobre mesetas es provisional hasta que refines con una rejilla.',
         'Most configurations have very few observed neighbors. Any claim about plateaus is provisional until you refine with a grid.'));
   }
 
@@ -532,7 +532,7 @@ export function buildVerdict(ctx) {
   } else {
     level = LEVELS.STRONG;
     headline = L('Evidencia sólida', 'Solid evidence');
-    summary = L(`${regiones === 1 ? 'La región propuesta' : 'Las regiones propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinas que también superan tus mínimos, y el resultado aguanta al mover los umbrales. Es lo máximo que estos datos pueden respaldar.`,
+    summary = L(`${regiones === 1 ? 'La región propuesta' : 'Las regiones propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinos que también superan tus mínimos, y el resultado aguanta al mover los umbrales. Es lo máximo que estos datos pueden respaldar.`,
       `${regiones === 1 ? 'The proposed region rests' : 'The proposed regions rest'} on neighbors that also clear your minima, and the result holds when thresholds are moved. That is the most these data can support.`);
   }
 
@@ -576,11 +576,11 @@ export function peakRejectReasons(p, opts = {}) {
   }
   if (!p.record.passes) {
     const fails = [...(p.record.failsIs || []), ...(p.record.failsOos || [])].join(', ');
-    reasons.push(L(`no pasa las puertas minimas (${fails})`, `does not clear minimum gates (${fails})`));
+    reasons.push(L(`no pasa los mínimos (${fails})`, `does not clear minimum gates (${fails})`));
   }
   if (Number.isFinite(p.st.fracPass) && p.st.fracPass < 0.9) {
     reasons.push(L(
-      `solo el ${(100 * p.st.fracPass).toFixed(0)}% de sus vecinos pasa las puertas`,
+      `solo el ${(100 * p.st.fracPass).toFixed(0)}% de sus vecinos pasa los mínimos`,
       `only ${(100 * p.st.fracPass).toFixed(0)}% of its neighbors clear the gates`,
     ));
   }
