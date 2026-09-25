@@ -120,17 +120,6 @@ export function doExport(kind, plateauIndex) {
     downloadText(`robustness-configuraciones-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');
   } else if (kind === 'summary') {
     downloadText(`robustness-resumen-${stamp}.txt`, buildPlainSummary(a));
-  } else if (kind === 'print') {
-    // Reutiliza el @media print ya existente (oculta sidebar/botones, pagina en negro
-    // sobre blanco) sobre la pestana Verdict, que ya es el resumen curado: veredicto,
-    // por que, top 3 y periodo no visto. Sin libreria de PDF: "Guardar como PDF" del
-    // propio dialogo de impresion del navegador hace el resto.
-    // window.print() debe llamarse de forma SINCRONA dentro del gesto del usuario:
-    // Safari en iOS lo ignora en silencio si hay un setTimeout de por medio, por
-    // pequeno que sea. setTab() ya renderiza de forma sincrona, así que no hace falta
-    // esperar nada.
-    if (state.tab !== 'verdict') api.setTab('verdict');
-    window.print();
   }
 }
 
@@ -148,7 +137,6 @@ export function toggleExportMenu() {
   menu.className = 'export-menu';
   menu.innerHTML = `
     <button data-export="summary">${esc(t('export.summary'))}</button>
-    <button data-export="print">${esc(t('export.print'))}</button>
     <button data-export="json">${esc(t('export.json'))}</button>
     <button data-export="csv">${esc(t('export.csv'))}</button>
     <button data-export="set" ${state.analysis && !state.analysis.meta.hasForward ? 'disabled title="' + esc(L('Requiere forward', 'Requires forward')) + '"' : ''}>${esc(t('export.set'))}</button>
