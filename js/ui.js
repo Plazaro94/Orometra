@@ -41,6 +41,8 @@ import {
   renderParams,
   renderDiagnostics,
   mostSensitiveIndex,
+  mountPlateauSurfaceView,
+  disposePlateauSurface,
 } from './ui-plateaus.js';
 import { copyParams, doExport, toggleExportMenu } from './ui-export.js';
 
@@ -81,6 +83,8 @@ Object.assign(api, {
   renderParams,
   renderDiagnostics,
   renderUnseen,
+  mountPlateauSurfaceView,
+  disposePlateauSurface,
 });
 
 initChrome();

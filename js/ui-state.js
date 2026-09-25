@@ -26,6 +26,10 @@ export const state = {
   tab: 'verdict',
   selectedPlateau: 0,
   selectedParam: 0,
+  // Ejes de la superficie 3D de la meseta elegida (02); null = aun sin decidir,
+  // se calculan los dos parametros mas influyentes al entrar en la vista.
+  surfaceDimA: null,
+  surfaceDimB: null,
   isDemo: false,
   busy: false,
   // Periodo no visto: lo que el usuario teclea y el último resultado calculado.

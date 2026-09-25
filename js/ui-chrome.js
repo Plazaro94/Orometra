@@ -62,6 +62,7 @@ export function resetSession() {
   state.analysis = null; state.isDemo = false; state.report = null;
   state.searchSet = null; state.searchSetName = null;
   state.selectedPlateau = 0; state.selectedParam = 0;
+  state.surfaceDimA = null; state.surfaceDimB = null;
   state.unseen = {
     plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: null,
   };
@@ -232,11 +233,13 @@ export function render() {
   // Metodologia y legal no necesitan analisis cargado: se pueden leer siempre.
   if (state.tab === 'method' || state.tab === 'legal') {
     disposeEmptySurface();
+    api.disposePlateauSurface();
     view.innerHTML = state.tab === 'legal' ? renderLegal() : renderMethod();
     bindViewEvents();
     return;
   }
   if (!state.analysis) {
+    api.disposePlateauSurface();
     view.innerHTML = renderEmpty();
     bindViewEvents();
     mountEmptySurface();
@@ -254,6 +257,7 @@ export function render() {
   };
   view.innerHTML = (map[state.tab] || map.verdict)();
   bindViewEvents();
+  if (state.tab === 'plateaus') api.mountPlateauSurfaceView(a); else api.disposePlateauSurface();
 }
 
 export function bindViewEvents() {
@@ -269,6 +273,10 @@ export function bindViewEvents() {
       render();
     });
   }
+  const surfaceA = $('#surfaceDimA');
+  if (surfaceA) surfaceA.addEventListener('change', () => { state.surfaceDimA = Number(surfaceA.value); render(); });
+  const surfaceB = $('#surfaceDimB');
+  if (surfaceB) surfaceB.addEventListener('change', () => { state.surfaceDimB = Number(surfaceB.value); render(); });
   const unseenSel = $('#unseenPlateau');
   if (unseenSel) unseenSel.addEventListener('change', () => {
     state.unseen.plateauIndex = Number(unseenSel.value);

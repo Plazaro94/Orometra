@@ -222,9 +222,14 @@ export async function runAudit() {
     state.selectedPlateau = 0;
     // El informe NO se descarta al reanalizar: es habitual soltar los tres archivos a
     // la vez, y si no correspondiese al EA analizado la comparacion de parametros lo
-    // dira en voz alta. Solo se reinicia lo tecleado a mano.
-    state.unseen = { plateauIndex: 0, values: {}, result: null, error: null };
+    // dira en voz alta. Solo se reinicia lo tecleado a mano. `tradesAudit` se conserva
+    // por la misma razon: se calculo del informe, que sigue cargado.
+    state.unseen = {
+      plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: state.unseen.tradesAudit,
+    };
     state.selectedParam = api.mostSensitiveIndex(analysis);
+    state.surfaceDimA = null;
+    state.surfaceDimB = null;
     $('#statusBar').hidden = true;
     $('#exportBtn').disabled = false;
     $$('.nav-item').forEach((b) => { b.disabled = false; });

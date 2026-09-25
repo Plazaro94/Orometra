@@ -1,9 +1,11 @@
 // Mesetas, descartes, parámetros y paneles de diagnóstico.
 
 import { qualityLabel } from '../core/metrics.js';
+import { topInfluentialPair, buildAxisPairGrid } from '../core/surface.js';
+import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L } from './i18n.js';
-import { state, num, int, pct, esc, nf, paramValue, roleBadge } from './ui-state.js';
+import { state, $, num, int, pct, esc, nf, paramValue, roleBadge } from './ui-state.js';
 
 export function mostSensitiveIndex(a) {
   let best = 0;
@@ -110,6 +112,8 @@ export function renderPlateaus(a) {
       ${renderRepCard(a, sel)}
     </section>
 
+    ${renderPlateauSurfacePanel(a, sel)}
+
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div></div>
       <p class="panel-intro">${L(
@@ -131,6 +135,109 @@ export function renderPlateaus(a) {
       </table></div>
       <div class="rep-actions"><button class="ghost-btn" data-export="refine">${L('Descargar .set de refinamiento', 'Download refinement .set')}</button></div>
     </section>`;
+}
+
+// ------------------------------------------------------- superficie 3D de la meseta
+//
+// Una superficie solo puede mostrar dos parámetros a la vez. Con más de dos
+// optimizados se fijan el resto en los valores de la configuración representativa
+// y se dibuja la rejilla real de esos dos ejes — igual que el mapa de "los dos
+// parámetros más influyentes" de Parámetros (04), pero con una diferencia
+// deliberada: aquella promedia todas las combinaciones del resto de parámetros
+// (una vista general del espacio); esta fija el resto en TU meseta elegida, así
+// que cada celda es una pasada real de tu rejilla, no una mezcla. Por eso vive
+// aquí, junto a la meseta concreta que ilustra, y por eso puede tener huecos que
+// el mapa general no tiene: no se rellenan con nada inventado.
+let plateauSurfaceHandle = null;
+
+function surfaceAxisOptions(a, selected, excludeDim) {
+  return a.sensitivity
+    .filter((s) => !s.constant && s.index !== excludeDim)
+    .map((s) => `<option value="${s.index}"${s.index === selected ? ' selected' : ''}>${esc(s.name)}</option>`)
+    .join('');
+}
+
+function renderPlateauSurfacePanel(a, plateau) {
+  const nonConstant = a.sensitivity.filter((s) => !s.constant);
+  if (nonConstant.length < 2) {
+    return `<section class="panel">
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Visual', 'Visual')}</div><h2>${L('Cómo se ve tu meseta elegida', 'What your chosen plateau looks like')}</h2></div></div>
+      <p class="muted">${L('Hacen falta al menos dos parámetros con varios valores para dibujar una superficie.', 'At least two parameters with several values are needed to draw a surface.')}</p>
+    </section>`;
+  }
+  const defaults = topInfluentialPair(a.sensitivity) || [nonConstant[0].index, nonConstant[1].index];
+  if (state.surfaceDimA == null || state.surfaceDimA === state.surfaceDimB) [state.surfaceDimA, state.surfaceDimB] = defaults;
+  if (state.surfaceDimB == null || state.surfaceDimB === state.surfaceDimA) {
+    const alt = nonConstant.find((s) => s.index !== state.surfaceDimA);
+    state.surfaceDimB = alt ? alt.index : state.surfaceDimA;
+  }
+  const dimA = state.surfaceDimA;
+  const dimB = state.surfaceDimB;
+  const grid = buildAxisPairGrid(a, plateau, dimA, dimB);
+  const gapNote = grid.coverage < 0.999
+    ? L(
+      `Cobertura de esta rejilla 2D: ${Math.round(grid.coverage * 100)} %. Las celdas vacías no son cero: son combinaciones que la optimización (probablemente genética) no probó con el resto de parámetros en el valor de tu meseta — no se inventa un dato ahí.`,
+      `Coverage of this 2D grid: ${Math.round(grid.coverage * 100)} %. Empty cells are not zero: they are combinations the optimization (likely genetic) never tested with the other parameters at your plateau's value — nothing is invented there.`,
+    )
+    : L(
+      'Rejilla completa para estos dos parámetros: cada celda es una pasada real.',
+      'Full grid for these two parameters: every cell is a real pass.',
+    );
+
+  return `<section class="panel">
+    <div class="panel-head compact">
+      <div><div class="panel-kicker">${L('Visual', 'Visual')}</div><h2>${L('Cómo se ve tu meseta elegida', 'What your chosen plateau looks like')}</h2></div>
+      <div class="surface-axes">
+        <label class="inline-select">${L('Eje X', 'X axis')} <select id="surfaceDimA">${surfaceAxisOptions(a, dimA, dimB)}</select></label>
+        <label class="inline-select">${L('Eje Y', 'Y axis')} <select id="surfaceDimB">${surfaceAxisOptions(a, dimB, dimA)}</select></label>
+      </div>
+    </div>
+    <p class="panel-intro">${L(
+      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta — las que también aguantan en el periodo forward. El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra para rotar.`,
+      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau — the ones that also hold up in the forward period. The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag to rotate.`,
+    )}</p>
+    <div class="surface-wrap">
+      <canvas id="plateauSurfaceCanvas" role="img" aria-label="${esc(L('Superficie 3D de calidad real para dos parámetros', '3D surface of real quality for two parameters'))}"></canvas>
+      <div class="surface-detail" id="surfaceDetail">${renderSurfaceDetail(a, grid, null)}</div>
+    </div>
+    <p class="chart-note">${gapNote}</p>
+  </section>`;
+}
+
+function renderSurfaceDetail(a, grid, hit) {
+  if (!hit) {
+    return `<p class="muted">${L('Pasa el ratón sobre una barra para ver la pasada exacta.', 'Hover a bar to see the exact pass.')}</p>`;
+  }
+  const rec = a.records[hit.recordIndex];
+  return `<div class="evidence-list">
+    <div><span>${esc(grid.names[0])}</span><strong>${paramValue(grid.levelsA[hit.a])}</strong></div>
+    <div><span>${esc(grid.names[1])}</span><strong>${paramValue(grid.levelsB[hit.b])}</strong></div>
+    <div><span>Pass</span><strong class="mono">${esc(rec.id)}</strong></div>
+    <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(hit.quality, 3)}</strong></div>
+    <div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${Number.isFinite(hit.qualityOos) ? num(hit.qualityOos, 3) : '—'}</strong></div>
+    <div><span>${L('¿En esta meseta?', 'In this plateau?')}</span><strong class="big ${hit.inPlateau ? 'ok' : 'warn'}">${hit.inPlateau ? L('sí', 'yes') : L('no', 'no')}</strong></div>
+  </div>`;
+}
+
+export function disposePlateauSurface() {
+  if (plateauSurfaceHandle) plateauSurfaceHandle.destroy();
+  plateauSurfaceHandle = null;
+}
+
+export function mountPlateauSurfaceView(a) {
+  disposePlateauSurface();
+  const canvas = $('#plateauSurfaceCanvas');
+  if (!canvas || !a.plateaus.length) return;
+  const sel = a.plateaus[Math.min(state.selectedPlateau, a.plateaus.length - 1)];
+  if (state.surfaceDimA == null || state.surfaceDimB == null) return; // renderPlateauSurfacePanel aun no corrio
+  const grid = buildAxisPairGrid(a, sel, state.surfaceDimA, state.surfaceDimB);
+  plateauSurfaceHandle = mountPlateauSurface(canvas, grid, {
+    onHover(cell, aIdx, bIdx) {
+      const detail = $('#surfaceDetail');
+      if (!detail) return;
+      detail.innerHTML = renderSurfaceDetail(a, grid, cell ? { ...cell, a: aIdx, b: bIdx } : null);
+    },
+  });
 }
 
 export function renderRejected(a) {
