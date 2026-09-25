@@ -947,16 +947,16 @@ tr.sel td{color:var(--text-2)}
 
 @media print{
   /* El informe impreso tiene que ser legible en papel, no una captura en negativo. */
-  @page{margin:14mm}
-  html,body{background:var(--text-hi) !important;color:var(--surface) !important;font-size:11pt}
+  @page{margin:10mm}
+  html,body{background:var(--text-hi) !important;color:var(--surface) !important;font-size:10pt}
   .shell{display:block}
   .sidebar,.intake,.top-actions,.export-menu,.drop-overlay,.text-btn,.ghost-btn,.primary-btn,.link-btn{display:none !important}
   .main{padding:0}
-  .topbar{margin-bottom:10mm;border-bottom:1px solid var(--text-2);padding-bottom:5mm}
-  .topbar h1{font-size:20pt;color:var(--surface)}
+  .topbar{margin-bottom:5mm;border-bottom:1px solid var(--text-2);padding-bottom:3mm}
+  .topbar h1{font-size:17pt;color:var(--surface)}
   .topbar h1 em{color:var(--surface)}
   .eyebrow{color:var(--muted-3)}
-  .panel,.kpi{border:1px solid var(--text-2);background:var(--text-hi);box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:5mm}
+  .panel,.kpi{border:1px solid var(--text-2);background:var(--text-hi);box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:3mm;padding:12px 14px !important}
   .panel h2,.detail-head h2,.kpi-value,.rep-pass,.strong,.t3-pass{color:var(--surface)}
   .panel-kicker,.detail-kicker,.kpi-label,.kpi-note,.chart-note,.panel-intro,.muted,.t3-rank{color:var(--muted-3)}
   /* Las tarjetas de Top3 (recomendada/alternativas) mantienen su propio fondo oscuro en
@@ -967,12 +967,20 @@ tr.sel td{color:var(--text-2)}
      quedaban ilegibles sobre el papel blanco en estas dos tablas. */
   .range-table td,.range-table td.mono{color:var(--surface)}
   .evidence-sheet-row strong{color:var(--surface)}
+  /* El informe impreso es un resumen, no una copia de toda la pestana: la hoja de
+     evidencia, los rangos estables, los graficos y "mas hallazgos" ya se pueden
+     consultar en la app. En papel sobran paginas sin anadir nada que el veredicto,
+     el porque y el Top 3 no digan ya. */
+  .panel-evidence-sheet,.panel-ranges,.grid-secondary,.panel-evidence{display:none !important}
   .grid-secondary,.columns-grid{grid-template-columns:1fr}
   table{font-size:9pt}
   th{color:var(--line)}
   td{color:var(--surface)}
   th,td{border-bottom:1px solid var(--text)}
-  .verdict-banner{border:2px solid var(--surface);background:var(--text-hi) !important;break-inside:avoid}
+  .verdict-banner{border:2px solid var(--surface);background:var(--text-hi) !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
+  .panel-head{margin-bottom:8px}
+  .panel-intro{margin-bottom:8px}
+  .run-stamp{margin-bottom:3mm}
   .verdict-banner h2,.verdict-stamp{color:var(--surface) !important;background:var(--text-hi) !important;border-color:var(--surface) !important}
   /* .verdict-fact-value usaba --text-hi (blanco en tema oscuro): sobre el fondo blanco
      forzado del papel quedaba texto blanco sobre blanco, ilegible. */
