@@ -4,7 +4,7 @@ import { qualityLabel } from '../core/metrics.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag } from './i18n.js';
-import { state, num, int, pct, esc, rich, nf, paramValue } from './ui-state.js';
+import { state, num, int, pct, esc, rich, nf, paramValue, categorizeFinding } from './ui-state.js';
 
 /*
  * El sello califica la FUERZA DE LA EVIDENCIA, no la estrategia. Antes decia
@@ -63,7 +63,6 @@ export function renderVerdict(a) {
   const displayLevel = displayVerdictLevel(a);
   const c = verdictCopy(displayLevel);
   const best = a.plateaus[0];
-  const mainRisk = (v.findings || []).find((f) => f.severity === 'critical' || f.severity === 'warn');
   const hold = holdoutFact(a);
   const demoNote = state.isDemo
     ? `<div class="demo-note">${L(
@@ -105,20 +104,20 @@ export function renderVerdict(a) {
       ${!hold.done ? `<button class="text-btn verdict-fact-cta" data-goto="unseen">${L('Ir al periodo no visto &rarr;', 'Go to unseen period &rarr;')}</button>` : ''}
     </div>`;
 
-  const riskBlock = mainRisk
-    ? `<div class="verdict-fact verdict-fact-risk">
-        <span class="verdict-fact-label">${esc(t('verdict.risk'))}</span>
-        <strong class="verdict-fact-value">${esc(mainRisk.title)}</strong>
-        <span class="verdict-fact-note">${esc(mainRisk.detail)}</span>
-      </div>`
-    : '';
+  // El riesgo principal (el primer hallazgo warn/critical) es SIEMPRE el mismo objeto
+  // que el primero de "En contra / límites" de Why Grade, un poco más abajo: mostrarlo
+  // aparte en la ficha lateral era repetir la misma frase dos veces en la misma pantalla.
 
-  // "Why this evidence grade" ya abre con los primeros 4 pros y 4 contras; el resto de
-  // hallazgos (o todos, si no hubo highlights) va en "More engine findings" mas abajo,
-  // sin repetir el mismo texto dos veces en la misma pestana.
+  // "Why this evidence grade" ya abre con los primeros 4 pros y 4 contras. Del resto de
+  // hallazgos: los que ya tienen una tabla propia en Diagnostico/Parametros (Sharpe,
+  // cobertura, estabilidad interna...) se muestran alli, junto al numero que narran, no
+  // aqui otra vez; los que no tienen tabla en ningun sitio quedan en "More engine
+  // findings" mas abajo. "plateau" no se muestra en ningun sitio aparte: el badge de
+  // Top 3 y el aviso de la tarjeta de la meseta ya lo explican con mas contexto (que
+  // parametro exacto, en que configuracion).
   const highlights = whyGradeHighlights(a);
   const shown = new Set([...highlights.pros, ...highlights.cons]);
-  const restFindings = v.findings.filter((f) => !shown.has(f));
+  const restFindings = v.findings.filter((f) => !shown.has(f) && !categorizeFinding(f));
 
   return `${demoNote}${stamp}
   ${renderOutcomeBanner(a)}
@@ -133,7 +132,6 @@ export function renderVerdict(a) {
     <div class="verdict-aside">
       ${pickBlock}
       ${holdBlock}
-      ${riskBlock}
       <div class="verdict-fact verdict-fact-next">
         <span class="verdict-fact-label">${esc(t('verdict.next'))}</span>
         <strong class="verdict-fact-value">${esc(v.nextStep)}</strong>

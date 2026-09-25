@@ -180,7 +180,6 @@ const STRINGS = {
     'verdict.moderate': 'MODERATE EVIDENCE',
     'verdict.strong': 'STRONG EVIDENCE',
     'verdict.next': 'What you can do',
-    'verdict.risk': 'Main limit',
     'verdict.pick': 'Selected',
     'verdict.nopick': 'No configuration selected',
 
@@ -414,7 +413,6 @@ const STRINGS = {
     'verdict.moderate': 'EVIDENCIA MODERADA',
     'verdict.strong': 'EVIDENCIA SÓLIDA',
     'verdict.next': 'Qué puedes hacer',
-    'verdict.risk': 'Límite principal',
     'verdict.pick': 'Elegida',
     'verdict.nopick': 'Ninguna configuración elegida',
 
