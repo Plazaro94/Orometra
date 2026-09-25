@@ -959,6 +959,14 @@ tr.sel td{color:var(--text-2)}
   .panel,.kpi{border:1px solid var(--text-2);background:var(--text-hi);box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:5mm}
   .panel h2,.detail-head h2,.kpi-value,.rep-pass,.strong,.t3-pass{color:var(--surface)}
   .panel-kicker,.detail-kicker,.kpi-label,.kpi-note,.chart-note,.panel-intro,.muted,.t3-rank{color:var(--muted-3)}
+  /* Las tarjetas de Top3 (recomendada/alternativas) mantienen su propio fondo oscuro en
+     la impresion (no son .panel), asi que su "Pass NNNN" necesita seguir en claro; la
+     regla generica de arriba lo oscurecia pensando en fondo blanco. */
+  .t3-featured .t3-pass,.t3-alt .t3-pass{color:var(--text-hi)}
+  /* Mismo problema que verdict-fact-value: --text-2/--text-hi puestos para fondo oscuro
+     quedaban ilegibles sobre el papel blanco en estas dos tablas. */
+  .range-table td,.range-table td.mono{color:var(--surface)}
+  .evidence-sheet-row strong{color:var(--surface)}
   .grid-secondary,.columns-grid{grid-template-columns:1fr}
   table{font-size:9pt}
   th{color:var(--line)}
@@ -966,6 +974,12 @@ tr.sel td{color:var(--text-2)}
   th,td{border-bottom:1px solid var(--text)}
   .verdict-banner{border:2px solid var(--surface);background:var(--text-hi) !important;break-inside:avoid}
   .verdict-banner h2,.verdict-stamp{color:var(--surface) !important;background:var(--text-hi) !important;border-color:var(--surface) !important}
+  /* .verdict-fact-value usaba --text-hi (blanco en tema oscuro): sobre el fondo blanco
+     forzado del papel quedaba texto blanco sobre blanco, ilegible. */
+  .verdict-aside{border-color:var(--text-2)}
+  .verdict-fact-label{color:var(--muted-3)}
+  .verdict-fact-value,.verdict-fact-next .verdict-fact-value{color:var(--surface)}
+  .verdict-fact-note{color:var(--line-strong);-webkit-line-clamp:unset;overflow:visible}
   .finding p,.limits li{color:var(--line)}
   .finding strong{color:var(--surface)}
   .badge,.status-pill,.chip,.reason{border-color:var(--muted);background:var(--text-hi);color:var(--surface)}

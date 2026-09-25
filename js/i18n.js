@@ -184,6 +184,7 @@ const STRINGS = {
     'verdict.nopick': 'No configuration selected',
 
     'export.summary': 'Plain summary (.txt)',
+    'export.print': 'Report to print / PDF',
     'export.json': 'Full report (JSON)',
     'export.csv': 'All configurations (CSV)',
     'export.set': 'Proposed configuration (.set)',
@@ -418,6 +419,7 @@ const STRINGS = {
     'verdict.nopick': 'Ninguna configuración elegida',
 
     'export.summary': 'Resumen breve (.txt)',
+    'export.print': 'Informe para imprimir / PDF',
     'export.json': 'Informe completo (JSON)',
     'export.csv': 'Todas las configuraciones (CSV)',
     'export.set': 'Configuración propuesta (.set)',

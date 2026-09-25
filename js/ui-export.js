@@ -18,9 +18,10 @@ export function buildPlainSummary(a) {
   const v = a.verdict;
   const displayLevel = displayVerdictLevel(a);
   const c = verdictCopy(displayLevel);
-  const best = a.plateaus[0];
+  const top = a.plateaus.slice(0, 3);
   const hold = holdoutFact(a);
   const { pros, cons } = whyGradeHighlights(a);
+  const hasF = a.meta.hasForward;
   const lines = [];
 
   lines.push(L('RESUMEN OROMETRA', 'OROMETRA SUMMARY'));
@@ -30,10 +31,20 @@ export function buildPlainSummary(a) {
   if (v.summary) lines.push(plain(v.summary));
   lines.push('');
 
-  if (best) {
-    lines.push(L('CONFIGURACIÓN RECOMENDADA', 'RECOMMENDED CONFIGURATION'));
-    lines.push(`Pass ${best.record.id} (M${best.rank}, ${L('robustez', 'robustness')} ${best.robust.toFixed(0)}/100)`);
-    a.meta.paramNames.forEach((n, j) => lines.push(`  ${n} = ${paramValue(best.record.params[j])}`));
+  // Top 3, no solo "la mejor": cual conviene tambien depende de criterios operativos
+  // (ej. frecuencia de operacion) que la app no puede decidir por el usuario. Mismos
+  // datos que la tabla comparativa de "Top 3" en Verdict.
+  if (top.length) {
+    lines.push(top.length === 1
+      ? L('CONFIGURACIÓN GANADORA', 'WINNING CONFIGURATION')
+      : L(`TOP ${top.length}: CONFIGURACIONES GANADORAS`, `TOP ${top.length}: WINNING CONFIGURATIONS`));
+    top.forEach((p, i) => {
+      const role = i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`);
+      lines.push('');
+      lines.push(`${role} — Pass ${p.record.id} (M${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
+      lines.push(`  ${L('Operaciones in-sample / forward', 'In-sample / forward trades')}: ${p.record.is.trades}${hasF ? ` / ${p.record.oos.trades}` : ` / ${L('sin forward', 'no forward')}`}`);
+      a.meta.paramNames.forEach((n, j) => lines.push(`  ${n} = ${paramValue(p.record.params[j])}`));
+    });
     lines.push('');
   }
 
@@ -109,6 +120,13 @@ export function doExport(kind, plateauIndex) {
     downloadText(`robustness-configuraciones-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');
   } else if (kind === 'summary') {
     downloadText(`robustness-resumen-${stamp}.txt`, buildPlainSummary(a));
+  } else if (kind === 'print') {
+    // Reutiliza el @media print ya existente (oculta sidebar/botones, pagina en negro
+    // sobre blanco) sobre la pestana Verdict, que ya es el resumen curado: veredicto,
+    // por que, top 3 y periodo no visto. Sin libreria de PDF: "Guardar como PDF" del
+    // propio dialogo de impresion del navegador hace el resto.
+    if (state.tab !== 'verdict') api.setTab('verdict');
+    setTimeout(() => window.print(), 60);
   }
 }
 
@@ -126,6 +144,7 @@ export function toggleExportMenu() {
   menu.className = 'export-menu';
   menu.innerHTML = `
     <button data-export="summary">${esc(t('export.summary'))}</button>
+    <button data-export="print">${esc(t('export.print'))}</button>
     <button data-export="json">${esc(t('export.json'))}</button>
     <button data-export="csv">${esc(t('export.csv'))}</button>
     <button data-export="set" ${state.analysis && !state.analysis.meta.hasForward ? 'disabled title="' + esc(L('Requiere forward', 'Requires forward')) + '"' : ''}>${esc(t('export.set'))}</button>
