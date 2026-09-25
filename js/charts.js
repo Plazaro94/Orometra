@@ -165,21 +165,40 @@ export function dimRole(analysis, sens) {
   return 'plano';
 }
 
-/** Sensibilidad relativa de cada parametro. */
+/**
+ * Sensibilidad relativa de cada parametro. La barra representa el EFECTIVO (el mayor
+ * entre aislado y combinado, igual criterio que usa el propio motor para decidir que
+ * ejes son "distancia") y no solo el aislado: un parametro cuyo efecto se invierte
+ * segun otro sale plano aislado y no combinado, y mostrar solo el aislado aqui
+ * escondería justo el caso que la metodologia avisa que hay que vigilar.
+ */
 export function sensitivityBars(analysis) {
-  const rows = [...analysis.sensitivity].sort((a, b) => b.sensitivity - a.sensitivity);
+  const eff = (r) => (Number.isFinite(r.effective) ? r.effective : r.sensitivity);
+  const rows = [...analysis.sensitivity].sort((a, b) => eff(b) - eff(a));
   const rowH = 26;
   const W = 620; const H = rows.length * rowH + 30; const labelW = 190;
-  const [, maxS] = extent(rows.map((r) => r.sensitivity));
+  const [, maxS] = extent(rows.map(eff));
   const scale = (v) => (maxS > 0 ? (v / maxS) * (W - labelW - 60) : 0);
   const body = rows.map((r, k) => {
     const role = dimRole(analysis, r);
     const cls = role === 'distancia' ? 'ch-sens-active' : role === 'particion' ? 'ch-sens-block' : 'ch-sens-flat';
-    const note = role === 'distancia' ? '' : role;
+    const roleNote = role === 'distancia' ? '' : role;
+    const value = eff(r);
+    const marginal = r.sensitivity || 0;
+    // Diferencia real, no solo redondeo: la combinada rescata a este parametro.
+    const rescued = Number.isFinite(r.conditional) && value - marginal > 0.05;
     const y = 14 + k * rowH;
+    const wEff = Math.max(2, scale(value));
+    const wMarg = Math.max(0, scale(marginal));
+    const marker = rescued
+      ? `<line class="ch-sens-marginal" x1="${fx(labelW + wMarg)}" y1="${y}" x2="${fx(labelW + wMarg)}" y2="${y + 20}"/>`
+      : '';
+    const note = rescued ? ` (${value.toFixed(2)} · ${L('aislado', 'isolated')} ${marginal.toFixed(2)})` : `${value.toFixed(2)}${roleNote ? ' · ' + roleNote : ''}`;
+    const label = rescued ? note.trim() : note;
     return `<text class="ch-row-label" x="${labelW - 8}" y="${y + 13}" text-anchor="end">${esc(r.name)}</text>
-      <rect class="${cls}" x="${labelW}" y="${y + 3}" width="${fx(Math.max(2, scale(r.sensitivity)))}" height="14" rx="3"/>
-      <text class="ch-count" x="${labelW + Math.max(2, scale(r.sensitivity)) + 8}" y="${y + 14}">${r.sensitivity.toFixed(2)}${note ? ' · ' + note : ''}</text>`;
+      <rect class="${cls}" x="${labelW}" y="${y + 3}" width="${fx(wEff)}" height="14" rx="3"/>
+      ${marker}
+      <text class="ch-count" x="${labelW + wEff + 8}" y="${y + 14}">${esc(label)}</text>`;
   }).join('');
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">${body}</svg>`;
 }

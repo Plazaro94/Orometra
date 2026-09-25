@@ -293,6 +293,10 @@ export function renderParams(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Sensibilidad', 'Sensitivity')}</div><h2>${L('Influencia relativa', 'Relative influence')}</h2></div></div>
       ${sensitivityBars(a)}
+      <p class="chart-note">${L(
+        `La barra es el <strong>efectivo</strong>: el mayor entre la influencia aislada (agrupando por el valor del parámetro) y la combinada (dejando fijo todo lo demás). Donde aparece la marca <span class="ch-sens-marginal-swatch"></span> y un valor entre paréntesis, el parámetro parecía plano mirado solo — la combinada lo rescata. El detalle completo (aislado, combinado, efectivo) está en Diagnóstico.`,
+        `The bar is the <strong>effective</strong> value: the larger of the isolated influence (grouped by the parameter's value) and the combined one (everything else held fixed). Where the <span class="ch-sens-marginal-swatch"></span> mark and a parenthesised value appear, the parameter looked flat on its own — the combined measure rescues it. The full breakdown (isolated, combined, effective) is in Diagnostics.`,
+      )}</p>
     </section>
     ${a.inversions && a.inversions.length ? `<section class="panel warn-panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Aviso', 'Warning')}</div><h2>${L('Parámetros invertidos entre periodos', 'Parameters inverted across periods')}</h2></div>
@@ -334,14 +338,18 @@ export function renderParams(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Rangos', 'Ranges')}</div><h2>${L('Valores probados', 'Values tested')}</h2></div></div>
       <div class="table-wrap"><table>
-        <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Niveles', 'Levels')}</th><th>${L('Sensibilidad', 'Sensitivity')}</th><th>${L('Papel en el motor', 'Role in the engine')}</th><th>${L('Valores', 'Values')}</th></tr></thead>
-        <tbody>${a.sensitivity.map((s) => `<tr>
+        <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Niveles', 'Levels')}</th><th>${L('Sensibilidad (efectivo)', 'Sensitivity (effective)')}</th><th>${L('Papel en el motor', 'Role in the engine')}</th><th>${L('Valores', 'Values')}</th></tr></thead>
+        <tbody>${a.sensitivity.map((s) => {
+          const effVal = Number.isFinite(s.effective) ? s.effective : s.sensitivity;
+          const rescued = !s.constant && Number.isFinite(s.conditional) && effVal - (s.sensitivity || 0) > 0.05;
+          return `<tr>
           <td class="mono">${esc(s.name)}${a.meta.paramTypes && a.meta.paramTypes[s.index] !== 'number' ? ` <span class="badge">${esc(a.meta.paramTypes[s.index] === 'bool' ? 'bool' : 'enum')}</span>` : ''}</td>
           <td>${int(s.levels)}</td>
-          <td>${s.constant ? '—' : num(s.sensitivity, 2)}</td>
+          <td>${s.constant ? '—' : `${num(effVal, 2)}${rescued ? ` <em title="${esc(L('Aislado (solo este parámetro)', 'Isolated (this parameter alone)'))}">(${L('aislado', 'isolated')} ${num(s.sensitivity, 2)})</em>` : ''}`}</td>
           <td>${roleBadge(dimRole(a, s))}</td>
           <td class="values">${(s.values || []).map(paramValue).join(' · ')}</td>
-        </tr>`).join('')}</tbody>
+        </tr>`;
+        }).join('')}</tbody>
       </table></div>
     </section>`;
 }
