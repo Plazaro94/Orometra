@@ -260,12 +260,29 @@ export function render() {
   if (state.tab === 'plateaus') api.mountPlateauSurfaceView(a); else api.disposePlateauSurface();
 }
 
+let glossOutsideClickBound = false;
+function ensureGlossOutsideClickListener() {
+  if (glossOutsideClickBound) return;
+  glossOutsideClickBound = true;
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.gloss')) return;
+    $$('.gloss.gloss-open').forEach((o) => o.classList.remove('gloss-open'));
+  });
+}
+
 export function bindViewEvents() {
   $$('[data-goto]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.goto)));
   $$('[data-scroll]').forEach((b) => b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }));
+  $$('.gloss').forEach((el) => el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const wasOpen = el.classList.contains('gloss-open');
+    $$('.gloss.gloss-open').forEach((o) => o.classList.remove('gloss-open'));
+    if (!wasOpen) el.classList.add('gloss-open');
+  }));
+  ensureGlossOutsideClickListener();
   $$('[data-plateau]').forEach((b) => b.addEventListener('click', () => {
     state.selectedPlateau = Number(b.dataset.plateau);
     setTab('plateaus');

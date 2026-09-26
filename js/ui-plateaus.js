@@ -5,6 +5,7 @@ import { topInfluentialPair, buildAxisPairGrid } from '../core/surface.js';
 import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L } from './i18n.js';
+import { gloss } from './glossary.js';
 import { state, $, num, int, pct, esc, rich, nf, paramValue, roleBadge, findingsForCategory } from './ui-state.js';
 
 /**
@@ -49,7 +50,7 @@ export function renderRepCard(a, p) {
         <div class="rep-pass">Pass ${esc(r.id)}</div>
         <div class="rep-sub">${L('Meseta', 'Plateau')} ${p.rank} · ${int(p.size)} ${L('configuraciones', 'configurations')}${p.coreSize ? ` · ${L('nucleo de', 'core of')} ${int(p.coreSize)}` : ''}</div>
       </div>
-      <div class="rep-score">${num(p.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
+      <div class="rep-score">${num(p.robust, 0)}<small>${gloss('robustness', L('robustez', 'robustness'), { align: 'right' })}</small></div>
     </div>
     <div class="param-grid">
       ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramValue(r.params[j])}</strong></div>`).join('')}
@@ -64,7 +65,7 @@ export function renderRepCard(a, p) {
       ${p.neighborhood && p.neighborhood.slotsComplete
         ? `<div><span>${L('Huecos no observados', 'Unobserved gaps')}</span><strong>${int(p.neighborhood.gaps)} <em>${L('de', 'of')} ${int(p.neighborhood.slots)}</em></strong></div>`
         : ''}
-      <div><span>${L('Suelo de su entorno (Q25)', 'Neighborhood floor (Q25)')}</span><strong>${num(p.stability.q25, 2)}</strong></div>
+      <div><span>${gloss('q25', L('Suelo de su entorno (Q25)', 'Neighborhood floor (Q25)'))}</span><strong>${num(p.stability.q25, 2)}</strong></div>
       ${hasF ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}% / ${int(r.oos.trades)}</strong></div>` : ''}
       <div><span>${L('In-sample · PF / DD / ops', 'In-sample · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}% / ${int(r.is.trades)}</strong></div>
     </div>
@@ -130,7 +131,7 @@ export function renderPlateaus(a) {
 
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Meseta', 'Plateau')} ${sel.rank}</div><h2>${L('Configuración representativa', 'Representative configuration')}</h2></div>
-        <span class="status-pill">${L('elegida por criterio maximin', 'chosen by maximin')}</span></div>
+        <span class="status-pill">${gloss('maximin', L('elegida por criterio maximin', 'chosen by maximin'), { align: 'right' })}</span></div>
       ${renderRepCard(a, sel)}
     </section>
 
@@ -432,7 +433,7 @@ export function renderDiagnostics(a) {
       </section>
 
       <section class="panel">
-        <div class="panel-head compact"><div><div class="panel-kicker">${L('Muestreo', 'Sampling')}</div><h2>${L('Como optimizaste', 'How you optimised')}</h2></div></div>
+        <div class="panel-head compact"><div><div class="panel-kicker">${gloss('sampling', L('Muestreo', 'Sampling'))}</div><h2>${L('Como optimizaste', 'How you optimised')}</h2></div></div>
         <div class="evidence-list">
           <div><span>${L('Espacio cartesiano', 'Cartesian space')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones probadas', 'Configurations tested')}</span><strong>${int(a.meta.total)}</strong></div>
@@ -479,8 +480,8 @@ export function renderDiagnostics(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Politica', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minima')}</h2></div></div>
       <div class="evidence-list">
         <div><span>${L('Beneficio positivo', 'Positive profit')}</span><strong>${g.requireProfit ? L('exigido', 'required') : L('no exigido', 'not required')}</strong></div>
-        <div><span>${L('Factor de beneficio mínimo', 'Minimum profit factor')}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
-        <div><span>${L('Drawdown máximo', 'Maximum drawdown')}</span><strong>${num(g.maxDrawdownPct, 0)} %</strong></div>
+        <div><span>${gloss('profitFactor', L('Factor de beneficio mínimo', 'Minimum profit factor'))}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
+        <div><span>${gloss('drawdown', L('Drawdown máximo', 'Maximum drawdown'))}</span><strong>${num(g.maxDrawdownPct, 0)} %</strong></div>
         <div><span>${L('Operaciones minimas (IS)', 'Minimum trades (IS)')}</span><strong>${int(a.meta.minTradesIs)}</strong></div>
         <div><span>${L('Operaciones minimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>
         ${(a.meta.gateInfluence || []).filter((gi) => gi.name !== 'beneficio').map((gi) => `
@@ -495,15 +496,15 @@ export function renderDiagnostics(a) {
       <div class="panel-body">
       <div class="evidence-list">
         <div><span>${L('Correlación de rangos IS &rarr; forward', 'Rank correlation IS &rarr; forward')}</span><strong>${num(a.stats.spearmanCriterion, 3)}</strong></div>
-        <div><span>${L('Fragilidad de la selección (peor sentido)', 'Selection fragility (worse direction)')}</span><strong>${Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—'}${Number.isFinite(a.stats.fragilityMargin) ? ` <em>±${nf(0).format(a.stats.fragilityMargin * 100)}</em>` : ''}</strong></div>
+        <div><span>${gloss('fragility', L('Fragilidad de la selección (peor sentido)', 'Selection fragility (worse direction)'))}</span><strong>${Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—'}${Number.isFinite(a.stats.fragilityMargin) ? ` <em>±${nf(0).format(a.stats.fragilityMargin * 100)}</em>` : ''}</strong></div>
         ${a.stats.fragilityFolds ? `
         <div><span>· ${L('eligiendo por IS, validando en forward', 'choosing by IS, validating on forward')}</span><strong>${pct(a.stats.fragilityFolds.isToOos.value, 0)}</strong></div>
         <div><span>· ${L('eligiendo por forward, validando en IS', 'choosing by forward, validating on IS')}</span><strong>${pct(a.stats.fragilityFolds.oosToIs.value, 0)}</strong></div>
         <div><span>· ${L('asimetria entre sentidos', 'asymmetry across directions')}</span><strong>${pct(a.stats.fragilityAsymmetry, 0)}</strong></div>` : ''}
         <div><span>${L('Pruebas realizadas', 'Trials run')}</span><strong>${int(a.meta.total)}</strong></div>
-        <div><span>${L('Pruebas efectivas (regiones distintas)', 'Effective trials (distinct regions)')}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
+        <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (regiones distintas)', 'Effective trials (distinct regions)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
         ${a.stats.sharpeTest ? `
-        <div><span>${L('Sharpe máximo observado', 'Maximum observed Sharpe')}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)} <em>${L('con', 'with')} ${int(a.stats.sharpeTest.observedTrades)} ops</em></strong></div>
+        <div><span>${gloss('sharpe', L('Sharpe máximo observado', 'Maximum observed Sharpe'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)} <em>${L('con', 'with')} ${int(a.stats.sharpeTest.observedTrades)} ops</em></strong></div>
         <div><span>${L('Error típico de un Sharpe', 'Typical Sharpe standard error')}</span><strong>${num(a.stats.sharpeTest.typicalSe, 4)}</strong></div>
         <div><span>${L(`Umbral por azar con ${int(a.stats.sharpeTest.trials)} pruebas`, `Chance threshold with ${int(a.stats.sharpeTest.trials)} trials`)}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>
         <div><span>${L('Umbral con pruebas efectivas', 'Threshold with effective trials')}</span><strong>${num(a.stats.sharpeTest.chanceMaxEffective, 3)}</strong></div>
