@@ -1291,7 +1291,6 @@ tr.sel td{color:var(--text-2)}
   flex:none;font-family:var(--mono);font-weight:800;font-size:32px;line-height:1;
   color:var(--accent);opacity:.45;min-width:50px;
 }
-.lp-method-num-plain{display:inline-block;margin-bottom:8px}
 .lp-method-step-text{min-width:0}
 .lp-method-step-text p{margin-bottom:0}
 @media (max-width:720px){

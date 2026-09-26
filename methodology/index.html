@@ -126,19 +126,21 @@
         <p data-i18n="doc.method.s5.body">The optimization grid only has aggregated per-pass metrics — never enough for a real Monte Carlo. But the backtest report of your chosen configuration on the unseen period does carry the trade-by-trade list, and that unlocks three checks the grid alone cannot give you: a stationary-bootstrap Monte Carlo over your real trades, a sample-size check (can this many days actually tell your edge from noise?), and a cost-stress table for what happens if your real live spread, slippage or commission are worse than what you optimized with. Drop the report — a real MT5 backtest, not an optimization export — anywhere on the "Unseen period" step.</p>
       </div>
     </section>
-  </div>
 
-  <section class="lp-doc-block">
-    <span class="lp-method-num lp-method-num-plain">06</span>
-    <h2 data-i18n="doc.method.s6.title">What we do not claim</h2>
-    <ul class="lp-list">
-      <li data-i18n="doc.method.s6.1">A plateau is stability in your sample — not proof of future edge.</li>
-      <li data-i18n="doc.method.s6.2">We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.</li>
-      <li data-i18n="doc.method.s6.3">Forward already helps select, so it is slightly “contaminated”; the cleanest check is a true unseen period.</li>
-      <li data-i18n="doc.method.s6.4">We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.</li>
-      <li data-i18n="doc.method.s6.5">With many parameters or a genetic (non-grid) search, neighborhood and plateau size are capped conservatively — it may understate support, never invent it.</li>
-    </ul>
-  </section>
+    <section class="lp-doc-block lp-method-step">
+      <span class="lp-method-num">06</span>
+      <div class="lp-method-step-text">
+        <h2 data-i18n="doc.method.s6.title">What we do not claim</h2>
+        <ul class="lp-list">
+          <li data-i18n="doc.method.s6.1">A plateau is stability in your sample — not proof of future edge.</li>
+          <li data-i18n="doc.method.s6.2">We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.</li>
+          <li data-i18n="doc.method.s6.3">Forward already helps select, so it is slightly “contaminated”; the cleanest check is a true unseen period.</li>
+          <li data-i18n="doc.method.s6.4">We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.</li>
+          <li data-i18n="doc.method.s6.5">With many parameters or a genetic (non-grid) search, neighborhood and plateau size are capped conservatively — it may understate support, never invent it.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
 
   <section class="lp-doc-cta">
     <a class="primary-btn" href="../app/" data-i18n="doc.method.cta">Try it with my files</a>
