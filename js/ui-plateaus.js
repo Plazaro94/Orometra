@@ -107,6 +107,8 @@ export function renderPlateaus(a) {
       <td>${p.boundary.length ? `<span class="badge warn">${p.boundary.length}</span>` : '<span class="badge ok">0</span>'}</td>
     </tr>`).join('');
 
+  const sparseSampling = a.meta.sampling === 'sparse' || a.meta.sampling === 'partial';
+
   return `<div class="detail-head">
       <div class="detail-kicker">${L('02 / Mesetas', '02 / Plateaus')}</div>
       <h2>${L('Regiones estables detectadas', 'Stable regions detected')}</h2>
@@ -115,6 +117,10 @@ export function renderPlateaus(a) {
         'Ordered by the region <strong>floor</strong>, not its peak. A plateau is a connected set of configurations where even the lower quartile of the neighborhood keeps good quality.',
       )}</p>
     </div>
+    ${sparseSampling ? `<div class="inline-warn">${L(
+      `Esta optimización usó ${a.meta.sampling === 'sparse' ? 'muestreo disperso (genético)' : 'una rejilla parcial'}, así que la meseta de abajo puede tener huecos sin probar. Antes de decidir con esto,`,
+      `This optimization used ${a.meta.sampling === 'sparse' ? 'sparse (genetic) sampling' : 'a partial grid'}, so the plateau below can have untested gaps. Before deciding on this,`,
+    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas combinaciones y confirma si la meseta aguanta entera.', "— it's a small number of combinations and confirms whether the whole plateau holds.")}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
         <thead><tr><th>#</th><th>${L('Pass repr.', 'Repr. pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Nucleo', 'Core')}</th><th>${L('Suelo (Q10)', 'Floor (Q10)')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Dispersión', 'Dispersion')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
@@ -130,8 +136,9 @@ export function renderPlateaus(a) {
 
     ${renderPlateauSurfacePanel(a, sel)}
 
-    <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div></div>
+    <section class="panel" id="refinementPanel">
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div>
+        ${sparseSampling ? `<span class="status-pill warn-pill">${L('Recomendado', 'Recommended')}</span>` : ''}</div>
       <p class="panel-intro">${L(
         `Vuelve a MT5 y lanza una optimizacion <em>Todos los parámetros</em> acotada a este rango, centrado en la configuración recomendada. Sobre una rejilla completa la geometría de la meseta se mide sin los huecos que deja el genetico. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinaciones</strong>, un tamaño que se puede ejecutar de verdad.`,
         `Go back to MT5 and run an <em>All parameters</em> optimization bounded to this range, centered on the recommended configuration. On a full grid the plateau geometry is measured without the gaps the genetic leaves. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinations</strong> — a size you can actually run.`,
@@ -510,19 +517,22 @@ export function renderDiagnostics(a) {
           `<strong>Como leer el contraste del Sharpe.</strong> La hipotesis nula es que ninguna configuración
         tiene ventaja: entonces cada Sharpe observado sería ruido alrededor de cero, y el mejor de N pruebas
         saldria positivo por si solo. El error típico se calcula con el número de operaciones de cada
-        configuración, asumiendo que el Sharpe de MT5 se estima sobre esas operaciones. Si en tu versión del
-        terminal esa cifra viniese anualizada, el umbral real sería más alto que el mostrado. Por eso
-        <strong>suspender esta prueba es una señal fuerte, pero aprobarla no demuestra nada por si solo</strong>.
-        El umbral con pruebas efectivas cuenta regiones distintas del espacio en lugar de configuraciones,
-        porque dos vecinos no son dos pruebas independientes.`,
+        configuración, asumiendo que el Sharpe de MT5 se estima sobre esas operaciones — pero desde el build
+        3210 del terminal (feb. 2022) MT5 lo calcula en realidad sobre los log-retornos de la curva de equity
+        <em>por barra</em>, anualizados, no por operación. Eso significa que en la mayoría de instalaciones
+        actuales el umbral real es más alto que el mostrado aquí. Por eso
+        <strong>suspender esta prueba es una señal fuerte, y aprobarla demuestra todavía menos de lo que ya
+        decíamos</strong>. El umbral con pruebas efectivas cuenta regiones distintas del espacio en lugar de
+        configuraciones, porque dos vecinos no son dos pruebas independientes.`,
           `<strong>How to read the Sharpe contrast.</strong> The null hypothesis is that no configuration
         has an edge: then each observed Sharpe would be noise around zero, and the best of N trials
         would come out positive on its own. The typical error is computed from each configuration's
-        trade count, assuming MT5's Sharpe is estimated on those trades. If in your terminal version
-        that figure were annualized, the real threshold would be higher than shown. So
-        <strong>failing this test is a strong signal, but passing it proves nothing on its own</strong>.
-        The effective-trials threshold counts distinct regions of the space instead of configurations,
-        because two neighbors are not two independent trials.`,
+        trade count, assuming MT5's Sharpe is estimated on those trades — but since terminal build 3210
+        (Feb 2022) MT5 actually computes it from the equity curve's <em>per-bar</em> log-returns, annualized,
+        not per trade. That means on most installations today the real threshold is higher than shown here.
+        So <strong>failing this test is a strong signal, and passing it demonstrates even less than we
+        already said</strong>. The effective-trials threshold counts distinct regions of the space instead
+        of configurations, because two neighbors are not two independent trials.`,
         )}
       </p>
       <p class="chart-note">

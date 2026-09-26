@@ -262,6 +262,10 @@ export function render() {
 
 export function bindViewEvents() {
   $$('[data-goto]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.goto)));
+  $$('[data-scroll]').forEach((b) => b.addEventListener('click', () => {
+    const target = document.getElementById(b.dataset.scroll);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
   $$('[data-plateau]').forEach((b) => b.addEventListener('click', () => {
     state.selectedPlateau = Number(b.dataset.plateau);
     setTab('plateaus');
