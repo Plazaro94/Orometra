@@ -50,6 +50,15 @@
   /* Escala tipográfica (7 pasos) */
   --fs-xs:12px; --fs-sm:13px; --fs-md:14px; --fs-base:15px; --fs-lg:16.5px; --fs-xl:19.5px; --fs-2xl:23px; --fs-display:clamp(34px,4vw,52px);
   --space-section:56px;
+  /* Cabecera (marca + idioma/tema): un solo tamano para cada contexto, en vez de que
+   * cada bloque de CSS (portada, sidebar de escritorio, cabecera movil de la app)
+   * repita su propio numero "a mano". El motivo por el que la cabecera movil de la
+   * app y la de la portada se desincronizaron una vez ya es la razon para que la
+   * proxima vez no puedan: tocar el token aqui las mueve a las dos a la vez. */
+  --brand-mark:34px;         --brand-mark-compact:28px;
+  --brand-name:21px;         --brand-name-compact:16px;
+  --header-pad:16px;
+  --control-h:36px;
   color-scheme:dark;
 }
 
@@ -143,8 +152,8 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .brand-row{display:flex;align-items:center;gap:7px}
 /* 34 px de lienzo para 21 px de texto: la figura llena ahora casi todo su cuadro
    (ver `brandmark.js`), asi que el tamano del lienzo es el tamano que se ve. */
-.brand-mark{width:34px;height:34px;flex:none;display:block}
-.brand-name{display:block;font-weight:700;font-size:21px;letter-spacing:-.025em;transition:color .18s;line-height:1}
+.brand-mark{width:var(--brand-mark);height:var(--brand-mark);flex:none;display:block}
+.brand-name{display:block;font-weight:700;font-size:var(--brand-name);letter-spacing:-.025em;transition:color .18s;line-height:1}
 .brand-sub{display:block;font-size:12.5px;color:var(--muted-2);margin-top:1px}
 
 /* ------------------------------------------------------------- idioma + tema */
@@ -925,16 +934,16 @@ tr.sel td{color:var(--text-2)}
      no cambiar de tamano de golpe. */
   .sidebar-head{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:16px;border-bottom:1px solid var(--line);
+    padding:var(--header-pad);border-bottom:1px solid var(--line);
   }
   .brand{flex-direction:row;align-items:center;gap:10px;padding:0;border-bottom:0;min-width:0}
   .header-controls{display:flex;align-items:center;gap:8px;flex:none;flex-wrap:wrap}
   .header-controls .lang-row,.header-controls .theme-row{padding:0}
-  .header-controls .lang-btn{padding:7px 9px;min-height:36px}
-  .header-controls .theme-btn{min-width:36px;min-height:36px;padding:8px;font-size:0}
+  .header-controls .lang-btn{padding:7px 9px;min-height:var(--control-h)}
+  .header-controls .theme-btn{min-width:var(--control-h);min-height:var(--control-h);padding:8px;font-size:0}
   .brand-row{gap:8px}
-  .brand-mark{width:28px;height:28px}
-  .brand-name{font-size:16px}
+  .brand-mark{width:var(--brand-mark-compact);height:var(--brand-mark-compact)}
+  .brand-name{font-size:var(--brand-name-compact)}
   /* El subtitulo sobra en una cabecera de 44px de alto: ya lo dice el titulo de la pagina. */
   .brand-sub{display:none}
   .sidebar-scroll{
@@ -1069,24 +1078,24 @@ tr.sel td{color:var(--text-2)}
   background:var(--bg);color:var(--text);
 }
 .lp-shell{
-  width:100%;max-width:1320px;margin:0 auto;padding:0 32px;
+  width:100%;max-width:1320px;margin:0 auto;padding:0 var(--header-pad);
   display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
 }
 .lp-top{
   border-bottom:1px solid var(--line);background:var(--surface);
-  padding:16px 0;
+  padding:var(--header-pad) 0;
 }
 .lp-brand{
   display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;
 }
-.lp-brand .brand-mark{width:34px;height:34px}
-.lp-brand .brand-name{font-weight:700;font-size:21px;letter-spacing:-.025em;line-height:1}
+.lp-brand .brand-mark{width:var(--brand-mark);height:var(--brand-mark)}
+.lp-brand .brand-name{font-weight:700;font-size:var(--brand-name);letter-spacing:-.025em;line-height:1}
 .brand-name,.lp-brand .brand-name{color:var(--text-hi)}
 .lp-top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .lp-top-actions .lang-row,.lp-top-actions .theme-row{padding:0}
-.lp-top-actions .lang-btn{padding:7px 9px;min-height:36px}
+.lp-top-actions .lang-btn{padding:7px 9px;min-height:var(--control-h)}
 .lp-top-actions .theme-btn{
-  min-width:36px;min-height:36px;padding:8px;flex:none;
+  min-width:var(--control-h);min-height:var(--control-h);padding:8px;flex:none;
 }
 .landing-page .lp-top-actions .theme-btn > span:not(.swatch){
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0
@@ -1364,12 +1373,12 @@ tr.sel td{color:var(--text-2)}
   .lp-claims{grid-template-columns:1fr}
 }
 @media (max-width:720px){
-  .lp-shell{padding:0 16px}
-  /* Mismo tamano que .brand-mark/.brand-name en movil dentro de la app (linea ~873):
-     sin esto el logo de la portada se queda fijo a tamano de escritorio y "salta" de
-     tamano justo al entrar en la app, dando sensacion de cabeceras sin cuidar. */
-  .lp-brand .brand-mark{width:28px;height:28px}
-  .lp-brand .brand-name{font-size:16px}
+  .lp-shell{padding:0 var(--header-pad)}
+  /* --brand-mark-compact/--brand-name-compact es el mismo token que usa la cabecera
+     movil de la app (linea ~945): sin el, el logo de la portada se queda fijo a
+     tamano de escritorio y "salta" de tamano justo al entrar en la app. */
+  .lp-brand .brand-mark{width:var(--brand-mark-compact);height:var(--brand-mark-compact)}
+  .lp-brand .brand-name{font-size:var(--brand-name-compact)}
   .lp-main{padding:18px 16px 40px}
   .lp-cta-top{display:none}
   .lp-compare-strip{grid-template-columns:1fr;gap:18px}
