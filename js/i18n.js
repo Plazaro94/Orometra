@@ -429,7 +429,7 @@ const STRINGS = {
 
     'lp.eyebrow': 'Optimización MT5 · auditoría de sobreajuste',
     'lp.h1': 'Tu backtest parecía perfecto. Y&nbsp;<em>murió en real</em>.',
-    'lp.lead': 'MT5 ordena miles de configuraciones por el criterio que elijas — beneficio, factor de beneficio, drawdown — y te da un ganador. Orometra encuentra la que aguanta cuando el mercado cambia — la <strong>meseta</strong> estable, no el <strong>pico</strong> con suerte.',
+    'lp.lead': 'MT5 ordena miles de configuraciones según el criterio que elijas — beneficio, factor de beneficio, drawdown — y te da un ganador. Orometra encuentra la que aguanta cuando el mercado cambia — la <strong>meseta</strong> estable, no el <strong>pico</strong> con suerte.',
     'lp.cta': 'Analizar mis resultados',
     'lp.cta.footer': 'App',
     'lp.demo': 'Ver un informe de ejemplo',
