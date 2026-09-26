@@ -59,6 +59,7 @@
   --brand-name:21px;         --brand-name-compact:16px;
   --header-pad:16px;
   --control-h:36px;
+  --brand-gap:10px;
   color-scheme:dark;
 }
 
@@ -940,8 +941,8 @@ tr.sel td{color:var(--text-2)}
   .header-controls{display:flex;align-items:center;gap:8px;flex:none;flex-wrap:wrap}
   .header-controls .lang-row,.header-controls .theme-row{padding:0}
   .header-controls .lang-btn{padding:7px 9px;min-height:var(--control-h)}
-  .header-controls .theme-btn{min-width:var(--control-h);min-height:var(--control-h);padding:8px;font-size:0}
-  .brand-row{gap:8px}
+  .header-controls .theme-btn{min-width:var(--control-h);min-height:var(--control-h);padding:8px}
+  .brand-row{gap:var(--brand-gap)}
   .brand-mark{width:var(--brand-mark-compact);height:var(--brand-mark-compact)}
   .brand-name{font-size:var(--brand-name-compact)}
   /* El subtitulo sobra en una cabecera de 44px de alto: ya lo dice el titulo de la pagina. */
@@ -1086,7 +1087,7 @@ tr.sel td{color:var(--text-2)}
   padding:var(--header-pad) 0;
 }
 .lp-brand{
-  display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;
+  display:flex;align-items:center;gap:var(--brand-gap);text-decoration:none;color:inherit;
 }
 .lp-brand .brand-mark{width:var(--brand-mark);height:var(--brand-mark)}
 .lp-brand .brand-name{font-weight:700;font-size:var(--brand-name);letter-spacing:-.025em;line-height:1}
@@ -1097,7 +1098,8 @@ tr.sel td{color:var(--text-2)}
 .lp-top-actions .theme-btn{
   min-width:var(--control-h);min-height:var(--control-h);padding:8px;flex:none;
 }
-.landing-page .lp-top-actions .theme-btn > span:not(.swatch){
+.landing-page .lp-top-actions .theme-btn > span:not(.swatch),
+.header-controls .theme-btn > span:not(.swatch){
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0
 }
 .lp-cta-top{padding:7px 12px;font-size:var(--fs-sm)}
