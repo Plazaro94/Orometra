@@ -5,6 +5,7 @@ import { topInfluentialPair, buildAxisPairGrid } from '../core/surface.js';
 import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L } from './i18n.js';
+import { gloss } from './glossary.js';
 import { state, $, num, int, pct, esc, rich, nf, paramValue, roleBadge, findingsForCategory } from './ui-state.js';
 
 /**
@@ -49,7 +50,7 @@ export function renderRepCard(a, p) {
         <div class="rep-pass">Pass ${esc(r.id)}</div>
         <div class="rep-sub">${L('Meseta', 'Plateau')} ${p.rank} · ${int(p.size)} ${L('configuraciones', 'configurations')}${p.coreSize ? ` · ${L('nucleo de', 'core of')} ${int(p.coreSize)}` : ''}</div>
       </div>
-      <div class="rep-score">${num(p.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
+      <div class="rep-score">${num(p.robust, 0)}<small>${gloss('robustness', L('robustez', 'robustness'), { align: 'right' })}</small></div>
     </div>
     <div class="param-grid">
       ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramValue(r.params[j])}</strong></div>`).join('')}
@@ -64,7 +65,7 @@ export function renderRepCard(a, p) {
       ${p.neighborhood && p.neighborhood.slotsComplete
         ? `<div><span>${L('Huecos no observados', 'Unobserved gaps')}</span><strong>${int(p.neighborhood.gaps)} <em>${L('de', 'of')} ${int(p.neighborhood.slots)}</em></strong></div>`
         : ''}
-      <div><span>${L('Suelo de su entorno (Q25)', 'Neighborhood floor (Q25)')}</span><strong>${num(p.stability.q25, 2)}</strong></div>
+      <div><span>${gloss('q25', L('Suelo de su entorno (Q25)', 'Neighborhood floor (Q25)'))}</span><strong>${num(p.stability.q25, 2)}</strong></div>
       ${hasF ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}% / ${int(r.oos.trades)}</strong></div>` : ''}
       <div><span>${L('In-sample · PF / DD / ops', 'In-sample · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}% / ${int(r.is.trades)}</strong></div>
     </div>
@@ -107,6 +108,8 @@ export function renderPlateaus(a) {
       <td>${p.boundary.length ? `<span class="badge warn">${p.boundary.length}</span>` : '<span class="badge ok">0</span>'}</td>
     </tr>`).join('');
 
+  const sparseSampling = a.meta.sampling === 'sparse' || a.meta.sampling === 'partial';
+
   return `<div class="detail-head">
       <div class="detail-kicker">${L('02 / Mesetas', '02 / Plateaus')}</div>
       <h2>${L('Regiones estables detectadas', 'Stable regions detected')}</h2>
@@ -115,6 +118,10 @@ export function renderPlateaus(a) {
         'Ordered by the region <strong>floor</strong>, not its peak. A plateau is a connected set of configurations where even the lower quartile of the neighborhood keeps good quality.',
       )}</p>
     </div>
+    ${sparseSampling ? `<div class="inline-warn">${L(
+      `Esta optimización usó ${a.meta.sampling === 'sparse' ? 'muestreo disperso (genético)' : 'una rejilla parcial'}, así que la meseta de abajo puede tener huecos sin probar. Antes de decidir con esto,`,
+      `This optimization used ${a.meta.sampling === 'sparse' ? 'sparse (genetic) sampling' : 'a partial grid'}, so the plateau below can have untested gaps. Before deciding on this,`,
+    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas combinaciones y confirma si la meseta aguanta entera.', "— it's a small number of combinations and confirms whether the whole plateau holds.")}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
         <thead><tr><th>#</th><th>${L('Pass repr.', 'Repr. pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Nucleo', 'Core')}</th><th>${L('Suelo (Q10)', 'Floor (Q10)')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Dispersión', 'Dispersion')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
@@ -124,14 +131,15 @@ export function renderPlateaus(a) {
 
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Meseta', 'Plateau')} ${sel.rank}</div><h2>${L('Configuración representativa', 'Representative configuration')}</h2></div>
-        <span class="status-pill">${L('elegida por criterio maximin', 'chosen by maximin')}</span></div>
+        <span class="status-pill">${gloss('maximin', L('elegida por criterio maximin', 'chosen by maximin'), { align: 'right' })}</span></div>
       ${renderRepCard(a, sel)}
     </section>
 
     ${renderPlateauSurfacePanel(a, sel)}
 
-    <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div></div>
+    <section class="panel" id="refinementPanel">
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div>
+        ${sparseSampling ? `<span class="status-pill warn-pill">${L('Recomendado', 'Recommended')}</span>` : ''}</div>
       <p class="panel-intro">${L(
         `Vuelve a MT5 y lanza una optimizacion <em>Todos los parámetros</em> acotada a este rango, centrado en la configuración recomendada. Sobre una rejilla completa la geometría de la meseta se mide sin los huecos que deja el genetico. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinaciones</strong>, un tamaño que se puede ejecutar de verdad.`,
         `Go back to MT5 and run an <em>All parameters</em> optimization bounded to this range, centered on the recommended configuration. On a full grid the plateau geometry is measured without the gaps the genetic leaves. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinations</strong> — a size you can actually run.`,
@@ -425,7 +433,7 @@ export function renderDiagnostics(a) {
       </section>
 
       <section class="panel">
-        <div class="panel-head compact"><div><div class="panel-kicker">${L('Muestreo', 'Sampling')}</div><h2>${L('Como optimizaste', 'How you optimised')}</h2></div></div>
+        <div class="panel-head compact"><div><div class="panel-kicker">${gloss('sampling', L('Muestreo', 'Sampling'))}</div><h2>${L('Como optimizaste', 'How you optimised')}</h2></div></div>
         <div class="evidence-list">
           <div><span>${L('Espacio cartesiano', 'Cartesian space')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones probadas', 'Configurations tested')}</span><strong>${int(a.meta.total)}</strong></div>
@@ -472,8 +480,8 @@ export function renderDiagnostics(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Politica', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minima')}</h2></div></div>
       <div class="evidence-list">
         <div><span>${L('Beneficio positivo', 'Positive profit')}</span><strong>${g.requireProfit ? L('exigido', 'required') : L('no exigido', 'not required')}</strong></div>
-        <div><span>${L('Factor de beneficio mínimo', 'Minimum profit factor')}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
-        <div><span>${L('Drawdown máximo', 'Maximum drawdown')}</span><strong>${num(g.maxDrawdownPct, 0)} %</strong></div>
+        <div><span>${gloss('profitFactor', L('Factor de beneficio mínimo', 'Minimum profit factor'))}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
+        <div><span>${gloss('drawdown', L('Drawdown máximo', 'Maximum drawdown'))}</span><strong>${num(g.maxDrawdownPct, 0)} %</strong></div>
         <div><span>${L('Operaciones minimas (IS)', 'Minimum trades (IS)')}</span><strong>${int(a.meta.minTradesIs)}</strong></div>
         <div><span>${L('Operaciones minimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>
         ${(a.meta.gateInfluence || []).filter((gi) => gi.name !== 'beneficio').map((gi) => `
@@ -488,15 +496,15 @@ export function renderDiagnostics(a) {
       <div class="panel-body">
       <div class="evidence-list">
         <div><span>${L('Correlación de rangos IS &rarr; forward', 'Rank correlation IS &rarr; forward')}</span><strong>${num(a.stats.spearmanCriterion, 3)}</strong></div>
-        <div><span>${L('Fragilidad de la selección (peor sentido)', 'Selection fragility (worse direction)')}</span><strong>${Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—'}${Number.isFinite(a.stats.fragilityMargin) ? ` <em>±${nf(0).format(a.stats.fragilityMargin * 100)}</em>` : ''}</strong></div>
+        <div><span>${gloss('fragility', L('Fragilidad de la selección (peor sentido)', 'Selection fragility (worse direction)'))}</span><strong>${Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—'}${Number.isFinite(a.stats.fragilityMargin) ? ` <em>±${nf(0).format(a.stats.fragilityMargin * 100)}</em>` : ''}</strong></div>
         ${a.stats.fragilityFolds ? `
         <div><span>· ${L('eligiendo por IS, validando en forward', 'choosing by IS, validating on forward')}</span><strong>${pct(a.stats.fragilityFolds.isToOos.value, 0)}</strong></div>
         <div><span>· ${L('eligiendo por forward, validando en IS', 'choosing by forward, validating on IS')}</span><strong>${pct(a.stats.fragilityFolds.oosToIs.value, 0)}</strong></div>
         <div><span>· ${L('asimetria entre sentidos', 'asymmetry across directions')}</span><strong>${pct(a.stats.fragilityAsymmetry, 0)}</strong></div>` : ''}
         <div><span>${L('Pruebas realizadas', 'Trials run')}</span><strong>${int(a.meta.total)}</strong></div>
-        <div><span>${L('Pruebas efectivas (regiones distintas)', 'Effective trials (distinct regions)')}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
+        <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (regiones distintas)', 'Effective trials (distinct regions)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
         ${a.stats.sharpeTest ? `
-        <div><span>${L('Sharpe máximo observado', 'Maximum observed Sharpe')}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)} <em>${L('con', 'with')} ${int(a.stats.sharpeTest.observedTrades)} ops</em></strong></div>
+        <div><span>${gloss('sharpe', L('Sharpe máximo observado', 'Maximum observed Sharpe'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)} <em>${L('con', 'with')} ${int(a.stats.sharpeTest.observedTrades)} ops</em></strong></div>
         <div><span>${L('Error típico de un Sharpe', 'Typical Sharpe standard error')}</span><strong>${num(a.stats.sharpeTest.typicalSe, 4)}</strong></div>
         <div><span>${L(`Umbral por azar con ${int(a.stats.sharpeTest.trials)} pruebas`, `Chance threshold with ${int(a.stats.sharpeTest.trials)} trials`)}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>
         <div><span>${L('Umbral con pruebas efectivas', 'Threshold with effective trials')}</span><strong>${num(a.stats.sharpeTest.chanceMaxEffective, 3)}</strong></div>
@@ -510,19 +518,22 @@ export function renderDiagnostics(a) {
           `<strong>Como leer el contraste del Sharpe.</strong> La hipotesis nula es que ninguna configuración
         tiene ventaja: entonces cada Sharpe observado sería ruido alrededor de cero, y el mejor de N pruebas
         saldria positivo por si solo. El error típico se calcula con el número de operaciones de cada
-        configuración, asumiendo que el Sharpe de MT5 se estima sobre esas operaciones. Si en tu versión del
-        terminal esa cifra viniese anualizada, el umbral real sería más alto que el mostrado. Por eso
-        <strong>suspender esta prueba es una señal fuerte, pero aprobarla no demuestra nada por si solo</strong>.
-        El umbral con pruebas efectivas cuenta regiones distintas del espacio en lugar de configuraciones,
-        porque dos vecinos no son dos pruebas independientes.`,
+        configuración, asumiendo que el Sharpe de MT5 se estima sobre esas operaciones — pero desde el build
+        3210 del terminal (feb. 2022) MT5 lo calcula en realidad sobre los log-retornos de la curva de equity
+        <em>por barra</em>, anualizados, no por operación. Eso significa que en la mayoría de instalaciones
+        actuales el umbral real es más alto que el mostrado aquí. Por eso
+        <strong>suspender esta prueba es una señal fuerte, y aprobarla demuestra todavía menos de lo que ya
+        decíamos</strong>. El umbral con pruebas efectivas cuenta regiones distintas del espacio en lugar de
+        configuraciones, porque dos vecinos no son dos pruebas independientes.`,
           `<strong>How to read the Sharpe contrast.</strong> The null hypothesis is that no configuration
         has an edge: then each observed Sharpe would be noise around zero, and the best of N trials
         would come out positive on its own. The typical error is computed from each configuration's
-        trade count, assuming MT5's Sharpe is estimated on those trades. If in your terminal version
-        that figure were annualized, the real threshold would be higher than shown. So
-        <strong>failing this test is a strong signal, but passing it proves nothing on its own</strong>.
-        The effective-trials threshold counts distinct regions of the space instead of configurations,
-        because two neighbors are not two independent trials.`,
+        trade count, assuming MT5's Sharpe is estimated on those trades — but since terminal build 3210
+        (Feb 2022) MT5 actually computes it from the equity curve's <em>per-bar</em> log-returns, annualized,
+        not per trade. That means on most installations today the real threshold is higher than shown here.
+        So <strong>failing this test is a strong signal, and passing it demonstrates even less than we
+        already said</strong>. The effective-trials threshold counts distinct regions of the space instead
+        of configurations, because two neighbors are not two independent trials.`,
         )}
       </p>
       <p class="chart-note">
