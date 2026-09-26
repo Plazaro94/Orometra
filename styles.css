@@ -1128,7 +1128,16 @@ tr.sel td{color:var(--text-2)}
 }
 .lp-lead strong{color:var(--text-hi);font-weight:600}
 .lp-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.lp-cta-demo{box-shadow:0 0 0 1px color-mix(in srgb, var(--ok) 28%, transparent)}
+.lp-cta-primary{box-shadow:0 0 0 1px color-mix(in srgb, var(--ok) 28%, transparent)}
+/* El informe de ejemplo es la opcion secundaria: para quien tiene curiosidad antes de
+   subir sus propios archivos, no la accion que nos interesa que la mayoria tome. Por
+   eso no es un boton -- un simple enlace subrayado debajo del CTA principal, sin
+   competir visualmente con "Analizar mis resultados". */
+.lp-demo-link{
+  display:inline-block;margin:0 0 18px;font-size:var(--fs-base);font-weight:600;
+  color:var(--ok-text);text-decoration:underline;text-underline-offset:3px;
+}
+.lp-demo-link:hover{color:var(--ok-hi)}
 .lp-privacy{margin:0 0 16px;font-size:var(--fs-base);color:var(--text-2);max-width:42ch;line-height:1.5}
 .lp-proof{
   margin:0;padding:10px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;
