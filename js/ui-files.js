@@ -140,7 +140,7 @@ export function setFile(which, file) {
   }
   if (/\.opt$/i.test(file.name)) {
     statusEl.textContent = L(
-      'El .opt es la cache interna del probador y no se puede leer. Exporta con clic derecho → Informe → XML.',
+      'El .opt es la caché interna del probador y no se puede leer. Exporta con clic derecho → Informe → XML.',
       'The .opt is the tester\'s internal cache and cannot be read. Export with right-click → Report → XML.',
     );
     boxEl.classList.add('error');

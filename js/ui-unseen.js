@@ -43,7 +43,7 @@ export const unseenFields = () => [
   { key: 'profit', label: L('Beneficio neto', 'Net profit'), hint: L('En la divisa de la cuenta', 'In the account currency'), step: 'any', required: true },
   { key: 'profitFactor', label: L('Factor de beneficio', 'Profit factor'), hint: 'Profit Factor', step: '0.001' },
   { key: 'drawdown', label: L('Drawdown máximo (%)', 'Maximum drawdown (%)'), hint: 'Equity DD %', step: '0.01' },
-  { key: 'recoveryFactor', label: L('Factor de recuperacion', 'Recovery factor'), hint: 'Recovery Factor', step: '0.001' },
+  { key: 'recoveryFactor', label: L('Factor de recuperación', 'Recovery factor'), hint: 'Recovery Factor', step: '0.001' },
   { key: 'sharpe', label: 'Sharpe', hint: 'Sharpe Ratio', step: '0.001' },
 ];
 
@@ -307,7 +307,7 @@ export function renderUnseen(a) {
           `Ya has elegido configuración mirando el in-sample y el forward, así que ninguno de los dos
         sigue siendo ciego. Este es el último paso: lanza en MT5 un backtest de la configuración
         elegida sobre un tramo que <strong>no hayas usado ni para optimizar ni para validar</strong>,
-        y trae aquí sus numeros. La pregunta no es si son espectaculares, sino si son
+        y trae aquí sus números. La pregunta no es si son espectaculares, sino si son
         <strong>normales para este EA</strong>. Es un contraste distinto del grado de evidencia
         del veredicto — aquí no se mide la fuerza de la meseta, se mide si este tramo nuevo encaja
         con lo que el EA ya demostró.`,
@@ -323,7 +323,7 @@ export function renderUnseen(a) {
     </div>`;
 
   if (!a.plateaus.length) {
-    return `${head}<section class="panel"><p class="muted">${L('No hay ninguna configuración propuesta que validar. Vuelve al', 'There is no proposed configuration to validate. Go back to the')} <button class="text-btn" data-goto="verdict">${L('veredicto', 'verdict')}</button> ${L('para ver por que.', 'to see why.')}</p></section>`;
+    return `${head}<section class="panel"><p class="muted">${L('No hay ninguna configuración propuesta que validar. Vuelve al', 'There is no proposed configuration to validate. Go back to the')} <button class="text-btn" data-goto="verdict">${L('veredicto', 'verdict')}</button> ${L('para ver por qué.', 'to see why.')}</p></section>`;
   }
 
   const idx = Math.min(state.unseen.plateauIndex, a.plateaus.length - 1);
@@ -353,7 +353,7 @@ export function renderUnseen(a) {
         : L('Copia las cifras que te muestra el probador al terminar.', 'Copy the figures the tester shows when it finishes.')}
       ${L(
         ` Las dos primeras son imprescindibles:
-      sin el número de operaciones no se puede corregir por duración, y esa correccion es justo lo
+      sin el número de operaciones no se puede corregir por duración, y esa corrección es justo lo
       que distingue este contraste de mirarlo a ojo.`,
         ` The first two are required:
       without the trade count duration cannot be corrected, and that correction is exactly what
@@ -417,15 +417,15 @@ export function renderUnseen(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Donde cae cada cifra', 'Where each figure falls')}</h2></div></div>
       <div class="table-wrap"><table class="u-table">
-        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango que el EA ya demostro', 'Range the EA already showed')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
+        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango que el EA ya demostró', 'Range the EA already showed')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
       <p class="chart-note">
         ${L(
-          `La caja marca el recorrido habitual y la linea fina todo lo que el EA ha llegado a mostrar.
+          `La caja marca el recorrido habitual y la línea fina todo lo que el EA ha llegado a mostrar.
         El punto es tu tramo. Las métricas con <span class="u-scaled">&#8597;</span> se han ajustado a
         las ${int(res.trades)} operaciones de tu periodo: el drawdown máximo y el factor de
-        recuperacion dependen de cuántas operaciones haya, así que compararlos en crudo contra un
+        recuperación dependen de cuántas operaciones haya, así que compararlos en crudo contra un
         periodo más largo lleva justo a la conclusión contraria.`,
           `The box marks the typical range and the thin line everything the EA has ever shown.
         The dot is your segment. Metrics with <span class="u-scaled">&#8597;</span> have been adjusted to
@@ -436,7 +436,7 @@ export function renderUnseen(a) {
       </p>
     </section>
     <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Lectura', 'Reading')}</div><h2>${L('Que significa', 'What it means')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Lectura', 'Reading')}</div><h2>${L('Qué significa', 'What it means')}</h2></div></div>
       <ul class="limits">${res.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
     </section>`;
 

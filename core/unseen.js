@@ -100,7 +100,7 @@ export function evaluateUnseen(analysis, plateau, observed) {
   const reference = buildReference(analysis, plateau);
   const trades = Number(observed.trades);
   if (!Number.isFinite(trades) || trades <= 0) {
-    throw new Error('Hace falta el número de operaciones del periodo no visto: sin el no se puede corregir por duracion.');
+    throw new Error('Hace falta el número de operaciones del periodo no visto: sin él no se puede corregir por duración.');
   }
   if (reference.observations.length < 4) {
     throw new Error('La meseta elegida no tiene suficientes configuraciones para establecer que es normal en este EA.');
