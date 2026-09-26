@@ -1288,9 +1288,12 @@ tr.sel td{color:var(--text-2)}
 }
 .lp-method-step:nth-child(even){align-self:flex-end}
 /* Cuando el paso lleva imagen necesita mas ancho para que num+texto+imagen quepan en
-   una fila comoda -- los pasos sin imagen (de momento, todos menos el 1) se quedan en
-   los 640px de siempre, pensados solo para num+texto. */
-.lp-method-step.has-media{max-width:900px}
+   una fila comoda -- los pasos sin imagen se quedan en los 640px de siempre, pensados
+   solo para num+texto. El texto, aqui, se acota a un ancho fijo (en vez de dejarlo
+   ocupar todo lo que sobre): sin el limite se comia casi todo el bloque y la imagen
+   se quedaba con una franja estrecha -- justo lo apretado que no queriamos. */
+.lp-method-step.has-media{width:100%;max-width:980px;gap:40px}
+.lp-method-step.has-media .lp-method-step-text{flex:0 1 360px;max-width:360px}
 .lp-method-num{
   flex:none;font-family:var(--mono);font-weight:800;font-size:32px;line-height:1;
   color:var(--accent);opacity:.45;min-width:50px;order:1;
@@ -1302,7 +1305,7 @@ tr.sel td{color:var(--text-2)}
    numero+texto en los anclados a la derecha (pares) -- asi el numero nunca deja de
    estar pegado a su titulo, la regla de mas arriba. */
 .lp-method-step-media{
-  order:3;flex:1 1 260px;min-width:220px;align-self:stretch;
+  order:3;flex:1 1 420px;min-width:340px;align-self:stretch;
   border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
   overflow:hidden;
 }
