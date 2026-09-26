@@ -112,7 +112,6 @@ const STRINGS = {
     'top.h1': 'See which configuration survives,<br>before you trust it with <em>real money</em>.',
     'top.report.eyebrow': 'Audit report',
     'btn.demo': 'See a sample report',
-    'btn.policy': 'Minimum gates',
     'btn.export': 'Export',
 
     'hero.h1': 'Is your EA good,<br>or just lucky?',
@@ -367,7 +366,6 @@ const STRINGS = {
     'top.h1': 'Descubre qué configuración aguanta,<br>antes de confiarle tu <em>dinero real</em>.',
     'top.report.eyebrow': 'Informe de auditoría',
     'btn.demo': 'Ver un informe de ejemplo',
-    'btn.policy': 'Mínimos exigidos',
     'btn.export': 'Exportar',
 
     'hero.h1': '¿Tu EA es bueno,<br>o solo tuvo suerte?',
