@@ -46,7 +46,6 @@ export function setBusy(busy) {
   // Todo lo que puede disparar un análisis queda bloqueado: si no, se solapan dos
   // calculos y gana el que acabe el ultimo.
   $('#demoBtn').disabled = busy;
-  $('#policyBtn').disabled = busy;
   $$('.dropzone').forEach((z) => z.classList.toggle('locked', busy));
   api.refreshAnalyzeButton();
 }

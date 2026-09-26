@@ -95,15 +95,6 @@ bindGlobalDrop();
 $('#analyzeBtn').addEventListener('click', runAudit);
 $('#demoBtn').addEventListener('click', loadDemo);
 $('#exportBtn').addEventListener('click', toggleExportMenu);
-$('#policyBtn').addEventListener('click', () => {
-  const panel = $('#policyPanel');
-  panel.hidden = !panel.hidden;
-  $('#policyBtn').setAttribute('aria-expanded', String(!panel.hidden));
-  if (!panel.hidden) {
-    document.body.classList.remove('intake-collapsed');
-    updatePolicyPreview();
-  }
-});
 $('#intakeExpandBtn').addEventListener('click', () => {
   document.body.classList.remove('intake-collapsed');
 });
