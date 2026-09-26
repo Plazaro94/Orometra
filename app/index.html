@@ -19,13 +19,29 @@
 <a class="skip-link" href="#view" data-i18n="skip">Skip to content</a>
 <div class="shell">
   <aside class="sidebar">
-    <a class="brand brand-link" id="brandHome" href="../" data-i18n="brand.home" data-i18n-attr="title" title="Back to home">
-      <span class="brand-row">
-        <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
-        <span class="brand-name">Orometra</span>
-      </span>
-      <span class="brand-sub" data-i18n="brand.sub">MT5 optimization audit</span>
-    </a>
+    <div class="sidebar-head">
+      <a class="brand brand-link" id="brandHome" href="../" data-i18n="brand.home" data-i18n-attr="title" title="Back to home">
+        <span class="brand-row">
+          <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
+          <span class="brand-name">Orometra</span>
+        </span>
+        <span class="brand-sub" data-i18n="brand.sub">MT5 optimization audit</span>
+      </a>
+      <div class="header-controls">
+        <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
+          <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
+          <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
+        </div>
+        <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
+          <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" title="Dark" data-i18n="theme.dark" data-i18n-attr="title">
+            <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Dark</span>
+          </button>
+          <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" title="Light" data-i18n="theme.light" data-i18n-attr="title">
+            <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div class="sidebar-scroll">
     <nav class="sidebar-section" id="nav" aria-label="Analysis">
@@ -179,6 +195,12 @@
     </section>
 
     <section class="content" id="view" aria-live="polite"></section>
+
+    <footer class="app-footer">
+      <div class="legal-links">
+        <button class="text-btn" data-tab="legal" type="button" data-i18n="legal.link">Legal notice &amp; privacy</button>
+      </div>
+    </footer>
   </main>
 </div>
 

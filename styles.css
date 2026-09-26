@@ -125,6 +125,10 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
   background:var(--surface);
   padding:26px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
 }
+/* `.header-controls` (idioma+tema junto a la marca) y `.app-footer` (aviso legal al
+   pie de la pagina) solo existen en movil: en escritorio el idioma/tema/aviso legal
+   ya viven en `.sidebar-bottom`, fijo abajo del todo en la barra lateral. */
+.header-controls,.app-footer{display:none}
 /* La marca es un boton o un enlace a la landing. */
 .brand,.brand-link{
   display:block;padding:2px 6px 28px;
@@ -913,10 +917,16 @@ tr.sel td{color:var(--text-2)}
     padding:0;border-right:0;border-bottom:1px solid var(--line);
     z-index:30;gap:0;
   }
-  .brand{
-    flex-direction:row;align-items:center;gap:10px;padding:10px 12px;
-    border-bottom:1px solid var(--line-soft);
+  /* El idioma y el tema se mudan a la misma fila que la marca, como en la portada:
+     antes vivian en su propia tira debajo de las pestanas (`.sidebar-bottom`), y esa
+     tira era pura ceremonia -- una fila entera para dos controles pequenos. */
+  .sidebar-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 12px;border-bottom:1px solid var(--line-soft);
   }
+  .brand{flex-direction:row;align-items:center;gap:10px;padding:0;border-bottom:0;min-width:0}
+  .header-controls{display:flex;align-items:center;gap:6px;flex:none}
+  .header-controls .lang-row,.header-controls .theme-row{padding:0}
   .brand-row{gap:8px}
   .brand-mark{width:28px;height:28px}
   .brand-name{font-size:16px}
@@ -948,24 +958,18 @@ tr.sel td{color:var(--text-2)}
      oscuro del escritorio; aqui el fondo YA es accent, asi que ese mismo color deja el
      texto invisible (accent sobre accent). El span visible hereda el color del boton. */
   .sidebar-section .nav-item.active span{color:inherit}
-  /* El pie ya no necesita quedarse abajo del todo: en movil es otra fila compacta,
-     con el mismo scroll horizontal por si el espacio aprieta. */
-  .sidebar-bottom{
-    /* Sin `display:flex` aqui, `flex-direction:row` no hacia nada: idioma, tema y aviso
-       legal caian cada uno como bloque de ancho completo, apilados en tres filas altas
-       en vez de una sola tira compacta. */
-    display:flex;flex-direction:row;align-items:center;justify-content:flex-start;flex-wrap:nowrap;
-    padding:6px 10px;border-top:1px solid var(--line-soft);gap:10px;
-    overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
-  }
-  .sidebar-bottom::-webkit-scrollbar{display:none}
-  .theme-row{padding:0;flex:none}
-  .lang-row{padding:0;flex:none;margin-right:6px}
+  /* Con idioma/tema ya en `.sidebar-head`, a `.sidebar-bottom` no le queda nada que
+     mostrar en movil (el aviso legal baja al pie de la pagina, ver `.app-footer`). */
+  .sidebar-bottom{display:none}
   .lang-btn{padding:11px 10px;min-height:44px}
   .theme-btn{padding:11px 8px;font-size:0;min-height:44px;display:flex;align-items:center;justify-content:center}
   .theme-btn .swatch{margin:0}
-  .legal-links{padding:0;flex:none;margin-left:8px}
-  .version{display:none}
+  /* El aviso legal va al pie de la pagina, como en cualquier sitio: es lo ultimo que
+     se lee, no un control mas junto al idioma y el tema. */
+  .app-footer{
+    display:block;margin-top:32px;padding:16px 0;border-top:1px solid var(--line-soft);
+  }
+  .app-footer .legal-links{padding:0}
   .main{padding:20px 16px 44px}
   .t3-consensus{text-align:left;margin-top:10px}
   .t3-consensus span{max-width:none}
