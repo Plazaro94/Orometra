@@ -1292,7 +1292,7 @@ tr.sel td{color:var(--text-2)}
    solo para num+texto. El texto, aqui, se acota a un ancho fijo (en vez de dejarlo
    ocupar todo lo que sobre): sin el limite se comia casi todo el bloque y la imagen
    se quedaba con una franja estrecha -- justo lo apretado que no queriamos. */
-.lp-method-step.has-media{width:100%;max-width:980px;gap:40px}
+.lp-method-step.has-media{width:100%;max-width:1060px;gap:72px}
 .lp-method-step.has-media .lp-method-step-text{flex:0 1 360px;max-width:360px}
 .lp-method-num{
   flex:none;font-family:var(--mono);font-weight:800;font-size:32px;line-height:1;
