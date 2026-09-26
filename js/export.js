@@ -44,10 +44,10 @@ export function buildRefinementSetFile(analysis, plateau) {
     '; ================================================================',
     '; Orometra - rango de refinamiento',
     ';',
-    '; Cargalo en el probador y lanza una optimizacion "Todos los parámetros"',
+    '; Cárgalo en el probador y lanza una optimización "Todos los parámetros"',
     '; (rejilla completa) sobre este rango reducido. Con la rejilla completa la',
-    '; geometría de mesetas se mide de verdad, sin los huecos que deja el genetico.',
-    '; Después vuelve a subir los dos archivos a la aplicacion.',
+    '; geometría de mesetas se mide de verdad, sin los huecos que deja el genético.',
+    '; Después vuelve a subir los dos archivos a la aplicación.',
     ';',
     `; Combinaciones del rango: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1).toLocaleString('es-ES')}`,
     `; Generado ${new Date().toISOString()}`,
@@ -56,8 +56,8 @@ export function buildRefinementSetFile(analysis, plateau) {
   const categorical = plateau.refinement.filter((p) => p.categorical);
   if (categorical.length) {
     lines.push(';');
-    lines.push('; Parámetros booleanos o de enumeracion: se dejan fijos en el valor');
-    lines.push('; recomendado. Si quieres barrerlos, activalos a mano en el probador.');
+    lines.push('; Parámetros booleanos o de enumeración: se dejan fijos en el valor');
+    lines.push('; recomendado. Si quieres barrerlos, actívalos a mano en el probador.');
     lines.push(`; ${categorical.map((p) => p.name).join(', ')}`);
   }
   lines.push('; ================================================================');

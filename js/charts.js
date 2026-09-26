@@ -43,7 +43,7 @@ function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = []
 }
 
 function formatTick(v) {
-  if (typeof v === 'boolean') return v ? 'si' : 'no';
+  if (typeof v === 'boolean') return v ? 'sí' : 'no';
   if (typeof v === 'string') return v.length > 12 ? v.slice(0, 11) + '…' : v;
   if (!Number.isFinite(v)) return '';
   if (Math.abs(v) >= 1000) return v.toLocaleString('es-ES');
@@ -53,7 +53,7 @@ function formatTick(v) {
 /** Dispersión calidad IS frente a calidad OOS. La diagonal marca "no se degrada". */
 export function scatterIsOos(analysis) {
   const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 44 };
-  if (!analysis.meta.hasForward) return '<p class="muted">Sin periodo forward no hay comparacion IS/OOS.</p>';
+  if (!analysis.meta.hasForward) return '<p class="muted">Sin periodo forward no hay comparación IS/OOS.</p>';
   const xScale = (v) => pad.l + v * (W - pad.l - pad.r);
   const yScale = (v) => H - pad.b - v * (H - pad.t - pad.b);
   const pts = [];
@@ -87,7 +87,7 @@ export function scatterIsOos(analysis) {
 export function parameterProfile(analysis, paramIndex) {
   const W = 620; const H = 260; const pad = { l: 52, r: 16, t: 16, b: 48 };
   const sens = analysis.sensitivity[paramIndex];
-  if (!sens || sens.constant) return '<p class="muted">Parámetro constante: no se optimizo.</p>';
+  if (!sens || sens.constant) return '<p class="muted">Parámetro constante: no se optimizó.</p>';
   const levels = analysis.levels[paramIndex];
   const buckets = levels.map(() => []);
   analysis.records.forEach((r, i) => {

@@ -78,13 +78,13 @@ export function getWorker() {
       worker = null;
       if (dead && dead.terminate) dead.terminate();
       failAllPending(L(
-        'El motor de análisis ha fallado de forma inesperada. Vuelve a intentarlo; si se repite, recarga la pagina.',
+        'El motor de análisis ha fallado de forma inesperada. Vuelve a intentarlo; si se repite, recarga la página.',
         'The analysis engine failed unexpectedly. Try again; if it repeats, reload the page.',
       ));
     };
     worker.onmessageerror = () => {
       failAllPending(L(
-        'El resultado del análisis no se ha podido transferir. Prueba con una optimizacion más pequena.',
+        'El resultado del análisis no se ha podido transferir. Prueba con una optimización más pequeña.',
         'The analysis result could not be transferred. Try a smaller optimization.',
       ));
     };
@@ -139,8 +139,8 @@ export function runInWorker(payload) {
       } catch { /* ignore */ }
       worker = null;
       reject(new Error(L(
-        'El análisis ha tardado demasiado y se ha cancelado. Prueba con una optimizacion más pequena.',
-        'The analysis took too long and was cancelled. Try a smaller optimization.',
+        'El análisis ha tardado demasiado y se ha cancelado. Prueba con una optimización más pequeña.',
+        'The analysis took too long and was canceled. Try a smaller optimization.',
       )));
     }, WORKER_TIMEOUT_MS);
     pendingRequests.set(id, { resolve, reject, timer });

@@ -86,7 +86,7 @@ export function buildDemoTables() {
     oosTable: { name: 'DEMO-OOS.xls', sheet: 'Tester Optimizator Results', format: 'sintético', headers: oosHeaders, rows: oosRows },
     truth: {
       center: Object.fromEntries(PARAMS.map((p, j) => [p.name, p.values[CENTER[j]]])),
-      note: 'Datos generados por la aplicacion, no son de un EA real. La meseta esta plantada en el centro indicado.',
+      note: 'Datos generados por la aplicación, no son de un EA real. La meseta está plantada en el centro indicado.',
     },
   };
 }

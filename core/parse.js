@@ -44,7 +44,7 @@ export function parseXmlSpreadsheet(text) {
     const nameMatch = ws[1].match(/ss:Name="([^"]*)"/);
     sheets.push({ name: nameMatch ? unescapeXml(nameMatch[1]) : 'Sheet', body: ws[2] });
   }
-  if (!sheets.length) throw new Error('Este XML no tiene hojas de calculo. Comprueba que sea el informe que exporta el probador de MT5 y no otro fichero.');
+  if (!sheets.length) throw new Error('Este XML no tiene hojas de cálculo. Comprueba que sea el informe que exporta el probador de MT5 y no otro fichero.');
 
   const rowRe = /<Row\b([^>]*)(?:\/>|>([\s\S]*?)<\/Row>)/g;
   const cellRe = /<Cell\b([^>]*?)(?:\/>|>([\s\S]*?)<\/Cell>)/g;
@@ -127,10 +127,10 @@ export function parseTable(buffer, fileName = '') {
   if (head[0] === 0x50 && head[1] === 0x4b) {
     // Un .xlsx es un ZIP y descomprimirlo es asincrono, asi que no cabe aqui: la
     // interfaz lo detecta antes y usa `parseXlsx` de `xlsx.js`. Ver `prepareTable`.
-    throw new Error('Este archivo es un .xlsx. Se lee por otra via; si ves este mensaje, recarga la pagina e intentalo de nuevo.');
+    throw new Error('Este archivo es un .xlsx. Se lee por otra vía; si ves este mensaje, recarga la página e inténtalo de nuevo.');
   }
   if (head[0] === 0xd0 && head[1] === 0xcf) {
-    throw new Error('Este archivo es un Excel binario antiguo (.xls de verdad), un formato que MT5 no genera. Vuelve a exportar desde el probador en XML, o abrelo en Excel y guardalo como CSV.');
+    throw new Error('Este archivo es un Excel binario antiguo (.xls de verdad), un formato que MT5 no genera. Vuelve a exportar desde el probador en XML, o ábrelo en Excel y guárdalo como CSV.');
   }
   const text = decodeBuffer(buffer);
   const parsed = XML_SIGNATURE.test(text.slice(0, 4096))
@@ -166,7 +166,7 @@ export function finishTable(parsed, fileName = '') {
     headers.push(name);
     keptCols.push(c);
   }
-  if (headers.length < 2) throw new Error('No se reconoce la fila de cabeceras. Se esperaba una linea con los nombres de las columnas (Pass, Result, Profit... y tus parámetros).');
+  if (headers.length < 2) throw new Error('No se reconoce la fila de cabeceras. Se esperaba una línea con los nombres de las columnas (Pass, Result, Profit... y tus parámetros).');
 
   const rows = [];
   for (let r = headerRowIndex + 1; r < raw.length; r++) {
@@ -174,7 +174,7 @@ export function finishTable(parsed, fileName = '') {
     const row = keptCols.map((c) => (src[c] === undefined ? null : src[c]));
     if (row.some((v) => v !== null && v !== '')) rows.push(row);
   }
-  if (!rows.length) throw new Error('Se ha encontrado la cabecera pero no hay ninguna fila debajo. El archivo esta vacio de resultados.');
+  if (!rows.length) throw new Error('Se ha encontrado la cabecera pero no hay ninguna fila debajo. El archivo está vacío de resultados.');
 
   return { name: fileName, sheet: parsed.sheet, format: parsed.format, headers, rows };
 }

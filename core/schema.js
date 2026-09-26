@@ -97,7 +97,7 @@ export function pairTables(isTable, oosTable) {
     else unmatchedIs.push(key);
   }
   if (!matched.length) {
-    throw new Error('Ninguna pasada coincide entre los dos archivos: parecen de optimizaciones distintas. Deben ser el in-sample y el forward de la MISMA ejecucion.');
+    throw new Error('Ninguna pasada coincide entre los dos archivos: parecen de optimizaciones distintas. Deben ser el in-sample y el forward de la MISMA ejecución.');
   }
 
   // Prueba estructural: un parámetro no cambia entre periodos; una métrica si.
@@ -128,7 +128,7 @@ export function pairTables(isTable, oosTable) {
   }
 
   if (!paramColumns.length) {
-    throw new Error('No se ha identificado ningún parámetro comun. Comprueba que ambos archivos pertenecen a la misma optimizacion.');
+    throw new Error('No se ha identificado ningún parámetro común. Comprueba que ambos archivos pertenecen a la misma optimización.');
   }
 
   // Prueba de procedencia: el "Back Result" del forward debe reproducir el "Result" del IS.

@@ -44,7 +44,7 @@ export function buildVerdict(ctx) {
   // ---- Bloqueantes
   if (!gatePassCount) {
     add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration passes the minimum gates'),
-      L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple a la vez los mínimos en IS y en OOS. No hay nada que seleccionar: el problema no es la eleccion, es la estrategia.`,
+      L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple a la vez los mínimos en IS y en OOS. No hay nada que seleccionar: el problema no es la elección, es la estrategia.`,
         `Of ${total.toLocaleString(localeTag())} configurations, none meet the minima in both IS and OOS at once. There is nothing to select: the problem is not the choice, it is the strategy.`));
   } else if (gatePassCount / total < 0.02) {
     add(SEV.CRITICAL, L('Solo un resquicio del espacio sobrevive', 'Only a sliver of the space survives'),
@@ -63,14 +63,14 @@ export function buildVerdict(ctx) {
     const periodoEn = d.basedOn === 'forward' ? 'the forward' : 'the in-sample';
     const tradesN = Math.round(d.basedOn === 'forward' ? d.tradesOos : d.tradesIs).toLocaleString(localeTag());
     const extraEs = Number.isFinite(d.trialsPerTrade) && d.trialsPerTrade > 1
-      ? ` Ademas has probado ${d.trialsPerTrade.toFixed(1)} configuraciones por cada operacion disponible para distinguirlas: hay mas alternativas que datos con los que separarlas.`
+      ? ` Además has probado ${d.trialsPerTrade.toFixed(1)} configuraciones por cada operación disponible para distinguirlas: hay más alternativas que datos con los que separarlas.`
       : '';
     const extraEn = Number.isFinite(d.trialsPerTrade) && d.trialsPerTrade > 1
       ? ` You have also tried ${d.trialsPerTrade.toFixed(1)} configurations for each trade available to tell them apart: there are more alternatives than data to separate them.`
       : '';
     if (per < 15) {
       add(SEV.CRITICAL, L(`Poca evidencia: ~${per.toFixed(0)} operaciones por parámetro`, `Thin evidence: ~${per.toFixed(0)} trades per parameter`),
-        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones: ~${per.toFixed(0)} por parámetro. Con esa proporcion, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
+        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones: ~${per.toFixed(0)} por parámetro. Con esa proporción, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
           `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades: ~${per.toFixed(0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`));
     } else if (per < 50) {
       add(SEV.WARN, L(`Evidencia limitada: ~${per.toFixed(0)} operaciones por parámetro`, `Limited evidence: ~${per.toFixed(0)} trades per parameter`),
@@ -86,7 +86,7 @@ export function buildVerdict(ctx) {
   if (!plateaus.length && underpowered) {
     // No es lo mismo "no hay meseta" que "no hay datos para saberlo".
     add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to pronounce on'),
-      L(`Solo ${gatePassCount} configuraciones superan los mínimos, y para que pudiera existir una meseta harían falta al menos ${viableNeededForPlateau}: una región estable necesita configuraciones con vecinos que también cumplan, es decir, necesita interior. Esto NO dice que tu EA sea malo; dice que con estos datos no se puede afirmar nada en ninguna direccion. Amplia el rango de los parámetros, anade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
+      L(`Solo ${gatePassCount} configuraciones superan los mínimos, y para que pudiera existir una meseta harían falta al menos ${viableNeededForPlateau}: una región estable necesita configuraciones con vecinos que también cumplan, es decir, necesita interior. Esto NO dice que tu EA sea malo; dice que con estos datos no se puede afirmar nada en ninguna dirección. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
         `Only ${gatePassCount} configurations clear the minima, and for a plateau to exist you would need at least ${viableNeededForPlateau}: a stable region needs configurations whose neighbors also pass, that is, it needs interior. This does NOT say your EA is bad; it says that with these data nothing can be asserted in either direction. Widen the parameter ranges, add intermediate values or relax the minima, and optimize again.`));
   } else if (!plateaus.length) {
     add(SEV.CRITICAL, L('No se ha encontrado ninguna meseta', 'No plateau was found'),
@@ -112,7 +112,7 @@ export function buildVerdict(ctx) {
   if (Number.isFinite(fragility)) {
     if (fragility >= 0.5 && hasRefuge) {
       add(SEV.WARN, L(`Tu ranking MT5 (Result) esta invertido: falla el ${(100 * fragility).toFixed(0)}%`, `Your MT5 ranking (Result) is inverted: fails ${(100 * fragility).toFixed(0)}%`),
-        L(`Al quedarte con la mejor fila segun la columna Result de un periodo, cae por debajo de la mediana del otro el ${(100 * fragility).toFixed(0)}% de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quedate con la meseta de abajo.`,
+        L(`Al quedarte con la mejor fila según la columna Result de un periodo, cae por debajo de la mediana del otro el ${(100 * fragility).toFixed(0)}% de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quédate con la meseta de abajo.`,
           `When you keep the best row by the Result column of one period, it falls below the median of the other ${(100 * fragility).toFixed(0)}% of the time. That condemns your table order, not the quality region Orometra proposes. Ignore the ranking and keep the plateau below.`));
     } else if (fragility >= 0.5) {
       add(SEV.CRITICAL, L(`La regla "primera de Result" falla el ${(100 * fragility).toFixed(0)}% de las veces`, `The "top Result row" rule fails ${(100 * fragility).toFixed(0)}% of the time`),
@@ -167,7 +167,7 @@ export function buildVerdict(ctx) {
     const a = fragilityFolds.isToOos.value;
     const b = fragilityFolds.oosToIs.value;
     add(SEV.WARN, L('Los dos periodos no son intercambiables', 'The two periods are not interchangeable'),
-      L(`Elegir por in-sample y validar en forward falla el ${(100 * a).toFixed(0)} % de las veces; hacerlo al reves, el ${(100 * b).toFixed(0)} %. Esa diferencia de ${(100 * fragilityAsymmetry).toFixed(0)} puntos no la produce una ventaja real, que seria aproximadamente simetrica: la produce que uno de los dos tramos es mas facil o responde a otro regimen de mercado. Cualquier conclusion que saques depende de cual te toco de cual, asi que el periodo no visto deja de ser recomendable y pasa a ser imprescindible.`,
+      L(`Elegir por in-sample y validar en forward falla el ${(100 * a).toFixed(0)} % de las veces; hacerlo al revés, el ${(100 * b).toFixed(0)} %. Esa diferencia de ${(100 * fragilityAsymmetry).toFixed(0)} puntos no la produce una ventaja real, que sería aproximadamente simétrica: la produce que uno de los dos tramos es más fácil o responde a otro régimen de mercado. Cualquier conclusión que saques depende de cuál te tocó, así que el periodo no visto deja de ser recomendable y pasa a ser imprescindible.`,
         `Choosing by in-sample and validating on forward fails ${(100 * a).toFixed(0)}% of the time; doing it the other way, ${(100 * b).toFixed(0)}%. That ${(100 * fragilityAsymmetry).toFixed(0)}-point gap is not produced by a real edge, which would be roughly symmetric: it is produced by one of the two stretches being easier or responding to another market regime. Any conclusion you draw depends on which period fell where, so the unseen period stops being optional and becomes essential.`));
   }
 
@@ -416,7 +416,7 @@ export function buildVerdict(ctx) {
     const listEs = top.map((x) => `${x.name}: el in-sample prefiere ${x.bestIs}, pero en el forward gana ${x.bestOos} (quedarte con el valor del in-sample tira el ${(100 * x.regretShare).toFixed(0)} % del margen disponible)`).join('; ');
     const listEn = top.map((x) => `${x.name}: in-sample prefers ${x.bestIs}, but on the forward ${x.bestOos} wins (keeping the in-sample value throws away ${(100 * x.regretShare).toFixed(0)}% of the available margin)`).join('; ');
     add(SEV.WARN, L(`En ${inversions.length} parametro(s), el valor que gana en el in-sample es de los que pierden en el forward`, `In ${inversions.length} parameter(s), the value that wins in-sample is among those that lose on the forward`),
-      L(`${listEs}. Esta es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al reves. El óptimo de esos parámetros depende del regimen de mercado y no de la estrategia, así que afinarlos sobre el in-sample es tiempo perdido. Dejalos en un valor central y decide con los que si son coherentes entre periodos.`,
+      L(`${listEs}. Esta es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al reves. El óptimo de esos parámetros depende del regimen de mercado y no de la estrategia, así que afinarlos sobre el in-sample es tiempo perdido. Déjalos en un valor central y decide con los que sí son coherentes entre periodos.`,
         `${listEn}. This is the mechanical cause of the ranking not transferring: signal is not missing, it points the wrong way. The optimum of those parameters depends on market regime, not on the strategy, so tuning them on the in-sample is wasted time. Leave them at a central value and decide with those that are coherent across periods.`));
   }
 
@@ -450,7 +450,7 @@ export function buildVerdict(ctx) {
 
   if (boundaryWorst && boundaryWorst.length) {
     add(SEV.WARN, L('La configuración recomendada esta pegada al borde del rango probado', 'The recommended configuration sits on the edge of the tested range'),
-      L(`Afecta a: ${boundaryWorst.map((b) => `${b.name} = ${b.atMin ? b.min : b.max}`).join(', ')}. Mas alla de ese valor no has probado nada: la meseta puede continuar o puede caer en picado justo despues. Amplia el rango de esos parámetros y vuelve a optimizar.`,
+      L(`Afecta a: ${boundaryWorst.map((b) => `${b.name} = ${b.atMin ? b.min : b.max}`).join(', ')}. Más allá de ese valor no has probado nada: la meseta puede continuar o puede caer en picado justo después. Amplía el rango de esos parámetros y vuelve a optimizar.`,
         `Affects: ${boundaryWorst.map((b) => `${b.name} = ${b.atMin ? b.min : b.max}`).join(', ')}. Beyond that value you have tested nothing: the plateau may continue or may drop sharply right after. Widen the range of those parameters and optimize again.`));
   }
 
@@ -550,7 +550,7 @@ export function buildVerdict(ctx) {
     nextStep = L('Ignora el orden de tu tabla de MT5: aquí engaña. La región de abajo sigue siendo el hallazgo; exporta el .set de la configuración representativa y pruébala en un tramo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptación ANTES de mirar el resultado.',
       'Ignore the order of your MT5 table: here it misleads. The region below is still the finding; export the .set of the representative configuration and test it on a stretch you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
   } else {
-    nextStep = L('Exporta el .set de la configuración representativa y pruebala en un periodo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptacion ANTES de mirar el resultado.',
+    nextStep = L('Exporta el .set de la configuración representativa y pruébala en un periodo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptación ANTES de mirar el resultado.',
       'Export the .set of the representative configuration and test it on a period you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
   }
 
