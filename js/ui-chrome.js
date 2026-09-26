@@ -270,6 +270,24 @@ function ensureGlossOutsideClickListener() {
   });
 }
 
+/** El tooltip se abre a izquierda o derecha del termino segun donde caiga
+ * en el layout (ver .gloss-right en styles.css); si aun asi se sale del
+ * viewport (movil estrecho, o el termino cerca de un borde), se corrige
+ * con un desplazamiento horizontal via --gloss-shift-x. */
+function positionGlossCards() {
+  const margin = 12;
+  $$('.gloss').forEach((el) => {
+    const card = el.querySelector('.gloss-card');
+    if (!card) return;
+    el.style.removeProperty('--gloss-shift-x');
+    const rect = card.getBoundingClientRect();
+    let shift = 0;
+    if (rect.left < margin) shift = margin - rect.left;
+    else if (rect.right > window.innerWidth - margin) shift = (window.innerWidth - margin) - rect.right;
+    if (shift) el.style.setProperty('--gloss-shift-x', `${Math.round(shift)}px`);
+  });
+}
+
 export function bindViewEvents() {
   $$('[data-goto]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.goto)));
   $$('[data-scroll]').forEach((b) => b.addEventListener('click', () => {
@@ -283,6 +301,7 @@ export function bindViewEvents() {
     if (!wasOpen) el.classList.add('gloss-open');
   }));
   ensureGlossOutsideClickListener();
+  positionGlossCards();
   $$('[data-plateau]').forEach((b) => b.addEventListener('click', () => {
     state.selectedPlateau = Number(b.dataset.plateau);
     setTab('plateaus');
