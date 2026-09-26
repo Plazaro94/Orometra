@@ -37,7 +37,7 @@ function snapshot(a) {
     fragilityQuality: round(a.stats?.fragilityQuality),
     sharpeObservedMax: round(a.stats?.sharpeTest?.observedMax),
     sharpeChanceMax: round(a.stats?.sharpeTest?.chanceMax),
-    sharpeDeflated: round(a.stats?.sharpeTest?.deflated),
+    sharpeSigma: round(a.stats?.sharpeTest?.sigma),
     verdictLevel: a.verdict?.level ?? null,
     sampling: a.meta?.sampling ?? null,
     coverage: round(a.meta?.coverage),

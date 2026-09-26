@@ -257,27 +257,16 @@ export function buildVerdict(ctx) {
     }
   }
 
-  if (sharpeTest && Number.isFinite(sharpeTest.observedMax) && Number.isFinite(sharpeTest.chanceMaxEffective)) {
-    const { observedMax, chanceMax, chanceMaxEffective, chanceMaxConservative, trials, deflated } = sharpeTest;
-    // Se exige batir el umbral más duro de los dos: el que usa las regiones realmente
-    // distintas exploradas, porque las configuraciones vecinas no son pruebas nuevas.
-    const bar = Math.max(chanceMax, chanceMaxEffective);
-    if (observedMax <= bar) {
-      add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar (Lo)', 'Best Sharpe does not beat the chance threshold (Lo)'),
-        L(`Con ${trials.toLocaleString(localeTag())} pruebas, el Sharpe máximo esperable sin ninguna ventaja real es ${bar.toFixed(2)}. El mejor observado es ${observedMax.toFixed(2)}. Probar muchas combinaciones produce buenos resultados por si solo, y este no destaca sobre ese ruido.`,
-          `With ${trials.toLocaleString(localeTag())} trials, the maximum Sharpe expected with no real edge is ${bar.toFixed(2)}. The best observed is ${observedMax.toFixed(2)}. Trying many combinations produces good results on its own, and this one does not stand out above that noise.`));
+  if (sharpeTest && Number.isFinite(sharpeTest.observedMax) && Number.isFinite(sharpeTest.chanceMax)) {
+    const { observedMax, chanceMax, trials } = sharpeTest;
+    if (observedMax <= chanceMax) {
+      add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar', 'Best Sharpe does not beat the chance threshold'),
+        L(`Con ${trials.toLocaleString(localeTag())} pruebas, el Sharpe máximo esperable sin ninguna ventaja real es ${chanceMax.toFixed(2)}. El mejor observado es ${observedMax.toFixed(2)}. Probar muchas combinaciones produce buenos resultados por si solo, y este no destaca sobre ese ruido.`,
+          `With ${trials.toLocaleString(localeTag())} trials, the maximum Sharpe expected with no real edge is ${chanceMax.toFixed(2)}. The best observed is ${observedMax.toFixed(2)}. Trying many combinations produces good results on its own, and this one does not stand out above that noise.`));
     } else {
-      const vsChanceEs = Number.isFinite(deflated) ? ` (prob. bajo azar Lo: ${(100 * deflated).toFixed(1)} %)` : '';
-      const vsChanceEn = Number.isFinite(deflated) ? ` (Lo chance-prob: ${(100 * deflated).toFixed(1)}%)` : '';
-      add(SEV.OK, L('El mejor Sharpe supera el umbral del azar (Lo)', 'Best Sharpe beats the chance threshold (Lo)'),
-        L(`Sharpe máximo ${observedMax.toFixed(2)} frente a ${bar.toFixed(2)} esperable sin ventaja real tras ${trials.toLocaleString(localeTag())} pruebas${vsChanceEs}. Superar este contraste es condicion necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
-          `Maximum Sharpe ${observedMax.toFixed(2)} versus ${bar.toFixed(2)} expected with no real edge after ${trials.toLocaleString(localeTag())} trials${vsChanceEn}. Passing this contrast is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`));
-      // El contraste publicado Bailey usa otra dispersión. Si el resultado cae entre umbrales, matizar.
-      if (Number.isFinite(chanceMaxConservative) && observedMax <= chanceMaxConservative) {
-        add(SEV.WARN, L('El Sharpe aprueba con nuestro criterio, no con el más estricto', 'Sharpe passes our criterion, not the stricter one'),
-          L(`Aqui se usa el error de estimación de un Sharpe (Lo, 2002): umbral ${bar.toFixed(2)}, superado. El contraste publicado tipo Bailey (dispersión entre configuraciones) es otra cosa y, en malla densa, más duro: umbral ${chanceMaxConservative.toFixed(2)}; tu ${observedMax.toFixed(2)} NO lo alcanza. Nos apartamos a proposito: esa dispersión la produce la forma de la superficie, no solo el ruido. La distancia entre umbrales es tuya para juzgarla.`,
-            `Here the reference is Sharpe estimation error (Lo, 2002): threshold ${bar.toFixed(2)}, cleared. The published Bailey-style contrast (dispersion across configurations) is different and, on a dense grid, stricter: threshold ${chanceMaxConservative.toFixed(2)}; your ${observedMax.toFixed(2)} does NOT reach it. We depart on purpose: that dispersion comes from the parameter surface shape, not only noise. The gap between thresholds is yours to judge.`));
-      }
+      add(SEV.OK, L('El mejor Sharpe supera el umbral del azar', 'Best Sharpe beats the chance threshold'),
+        L(`Sharpe máximo ${observedMax.toFixed(2)} frente a ${chanceMax.toFixed(2)} esperable sin ventaja real tras ${trials.toLocaleString(localeTag())} pruebas. Superar este contraste es condicion necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
+          `Maximum Sharpe ${observedMax.toFixed(2)} versus ${chanceMax.toFixed(2)} expected with no real edge after ${trials.toLocaleString(localeTag())} trials. Passing this contrast is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`));
     }
   }
 

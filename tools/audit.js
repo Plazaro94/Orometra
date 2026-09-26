@@ -103,9 +103,8 @@ if (a.meta.gateInfluence) {
 console.log(` Pruebas / pruebas efectivas      : ${esInt(a.meta.total)} / ${esInt(a.stats.effectiveTrials)}`);
 if (a.stats.sharpeTest) {
   const s = a.stats.sharpeTest;
-  console.log(` Sharpe máximo observado          : ${es(s.observedMax, 3)} (con ${esInt(s.observedTrades)} ops)`);
-  console.log(` Umbral por azar (N / efectivo)   : ${es(s.chanceMax, 3)} / ${es(s.chanceMaxEffective, 3)}`);
-  console.log(` Umbral del contraste publicado   : ${es(s.chanceMaxConservative, 3)} (más estricto; ver metodología)`);
+  console.log(` Sharpe máximo observado          : ${es(s.observedMax, 3)} (media ${es(s.mean, 3)}, σ ${es(s.sigma, 3)})`);
+  console.log(` Umbral por azar (pruebas efectivas): ${es(s.chanceMax, 3)}`);
 }
 if (a.meta.rescuedDims && a.meta.rescuedDims.length) {
   console.log(` Rescatados por efecto combinado  : ${a.meta.rescuedDims.map((d) => d.name).join(', ')}`);

@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-09-26 — SR-1 resuelto: fuera el contraste de Sharpe basado en operaciones
+
+`core/analysis.js`'s `sharpeTest` calculaba el error típico de cada Sharpe (Lo,
+2002) usando el número de operaciones de cada Pass como tamaño de muestra —
+pero SR-1 (ver `docs/MT5_ASSUMPTIONS.md`) ya establecía que MT5 calcula ese
+Sharpe sobre los log-retornos de la curva de equity **por barra**, anualizados,
+no por operación. El export de optimización no dice cuántas barras usó cada
+Pass, así que ese error típico no tenía base real: podía salir demasiado
+laxo o demasiado estricto según el timeframe de cada usuario, sin que fuera
+un sesgo conocido en ninguna dirección.
+
+- **Retirado**: el contraste tipo Lo (2002) por operaciones (`typicalSe`,
+  `bestSe`, `chanceMax`/`chanceMaxEffective` basados en operaciones,
+  `deflated`), y el finding "El Sharpe aprueba con nuestro criterio, no con
+  el más estricto" que comparaba ambos umbrales.
+- **Único criterio ahora**: la dispersión de los Sharpe observados *entre
+  pasadas* (estilo Bailey y López de Prado, ya calculada antes como umbral
+  "más estricto" secundario). No depende de operaciones ni de barras — es
+  un hecho observable sobre la malla que de verdad se probó. Su sesgo
+  conocido va siempre en la dirección seria: más estricto cuanta más señal
+  real hay, nunca da falsa confianza.
+- `sharpeTest` pierde los campos `observedTrades`, `typicalSe`, `bestSe`,
+  `chanceMaxEffective`, `chanceMaxConservative`, `conservativeSigma`,
+  `crossSectionalSd`, `deflated`; gana `sigma` (antes `conservativeSigma`/
+  `crossSectionalSd`, ahora un único campo). `chanceMax` cambia de
+  significado: antes era el umbral por operaciones con N total, ahora es el
+  único umbral, calculado con pruebas efectivas.
+- Actualizados: panel de Diagnósticos (`js/ui-plateaus.js`), herramienta de
+  consola (`tools/audit.js`), `tests/run.js`, fixture de regresión
+  (`tests/fixtures/demo-regression.json`), y los 2 títulos de finding en
+  `tests/finding-categories.test.js` (114 → 112 tras retirar el finding del
+  segundo umbral).
+
 ## 2026-09-24 — Recorte de alcance: fuera Desktop, sonda MQL5 y walk-forward
 
 Decisión del usuario, no técnica: Orometra se queda como **una sola cosa, en el

@@ -87,10 +87,13 @@ Conviene tenerlo escrito, porque la tentación de aparentar más de lo que se mi
   imposible. Se mide la **fragilidad de la regla de selección** en los dos sentidos de la
   partición IS/forward, que es útil pero es otra cosa.
 - **Reality Check de White y SPA de Hansen.** Mismo motivo.
-- **Sharpe deflactado publicado.** Se calcula, pero con el error de estimación de Lo (2002) en
-  lugar de la dispersión entre ensayos: en una malla densa de una sola estrategia esa
-  dispersión la produce la forma de la superficie de parámetros, no el ruido. Se muestran los
-  dos umbrales para que la distancia entre ellos se pueda juzgar.
+- **Sharpe deflactado publicado.** Se calcula una adaptación, no el original: la dispersión de
+  la hipótesis nula sale de los Sharpe observados entre pasadas (no del error de estimación de
+  Lo (2002) por número de operaciones, que se usó en una versión anterior y se retiró por
+  partir de un supuesto falso sobre cómo MT5 calcula esa cifra — ver SR-1 en
+  `docs/MT5_ASSUMPTIONS.md`). En una malla densa de una sola estrategia esa dispersión la
+  produce en parte la forma de la superficie de parámetros, no solo el ruido, así que el
+  umbral sube cuanta más señal real hay — nunca da falsa confianza.
 - **Cifras limpias del forward.** El forward filtra y puntúa, luego participa en la selección y
   sus números están algo inflados. El único número no contaminado es el del periodo no visto.
 
