@@ -919,14 +919,19 @@ tr.sel td{color:var(--text-2)}
   }
   /* El idioma y el tema se mudan a la misma fila que la marca, como en la portada:
      antes vivian en su propia tira debajo de las pestanas (`.sidebar-bottom`), y esa
-     tira era pura ceremonia -- una fila entera para dos controles pequenos. */
+     tira era pura ceremonia -- una fila entera para dos controles pequenos. Mismo
+     padding, mismo borde y mismos botones que `.lp-top`/`.lp-top-actions` en la
+     portada (lineas ~1071-1090): la cabecera debe verse identica al entrar en la app,
+     no cambiar de tamano de golpe. */
   .sidebar-head{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:10px 12px;border-bottom:1px solid var(--line-soft);
+    padding:16px;border-bottom:1px solid var(--line);
   }
   .brand{flex-direction:row;align-items:center;gap:10px;padding:0;border-bottom:0;min-width:0}
-  .header-controls{display:flex;align-items:center;gap:6px;flex:none}
+  .header-controls{display:flex;align-items:center;gap:8px;flex:none;flex-wrap:wrap}
   .header-controls .lang-row,.header-controls .theme-row{padding:0}
+  .header-controls .lang-btn{padding:7px 9px;min-height:36px}
+  .header-controls .theme-btn{min-width:36px;min-height:36px;padding:8px;font-size:0}
   .brand-row{gap:8px}
   .brand-mark{width:28px;height:28px}
   .brand-name{font-size:16px}
@@ -961,8 +966,7 @@ tr.sel td{color:var(--text-2)}
   /* Con idioma/tema ya en `.sidebar-head`, a `.sidebar-bottom` no le queda nada que
      mostrar en movil (el aviso legal baja al pie de la pagina, ver `.app-footer`). */
   .sidebar-bottom{display:none}
-  .lang-btn{padding:11px 10px;min-height:44px}
-  .theme-btn{padding:11px 8px;font-size:0;min-height:44px;display:flex;align-items:center;justify-content:center}
+  .header-controls .theme-btn{display:flex;align-items:center;justify-content:center}
   .theme-btn .swatch{margin:0}
   /* El aviso legal va al pie de la pagina, como en cualquier sitio: es lo ultimo que
      se lee, no un control mas junto al idioma y el tema. */
