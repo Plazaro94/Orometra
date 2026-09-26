@@ -14,7 +14,7 @@ import {
 } from './engine.js';
 import {
   median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum,
-  sharpeStandardError, normCdf, mean, stdev, extent, makeRng,
+  mean, stdev, extent, makeRng,
 } from './stats.js';
 import { buildVerdict, peakRejectReasons } from './verdict.js';
 import { coverageAgainstSet } from './setfile.js';
@@ -553,54 +553,47 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   }
   const effectiveTrials = Math.max(2, cell.size);
 
-  // Contraste de selección sobre el Sharpe (Deflated Sharpe Ratio).
-  // La hipotesis nula es "ninguna configuración tiene ventaja": entonces cada Sharpe
-  // observado es ruido de estimacion alrededor de cero, con error típico dependiente
-  // del número de operaciones. El mejor de N pruebas bajo esa nula ya sale positivo
-  // por si solo; ese es el umbral que hay que batir.
+  // Contraste de seleccion sobre el Sharpe. La hipotesis nula es "ninguna
+  // configuracion tiene ventaja": entonces cada Sharpe observado es ruido alrededor
+  // de cero, y el mejor de N pruebas bajo esa nula ya sale positivo por si solo; ese
+  // es el umbral que hay que batir.
+  //
+  // La dispersion de esa nula se toma de los Sharpe observados ENTRE pasadas
+  // (estilo Bailey y Lopez de Prado), no del error de estimacion de Lo (2002) por
+  // numero de operaciones -- version anterior de este motor, retirada porque partia
+  // de una premisa falsa: que el "Sharpe Ratio" del export de MT5 se estima sobre las
+  // operaciones. Verificado que es falso (ver docs/MT5_ASSUMPTIONS.md, SR-1): desde
+  // el build 3210 del terminal, MT5 lo calcula sobre los log-retornos de la curva de
+  // equity POR BARRA, anualizados -- un dato que el export de optimizacion no trae.
+  // Sin saber cuantas barras hubo, cualquier "error tipico" que se apoye en el numero
+  // de operaciones es una cifra sin base real, y podia acabar mas laxa o mas estricta
+  // de lo debido segun el timeframe de cada usuario -- no un sesgo conocido, sino
+  // ruido de verdad. La dispersion entre pasadas no necesita saber nada de eso: es un
+  // hecho observable sobre la malla que de verdad se probo. Su sesgo si es conocido y
+  // va siempre en la direccion seria: en una malla densa de UNA estrategia, parte de
+  // esa dispersion la produce la forma de la superficie de parametros (senal real),
+  // no solo el ruido, asi que sube el liston de mas cuando hay mas senal -- nunca da
+  // falsa confianza.
   const period = hasForward ? 'oos' : 'is';
-  const sharpePairs = records
-    .map((r) => ({ sr: r[period].sharpe, n: r[period].trades }))
-    .filter((x) => Number.isFinite(x.sr) && Number.isFinite(x.n) && x.n > 30);
+  // Se exige un minimo de operaciones por pasada para entrar en la dispersion: un
+  // Sharpe calculado sobre un punado de operaciones es ruidoso por si solo (por eso
+  // ya se exige aparte en las politicas de minimos), y dejarlo colar aqui podria
+  // inflar sigma con una sola pasada, no con la forma real de la superficie.
+  const sharpeValues = records
+    .filter((r) => Number.isFinite(r[period].sharpe) && Number.isFinite(r[period].trades) && r[period].trades > 30)
+    .map((r) => r[period].sharpe);
   let sharpeTest = null;
-  if (sharpePairs.length >= 30) {
-    const errors = sharpePairs.map((x) => sharpeStandardError(x.sr, x.n)).filter(Number.isFinite);
-    const typicalSe = median(errors);
-    const best = sharpePairs.reduce((a, b) => (b.sr > a.sr ? b : a), sharpePairs[0]);
-    const bestSe = sharpeStandardError(best.sr, best.n);
-    const chanceMax = expectedMaximum(0, typicalSe, records.length);
-    const chanceMaxEffective = expectedMaximum(0, typicalSe, effectiveTrials);
-    /*
-     * BANDA, no cifra unica. El Sharpe deflactado publicado (Bailey y Lopez de Prado) usa
-     * como dispersion de la nula la desviacion tipica de los Sharpe ENTRE ensayos; aqui se
-     * usa el error tipico de ESTIMACION de Lo (2002).
-     *
-     * El motivo de apartarse: en aquel planteamiento los N ensayos son estrategias
-     * distintas y su dispersion mide la amplitud de la busqueda. Aqui los N son una malla
-     * densa de UNA estrategia, fuertemente correlacionados, y su dispersion la produce
-     * sobre todo la forma de la superficie de parametros, no el ruido. Tomarla como nula
-     * sube el liston cuanto MAS senal real hay, que es justo al reves de lo que debe pasar.
-     *
-     * Es una adaptacion defendible, pero no es el contraste publicado, asi que se dan los
-     * dos umbrales y se deja ver la distancia entre ellos en lugar de elegir por el usuario.
-     */
-    const crossSd = stdev(sharpePairs.map((x) => x.sr));
-    const chanceMaxConservative = expectedMaximum(0, crossSd, effectiveTrials);
+  if (sharpeValues.length >= 30) {
+    const sigma = stdev(sharpeValues);
+    const chanceMax = expectedMaximum(0, sigma, effectiveTrials);
+    const observedMax = Math.max(...sharpeValues);
     sharpeTest = {
-      chanceMaxConservative,
-      conservativeSigma: crossSd,
-      observedMax: best.sr,
-      observedTrades: best.n,
-      mean: mean(sharpePairs.map((x) => x.sr)),
-      crossSectionalSd: stdev(sharpePairs.map((x) => x.sr)),
-      typicalSe,
-      bestSe,
+      observedMax,
+      mean: mean(sharpeValues),
+      sigma,
       trials: records.length,
       effectiveTrials,
       chanceMax,
-      chanceMaxEffective,
-      // Probabilidad de que el mejor Sharpe no sea un artefacto de haber probado mucho.
-      deflated: Number.isFinite(bestSe) && bestSe > 0 ? normCdf((best.sr - chanceMax) / bestSe) : NaN,
     };
   }
 

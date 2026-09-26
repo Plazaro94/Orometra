@@ -80,8 +80,11 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   la tabla» falla al remuestrear configuraciones (en ambos sentidos de la partición IS/OOS).
   No es el PBO publicado (CSCV); ese exige curvas de equity por pasada.
 - **Contraste de selección sobre el Sharpe (adaptación)**: compara el mejor Sharpe observado
-  con el máximo que cabría esperar por azar tras N pruebas, usando el error típico de Lo
-  (2002). No es el Deflated Sharpe Ratio publicado.
+  con el máximo que cabría esperar por azar tras N pruebas, usando la dispersión de los
+  Sharpe observados entre pasadas (estilo Bailey y López de Prado) como nula — no el error
+  de estimación de Lo (2002) por número de operaciones, retirado por partir de un supuesto
+  falso sobre cómo MT5 calcula esa cifra (SR-1 en `docs/MT5_ASSUMPTIONS.md`). No es el
+  Deflated Sharpe Ratio publicado.
 - **Calificación de la FUERZA DE LA EVIDENCIA**, no de la estrategia: sólida / moderada /
   débil / insuficiente. La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
   contienen unos datos, no si un EA va a funcionar. Distingue «no hay región conexa»
@@ -153,9 +156,10 @@ MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/run.js
 - No conoce las fechas de los periodos de la rejilla: la duración relativa del forward se
   estima con el número de operaciones (el periodo no visto sí trae fechas reales, del
   informe HTML).
-- El contraste del Sharpe asume que MT5 estima esa cifra sobre las operaciones registradas
-  (supuesto SR-1 en `docs/MT5_ASSUMPTIONS.md`). Suspenderlo es una señal fuerte; aprobarlo
-  no demuestra nada por sí solo.
+- El contraste del Sharpe no asume nada sobre cómo MT5 calcula esa cifra por dentro (SR-1
+  en `docs/MT5_ASSUMPTIONS.md`, resuelto): usa solo la dispersión de los Sharpe que de
+  verdad se observaron entre pasadas, no el número de operaciones. Suspenderlo es una
+  señal fuerte; aprobarlo no demuestra nada por sí solo.
 - No hace walk-forward con varias ventanas ni PBO/DSR publicados: exigirían lanzar y volver
   a lanzar el backtest por ventana, o una curva de equity por configuración de la rejilla,
   y eso escapa a «sube un archivo, todo ocurre en tu navegador» (ver `docs/SPEC.md`).

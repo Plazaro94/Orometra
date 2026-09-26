@@ -504,52 +504,37 @@ export function renderDiagnostics(a) {
         <div><span>${L('Pruebas realizadas', 'Trials run')}</span><strong>${int(a.meta.total)}</strong></div>
         <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (regiones distintas)', 'Effective trials (distinct regions)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
         ${a.stats.sharpeTest ? `
-        <div><span>${gloss('sharpe', L('Sharpe máximo observado', 'Maximum observed Sharpe'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)} <em>${L('con', 'with')} ${int(a.stats.sharpeTest.observedTrades)} ops</em></strong></div>
-        <div><span>${L('Error típico de un Sharpe', 'Typical Sharpe standard error')}</span><strong>${num(a.stats.sharpeTest.typicalSe, 4)}</strong></div>
-        <div><span>${L(`Umbral por azar con ${int(a.stats.sharpeTest.trials)} pruebas`, `Chance threshold with ${int(a.stats.sharpeTest.trials)} trials`)}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>
-        <div><span>${L('Umbral con pruebas efectivas', 'Threshold with effective trials')}</span><strong>${num(a.stats.sharpeTest.chanceMaxEffective, 3)}</strong></div>
-        <div><span>${L('Umbral del contraste Bailey (más estricto)', 'Bailey-style threshold (stricter)')}</span><strong>${num(a.stats.sharpeTest.chanceMaxConservative, 3)}</strong></div>
-        <div><span>${L('Prob. bajo azar (Lo)', 'Chance probability (Lo)')}</span><strong>${Number.isFinite(a.stats.sharpeTest.deflated) ? pct(a.stats.sharpeTest.deflated, 1) : '—'}</strong></div>` : ''}
+        <div><span>${gloss('sharpe', L('Sharpe máximo observado', 'Maximum observed Sharpe'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
+        <div><span>${L('Sharpe medio entre pasadas', 'Mean Sharpe across trials')}</span><strong>${num(a.stats.sharpeTest.mean, 3)}</strong></div>
+        <div><span>${L('Dispersión entre pasadas (σ)', 'Dispersion across trials (σ)')}</span><strong>${num(a.stats.sharpeTest.sigma, 3)}</strong></div>
+        <div><span>${L('Umbral por azar (pruebas efectivas)', 'Chance threshold (effective trials)')}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>` : ''}
         <div><span>${L('Tiempo de cálculo', 'Compute time')}</span><strong>${int(a.meta.elapsedMs)} ms</strong></div>
       </div>
       ${findingsNote(statsFindings)}
       <p class="chart-note">
         ${L(
-          `<strong>Como leer el contraste del Sharpe.</strong> La hipótesis nula es que ninguna configuración
+          `<strong>Cómo leer el contraste del Sharpe.</strong> La hipótesis nula es que ninguna configuración
         tiene ventaja: entonces cada Sharpe observado sería ruido alrededor de cero, y el mejor de N pruebas
-        saldría positivo por sí solo. El error típico se calcula con el número de operaciones de cada
-        configuración, asumiendo que el Sharpe de MT5 se estima sobre esas operaciones — pero desde el build
-        3210 del terminal (feb. 2022) MT5 lo calcula en realidad sobre los log-retornos de la curva de equity
-        <em>por barra</em>, anualizados, no por operación. Eso significa que en la mayoría de instalaciones
-        actuales el umbral real es más alto que el mostrado aquí. Por eso
-        <strong>suspender esta prueba es una señal fuerte, y aprobarla demuestra todavía menos de lo que ya
-        decíamos</strong>. El umbral con pruebas efectivas cuenta regiones distintas del espacio en lugar de
-        configuraciones, porque dos vecinos no son dos pruebas independientes.`,
+        saldría positivo por sí solo — ese es el umbral que hay que batir. La dispersión de esa nula sale de
+        los Sharpe que de verdad obtuviste entre pasadas (estilo Bailey y López de Prado), no de un error de
+        estimación por número de operaciones: el export de MT5 no dice cuántas barras usó para calcular cada
+        Sharpe (desde el build 3210 del terminal lo calcula sobre la curva de equity <em>por barra</em>,
+        anualizado, no por operación), así que cualquier cifra basada en operaciones sería una suposición sin
+        base real. En una malla densa de una sola estrategia, parte de esta dispersión la produce la propia
+        forma de la superficie de parámetros (señal real), no solo el ruido — el umbral sube de más cuanta
+        <em>más</em> señal real hay. Por eso <strong>superarlo es necesario, no suficiente, y no superarlo es
+        una señal fuerte</strong>.`,
           `<strong>How to read the Sharpe contrast.</strong> The null hypothesis is that no configuration
         has an edge: then each observed Sharpe would be noise around zero, and the best of N trials
-        would come out positive on its own. The typical error is computed from each configuration's
-        trade count, assuming MT5's Sharpe is estimated on those trades — but since terminal build 3210
-        (Feb 2022) MT5 actually computes it from the equity curve's <em>per-bar</em> log-returns, annualized,
-        not per trade. That means on most installations today the real threshold is higher than shown here.
-        So <strong>failing this test is a strong signal, and passing it demonstrates even less than we
-        already said</strong>. The effective-trials threshold counts distinct regions of the space instead
-        of configurations, because two neighbors are not two independent trials.`,
-        )}
-      </p>
-      <p class="chart-note">
-        ${L(
-          `<strong>Los dos umbrales del Sharpe.</strong> El contraste tipo Bailey usa como
-        dispersión de la hipótesis nula la desviación típica de los Sharpe <em>entre configuraciones</em>. Aquí se
-        usa el error de estimación de un Sharpe (Lo, 2002), y es una decisión deliberada: en una malla densa de
-        UNA estrategia esa dispersión la produce sobre todo la forma de la superficie de parámetros, no el ruido,
-        de modo que tomarla como nula sube el listón cuanta <em>más</em> señal real hay. Se muestran los dos para
-        que la distancia entre ellos la juzgues tú — no se presenta como “Sharpe deflactado” clásico aprobado.`,
-          `<strong>The two Sharpe thresholds.</strong> The Bailey-style contrast uses as
-        null dispersion the standard deviation of Sharpes <em>across configurations</em>. Here we
-        use the estimation error of a Sharpe (Lo, 2002), and that is deliberate: on a dense grid of
-        ONE strategy that dispersion is produced mostly by the shape of the parameter surface, not noise,
-        so taking it as null raises the bar the <em>more</em> real signal there is. Both are shown so
-        you can judge the distance between them — not as a classic approved “deflated Sharpe”.`,
+        would come out positive on its own — that is the threshold to beat. That null's dispersion comes
+        from the Sharpes you actually got across trials (Bailey and López de Prado style), not from an
+        estimation error based on trade count: MT5's export does not say how many bars it used to compute
+        each Sharpe (since terminal build 3210 it is computed from the equity curve's <em>per-bar</em>
+        log-returns, annualized, not per trade), so any trade-count-based figure would be a guess with no
+        real basis. On a dense grid of one strategy, part of this dispersion is produced by the shape of the
+        parameter surface itself (real signal), not just noise — the threshold rises the more real signal
+        there is. So <strong>clearing it is necessary, not sufficient, and failing to clear it is a strong
+        signal</strong>.`,
         )}
       </p>
       <p class="chart-note">

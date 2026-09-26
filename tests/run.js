@@ -402,7 +402,7 @@ if (fs.existsSync(isPath) && fs.existsSync(oosPath)) {
   console.log(`  Fragilidad sel. : ${(100 * a.stats.fragility).toFixed(0)}%  (is->oos ${(100 * a.stats.fragilityFolds.isToOos.value).toFixed(0)}%, oos->is ${(100 * a.stats.fragilityFolds.oosToIs.value).toFixed(0)}%)`);
   if (a.stats.sharpeTest) {
     console.log(`  Sharpe max obs  : ${a.stats.sharpeTest.observedMax.toFixed(3)}`);
-    console.log(`  Sharpe azar (N) : ${a.stats.sharpeTest.chanceMax.toFixed(3)}  (N efectivo ${a.stats.sharpeTest.effectiveTrials} -> ${a.stats.sharpeTest.chanceMaxEffective.toFixed(3)})`);
+    console.log(`  Sharpe azar     : ${a.stats.sharpeTest.chanceMax.toFixed(3)}  (N efectivo ${a.stats.sharpeTest.effectiveTrials}, σ ${a.stats.sharpeTest.sigma.toFixed(3)})`);
   }
   console.log(`  VEREDICTO       : ${a.verdict.level.toUpperCase()} - ${a.verdict.headline}`);
   for (const f of a.verdict.findings) console.log(`    [${f.severity}] ${f.title}`);
