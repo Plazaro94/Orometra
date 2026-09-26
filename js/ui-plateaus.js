@@ -284,16 +284,16 @@ export function renderRejected(a) {
       )}</p>
     </div>
     <section class="panel">
-      <div class="table-wrap"><table>
+      <div class="table-wrap"><table class="stack-table">
         <thead><tr><th>${L('Puesto', 'Rank')}</th><th>Pass</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinos', 'Neighbors')}</th><th>${L('Suelo entorno', 'Neighborhood floor')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
-        <tbody>${a.peaks.map((p) => `<tr>
-          <td><span class="rank-mini">#${int(p.criterionRank)}</span></td>
-          <td class="mono">${esc(p.record.id)}</td>
-          <td class="strong">${num(p.key, 2)}</td>
-          <td>${num(p.score, 2)}</td>
-          <td>${int(p.st.support)}</td>
-          <td>${num(p.st.q25, 2)}</td>
-          <td class="reasons">${p.reasons.map((r) => `<span class="reason">${esc(r)}</span>`).join('')}</td>
+        <tbody>${a.peaks.map((p) => `<tr class="stack-row">
+          <td data-label="${L('Puesto', 'Rank')}"><span class="rank-mini">#${int(p.criterionRank)}</span></td>
+          <td class="mono" data-label="Pass">${esc(p.record.id)}</td>
+          <td class="strong" data-label="${esc(critName)}">${num(p.key, 2)}</td>
+          <td data-label="${L('Calidad', 'Quality')}">${num(p.score, 2)}</td>
+          <td data-label="${L('Vecinos', 'Neighbors')}">${int(p.st.support)}</td>
+          <td data-label="${L('Suelo entorno', 'Neighborhood floor')}">${num(p.st.q25, 2)}</td>
+          <td class="reasons" data-label="${L('Motivo del descarte', 'Rejection reason')}">${p.reasons.map((r) => `<span class="reason">${esc(r)}</span>`).join('')}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>`;

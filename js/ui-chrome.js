@@ -51,6 +51,13 @@ export function initChrome() {
   // La marca es un enlace a la landing; no conviene interceptarlo.
   const reiniciar = $('#resetAll');
   if (reiniciar) reiniciar.addEventListener('click', resetSession);
+
+  // Redimensionar puede hacer que una tabla deje de necesitar scroll, o empiece a necesitarlo.
+  let resizeTimer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(markScrollableTables, 150);
+  });
 }
 
 export function resetSession() {
@@ -274,6 +281,15 @@ function ensureGlossOutsideClickListener() {
  * en el layout (ver .gloss-right en styles.css); si aun asi se sale del
  * viewport (movil estrecho, o el termino cerca de un borde), se corrige
  * con un desplazamiento horizontal via --gloss-shift-x. */
+/** Marca las tablas que se salen de su tarjeta con un difuminado en el borde
+ * derecho: sin esto, una columna cortada en seco parece un texto roto en vez
+ * de una tabla que se puede deslizar. */
+function markScrollableTables() {
+  $$('.table-wrap, .range-table-wrap').forEach((el) => {
+    el.classList.toggle('has-hscroll', el.scrollWidth > el.clientWidth + 1);
+  });
+}
+
 function positionGlossCards() {
   const margin = 12;
   $$('.gloss').forEach((el) => {
@@ -302,6 +318,7 @@ export function bindViewEvents() {
   }));
   ensureGlossOutsideClickListener();
   positionGlossCards();
+  markScrollableTables();
   $$('[data-plateau]').forEach((b) => b.addEventListener('click', () => {
     state.selectedPlateau = Number(b.dataset.plateau);
     setTab('plateaus');

@@ -569,7 +569,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .why-pros strong{color:var(--ok-text)}
 .why-cons strong{color:var(--warn-text)}
 .why-empty{color:var(--muted-2) !important;font-size:var(--fs-sm)}
-.range-table-wrap{overflow:auto;margin-top:8px}
+.range-table-wrap{overflow:auto;margin-top:8px;position:relative}
 .range-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
 .range-table th{
   text-align:left;font-size:var(--fs-xs);letter-spacing:.1em;text-transform:uppercase;
@@ -727,7 +727,20 @@ th.t3-label{padding-left:2px}
 .detail-head h2{font-size:26px;margin:8px 0;letter-spacing:-.025em}
 .detail-head p{color:var(--muted);font-size:13.5px;margin:0;max-width:880px}
 .detail-head strong{color:var(--text)}
-.table-wrap{overflow-x:auto;overflow-y:visible}
+.table-wrap{overflow-x:auto;overflow-y:visible;position:relative}
+/* El difuminado va pegado (sticky) al borde visible, no al final del contenido:
+   si fuera solo absolute, al hacer scroll se queda atras junto con la tabla y
+   deja de verse justo cuando hace falta. display:flex + position:sticky en el
+   pseudo-elemento lo mantiene anclado al borde derecho visible mientras se
+   desliza el contenido. */
+.table-wrap.has-hscroll,.range-table-wrap.has-hscroll{display:flex}
+.table-wrap.has-hscroll>table,.range-table-wrap.has-hscroll>table{flex:1 0 auto}
+.table-wrap.has-hscroll::after,.range-table-wrap.has-hscroll::after{
+  content:'';position:sticky;top:0;right:0;flex:0 0 28px;margin-left:-28px;
+  align-self:stretch;
+  background:linear-gradient(to right, transparent, var(--surface));
+  pointer-events:none;
+}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th,td{padding:10px 10px;border-bottom:1px solid var(--line-soft);text-align:left;white-space:nowrap;vertical-align:top}
 th{color:var(--muted-2);font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700}
@@ -738,8 +751,22 @@ tr.sel td{color:var(--text-2)}
 .mono{font-family:var(--mono);color:var(--text-2)}
 .rank-mini{color:var(--accent);font-weight:700;font-family:var(--mono)}
 .values{white-space:normal;font-family:var(--mono);font-size:11px;color:var(--muted);max-width:320px}
-.reasons{white-space:normal;max-width:380px;display:flex;flex-wrap:wrap;gap:4px}
-.reason{background:var(--danger-bg);border:1px solid var(--danger-line);color:var(--danger-text);border-radius:999px;padding:3px 9px;font-size:10.5px}
+.reasons{white-space:normal;max-width:380px;display:flex;flex-direction:column;gap:6px}
+.reason{background:var(--danger-bg);border:1px solid var(--danger-line);color:var(--danger-text);border-radius:8px;padding:5px 10px;font-size:11px;line-height:1.45}
+
+/* En movil, la tabla de descartes se apila en tarjetas: con scroll horizontal
+   el motivo del descarte (la celda mas alta) quedaba fuera de vista y estiraba
+   la fila entera, dejando huecos vacios entre columnas visibles. */
+@media (max-width:480px){
+  table.stack-table thead{display:none}
+  table.stack-table,table.stack-table tbody{display:block;width:100%}
+  tr.stack-row{display:block;padding:10px 0;border-bottom:1px solid var(--line)}
+  tr.stack-row:last-child{border-bottom:none}
+  tr.stack-row td{display:flex;align-items:flex-start;gap:10px;padding:3px 0;border:none;white-space:normal;max-width:none}
+  tr.stack-row td::before{content:attr(data-label);flex:0 0 40%;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
+  tr.stack-row td.reasons{flex-direction:column;align-items:flex-start}
+  .table-wrap:has(table.stack-table).has-hscroll::after{display:none}
+}
 
 /* tabla de influencia por parametro */
 .grid-table td{white-space:nowrap}
