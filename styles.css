@@ -1313,8 +1313,14 @@ tr.sel td{color:var(--text-2)}
 .lp-method-step:nth-child(even) .lp-method-step-media{order:0}
 @media (max-width:720px){
   .lp-method-step,.lp-method-step:nth-child(even){flex-direction:row;align-self:stretch;max-width:none;flex-wrap:wrap}
+  /* El gap grande de escritorio (72px, para separar texto e imagen en la fila) es un
+     column-gap ahi -- pero aqui, con flex-wrap, ese mismo "gap" se convierte en el
+     row-gap ENTRE cada linea apilada (numero->titulo, parrafo->imagen), y se veia
+     enorme en los tres sitios a la vez. En movil no hay columnas que separar, asi que
+     se resetea al mismo gap pequeno que usan los pasos sin imagen. */
+  .lp-method-step.has-media{gap:20px}
   .lp-method-step-media,.lp-method-step:nth-child(even) .lp-method-step-media{
-    order:4;flex-basis:100%;margin-top:16px;aspect-ratio:16/10;
+    order:4;flex-basis:100%;margin-top:0;aspect-ratio:16/10;
   }
 }
 
