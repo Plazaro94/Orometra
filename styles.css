@@ -1273,6 +1273,25 @@ tr.sel td{color:var(--text-2)}
 .lp-doc-block p{margin:0;font-size:var(--fs-base);line-height:1.6;color:var(--text-2);max-width:62ch}
 .lp-doc-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
 
+/* Pasos de metodologia en zigzag: el numero cambia de lado (izquierda/derecha) y el
+   bloque entero se ancla al margen izquierdo o derecho del contenedor ancho, para que
+   no se lea como una simple lista vertical de seis parrafos identicos. El texto en si
+   sigue alineado a la izquierda (nunca justificado a la derecha): un parrafo largo
+   alineado a la derecha es mucho mas dificil de leer. Cuando llegue la imagen de cada
+   paso, ocupara el hueco que ahora deja el numero. */
+.lp-method-steps{display:flex;flex-direction:column}
+.lp-method-step{display:flex;gap:20px;align-items:flex-start;max-width:640px}
+.lp-method-step:nth-child(even){flex-direction:row-reverse;align-self:flex-end}
+.lp-method-num{
+  flex:none;font-family:var(--mono);font-weight:800;font-size:32px;line-height:1;
+  color:var(--accent);opacity:.45;min-width:50px;
+}
+.lp-method-num-plain{display:inline-block;margin-bottom:8px}
+.lp-method-step-text{min-width:0}
+@media (max-width:720px){
+  .lp-method-step,.lp-method-step:nth-child(even){flex-direction:row;align-self:stretch;max-width:none}
+}
+
 .lp-section{margin-bottom:var(--space-section);padding-top:32px;border-top:1px solid var(--line)}
 .lp-section-features,.lp-section-risk{min-width:0}
 .lp-section h2{
