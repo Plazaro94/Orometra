@@ -588,10 +588,10 @@ export function renderLegal() {
         itself needs permission.`,
         )}</li>
         <li>${L(
-          `Si encuentras un error en los cálculos, comunícalo: un fallo en una herramienta como esta puede
-        costarle dinero a alguien, y eso importa más que cualquier otra consideración.`,
-          `If you find an error in the calculations, report it: a bug in a tool like this can
-        cost someone money, and that matters more than any other consideration.`,
+          `Si encuentras un error en los cálculos, comunícalo a <a href="mailto:hello@orometra.com">hello@orometra.com</a>: un fallo en
+        una herramienta como esta puede costarle dinero a alguien, y eso importa más que cualquier otra consideración.`,
+          `If you find an error in the calculations, report it to <a href="mailto:hello@orometra.com">hello@orometra.com</a>: a bug in a
+        tool like this can cost someone money, and that matters more than any other consideration.`,
         )}</li>
       </ul>
       <p class="chart-note">
