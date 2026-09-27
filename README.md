@@ -173,3 +173,10 @@ legible sobre su fondo»), para que al invertir el tema sigan significando lo mi
 
 El tema elegido se guarda en `localStorage` y se aplica en un script del `<head>` antes de
 pintar, porque si no se ve un fogonazo del tema contrario al recargar.
+
+## Licencia
+
+[PolyForm Noncommercial 1.0.0](LICENSE): puedes ver, usar, modificar y compartir el código
+para cualquier fin no comercial (estudio personal, investigación, un fork para tu propio
+uso). El uso comercial —revenderlo, ofrecerlo como servicio de pago, incorporarlo a un
+producto con el que se cobre— necesita permiso del autor.
