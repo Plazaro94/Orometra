@@ -1493,3 +1493,101 @@ tr.sel td{color:var(--text-2)}
 
 /* Mientras se traduce la pagina (ver js/theme-init.js): evita el salto de textos. */
 html.i18n-pending body{visibility:hidden}
+
+/* ======================================================================
+   Portada (2026-09): cinco bloques, textos cortos, un solo acento.
+   ====================================================================== */
+.hm{max-width:1120px;padding-top:48px}
+.hm-hero{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);
+  gap:32px 56px;align-items:center;margin-bottom:112px;
+}
+.hm-hero-copy{min-width:0}
+.hm-hero-visual{min-width:0}
+.hm-hero-visual .lp-surface{margin-bottom:0}
+.hm-eyebrow{margin:0 0 14px;font-size:var(--fs-sm);color:var(--muted);font-weight:600}
+.hm-hero h1{
+  margin:0 0 18px;font-size:clamp(34px,4.6vw,54px);line-height:1.06;letter-spacing:-.035em;
+  color:var(--text-hi);max-width:15ch;
+}
+.hm-lead{margin:0 0 28px;font-size:18px;line-height:1.55;color:var(--text-2);max-width:36ch}
+.hm-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.hm-cta{padding:12px 20px;font-size:15px;text-decoration:none;display:inline-flex;align-items:center;min-height:46px}
+.hm-trust{margin:0;font-size:var(--fs-sm);color:var(--muted)}
+
+.hm-section{margin-bottom:112px}
+.hm-section h2,.hm-final h2{
+  margin:0 0 28px;font-size:clamp(24px,2.6vw,32px);line-height:1.15;letter-spacing:-.025em;color:var(--text-hi);
+}
+.hm-card{
+  border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);
+  padding:24px;min-width:0;
+}
+.hm-card h3{margin:0 0 8px;font-size:17px;color:var(--text-hi);letter-spacing:-.01em}
+.hm-card p{margin:0;color:var(--text-2);line-height:1.6}
+.hm-card-kicker{margin:0 0 14px !important;font-size:var(--fs-sm);font-weight:600;color:var(--muted) !important}
+.hm-card-ok{border-color:var(--ok-line)}
+.hm-card-ok .hm-card-kicker{color:var(--ok-text) !important}
+
+.hm-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.hm-table{width:100%;border-collapse:collapse;margin:0 0 16px;font-family:var(--mono);font-size:13px}
+.hm-table th{text-align:left;font-weight:600;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--line)}
+.hm-table td{padding:8px 10px;border-bottom:1px solid var(--line-soft);color:var(--text-2)}
+.hm-table tr.is-peak td{color:var(--peak-text)}
+.hm-table tr.is-pick td{color:var(--ok-text)}
+.hm-pick{
+  display:flex;flex-direction:column;gap:4px;margin:0 0 16px !important;padding:14px 16px;
+  border-radius:var(--radius-sm);background:var(--ok-bg);
+}
+.hm-pick > span:first-child{font-weight:700;color:var(--ok-hi);font-size:16px}
+.hm-pick-note{font-size:var(--fs-sm);color:var(--muted)}
+
+.hm-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.hm-steps li{min-width:0}
+.hm-num{
+  display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;
+  border-radius:50%;border:1px solid var(--ok-line);color:var(--ok-text);font-weight:700;
+  font-size:14px;margin-bottom:14px;
+}
+.hm-steps h3{margin:0 0 6px;font-size:17px;color:var(--text-hi)}
+.hm-steps p{margin:0;color:var(--text-2);line-height:1.6}
+
+.hm-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.hm-card a{color:var(--ok-text)}
+
+.hm-faq-title{margin-top:72px !important}
+.hm-faq{border-top:1px solid var(--line);max-width:780px}
+.hm-faq details{border-bottom:1px solid var(--line)}
+.hm-faq summary{
+  cursor:pointer;list-style:none;padding:18px 36px 18px 0;position:relative;
+  font-weight:600;color:var(--text-hi);font-size:16px;
+}
+.hm-faq summary::-webkit-details-marker{display:none}
+.hm-faq summary::after{
+  content:"+";position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  font-size:22px;font-weight:400;color:var(--muted);
+}
+.hm-faq details[open] summary::after{content:"−"}
+.hm-faq details p{margin:0 0 20px;color:var(--text-2);line-height:1.65;max-width:68ch}
+.hm-faq a{color:var(--ok-text)}
+
+.hm-final{
+  text-align:center;padding:56px 24px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);
+}
+.hm-final h2{margin-bottom:10px}
+.hm-final p{margin:0 0 24px;color:var(--text-2)}
+
+@media (max-width:860px){
+  .hm{padding-top:28px}
+  .hm-hero{grid-template-columns:1fr;margin-bottom:72px}
+  .hm-hero h1{max-width:none}
+  .hm-section{margin-bottom:72px}
+  .hm-compare,.hm-steps,.hm-grid{grid-template-columns:1fr}
+  .hm-steps{gap:24px}
+}
+@media (max-width:480px){
+  .hm-actions .hm-cta{flex:1 1 100%;justify-content:center}
+  .hm-card{padding:20px}
+  .hm-final{padding:40px 20px}
+}
