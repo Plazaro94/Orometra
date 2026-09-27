@@ -48,33 +48,16 @@ export const state = {
 export const api = {};
 
 /**
- * A que panel de Diagnostico/Parametros pertenece un hallazgo del motor, cuando ese
- * panel ya muestra en crudo el mismo numero que el hallazgo narra en prosa. Clasificar
- * por texto (no por un campo del motor) evita tocar core/verdict.js: cada hallazgo se
- * genera ya en el idioma activo, así que las expresiones cubren ambos.
+ * A que panel de Diagnostico/Parametros pertenece un hallazgo del motor: lo declara
+ * core/verdict.js en cada hallazgo (`category`). `null` = no tiene una tabla que lo
+ * explique en otro sitio y se queda suelto en Verdict; 'plateau' = ya lo explican los
+ * badges de Top 3 y la ficha de la meseta.
  *
- * `null` = no tiene una tabla que lo explique en otro sitio; se queda como hallazgo
- * suelto en Verdict. 'plateau' = ya lo explican los badges de Top 3 / la tarjeta de
- * Plateaus con más contexto (que config exacta y que parametro); no hace falta
- * repetirlo en ningun lado, se descarta sin más.
+ * Antes se adivinaba con expresiones regulares sobre el texto en ES/EN, y cambiar la
+ * redaccion de un hallazgo lo movia o lo perdia en silencio.
  */
-const FINDING_CATEGORY_PATTERNS = [
-  ['stats', /(?=.*\bresult\b)(?=.*(ranking|regla|rule|fragilidad|fragility))|no transfiere|does not transfer|periodos no son intercambiables|periods are not interchangeable|\bsharpe\b|correlaci[oó]n is|is -> oos correlation/i],
-  ['stability', /variaciones de (umbral|tus m[ií]nimos)|(threshold|minima) variations|propios umbrales|own thresholds|mueven? la recomendaci[oó]n|move(s)? the recommendation|m[ií]nimos que elijas|minima you choose|efecto de tus m[ií]nimos|effect of your minima/i],
-  ['coverage', /\.set|muestreo disperso|sparse sampling|soporte local insuficiente|insufficient local support|periodo oos es (muy corto|m[aá]s largo)|oos period is (very short|longer)/i],
-  ['gates', /no est[aá]n? filtrando nada|not filtering anything/i],
-  ['sensitivity', /efecto combinado|combined effect|saltos desiguales|uneven steps/i],
-  ['parameters', /gana en el in-sample es de los que pierden|wins in-sample is among those that lose/i],
-  ['integrity', /misma optimizacion|same optimization|subconjunto del in-sample|subset of in-sample|identificadores duplicados|duplicate identifiers|pasadas sin pareja|unpaired passes/i],
-  ['plateau', /apoya en un valor que el forward castiga|leans on a value the forward punishes|pegada al borde del rango probado|sits on the edge of the tested range/i],
-];
-
 export function categorizeFinding(f) {
-  const text = `${f.title} ${f.detail}`;
-  for (const [cat, re] of FINDING_CATEGORY_PATTERNS) {
-    if (re.test(text)) return cat;
-  }
-  return null;
+  return f && f.category !== undefined ? f.category : null;
 }
 
 export function findingsForCategory(findings, cat) {
@@ -102,6 +85,13 @@ export const paramValue = (v) => {
   if (!Number.isFinite(v)) return '—';
   return Number.isInteger(v) ? String(v) : nf(4).format(v).replace(/,?0+$/, '');
 };
+
+/**
+ * `paramValue` listo para HTML. Los valores de texto (enums) vienen tal cual del
+ * archivo del usuario: sin escapar, un export manipulado podia inyectar HTML y
+ * ejecutar script. Toda interpolacion en plantillas usa esta, nunca `paramValue`.
+ */
+export const paramHtml = (v) => esc(paramValue(v));
 
 /** MT5 guarda el informe en UTF-16; las optimizaciones, en UTF-8. */
 export function decodeHead(buffer) {

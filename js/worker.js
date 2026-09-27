@@ -2,8 +2,29 @@
 // pasadas bloquearia la pestana durante segundos si se ejecutase en la interfaz.
 
 import { parseTable } from '../core/parse.js';
+import { metricColumns, inferParamsSingle } from '../core/schema.js';
 import { runAnalysis } from '../core/analysis.js';
 import { setLocale } from './i18n.js';
+
+// Tablas ya leidas en la comprobacion previa, por archivo (nombre|tamaño|fecha). Parsear
+// un XML de 70 MB cuesta segundos: hacerlo en el hilo principal congelaba la pagina y
+// hacerlo dos veces (comprobacion + analisis) lo pagaba doble.
+const tableCache = new Map();
+const CACHE_MAX = 4;
+function remember(key, table) {
+  if (!key) return;
+  tableCache.delete(key);
+  tableCache.set(key, table);
+  while (tableCache.size > CACHE_MAX) tableCache.delete(tableCache.keys().next().value);
+}
+function tableFor(table, key, buffer, name) {
+  if (table) return table;
+  if (key && tableCache.has(key)) return tableCache.get(key);
+  if (!buffer) return null;
+  const parsed = parseTable(buffer, name);
+  remember(key, parsed);
+  return parsed;
+}
 
 self.onmessage = (event) => {
   const { id, isBuffer, oosBuffer, isName, oosName, policy, locale, searchSet } = event.data;
@@ -11,11 +32,24 @@ self.onmessage = (event) => {
   try {
     // Sin esto, L() en el worker cae siempre a español (no hay document).
     if (locale === 'en' || locale === 'es') setLocale(locale);
+    if (event.data.kind === 'preflight') {
+      const table = tableFor(null, event.data.key, event.data.buffer, event.data.name);
+      post('done', {
+        summary: {
+          rows: table.rows.length,
+          cols: table.headers.length,
+          params: inferParamsSingle(table).params.length,
+          metrics: Object.keys(metricColumns(table)).length,
+          format: table.format || 'table',
+        },
+      });
+      return;
+    }
     post('progress', { pct: 2, label: locale === 'en' ? 'Reading files' : 'Leyendo archivos' });
     // Los Excel binarios llegan ya parseados desde el hilo principal, porque el
     // lector opcional solo puede cargarse alli.
-    const isTable = event.data.isTable || parseTable(isBuffer, isName);
-    const oosTable = event.data.oosTable || (oosBuffer ? parseTable(oosBuffer, oosName) : null);
+    const isTable = tableFor(event.data.isTable, event.data.isKey, isBuffer, isName);
+    const oosTable = tableFor(event.data.oosTable, event.data.oosKey, oosBuffer, oosName);
     const analysis = runAnalysis({
       isTable,
       oosTable,

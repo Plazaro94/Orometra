@@ -46,7 +46,6 @@ export function setLocale(lang) {
     try { localStorage.setItem(KEY, next); } catch { /* privado */ }
   }
   applyStaticI18n();
-  syncDocumentMeta();
   return next;
 }
 
@@ -64,13 +63,29 @@ export function applyStaticI18n() {
     const key = el.getAttribute('data-i18n-html');
     if (key) el.innerHTML = t(key);
   });
+  syncDocumentMeta();
+}
+
+/** Pagina actual, para usar su propio titulo y descripcion (no los de la portada). */
+function currentPage() {
+  if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-page')) {
+    return document.documentElement.getAttribute('data-page');
+  }
+  if (typeof location === 'undefined') return 'landing';
+  const path = location.pathname;
+  if (/\/app\//.test(path)) return 'app';
+  if (/\/methodology\//.test(path)) return 'methodology';
+  if (/\/privacy\//.test(path)) return 'privacy';
+  return 'landing';
 }
 
 function syncDocumentMeta() {
   if (typeof document === 'undefined') return;
-  const title = t('meta.title');
-  const desc = t('meta.description');
-  document.title = title;
+  const page = currentPage();
+  const title = t(`meta.title.${page}`);
+  const desc = t(`meta.description.${page}`);
+  // En la app, tras un analisis el titulo lleva el archivo ("✓ archivo · Orometra"): no pisarlo.
+  if (!(page === 'app' && document.body && document.body.classList.contains('has-analysis'))) document.title = title;
   const md = document.querySelector('meta[name="description"]');
   if (md) md.setAttribute('content', desc);
   const ogt = document.querySelector('meta[property="og:title"]');
@@ -83,8 +98,20 @@ function syncDocumentMeta() {
 
 const STRINGS = {
   en: {
-    'meta.title': 'Orometra — MT5 Optimization Robustness Analyzer',
-    'meta.description': 'Find stable parameter plateaus in your MetaTrader 5 optimizations — not isolated peaks. Top 3 configurations with reasons. Analysis runs entirely in your browser.',
+    'doc.404.eyebrow': 'Error 404',
+    'doc.404.h1': 'This page does not exist',
+    'doc.404.lead': 'The link may be old or mistyped. Nothing was lost: Orometra never stores your files, so there is nothing to recover here.',
+    'doc.404.home': 'Back to home',
+    'meta.title.notfound': 'Page not found — Orometra',
+    'meta.description.notfound': 'This page does not exist.',
+    'meta.title.landing': 'Orometra — MT5 Overfitting & Robustness Audit',
+    'meta.description.landing': 'Detect overfitting in your MetaTrader 5 optimization before you go live. Orometra finds the stable parameter plateau that survives — not the isolated peak that fooled your backtest. Runs entirely in your browser.',
+    'meta.title.app': 'Orometra App — MT5 Optimization Audit',
+    'meta.description.app': 'Audit MetaTrader 5 optimization results in your browser. Find parameter plateaus, Top 3 with reasons, evidence strength.',
+    'meta.title.methodology': 'Methodology — Orometra',
+    'meta.description.methodology': 'How Orometra decides: minima, plateaus, evidence strength — and what it does not claim.',
+    'meta.title.privacy': 'Privacy — Orometra',
+    'meta.description.privacy': 'Orometra privacy policy: MT5 optimization analysis runs entirely in your browser. No uploads, no accounts, no cookies — only anonymous, aggregate visit counts.',
 
     'skip': 'Skip to content',
     'brand.sub': 'MT5 optimization audit',
@@ -132,15 +159,19 @@ const STRINGS = {
     'drop.oos.status': 'Detected by content, not by which box you use',
     'drop.set.hint': 'Optional: drop the optimization .set (start||step||stop||Y) anywhere to contrast coverage vs the search range you asked MT5 for.',
     'drop.choose': 'Choose',
-    'intake.change': 'Change files',
+    'intake.change': 'Change files or minima',
     'analyze.label': 'Audit',
-    'analyze.sub': 'Load in-sample and forward',
+    'analyze.sub': 'Load the in-sample (and the forward, if you have it)',
     'analyze.busy': 'Auditing…',
     'analyze.ready': 'Ready to audit',
     'analyze.needIs': 'Load the in-sample file',
-    'analyze.needOos': 'Load the forward file too — without it there is no out-of-sample check',
+    'analyze.needOos': 'Ready — in-sample only: no out-of-sample check, evidence capped at weak',
     'preflight.kicker': 'Data check',
     'preflight.title': 'Ready to audit',
+    'preflight.title.reading': 'Reading files…',
+    'preflight.title.error': 'There is a problem with a file',
+    'preflight.title.isOnly': 'Ready to audit (in-sample only)',
+    'preflight.note.isOnly': 'You can audit the in-sample alone, but without a forward there is no out-of-sample check: the evidence will not go beyond weak.',
     'preflight.note.ok': 'Files look readable. Press Audit to run the robustness engine.',
     'preflight.note.warn': 'Something looks off in at least one file. Fix it before auditing, or the engine will stop with a clear error.',
     'preflight.rows': 'Rows',
@@ -154,7 +185,7 @@ const STRINGS = {
     'outcome.banner.no_plateau': 'No stable plateau',
 
     'policy.h2': 'Minimums a configuration must meet',
-    'policy.p': 'Required in <strong>both periods</strong>. Anything that fails is out, no matter how high it ranks in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.',
+    'policy.p': 'The plateau is searched among configurations that meet these minima <strong>in-sample</strong>. On the <strong>forward</strong> they are required again to validate it: if many of its configurations fail them, the plateau drops in rank and you are warned. Nothing gets in just for ranking high in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.',
     'policy.pf': 'Minimum profit factor',
     'policy.dd': 'Maximum drawdown (%)',
     'policy.trades': 'Minimum trades (in-sample)',
@@ -220,7 +251,7 @@ const STRINGS = {
     'lp.compare.after.stamp': 'MODERATE EVIDENCE',
     'lp.compare.after.selected': 'Selected instead',
     'lp.compare.after.selected.why': "Not the one that made the most — the one that fails least when the market shifts",
-    'lp.compare.after.selected.stat': 'Pass 4283 · still holds up out-of-sample (76%)',
+    'lp.compare.after.selected.stat': 'Pass 4283 · keeps 76% of its quality on the forward',
     'lp.compare.after.spark': 'Stable plateau',
     'lp.compare.caption': 'Illustrative example. Your audit explains why a configuration was selected or rejected — not just a score.',
     'lp.what.title': 'What you get',
@@ -261,7 +292,7 @@ const STRINGS = {
     'doc.method.h1': 'How the engine decides',
     'doc.method.lead': 'We do not re-rank your MT5 table. We look for stable zones — and tell you how strong the evidence is.',
     'doc.method.pipe.1.title': 'Gates',
-    'doc.method.pipe.1.body': 'Your minima in both periods',
+    'doc.method.pipe.1.body': 'Your floors, not a ranking',
     'doc.method.pipe.2.title': 'Quality',
     'doc.method.pipe.2.body': 'Rebuilt without Result',
     'doc.method.pipe.3.title': 'Neighborhood',
@@ -271,16 +302,16 @@ const STRINGS = {
     'doc.method.pipe.5.title': 'Pick',
     'doc.method.pipe.5.body': 'Center of the plateau, not the peak',
     'doc.method.pipe.6.title': 'Unseen',
-    'doc.method.pipe.6.body': 'Optional clean check',
+    'doc.method.pipe.6.body': 'The only clean check',
     'doc.method.s1.title': 'Minima before rankings',
-    'doc.method.s1.body': 'A setup only enters if it clears your floors (PF, drawdown, trades, profit) in both periods. Rankings always invent a “top 5%” — even when everything loses.',
+    'doc.method.s1.body': 'A setup only enters the search if it clears your floors (PF, drawdown, trades, profit) in-sample, and the forward requires them again to validate. Rankings always invent a “top 5%” — even when everything loses.',
     'doc.method.s1.media.floor': 'YOUR MINIMUMS',
     'doc.method.s1.media.rejected': 'MT5: #1',
     'doc.method.s1.media.selected': 'Selected',
     'doc.method.s2.title': 'Quality without Result',
-    'doc.method.s2.body': 'MT5’s Result column is whatever you optimized for. We rebuild quality from objective exports (PF, recovery, Sharpe, drawdown, trades). Score = worse of in-sample and forward — not the average.',
+    'doc.method.s2.body': 'MT5’s Result column is whatever you optimized for. We rebuild quality from objective exports (PF, recovery, Sharpe, drawdown, trades). The plateau is found with in-sample quality and the forward validates it: if quality drops there, the plateau drops in rank. The two periods are never averaged.',
     'doc.method.s2.media.avg': 'AVG ✕',
-    'doc.method.s2.media.score': 'Your real score',
+    'doc.method.s2.media.score': 'Forward validates',
     'doc.method.s3.title': 'Plateaus, not peaks',
     'doc.method.s3.body': 'Isolated spikes are rejected. A plateau is a zone where neighbors also clear your minima — we pick its center, the point whose worst neighbor is still solid, not the single tallest spike.',
     'doc.method.s3.media.floor': 'YOUR MINIMUMS',
@@ -303,7 +334,7 @@ const STRINGS = {
     'doc.method.s6.media.report2': 'report',
     'doc.method.s6.1': 'A plateau is stability in your sample — not a promise of future profit.',
     'doc.method.s6.2': 'We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.',
-    'doc.method.s6.3': 'Forward already helps select, so it is slightly “contaminated”; the cleanest check is a true unseen period.',
+    'doc.method.s6.3': 'Forward is already used to validate and rank plateaus, so it is not a blind period; the cleanest check is a true unseen period.',
     'doc.method.s6.4': 'We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.',
     'doc.method.s6.5': 'With many parameters or a genetic (non-grid) search, neighborhood and plateau size are capped conservatively — it may understate support, never invent it.',
     'doc.method.s7.title': 'It audits its own thresholds',
@@ -342,8 +373,20 @@ const STRINGS = {
     'doc.privacy.full': 'Full legal text in the app →',
   },
   es: {
-    'meta.title': 'Orometra — Analizador de robustez de optimizaciones MT5',
-    'meta.description': 'Encuentra las zonas estables de tu EA de MetaTrader 5: mesetas en vez de picos, Top 3 con su porqué. Todo el análisis se ejecuta en tu navegador.',
+    'doc.404.eyebrow': 'Error 404',
+    'doc.404.h1': 'Esta página no existe',
+    'doc.404.lead': 'Puede que el enlace sea antiguo o esté mal escrito. No se ha perdido nada: Orometra nunca guarda tus archivos, así que aquí no hay nada que recuperar.',
+    'doc.404.home': 'Volver al inicio',
+    'meta.title.notfound': 'Página no encontrada — Orometra',
+    'meta.description.notfound': 'Esta página no existe.',
+    'meta.title.landing': 'Orometra — Auditoría de sobreajuste y robustez para MT5',
+    'meta.description.landing': 'Detecta el sobreajuste de tu optimización de MetaTrader 5 antes de operar en real. Orometra encuentra la meseta de parámetros que aguanta, no el pico aislado que engañó a tu backtest. Todo se ejecuta en tu navegador.',
+    'meta.title.app': 'Orometra App — Auditoría de optimizaciones MT5',
+    'meta.description.app': 'Audita los resultados de optimización de MetaTrader 5 en tu navegador: mesetas de parámetros, Top 3 con su porqué y fuerza de la evidencia.',
+    'meta.title.methodology': 'Metodología — Orometra',
+    'meta.description.methodology': 'Cómo decide Orometra: mínimos, mesetas, fuerza de la evidencia — y lo que no afirma.',
+    'meta.title.privacy': 'Privacidad — Orometra',
+    'meta.description.privacy': 'Política de privacidad de Orometra: el análisis de tus optimizaciones de MT5 se ejecuta entero en tu navegador. Sin subidas, sin cuentas, sin cookies; solo recuento anónimo y agregado de visitas.',
 
     'skip': 'Saltar al contenido',
     'brand.sub': 'Auditoría de optimizaciones MT5',
@@ -391,15 +434,19 @@ const STRINGS = {
     'drop.oos.status': 'Se detecta por su contenido, no por donde lo sueltes',
     'drop.set.hint': 'Opcional: suelta el .set de la optimización (inicio||paso||fin||Y) en cualquier sitio para contrastar la cobertura con el rango que pediste en MT5.',
     'drop.choose': 'Elegir',
-    'intake.change': 'Cambiar archivos',
+    'intake.change': 'Cambiar archivos o mínimos',
     'analyze.label': 'Auditar',
-    'analyze.sub': 'Carga in-sample y forward',
+    'analyze.sub': 'Carga el in-sample (y el forward, si lo tienes)',
     'analyze.busy': 'Auditando…',
     'analyze.ready': 'Listo para auditar',
     'analyze.needIs': 'Carga el archivo in-sample',
-    'analyze.needOos': 'Carga también el forward — sin él no hay contraste fuera de muestra',
+    'analyze.needOos': 'Listo — solo in-sample: sin contraste fuera de muestra, evidencia como mucho débil',
     'preflight.kicker': 'Comprobación de datos',
     'preflight.title': 'Listo para auditar',
+    'preflight.title.reading': 'Leyendo archivos…',
+    'preflight.title.error': 'Hay un problema con un archivo',
+    'preflight.title.isOnly': 'Listo para auditar (solo in-sample)',
+    'preflight.note.isOnly': 'Puedes auditar solo el in-sample, pero sin forward no hay contraste fuera de muestra: la evidencia no pasará de débil.',
     'preflight.note.ok': 'Los archivos se leen bien. Pulsa Auditar para lanzar el motor de robustez.',
     'preflight.note.warn': 'Algo no cuadra en al menos un archivo. Corrígelo antes de auditar, o el motor parará con un error claro.',
     'preflight.rows': 'Filas',
@@ -413,7 +460,7 @@ const STRINGS = {
     'outcome.banner.no_plateau': 'Sin meseta estable',
 
     'policy.h2': 'Mínimos que debe cumplir una configuración',
-    'policy.p': 'Se exigen en <strong>los dos periodos</strong>. Quien no los cumple queda fuera, por muy arriba que salga en tu tabla de MT5. El mínimo de operaciones del forward se reescala según su duración estimada.',
+    'policy.p': 'La meseta se busca entre las configuraciones que cumplen estos mínimos en el <strong>in-sample</strong>. En el <strong>forward</strong> se vuelven a exigir para validarla: si muchas de sus configuraciones los fallan, la meseta baja de puesto y se avisa. Nada entra solo por salir arriba en tu tabla de MT5. El mínimo de operaciones del forward se reescala según su duración estimada.',
     'policy.pf': 'Factor de beneficio mínimo',
     'policy.dd': 'Drawdown máximo (%)',
     'policy.trades': 'Operaciones mínimas (in-sample)',
@@ -479,7 +526,7 @@ const STRINGS = {
     'lp.compare.after.stamp': 'EVIDENCIA MODERADA',
     'lp.compare.after.selected': 'Elegido en su lugar',
     'lp.compare.after.selected.why': 'No es el que más ganó — es el que menos falla si el mercado cambia',
-    'lp.compare.after.selected.stat': 'Pass 4283 · sigue funcionando fuera de muestra (76 %)',
+    'lp.compare.after.selected.stat': 'Pass 4283 · conserva el 76 % de su calidad en el forward',
     'lp.compare.after.spark': 'Meseta estable',
     'lp.compare.caption': 'Ejemplo ilustrativo. Tu auditoría explica por qué se eligió o se descartó una configuración — no solo una nota.',
     'lp.what.title': 'Qué obtienes',
@@ -520,7 +567,7 @@ const STRINGS = {
     'doc.method.h1': 'Cómo decide el motor',
     'doc.method.lead': 'No reordenamos tu tabla de MT5. Buscamos zonas estables — y te decimos cuánta evidencia hay.',
     'doc.method.pipe.1.title': 'Mínimos',
-    'doc.method.pipe.1.body': 'Tus suelos en ambos periodos',
+    'doc.method.pipe.1.body': 'Tus suelos, no un ranking',
     'doc.method.pipe.2.title': 'Calidad',
     'doc.method.pipe.2.body': 'Reconstruida sin Result',
     'doc.method.pipe.3.title': 'Vecindad',
@@ -530,16 +577,16 @@ const STRINGS = {
     'doc.method.pipe.5.title': 'Elección',
     'doc.method.pipe.5.body': 'Centro de la meseta, no el pico',
     'doc.method.pipe.6.title': 'No visto',
-    'doc.method.pipe.6.body': 'Comprobación limpia opcional',
+    'doc.method.pipe.6.body': 'La única comprobación limpia',
     'doc.method.s1.title': 'Mínimos antes que rankings',
-    'doc.method.s1.body': 'Una config solo entra si supera tus suelos (PF, drawdown, operaciones, beneficio) en los dos periodos. Un ranking siempre inventa un «top 5 %» — aunque todo pierda dinero.',
+    'doc.method.s1.body': 'Una config solo entra en la búsqueda si supera tus suelos (PF, drawdown, operaciones, beneficio) en el in-sample, y el forward vuelve a exigirlos para validar. Un ranking siempre inventa un «top 5 %» — aunque todo pierda dinero.',
     'doc.method.s1.media.floor': 'TUS MÍNIMOS',
     'doc.method.s1.media.rejected': 'MT5: #1',
     'doc.method.s1.media.selected': 'Elegido',
     'doc.method.s2.title': 'Calidad sin Result',
-    'doc.method.s2.body': 'La columna Result es lo que optimizaste. Reconstruimos calidad con columnas objetivas (PF, recuperación, Sharpe, drawdown, operaciones). Puntuación = el peor entre in-sample y forward — no la media.',
+    'doc.method.s2.body': 'La columna Result es lo que optimizaste. Reconstruimos calidad con columnas objetivas (PF, recuperación, Sharpe, drawdown, operaciones). La meseta se busca con la calidad in-sample y el forward la valida: si allí cae, la meseta baja de puesto. Nunca se promedian los dos periodos.',
     'doc.method.s2.media.avg': 'MEDIA ✕',
-    'doc.method.s2.media.score': 'Tu puntuación real',
+    'doc.method.s2.media.score': 'El forward valida',
     'doc.method.s3.title': 'Mesetas, no picos',
     'doc.method.s3.body': 'Los picos aislados se descartan. Una meseta es una zona donde los vecinos también pasan tus mínimos — elegimos su centro, el punto cuyo peor vecino sigue siendo sólido, no la punta más alta.',
     'doc.method.s3.media.floor': 'TUS MÍNIMOS',
@@ -562,7 +609,7 @@ const STRINGS = {
     'doc.method.s6.media.report2': 'reportamos',
     'doc.method.s6.1': 'Una meseta es estabilidad en tu muestra — no una promesa de beneficio futuro.',
     'doc.method.s6.2': 'No inventamos PBO / Reality Check / SPA clásicos: el export de MT5 no trae las curvas de equity que esos tests necesitan.',
-    'doc.method.s6.3': 'El forward ya ayuda a seleccionar, así que está algo «contaminado»; lo más limpio es un periodo de verdad no visto.',
+    'doc.method.s6.3': 'El forward ya se usa para validar y ordenar las mesetas, así que no es un tramo ciego; lo más limpio es un periodo de verdad no visto.',
     'doc.method.s6.4': 'No te decimos que compres, vendas o financies un EA. Evidencia ≠ permiso para operar.',
     'doc.method.s6.5': 'Con muchos parámetros o búsqueda genética (sin rejilla), la vecindad y el tamaño de meseta se acotan de forma conservadora — puede subestimar soporte, nunca inventarlo.',
     'doc.method.s7.title': 'Audita sus propios umbrales',

@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
 <meta name="description" content="How Orometra decides: minima, plateaus, evidence strength — and what it does not claim.">
@@ -14,9 +17,10 @@
 <meta property="og:title" content="Methodology — Orometra">
 <meta property="og:description" content="How Orometra turns MT5 optimization tables into inspectable robustness evidence.">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://orometra.com/og-image.png">
+<meta property="og:image" content="https://orometra.com/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://orometra.com/og-image.png">
+<meta name="twitter:image" content="https://orometra.com/og-image.jpg">
 <meta name="color-scheme" content="dark">
 <link rel="stylesheet" href="../styles.css">
 <script src="../js/theme-init.js"></script>
@@ -57,7 +61,7 @@
     <li>
       <span class="lp-pipe-num">01</span>
       <strong data-i18n="doc.method.pipe.1.title">Gates</strong>
-      <span data-i18n="doc.method.pipe.1.body">Your minima in both periods</span>
+      <span data-i18n="doc.method.pipe.1.body">Your floors, not a ranking</span>
     </li>
     <li>
       <span class="lp-pipe-num">02</span>
@@ -82,7 +86,7 @@
     <li>
       <span class="lp-pipe-num">06</span>
       <strong data-i18n="doc.method.pipe.6.title">Unseen</strong>
-      <span data-i18n="doc.method.pipe.6.body">Optional clean check</span>
+      <span data-i18n="doc.method.pipe.6.body">The only clean check</span>
     </li>
   </ol>
 
@@ -91,7 +95,7 @@
       <span class="lp-method-num">01</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s1.title">Minima before rankings</h2>
-        <p data-i18n="doc.method.s1.body">A setup only enters if it clears your floors (PF, drawdown, trades, profit) in both periods. Rankings always invent a “top 5%” — even when everything loses.</p>
+        <p data-i18n="doc.method.s1.body">A setup only enters the search if it clears your floors (PF, drawdown, trades, profit) in-sample, and the forward requires them again to validate. Rankings always invent a “top 5%” — even when everything loses.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -126,7 +130,7 @@
       <span class="lp-method-num">02</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s2.title">Quality without Result</h2>
-        <p data-i18n="doc.method.s2.body">MT5’s Result column is whatever you optimized for. We rebuild quality from objective exports (PF, recovery, Sharpe, drawdown, trades). Score = worse of in-sample and forward — not the average.</p>
+        <p data-i18n="doc.method.s2.body">MT5’s Result column is whatever you optimized for. We rebuild quality from objective exports (PF, recovery, Sharpe, drawdown, trades). The plateau is found with in-sample quality and the forward validates it: if quality drops there, the plateau drops in rank. The two periods are never averaged.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -142,7 +146,7 @@
 
           <line x1="320" y1="119" x2="320" y2="160" stroke="var(--ok-line)" stroke-width="1.5"/>
           <rect x="248" y="88" width="144" height="24" rx="12" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
-          <text x="320" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s2.media.score">Your real score</text>
+          <text x="320" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s2.media.score">Forward validates</text>
         </svg>
       </div>
     </section>
@@ -253,9 +257,9 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s6.title">What we do not claim</h2>
         <ul class="lp-list">
-          <li data-i18n="doc.method.s6.1">A plateau is stability in your sample — not proof of future edge.</li>
+          <li data-i18n="doc.method.s6.1">A plateau is stability in your sample — not a promise of future profit.</li>
           <li data-i18n="doc.method.s6.2">We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.</li>
-          <li data-i18n="doc.method.s6.3">Forward already helps select, so it is slightly “contaminated”; the cleanest check is a true unseen period.</li>
+          <li data-i18n="doc.method.s6.3">Forward is already used to validate and rank plateaus, so it is not a blind period; the cleanest check is a true unseen period.</li>
           <li data-i18n="doc.method.s6.4">We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.</li>
           <li data-i18n="doc.method.s6.5">With many parameters or a genetic (non-grid) search, neighborhood and plateau size are capped conservatively — it may understate support, never invent it.</li>
         </ul>

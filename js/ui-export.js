@@ -107,18 +107,19 @@ export function doExport(kind, plateauIndex) {
         'Without forward, a deployment .set is not exported: the region was only measured in-sample. Export the refinement range, or re-audit with the forward file.',
       ));
     }
-    downloadText(`robustness-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best));
+    downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best));
   } else if (kind === 'refine') {
     if (!best) return api.showError(L('No hay ninguna meseta que refinar.', 'There is no plateau to refine.'));
-    downloadText(`robustness-M${best.rank}-refinamiento.set`, buildRefinementSetFile(a, best));
+    downloadText(`orometra-M${best.rank}-refinamiento.set`, buildRefinementSetFile(a, best));
   } else if (kind === 'json') {
-    downloadText(`robustness-informe-${stamp}.json`, JSON.stringify(buildReport(a, {
+    downloadText(`orometra-informe-${stamp}.json`, JSON.stringify(buildReport(a, {
       source: state.source ? { is: state.source.is, oos: state.source.oos || null, at: state.source.at } : null,
+      shownVerdict: displayVerdictCopy(a),
     }), null, 2), 'application/json');
   } else if (kind === 'csv') {
-    downloadText(`robustness-configuraciones-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');
+    downloadText(`orometra-configuraciones-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');
   } else if (kind === 'summary') {
-    downloadText(`robustness-resumen-${stamp}.txt`, buildPlainSummary(a));
+    downloadText(`orometra-resumen-${stamp}.txt`, buildPlainSummary(a));
   }
 }
 

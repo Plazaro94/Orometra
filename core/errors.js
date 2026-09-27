@@ -92,9 +92,9 @@ export function errorCopy(code, L) {
       ),
     },
     [CODE.DATA_ERROR]: {
-      title: L('Datos insuficientes tras la limpieza', 'Insufficient data after cleaning'),
+      title: L('Datos no utilizables', 'Unusable data'),
       hint: L(
-        'Quedaron demasiadas pocas configuraciones legibles. Revisa columnas, valores vacíos o el emparejado IS/Forward.',
+        'Quedan muy pocas configuraciones legibles. Revisa columnas, valores vacíos o el emparejado in-sample/forward.',
         'Too few readable configurations remained. Check columns, empty values, or the IS/Forward pairing.',
       ),
     },

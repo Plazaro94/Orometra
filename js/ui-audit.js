@@ -4,6 +4,7 @@ import { parseTable } from '../core/parse.js';
 import { AnalysisError, CODE, classifyError, errorCopy } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
 import { state, api, $, $$, esc } from './ui-state.js';
+import { displayVerdictLevel } from './ui-verdict.js';
 
 export function showProgress(pct, label) {
   $('#statusBar').hidden = false;
@@ -11,9 +12,11 @@ export function showProgress(pct, label) {
   $('#progressLabel').textContent = label;
 }
 
-export function showError(errOrMessage) {
+export function showError(errOrMessage, code = CODE.DATA_ERROR) {
+  // Los avisos de la interfaz traen su propio codigo: antes todo texto suelto caia en
+  // "Datos insuficientes tras la limpieza", tambien "has soltado dos forward".
   const classified = typeof errOrMessage === 'string'
-    ? { code: CODE.DATA_ERROR, message: errOrMessage, details: {} }
+    ? { code, message: errOrMessage, details: {} }
     : classifyError(errOrMessage);
   const copy = errorCopy(classified.code, L);
   $('#errorBox').hidden = false;
@@ -123,7 +126,7 @@ export function runInWorker(payload) {
       if (!msg || msg.id !== id) return;
       if (msg.type === 'progress') { showProgress(msg.pct, msg.label); return; }
       finish();
-      if (msg.type === 'done') resolve(msg.analysis);
+      if (msg.type === 'done') resolve(msg.summary || msg.analysis);
       else if (msg.type === 'error') {
         reject(msg.code
           ? new AnalysisError(msg.code, msg.message, msg.details || {})
@@ -145,7 +148,9 @@ export function runInWorker(payload) {
     pendingRequests.set(id, { resolve, reject, timer });
     w.addEventListener('message', onMessage);
     try {
-      w.postMessage({ id, ...payload });
+      // Los buffers se transfieren, no se copian: con 70 MB la copia se notaba.
+      const transfer = [payload.isBuffer, payload.oosBuffer, payload.buffer].filter((b) => b instanceof ArrayBuffer);
+      w.postMessage({ id, ...payload }, transfer);
     } catch (err) {
       finish();
       reject(new Error(L(
@@ -155,6 +160,48 @@ export function runInWorker(payload) {
     }
   });
 }
+
+/**
+ * Comprobacion previa de un archivo: filas, parametros y metricas. Se lee en el worker
+ * (y se queda alli para el analisis); solo el .xlsx, que se descomprime aqui, se resume
+ * en el hilo principal. Sin metricas o sin parametros no es un export de optimizacion.
+ */
+export async function preflightFile(file) {
+  const prepared = await prepareTable(file);
+  let summary;
+  const w = prepared.table ? null : getWorker();
+  if (w) {
+    summary = await runInWorker({
+      kind: 'preflight', buffer: prepared.buffer, name: prepared.name || file.name, key: fileKey(file), locale: getLocale(),
+    });
+  } else {
+    const { metricColumns, inferParamsSingle } = await import('../core/schema.js');
+    const table = prepared.table || parseTable(prepared.buffer, prepared.name || file.name);
+    summary = {
+      rows: table.rows.length,
+      cols: table.headers.length,
+      params: inferParamsSingle(table).params.length,
+      metrics: Object.keys(metricColumns(table)).length,
+      format: table.format || 'table',
+    };
+  }
+  if (!summary.metrics) {
+    throw new AnalysisError(CODE.FILE_ERROR, L(
+      'No se reconoce ninguna métrica de MT5 (Profit, Profit Factor, Drawdown…): no parece una exportación de optimización.',
+      'No MT5 metric is recognized (Profit, Profit Factor, Drawdown…): this does not look like an optimization export.',
+    ));
+  }
+  if (!summary.params) {
+    throw new AnalysisError(CODE.FILE_ERROR, L(
+      'No se reconoce ningún parámetro del EA en este archivo.',
+      'No EA parameter is recognized in this file.',
+    ));
+  }
+  return { ok: true, name: file.name, ...summary };
+}
+
+/** Identifica un archivo para reutilizar su tabla ya leida en el worker. */
+export const fileKey = (file) => (file && file.size !== undefined ? `${file.name}|${file.size}|${file.lastModified || 0}` : null);
 
 export async function prepareTable(file) {
   const buffer = await file.arrayBuffer();
@@ -173,11 +220,16 @@ export async function prepareTable(file) {
 export async function runAudit() {
   if (state.busy) return;
   clearError();
+  const policyProblem = api.policyInputProblem && api.policyInputProblem();
+  if (policyProblem) {
+    showError(policyProblem);
+    return;
+  }
   const demoOk = state.isDemo && state.isTable && state.oosTable;
-  if (!demoOk && (!state.isFile || !state.oosFile)) {
+  if (!demoOk && !state.isFile) {
     showError(L(
-      'Para auditar hacen falta in-sample y forward. Sin forward no hay contraste fuera de muestra.',
-      'Audit needs both in-sample and forward. Without forward there is no out-of-sample contrast.',
+      'Carga al menos el archivo in-sample para auditar.',
+      'Load at least the in-sample file to audit.',
     ));
     return;
   }
@@ -201,6 +253,8 @@ export async function runAudit() {
         isTable: is.table || null,
         isBuffer: is.buffer || null,
         isName: is.name || (state.isFile && state.isFile.name),
+        isKey: fileKey(state.isFile),
+        oosKey: state.oosFile ? fileKey(state.oosFile) : null,
         oosTable: oos ? oos.table || null : null,
         oosBuffer: oos ? oos.buffer || null : null,
         oosName: oos ? oos.name : null,
@@ -216,7 +270,9 @@ export async function runAudit() {
       oos: state.isDemo ? null : (state.oosFile && state.oosFile.name) || null,
       at: new Date(),
     };
-    const mark = analysis.verdict.level === 'strong' ? '✓' : analysis.verdict.level === 'moderate' ? '!' : '·';
+    // El nivel MOSTRADO (sin periodo no visto, 'sólida' se muestra como moderada).
+    const shownLevel = displayVerdictLevel(analysis);
+    const mark = shownLevel === 'strong' ? '✓' : shownLevel === 'moderate' ? '!' : '·';
     document.title = `${mark} ${state.source.is} · Orometra`;
     // Primer analisis de la sesion: colapsa la ficha de carga de archivos, que si no
     // se repite entera en cada una de las 7 pestanas. Un reanalisis (mismos archivos,

@@ -6,7 +6,7 @@ import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L } from './i18n.js';
 import { gloss } from './glossary.js';
-import { state, $, num, int, pct, esc, rich, nf, paramValue, roleBadge, findingsForCategory } from './ui-state.js';
+import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory } from './ui-state.js';
 
 /**
  * Hallazgos del motor que narran en prosa el mismo numero que esta tabla muestra en
@@ -53,7 +53,7 @@ export function renderRepCard(a, p) {
       <div class="rep-score">${num(p.robust, 0)}<small>${gloss('robustness', L('robustez', 'robustness'), { align: 'right' })}</small></div>
     </div>
     <div class="param-grid">
-      ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramValue(r.params[j])}</strong></div>`).join('')}
+      ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramHtml(r.params[j])}</strong></div>`).join('')}
     </div>
     <div class="evidence-list">
       <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(r.qualityIs, 2)} <em>${esc(qualityLabel(r.qualityIs))}</em></strong></div>
@@ -70,12 +70,12 @@ export function renderRepCard(a, p) {
       <div><span>${L('In-sample · PF / DD / ops', 'In-sample · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}% / ${int(r.is.trades)}</strong></div>
     </div>
     ${p.invertedRisk && p.invertedRisk.length ? `<div class="inline-warn">${L(
-      `Se apoya en ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramValue(x.bestIs)}</code>`).join(', ')}, el valor que gana en el in-sample pero que el forward castiga. Puede ser mérito suyo o suerte.`,
-      `It relies on ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramValue(x.bestIs)}</code>`).join(', ')}, the value that wins in-sample but that the forward punishes. It may be merit or luck.`,
+      `Se apoya en ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, el valor que gana en el in-sample pero que el forward castiga. Puede ser mérito suyo o suerte.`,
+      `It relies on ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, the value that wins in-sample but that the forward punishes. It may be merit or luck.`,
     )}</div>` : ''}
     ${p.boundary.length ? `<div class="inline-warn">${L(
-      `Pegada al borde del rango en: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramValue(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
-      `Stuck to the range edge at: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramValue(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
+      `Pegada al borde del rango en: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
+      `Stuck to the range edge at: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
     )}</div>` : ''}
     <div class="rep-actions">
       <button class="ghost-btn" data-copy="${p.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
@@ -149,12 +149,12 @@ export function renderPlateaus(a) {
         <tbody>${sel.refinement.map((x) => `<tr>
           <td class="mono">${esc(x.name)}</td>
           ${x.constant
-            ? `<td>${paramValue(x.value)}</td><td colspan="4" class="muted">${L('no se optimizó', 'was not optimized')}</td>`
+            ? `<td>${paramHtml(x.value)}</td><td colspan="4" class="muted">${L('no se optimizó', 'was not optimized')}</td>`
             : x.fixed
-              ? `<td class="strong">${paramValue(x.center)}</td><td colspan="4" class="muted">${x.categorical
+              ? `<td class="strong">${paramHtml(x.center)}</td><td colspan="4" class="muted">${x.categorical
                 ? L('booleano o enumeración: se fija, actívalo a mano si quieres barrerlo', 'boolean or enum: fixed; enable manually if you want to sweep it')
                 : L('se fija: el presupuesto de la rejilla se gasta en parámetros más influyentes', 'fixed: the grid budget is spent on more influential parameters')}</td>`
-              : `<td class="strong">${paramValue(x.center)}</td><td>${paramValue(x.start)}</td><td>${paramValue(x.step)}</td><td>${paramValue(x.stop)}</td><td>${int(x.levels)}</td>`}
+              : `<td class="strong">${paramHtml(x.center)}</td><td>${paramHtml(x.start)}</td><td>${paramHtml(x.step)}</td><td>${paramHtml(x.stop)}</td><td>${int(x.levels)}</td>`}
         </tr>`).join('')}</tbody>
       </table></div>
       <div class="rep-actions"><button class="ghost-btn" data-export="refine">${L('Descargar .set de refinamiento', 'Download refinement .set')}</button></div>
@@ -217,8 +217,8 @@ function renderPlateauSurfacePanel(a, plateau) {
       </div>
     </div>
     <p class="panel-intro">${L(
-      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta — las que también aguantan en el periodo forward. El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra para rotar.`,
-      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau — the ones that also hold up in the forward period. The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag to rotate.`,
+      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta (se descubre con el in-sample; el forward solo la valida). El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
+      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau (found in-sample; the forward only validates it). The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
     )}</p>
     <div class="surface-wrap">
       <canvas id="plateauSurfaceCanvas" role="img" aria-label="${esc(L('Superficie 3D de calidad real para dos parámetros', '3D surface of real quality for two parameters'))}"></canvas>
@@ -230,12 +230,15 @@ function renderPlateauSurfacePanel(a, plateau) {
 
 function renderSurfaceDetail(a, grid, hit) {
   if (!hit) {
-    return `<p class="muted">${L('Pasa el ratón sobre una barra para ver la pasada exacta.', 'Hover a bar to see the exact pass.')}</p>`;
+    const fine = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
+    return `<p class="muted">${fine
+      ? L('Pasa el ratón sobre una barra para ver la pasada exacta.', 'Hover a bar to see the exact pass.')
+      : L('Toca una barra para ver la pasada exacta.', 'Tap a bar to see the exact pass.')}</p>`;
   }
   const rec = a.records[hit.recordIndex];
   return `<div class="evidence-list">
-    <div><span>${esc(grid.names[0])}</span><strong>${paramValue(grid.levelsA[hit.a])}</strong></div>
-    <div><span>${esc(grid.names[1])}</span><strong>${paramValue(grid.levelsB[hit.b])}</strong></div>
+    <div><span>${esc(grid.names[0])}</span><strong>${paramHtml(grid.levelsA[hit.a])}</strong></div>
+    <div><span>${esc(grid.names[1])}</span><strong>${paramHtml(grid.levelsB[hit.b])}</strong></div>
     <div><span>Pass</span><strong class="mono">${esc(rec.id)}</strong></div>
     <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(hit.quality, 3)}</strong></div>
     <div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${Number.isFinite(hit.qualityOos) ? num(hit.qualityOos, 3) : '—'}</strong></div>
@@ -264,6 +267,23 @@ export function mountPlateauSurfaceView(a) {
   });
 }
 
+/**
+ * Los puestos que faltan en la tabla (p. ej. empieza en #5) son configuraciones que SI
+ * estan en una meseta. Sin decirlo, parecia que la tabla estaba rota.
+ */
+function skippedRanksNote(peaks) {
+  const shown = new Set(peaks.map((p) => p.criterionRank));
+  const last = Math.max(...shown);
+  const missing = [];
+  for (let r = 1; r <= last; r++) if (!shown.has(r)) missing.push(r);
+  if (!missing.length) return '';
+  const list = missing.length <= 6 ? missing.map((r) => `#${r}`).join(', ') : L(`${missing.length} puestos`, `${missing.length} ranks`);
+  return `<p class="chart-note">${L(
+    `Faltan ${list}: esas configuraciones forman parte de una meseta, así que no son descartes.`,
+    `${list} are missing: those configurations belong to a plateau, so they are not rejections.`,
+  )}</p>`;
+}
+
 export function renderRejected(a) {
   const critName = a.meta.hasForward
     ? (a.meta.criterionOosName || L('criterio forward', 'forward criterion'))
@@ -279,9 +299,10 @@ export function renderRejected(a) {
       <div class="detail-kicker">${L('03 / Descartes', '03 / Rejected')}</div>
       <h2>${L('Las que encabezan tu tabla y aún así no se recomiendan', 'Ones that top your table and still are not recommended')}</h2>
       <p>${L(
-        `Ordenadas por <code>${esc(critName)}</code>, que es la columna por la que MT5 te las presenta. Para cada una se indica por que el motor no la respalda. Esta es la tabla que evita la mayoria de los errores.`,
+        `Ordenadas por <code>${esc(critName)}</code>, que es la columna por la que MT5 te las presenta. Para cada una se indica por qué el motor no la respalda. Esta es la tabla que evita la mayoría de los errores.`,
         `Ordered by <code>${esc(critName)}</code>, the column MT5 presents them by. For each one the engine explains why it does not back it. This is the table that prevents most mistakes.`,
       )}</p>
+      ${skippedRanksNote(a.peaks)}
     </div>
     <section class="panel">
       <div class="table-wrap"><table class="stack-table">
@@ -304,7 +325,7 @@ export function renderParams(a) {
   const options = a.sensitivity.map((s) => `<option value="${s.index}"${s.index === state.selectedParam ? ' selected' : ''}${s.constant ? ' disabled' : ''}>${esc(s.name)}${s.constant ? L(' (constante)', ' (constant)') : ''}</option>`).join('');
   return `<div class="detail-head">
       <div class="detail-kicker">${L('04 / Parámetros', '04 / Parameters')}</div>
-      <h2>${L('Que parámetros mandan de verdad', 'Which parameters really matter')}</h2>
+      <h2>${L('Qué parámetros mandan de verdad', 'Which parameters really matter')}</h2>
       <p>${L(
         'La sensibilidad mide cuánto se mueve la calidad al recorrer los valores de un parámetro. Los numéricos que influyen <strong>miden la distancia</strong>. Los booleanos y las enumeraciones <strong>parten el espacio</strong>: dos configuraciones solo son vecinas si coinciden en ellos, porque activar o no un filtro no es un paso pequeño sino otra estrategia. Solo se ignora lo demostrablemente plano.',
         'Sensitivity measures how much quality moves as you walk a parameter\'s values. Influential numerics <strong>measure distance</strong>. Booleans and enums <strong>partition the space</strong>: two configurations are neighbors only if they match on them, because enabling a filter is not a small step — it is another strategy. Only demonstrably flat axes are ignored.',
@@ -333,10 +354,10 @@ export function renderParams(a) {
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Gana en IS', 'Wins in IS')}</th><th>${L('Gana en forward', 'Wins in forward')}</th><th>${L('Margen que tiras', 'Margin you waste')}</th><th>${L('Perfil de calidad (valor: IS / forward)', 'Quality profile (value: IS / forward)')}</th></tr></thead>
         <tbody>${a.inversions.map((x) => `<tr>
           <td class="mono">${esc(x.name)}</td>
-          <td class="strong">${paramValue(x.bestIs)}</td>
-          <td class="strong">${paramValue(x.bestOos)}</td>
+          <td class="strong">${paramHtml(x.bestIs)}</td>
+          <td class="strong">${paramHtml(x.bestOos)}</td>
           <td><span class="badge warn">${pct(x.regretShare, 0)}</span></td>
-          <td class="values">${x.profile.map((p) => `${paramValue(p.level)}: ${num(p.is, 2)}/${num(p.oos, 2)}`).join('  ·  ')}</td>
+          <td class="values">${x.profile.map((p) => `${paramHtml(p.level)}: ${num(p.is, 2)}/${num(p.oos, 2)}`).join('  ·  ')}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>` : ''}
@@ -371,7 +392,7 @@ export function renderParams(a) {
           <td class="mono">${esc(s.name)}${a.meta.paramTypes && a.meta.paramTypes[s.index] !== 'number' ? ` <span class="badge">${esc(a.meta.paramTypes[s.index] === 'bool' ? 'bool' : 'enum')}</span>` : ''}</td>
           <td>${int(s.levels)}</td>
           <td>${roleBadge(dimRole(a, s))}</td>
-          <td class="values">${(s.values || []).map(paramValue).join(' · ')}</td>
+          <td class="values">${(s.values || []).map(paramHtml).join(' · ')}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>`;
@@ -437,8 +458,8 @@ export function renderDiagnostics(a) {
         <div class="evidence-list">
           <div><span>${L('Espacio cartesiano', 'Cartesian space')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones probadas', 'Configurations tested')}</span><strong>${int(a.meta.total)}</strong></div>
-          <div><span>${L('Cobertura (niveles vistos)', 'Coverage (seen levels)')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(5).format(a.meta.coverage * 100) + ' %' : '—'}</strong></div>
-          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(4).format(a.meta.searchCoverage.coverageSearch * 100) + ' %' : L('sin .set', 'no .set')}</strong></div>
+          <div><span>${L('Cobertura (niveles vistos)', 'Coverage (seen levels)')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(1).format(a.meta.coverage * 100) + ' %' : '—'}</strong></div>
+          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(1).format(a.meta.searchCoverage.coverageSearch * 100) + ' %' : L('sin .set', 'no .set')}</strong></div>
           <div><span>${L('Radio de vecindad', 'Neighborhood radius')}</span><strong>${int(a.meta.radius)} ${L('paso(s)', 'step(s)')}</strong></div>
           <div><span>${L('Vecinos por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del in-sample', ' of in-sample') : '—'}</strong></div>
@@ -451,7 +472,7 @@ export function renderDiagnostics(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Clasificación', 'Classification')}</div><h2>${L('Columnas detectadas', 'Detected columns')}</h2></div></div>
       <p class="panel-intro">${L(
-        'Los parámetros no se reconocen por su nombre sino por su estructura: para un mismo Pass, un parámetro vale lo mismo en los dos archivos y una métrica no, porque se midio sobre otro periodo.',
+        'Los parámetros no se reconocen por su nombre sino por su estructura: para un mismo Pass, un parámetro vale lo mismo en los dos archivos y una métrica no, porque se midió sobre otro periodo.',
         'Parameters are not recognized by name but by structure: for the same Pass, a parameter has the same value in both files and a metric does not, because it was measured on another period.',
       )}</p>
       <div class="columns-grid">
@@ -477,7 +498,7 @@ export function renderDiagnostics(a) {
     </section>
 
     <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Politica', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minima')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Política', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minima')}</h2></div></div>
       <div class="evidence-list">
         <div><span>${L('Beneficio positivo', 'Positive profit')}</span><strong>${g.requireProfit ? L('exigido', 'required') : L('no exigido', 'not required')}</strong></div>
         <div><span>${gloss('profitFactor', L('Factor de beneficio mínimo', 'Minimum profit factor'))}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
@@ -486,7 +507,7 @@ export function renderDiagnostics(a) {
         <div><span>${L('Operaciones mínimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>
         ${(a.meta.gateInfluence || []).filter((gi) => gi.name !== 'beneficio').map((gi) => `
         <div><span>· ${gateName(gi.name)}: ${L('descarta ella sola', 'rejects on its own')}</span><strong>${gi.sole ? int(gi.sole) + L(' configuraciones', ' configurations') : `<em>${L('ninguna (no filtra nada)', 'none (filters nothing)')}</em>`}</strong></div>`).join('')}
-        <div><span>${L('Se exigen en', 'Required in')}</span><strong>${a.meta.hasForward ? L('los dos periodos', 'both periods') : L('el in-sample', 'in-sample')}</strong></div>
+        <div><span>${L('Se exigen en', 'Required in')}</span><strong>${a.meta.hasForward ? (a.meta.selectionMode === 'joint' ? L('los dos periodos', 'both periods') : L('in-sample (buscar) · forward (validar)', 'in-sample (search) · forward (validate)')) : L('el in-sample', 'in-sample')}</strong></div>
       </div>
       ${findingsNote(gatesFindings)}
     </section>

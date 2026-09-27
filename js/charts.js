@@ -2,7 +2,9 @@
 // bien, se copian bien y heredan el tema por CSS.
 
 import { median, quantile, extent } from '../core/stats.js';
-import { L } from './i18n.js';
+import { L, localeTag } from './i18n.js';
+
+const fmt2 = (v) => new Intl.NumberFormat(localeTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fx = (n) => (Number.isFinite(n) ? n.toFixed(1) : '0');
@@ -11,6 +13,14 @@ function legend(items) {
   return `<div class="chart-legend" role="list">${items.map((it) =>
     `<span class="chart-legend-item" role="listitem"><span class="chart-swatch ${it.cls}" aria-hidden="true"></span>${esc(it.label)}</span>`
   ).join('')}</div>`;
+}
+
+/**
+ * Apertura del <svg> con alternativa textual: la conclusion del grafico, no su
+ * descripcion. Sin ella un lector de pantalla no obtenia nada de estos graficos.
+ */
+function svgOpen(W, H, label) {
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" preserveAspectRatio="xMidYMid meet"><title>${esc(label)}</title>`;
 }
 
 function wrapChart(svg, legendHtml) {
@@ -29,10 +39,10 @@ function niceTicks(lo, hi, count = 5) {
   return out;
 }
 
-function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = [], yTicks = [], xScale, yScale } = {}) {
+function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = [], yTicks = [], xScale, yScale, label = '' } = {}) {
   const gx = xTicks.map((t) => `<line class="ch-grid" x1="${fx(xScale(t))}" y1="${pad.t}" x2="${fx(xScale(t))}" y2="${height - pad.b}"/><text class="ch-tick" x="${fx(xScale(t))}" y="${height - pad.b + 14}" text-anchor="middle">${esc(formatTick(t))}</text>`).join('');
   const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${width - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 3)}" text-anchor="end">${esc(formatTick(t))}</text>`).join('');
-  return `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" preserveAspectRatio="xMidYMid meet">
+  return `${svgOpen(width, height, label || xLabel)}
     ${gx}${gy}
     <line class="ch-axis" x1="${pad.l}" y1="${height - pad.b}" x2="${width - pad.r}" y2="${height - pad.b}"/>
     <line class="ch-axis" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${height - pad.b}"/>
@@ -43,17 +53,16 @@ function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = []
 }
 
 function formatTick(v) {
-  if (typeof v === 'boolean') return v ? 'sí' : 'no';
+  if (typeof v === 'boolean') return v ? L('sí', 'yes') : 'no';
   if (typeof v === 'string') return v.length > 12 ? v.slice(0, 11) + '…' : v;
   if (!Number.isFinite(v)) return '';
-  if (Math.abs(v) >= 1000) return v.toLocaleString('es-ES');
-  return String(Number(v.toFixed(3))).replace('.', ',');
+  return new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 3 }).format(Number(v.toFixed(3)));
 }
 
 /** Dispersión calidad IS frente a calidad OOS. La diagonal marca "no se degrada". */
 export function scatterIsOos(analysis) {
   const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 44 };
-  if (!analysis.meta.hasForward) return '<p class="muted">Sin periodo forward no hay comparación IS/OOS.</p>';
+  if (!analysis.meta.hasForward) return `<p class="muted">${L('Sin periodo forward no hay comparación in-sample/forward.', 'Without a forward period there is no in-sample/forward comparison.')}</p>`;
   const xScale = (v) => pad.l + v * (W - pad.l - pad.r);
   const yScale = (v) => H - pad.b - v * (H - pad.t - pad.b);
   const pts = [];
@@ -70,7 +79,11 @@ export function scatterIsOos(analysis) {
   }).join('');
   const diagonal = `<line class="ch-diagonal" x1="${xScale(0)}" y1="${yScale(0)}" x2="${xScale(1)}" y2="${yScale(1)}"/>`;
   const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1];
+  const both = analysis.records.filter((r) => Number.isFinite(r.qualityIs) && Number.isFinite(r.qualityOos));
+  const worse = both.length ? Math.round((100 * both.filter((r) => r.qualityOos < r.qualityIs).length) / both.length) : 0;
   const svg = frame(W, H, pad, diagonal + pts.join('') + reps, {
+    label: L(`Calidad in-sample frente a forward: el ${worse} % de las configuraciones pierde calidad en el forward.`,
+      `In-sample versus forward quality: ${worse}% of configurations lose quality on the forward.`),
     xLabel: L('Calidad en In-Sample', 'In-sample quality'),
     yLabel: L('Calidad en Out-of-Sample', 'Out-of-sample quality'),
     xTicks: ticks, yTicks: ticks, xScale, yScale,
@@ -87,7 +100,7 @@ export function scatterIsOos(analysis) {
 export function parameterProfile(analysis, paramIndex) {
   const W = 620; const H = 260; const pad = { l: 52, r: 16, t: 16, b: 48 };
   const sens = analysis.sensitivity[paramIndex];
-  if (!sens || sens.constant) return '<p class="muted">Parámetro constante: no se optimizó.</p>';
+  if (!sens || sens.constant) return `<p class="muted">${L('Parámetro constante: no se optimizó.', 'Constant parameter: it was not optimized.')}</p>`;
   const levels = analysis.levels[paramIndex];
   const buckets = levels.map(() => []);
   analysis.records.forEach((r, i) => {
@@ -109,7 +122,12 @@ export function parameterProfile(analysis, paramIndex) {
   const counts = buckets.map((b, k) => `<text class="ch-count" x="${fx(xScale(k))}" y="${H - pad.b + 28}" text-anchor="middle">${b.length}</text>`).join('');
   const yTicks = [0, 0.25, 0.5, 0.75, 1];
   const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${W - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 3)}" text-anchor="end">${formatTick(t)}</text>`).join('');
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">
+  const medians = buckets.map((b) => (b.length >= 2 ? median(b) : -Infinity));
+  const bestK = medians.indexOf(Math.max(...medians));
+  const profileLabel = bestK >= 0 && Number.isFinite(medians[bestK])
+    ? L(`Calidad por valor de ${sens.name}: la mediana más alta está en ${formatTick(levels[bestK])}.`, `Quality by value of ${sens.name}: the highest median is at ${formatTick(levels[bestK])}.`)
+    : L(`Calidad por valor de ${sens.name}.`, `Quality by value of ${sens.name}.`);
+  return `${svgOpen(W, H, profileLabel)}
     ${gy}${bars}${labels}${counts}
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
     <line class="ch-axis" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}"/>
@@ -120,7 +138,7 @@ export function parameterProfile(analysis, paramIndex) {
 /** Degradacion de la mediana OOS por decil del criterio in-sample. */
 export function degradationChart(analysis) {
   const rows = analysis.stats.degradation;
-  if (!rows.length) return '<p class="muted">No hay suficientes datos para el análisis por deciles.</p>';
+  if (!rows.length) return `<p class="muted">${L('No hay suficientes datos para el análisis por deciles.', 'Not enough data for the decile analysis.')}</p>`;
   const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 48 };
   const allVals = rows.flatMap((r) => [r.oosMedian, r.oosQ25]).filter(Number.isFinite);
   let [lo, hi] = extent(allVals);
@@ -139,8 +157,16 @@ export function degradationChart(analysis) {
   const labels = rows.map((r, k) => `<text class="ch-tick" x="${fx(xScale(k))}" y="${H - pad.b + 15}" text-anchor="middle">D${r.decile}</text>`).join('');
   const yTicks = niceTicks(lo, hi, 5);
   const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${W - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 3)}" text-anchor="end">${formatTick(t)}</text>`).join('');
-  const svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">
+  const top = rows[rows.length - 1];
+  const restMedian = median(rows.slice(0, -1).map((r) => r.oosMedian).filter(Number.isFinite));
+  const degLabel = L(
+    `Criterio forward por decil del criterio in-sample: tus mejores (D10) tienen mediana ${formatTick(top.oosMedian)} frente a ${formatTick(restMedian)} del resto.`,
+    `Forward criterion by in-sample criterion decile: your best (D10) have median ${formatTick(top.oosMedian)} versus ${formatTick(restMedian)} for the rest.`,
+  );
+  const yMid = (pad.t + H - pad.b) / 2;
+  const svg = `${svgOpen(W, H, degLabel)}
     ${gy}${bars}<path class="ch-line-q25" d="${q25line}"/>${labels}
+    <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(L('Criterio forward (mediana)', 'Forward criterion (median)'))}</text>
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
     <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(L('Decil del criterio in-sample (D10 = tus mejores)', 'In-sample criterion decile (D10 = your best)'))}</text>
   </svg>`;
@@ -196,14 +222,15 @@ export function sensitivityBars(analysis) {
     const marker = rescued
       ? `<line class="ch-sens-marginal" x1="${fx(labelW + wMarg)}" y1="${y}" x2="${fx(labelW + wMarg)}" y2="${y + 20}"/>`
       : '';
-    const note = rescued ? ` (${value.toFixed(2)} · ${L('aislado', 'isolated')} ${marginal.toFixed(2)})` : `${value.toFixed(2)}${roleNote ? ' · ' + roleNote : ''}`;
+    const note = rescued ? ` (${fmt2(value)} · ${L('aislado', 'isolated')} ${fmt2(marginal)})` : `${fmt2(value)}${roleNote ? ' · ' + roleNote : ''}`;
     const label = rescued ? note.trim() : note;
     return `<text class="ch-row-label" x="${labelW - 8}" y="${y + 13}" text-anchor="end">${esc(r.name)}</text>
       <rect class="${cls}" x="${labelW}" y="${y + 3}" width="${fx(wEff)}" height="14" rx="3"/>
       ${marker}
       <text class="ch-count" x="${labelW + wEff + 8}" y="${y + 14}">${esc(label)}</text>`;
   }).join('');
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">${body}</svg>`;
+  const topName = rows.length ? rows[0].name : '';
+  return `${svgOpen(W, H, L(`Influencia relativa de cada parámetro; el más influyente es ${topName}.`, `Relative influence of each parameter; the most influential is ${topName}.`))}${body}</svg>`;
 }
 
 /** Mapa 2D: calidad mediana por pareja de valores de los dos parámetros dados. */
@@ -237,12 +264,12 @@ export function plateauHeatmap(analysis, dimA, dimB) {
       const m = median(vals);
       const opacity = Math.max(0.06, Math.min(1, m));
       body += `<rect class="hm-cell" style="opacity:${opacity.toFixed(3)}" x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2"><title>${esc(analysis.meta.paramNames[dimA])}=${esc(String(la[a]))}, ${esc(analysis.meta.paramNames[dimB])}=${esc(String(lb[b]))}\ncalidad mediana ${m.toFixed(3)} (${vals.length} configs)</title></rect>`;
-      if (cw >= 40) body += `<text class="hm-text" x="${x + (cw - 2) / 2}" y="${y + ch / 2 + 3}" text-anchor="middle">${m.toFixed(2).replace('.', ',')}</text>`;
+      if (cw >= 40) body += `<text class="hm-text" x="${x + (cw - 2) / 2}" y="${y + ch / 2 + 3}" text-anchor="middle">${fmt2(m)}</text>`;
     }
   }
   const xl = la.map((v, a) => `<text class="ch-tick" x="${pad.l + a * cw + (cw - 2) / 2}" y="${H - pad.b + 14}" text-anchor="middle">${esc(formatTick(v))}</text>`).join('');
   const yl = lb.map((v, b) => `<text class="ch-tick" x="${pad.l - 8}" y="${pad.t + (lb.length - 1 - b) * ch + ch / 2 + 3}" text-anchor="end">${esc(formatTick(v))}</text>`).join('');
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet">
+  return `${svgOpen(W, H, L(`Calidad mediana de cada combinación de ${analysis.meta.paramNames[dimA]} y ${analysis.meta.paramNames[dimB]}.`, `Median quality of each combination of ${analysis.meta.paramNames[dimA]} and ${analysis.meta.paramNames[dimB]}.`))}
     ${body}${xl}${yl}
     <text class="ch-axis-label" x="${pad.l + (la.length * cw) / 2}" y="${H - 6}" text-anchor="middle">${esc(analysis.meta.paramNames[dimA])}</text>
     <text class="ch-axis-label" x="14" y="${pad.t + (lb.length * ch) / 2}" text-anchor="middle" transform="rotate(-90 14 ${pad.t + (lb.length * ch) / 2})">${esc(analysis.meta.paramNames[dimB])}</text>

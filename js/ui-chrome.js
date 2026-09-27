@@ -100,6 +100,7 @@ export function changeLanguage(lang) {
   syncLangButtons();
   applyStaticI18n();
   api.refreshAnalyzeButton();
+  api.renderPreflight();
   // El veredicto se generó en el idioma del análisis: regenerar copy sin recalcular.
   if (state.analysis) {
     state.analysis = rebuildLocalizedCopy(state.analysis);
@@ -160,12 +161,33 @@ export function readPolicy() {
  * al momento si el resultado aguanta al apretar, que es la pregunta que todo el mundo se
  * hace y que hasta ahora exigía un análisis entero para responder.
  */
+/** Texto del problema de los campos de minimos, o null si son validos. */
+export function policyInputProblem() {
+  const pf = parseFloat($('#gPf').value);
+  const dd = parseFloat($('#gDd').value);
+  const tr = parseFloat($('#gTrades').value);
+  if (!Number.isFinite(pf) || pf < 0) return L('El factor de beneficio mínimo tiene que ser un número mayor o igual que 0.', 'The minimum profit factor must be a number greater than or equal to 0.');
+  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return L('El drawdown máximo tiene que estar entre 1 y 100 %.', 'The maximum drawdown must be between 1 and 100%.');
+  if (!Number.isFinite(tr) || tr < 0) return L('Las operaciones mínimas tienen que ser un número mayor o igual que 0.', 'The minimum trades must be a number greater than or equal to 0.');
+  return null;
+}
+
 export function updatePolicyPreview() {
   const box = $('#policyPreview');
   if (!box) return;
   const a = state.analysis;
   if (!a || !a.records || !a.records.length) {
     box.hidden = true;
+    return;
+  }
+  // Valores fuera de rango o vacios: readPolicy() los sustituiria en silencio por los de
+  // por defecto y el analisis no corresponderia a lo que se ve en los campos.
+  const problem = policyInputProblem();
+  if (problem) {
+    box.hidden = false;
+    $('#policyPreviewCount').textContent = '—';
+    $('#policyPreviewNote').textContent = problem;
+    $('#policyRerun').disabled = true;
     return;
   }
   const policy = readPolicy();
@@ -185,14 +207,23 @@ export function updatePolicyPreview() {
   $('#policyPreviewCount').textContent = L(`${int(pass)} de ${int(total)}`, `${int(pass)} of ${int(total)}`);
   $('#policyPreviewNote').textContent = delta === 0
     ? L(
-      `superarían estos mínimos (${pct(pass / total, 0)}), igual que el análisis actual`,
-      `would pass these minima (${pct(pass / total, 0)}), same as the current analysis`,
+      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el in-sample'} (${pct(pass / total, 0)}), igual que el análisis actual`,
+      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the in-sample'} (${pct(pass / total, 0)}), same as the current analysis`,
     )
     : L(
-      `superarían estos mínimos (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
-      `would pass these minima (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
+      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
+      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
     );
-  $('#policyRerun').disabled = state.busy || delta === 0;
+  // Se compara la POLITICA, no el recuento: otros minimos con el mismo numero de
+  // supervivientes (0 = 0) no dejaban recalcular y los campos no casaban con el informe.
+  const used = a.meta.policy && a.meta.policy.gates;
+  const g = policy.gates;
+  const samePolicy = Boolean(used) && used.minProfitFactor === g.minProfitFactor && used.maxDrawdownPct === g.maxDrawdownPct
+    && used.minTrades === g.minTrades && used.requireProfit === g.requireProfit;
+  if (!samePolicy && delta === 0) {
+    $('#policyPreviewNote').textContent += L(' · los mínimos han cambiado: recalcula para actualizar el informe', ' · the minima changed: recalculate to update the report');
+  }
+  $('#policyRerun').disabled = state.busy || samePolicy;
 }
 
 // ---------------------------------------------------------------- navegacion
@@ -210,8 +241,15 @@ export function setTab(tab, fromHash) {
   if (!fromHash && TAB_HASH[tab] && location.hash !== '#' + TAB_HASH[tab]) {
     history.replaceState(null, '', '#' + TAB_HASH[tab]);
   }
-  $$('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  $$('.nav-item').forEach((b) => {
+    const on = b.dataset.tab === tab;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
   render();
+  const status = $('#viewStatus');
+  const current = document.querySelector(`.nav-item[data-tab="${tab}"] span:last-child`);
+  if (status) status.textContent = current ? current.textContent : '';
   $('#view').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -508,11 +546,11 @@ export function renderLegal() {
         who you are or what you upload; only that someone visited the page.`,
         )}</li>
         <li>${L(
-          `<strong>Se guardan dos cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
-        nadie): el tema de color que elijas y los mínimos que configures, para no tener que repetirlos. Puedes
+          `<strong>Se guardan tres cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
+        nadie): el tema de color, el idioma y los mínimos que configures, para no tener que repetirlos. Puedes
         borrarlos vaciando los datos del sitio.`,
-          `<strong>Two things are stored in your own browser</strong> (local storage, never sent to
-        anyone): the color theme you choose and the minima you set, so you do not have to repeat them. You can
+          `<strong>Three things are stored in your own browser</strong> (local storage, never sent to
+        anyone): the color theme, the language and the minima you set, so you do not have to repeat them. You can
         clear them by wiping the site data.`,
         )}</li>
         <li>${L(
@@ -580,11 +618,11 @@ export function renderMethod() {
       L('No se fía del nombre de columna. Misma Pass → un parámetro coincide en IS y forward; una métrica no.',
         'It does not trust column names. Same Pass → a parameter matches in IS and forward; a metric does not.')],
     ['03', L('Calidad sin Result', 'Quality without Result'),
-      L('Result es tu criterio de optimización y está sesgado. La calidad se reconstruye con PF, recuperación, Sharpe, drawdown y operaciones. Puntuación = el peor de IS y forward.',
-        'Result is your optimization criterion and is biased. Quality is rebuilt from PF, recovery, Sharpe, drawdown and trades. Score = the worse of IS and forward.')],
+      L('Result es tu criterio de optimización y está sesgado. La calidad se reconstruye con PF, recuperación, Sharpe, drawdown y operaciones. La meseta se busca con la calidad in-sample y el forward la valida: si allí cae, baja de puesto. Nunca se promedian.',
+        'Result is your optimization criterion and is biased. Quality is rebuilt from PF, recovery, Sharpe, drawdown and trades. The plateau is found with in-sample quality and the forward validates it: if quality drops there, it drops in rank. They are never averaged.')],
     ['04', L('Mínimos antes que rankings', 'Minima before rankings'),
-      L('Solo entran configs que superan tus suelos en ambos periodos. Un percentil siempre inventa un “top 5 %”, aunque todo pierda.',
-        'Only setups that clear your floors in both periods enter. A percentile always invents a “top 5%”, even if everything loses.')],
+      L('Para buscar mesetas solo cuentan las configs que superan tus suelos en el in-sample; el forward vuelve a exigirlos para validar. Un percentil siempre inventa un “top 5 %”, aunque todo pierda.',
+        'Only setups that clear your floors in-sample enter the plateau search; the forward requires them again to validate. A percentile always invents a “top 5%”, even if everything loses.')],
     ['05', L('Vecinos en pasos', 'Neighbors in steps'),
       L('La distancia es en pasos de tu rejilla (30→50 y 0,1→0,2 = un paso). Si la rejilla es irregular, se avisa.',
         'Distance is in steps of your grid (30→50 and 0.1→0.2 = one step). Uneven grids get a warning.')],
@@ -623,8 +661,8 @@ export function renderMethod() {
           'It does not compute classic PBO / Reality Check / SPA: MT5 exports lack per-config equity curves. It measures selection-rule fragility — which is why it is not called PBO.',
         )}</li>
         <li>${L(
-          'El forward ya filtra y puntúa, así que está algo inflado (igual que el IS). El número más limpio es el del periodo no visto.',
-          'Forward already filters and scores, so it is somewhat inflated (like IS). The cleanest number is the unseen period.',
+          'El forward ya se usa para validar y ordenar las mesetas, así que sus cifras están algo favorecidas (igual que el IS). El número más limpio es el del periodo no visto.',
+          'Forward is already used to validate and rank plateaus, so its figures are somewhat favored (like IS). The cleanest number is the unseen period.',
         )}</li>
         <li>${L(
           'No juzga la lógica del EA, la calidad del histórico ni el spread/comisión. Un backtest optimista de origen sigue siendo optimista aquí.',

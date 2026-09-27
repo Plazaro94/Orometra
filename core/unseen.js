@@ -23,14 +23,15 @@
 // Se usa la aproximación clasica de paseo aleatorio: la excursion maxima escala con la
 // raiz del número de pasos. Es una aproximación, y como tal se declara en la interfaz.
 
+import { L } from '../js/i18n.js';
 import { quantile, median, extent } from './stats.js';
 
 export const UNSEEN_METRICS = [
-  { key: 'profitFactor', label: 'Factor de beneficio', better: 'high', scale: 'none', digits: 3 },
-  { key: 'payoffPerTrade', label: 'Beneficio por operación', better: 'high', scale: 'none', digits: 2 },
-  { key: 'drawdown', label: 'Drawdown máximo (%)', better: 'low', scale: 'sqrt', digits: 2 },
-  { key: 'recoveryFactor', label: 'Factor de recuperación', better: 'high', scale: 'sqrt', digits: 3 },
-  { key: 'sharpe', label: 'Sharpe', better: 'high', scale: 'none', digits: 3 },
+  { key: 'profitFactor', label: ['Factor de beneficio', 'Profit factor'], better: 'high', scale: 'none', digits: 3 },
+  { key: 'payoffPerTrade', label: ['Beneficio por operación', 'Profit per trade'], better: 'high', scale: 'none', digits: 2 },
+  { key: 'drawdown', label: ['Drawdown máximo (%)', 'Maximum drawdown (%)'], better: 'low', scale: 'sqrt', digits: 2 },
+  { key: 'recoveryFactor', label: ['Factor de recuperación', 'Recovery factor'], better: 'high', scale: 'sqrt', digits: 3 },
+  { key: 'sharpe', label: ['Sharpe', 'Sharpe'], better: 'high', scale: 'none', digits: 3 },
 ];
 
 /** Normaliza un valor a "por unidad de raiz de operaciones" cuando la métrica escala. */
@@ -100,10 +101,10 @@ export function evaluateUnseen(analysis, plateau, observed) {
   const reference = buildReference(analysis, plateau);
   const trades = Number(observed.trades);
   if (!Number.isFinite(trades) || trades <= 0) {
-    throw new Error('Hace falta el número de operaciones del periodo no visto: sin él no se puede corregir por duración.');
+    throw new Error(L('Hace falta el número de operaciones del periodo no visto: sin él no se puede corregir por duración.', 'The number of trades of the unseen period is required: without it the duration cannot be corrected.'));
   }
   if (reference.observations.length < 4) {
-    throw new Error('La meseta elegida no tiene suficientes configuraciones para establecer que es normal en este EA.');
+    throw new Error(L('La meseta elegida no tiene suficientes configuraciones para establecer que es normal en este EA.', 'The chosen plateau does not have enough configurations to establish what is normal for this EA.'));
   }
 
   const obs = {
@@ -145,7 +146,7 @@ export function evaluateUnseen(analysis, plateau, observed) {
 
     results.push({
       key: spec.key,
-      label: spec.label,
+      label: L(spec.label[0], spec.label[1]),
       better: spec.better,
       digits: spec.digits,
       scaled: spec.scale === 'sqrt',
@@ -156,7 +157,7 @@ export function evaluateUnseen(analysis, plateau, observed) {
   }
 
   if (!results.length) {
-    throw new Error('No hay ninguna métrica comparable entre el periodo no visto y la referencia.');
+    throw new Error(L('No hay ninguna métrica comparable entre el periodo no visto y la referencia.', 'There is no comparable metric between the unseen period and the reference.'));
   }
 
   // Potencia del contraste: con pocas operaciones, casi nada quedara fuera de rango.
@@ -172,29 +173,34 @@ export function evaluateUnseen(analysis, plateau, observed) {
   if (outside.length) {
     level = 'outside';
     headline = outside.length === 1
-      ? `Fuera de lo que este EA había mostrado nunca en ${outside[0].label.toLowerCase()}`
-      : `Fuera de rango en ${outside.length} métricas`;
+      ? L(`Fuera de lo que este EA había mostrado nunca en ${outside[0].label.toLowerCase()}`, `Outside anything this EA had ever shown in ${outside[0].label.toLowerCase()}`)
+      : L(`Fuera de rango en ${outside.length} métricas`, `Out of range in ${outside.length} metrics`);
   } else if (tail.length) {
     level = 'tail';
-    headline = 'Dentro de lo visto, pero en la parte baja de su historial';
+    headline = L('Dentro de lo visto, pero en la parte baja de su historial', 'Within what was seen, but at the low end of its history');
   } else {
     level = 'normal';
-    headline = 'El periodo no visto entra dentro de la normalidad del EA';
+    headline = L('El periodo no visto entra dentro de la normalidad del EA', 'The unseen period is within what is normal for this EA');
   }
 
   const notes = [];
   notes.push(level === 'normal'
-    ? 'Ninguna métrica se sale del recorrido que la meseta ya había demostrado. No hacia falta que los numeros fuesen espectaculares: hacia falta que fuesen normales, y lo son.'
+    ? L('Ninguna métrica se sale del recorrido que la meseta ya había demostrado. No hacía falta que los números fuesen espectaculares: hacía falta que fuesen normales, y lo son.',
+      'No metric leaves the range the plateau had already shown. The numbers did not need to be spectacular: they needed to be normal, and they are.')
     : level === 'tail'
-      ? `Todo sigue dentro de lo que el EA ya había atravesado alguna vez, pero rozando su peor cara en: ${tail.map((r) => r.label.toLowerCase()).join(', ')}. Un tramo corto puede dar esto por pura varianza; dos seguidos ya no.`
-      : `Hay métricas peores que cualquier cosa vista en el in-sample y en el forward: ${outside.map((r) => r.label.toLowerCase()).join(', ')}. Eso ya no se explica por mala suerte dentro de lo conocido.`);
+      ? L(`Todo sigue dentro de lo que el EA ya había atravesado alguna vez, pero rozando su peor cara en: ${tail.map((r) => r.label.toLowerCase()).join(', ')}. Un tramo corto puede dar esto por pura varianza; dos seguidos ya no.`,
+        `Everything is still within what the EA had gone through at some point, but close to its worst side in: ${tail.map((r) => r.label.toLowerCase()).join(', ')}. A short period can do this by pure variance; two in a row cannot.`)
+      : L(`Hay métricas peores que cualquier cosa vista en el in-sample y en el forward: ${outside.map((r) => r.label.toLowerCase()).join(', ')}. Eso ya no se explica por mala suerte dentro de lo conocido.`,
+        `Some metrics are worse than anything seen in the in-sample and the forward: ${outside.map((r) => r.label.toLowerCase()).join(', ')}. That is no longer explained by bad luck within what is known.`));
 
   const scaledOnes = results.filter((r) => r.scaled);
   if (scaledOnes.length) {
-    notes.push(`${scaledOnes.map((r) => r.label.toLowerCase()).join(' y ')} se han corregido por duración: dependen del número de operaciones, así que compararlos en crudo contra un periodo más largo llevaria a la conclusión contraria. La referencia mostrada ya esta ajustada a las ${Math.round(trades)} operaciones de tu tramo.`);
+    notes.push(L(`${scaledOnes.map((r) => r.label.toLowerCase()).join(' y ')} se han corregido por duración: dependen del número de operaciones, así que compararlos en crudo contra un periodo más largo llevaría a la conclusión contraria. La referencia mostrada ya está ajustada a las ${Math.round(trades)} operaciones de tu tramo.`,
+      `${scaledOnes.map((r) => r.label.toLowerCase()).join(' and ')} were corrected for duration: they depend on the number of trades, so comparing them raw against a longer period would lead to the opposite conclusion. The reference shown is already adjusted to the ${Math.round(trades)} trades of your period.`));
   }
   if (lowPower) {
-    notes.push(`Aviso de potencia: con ${Math.round(trades)} operaciones${Number.isFinite(tradeShare) ? ` (un ${(100 * tradeShare).toFixed(0)} % de lo habitual en la referencia)` : ''}, este contraste detecta poco. Que salga "normal" significa sobre todo que no hay evidencia en contra, no que este confirmado.`);
+    notes.push(L(`Aviso de potencia: con ${Math.round(trades)} operaciones${Number.isFinite(tradeShare) ? ` (un ${(100 * tradeShare).toFixed(0)} % de lo habitual en la referencia)` : ''}, este contraste detecta poco. Que salga "normal" significa sobre todo que no hay evidencia en contra, no que esté confirmado.`,
+      `Power warning: with ${Math.round(trades)} trades${Number.isFinite(tradeShare) ? ` (${(100 * tradeShare).toFixed(0)}% of what is usual in the reference)` : ''}, this check detects little. A "normal" result mostly means there is no evidence against, not that it is confirmed.`));
   }
 
   return {

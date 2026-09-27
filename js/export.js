@@ -1,5 +1,7 @@
 // Exportacion: ficheros .set para MT5, rango de refinamiento e informe JSON.
 
+import { getLocale } from './i18n.js';
+
 /** Formato MT5 (.set / pegar en Inputs): punto decimal, sin locale. */
 export function formatSetValue(value) {
   if (typeof value === 'boolean') return value ? 'true' : 'false';
@@ -106,7 +108,12 @@ export function buildReport(analysis, extra = {}) {
     tool: 'Orometra v2',
     fingerprint: fingerprintAnalysis(analysis),
     source: extra.source || null,
-    verdict: analysis.verdict,
+    // El nivel que el usuario vio en pantalla, no el crudo del motor: exportar "strong"
+    // mientras la interfaz dice "moderada" hacia que el informe compartido contradijera
+    // a la app. El del motor se conserva aparte, para trazabilidad.
+    verdict: extra.shownVerdict
+      ? { ...analysis.verdict, level: extra.shownVerdict.level, headline: extra.shownVerdict.headline, summary: extra.shownVerdict.summary, engineLevel: analysis.verdict.level }
+      : analysis.verdict,
     meta: analysis.meta,
     integrity: analysis.integrity,
     statistics: analysis.stats,
@@ -149,23 +156,42 @@ export function buildReport(analysis, extra = {}) {
   };
 }
 
+/**
+ * CSV de todas las configuraciones.
+ *
+ * Un solo formato numerico por archivo, el que abre bien la hoja de calculo del idioma
+ * activo: ES = ';' y coma decimal; EN = ',' y punto. Antes los parametros salian con
+ * punto y las metricas con coma en el mismo archivo, y las cabeceras siempre en español.
+ * Los textos (enums) van entre comillas y sin '=' inicial, para que no se lean como formula.
+ */
 export function buildCsv(analysis) {
+  const es = getLocale() === 'es';
+  const sep = es ? ';' : ',';
+  const n = (v) => (Number.isFinite(v) ? (es ? String(Number(v.toFixed(6))).replace('.', ',') : String(Number(v.toFixed(6)))) : '');
+  const cell = (v) => {
+    if (typeof v === 'number') return n(v);
+    if (typeof v === 'boolean') return v ? 'true' : 'false';
+    if (v === null || v === undefined) return '';
+    const s = String(v).replace(/^[=+\-@]/, "'$&");
+    return /["\n\r;,]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
   const { paramNames } = analysis.meta;
-  const head = ['pass', ...paramNames, 'calidad_is', 'calidad_oos', 'calidad_combinada', 'robustez', 'vecinos', 'suelo_vecindad_q25', 'frac_vecinos_ok', 'acantilado', 'pico_z', 'pasa_puertas', 'meseta'];
+  const hasF = analysis.meta.hasForward;
+  const head = es
+    ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinos', 'suelo_vecindad_q25', 'frac_vecinos_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta']
+    : ['pass', ...paramNames, 'quality_is', 'quality_forward', 'score', 'robustness', 'neighbors', 'neighborhood_floor_q25', 'neighbors_ok_share', 'cliff', 'peak_z', 'meets_minima_is', 'meets_minima_forward', 'plateau'];
   const rows = analysis.records.map((r, i) => {
     const st = analysis.stability[i];
+    const okIs = r.failsIs ? !r.failsIs.length : r.passes;
+    const okOos = hasF && r.failsOos ? (r.failsOos.length ? 0 : 1) : '';
     return [
-      r.id, ...r.params,
-      num(r.qualityIs), num(r.qualityOos), num(analysis.scores[i]), num(analysis.robust[i]),
-      st.support, num(st.q25), num(st.fracPass), num(st.cliff), num(st.peakZ),
-      r.passes ? 1 : 0, analysis.inPlateau[i] >= 0 ? analysis.inPlateau[i] + 1 : '',
-    ].join(';');
+      cell(r.id), ...r.params.map(cell),
+      n(r.qualityIs), n(r.qualityOos), n(analysis.scores[i]), n(analysis.robust[i]),
+      st.support, n(st.q25), n(st.fracPass), n(st.cliff), n(st.peakZ),
+      okIs ? 1 : 0, okOos, analysis.inPlateau[i] >= 0 ? analysis.inPlateau[i] + 1 : '',
+    ].join(sep);
   });
-  return [head.join(';'), ...rows].join('\r\n');
-}
-
-function num(v) {
-  return Number.isFinite(v) ? String(Number(v.toFixed(6))).replace('.', ',') : '';
+  return [head.map(cell).join(sep), ...rows].join('\r\n');
 }
 
 export function downloadText(filename, text, mime = 'text/plain;charset=utf-8') {

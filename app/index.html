@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
 <meta name="description" content="Audit MetaTrader 5 optimization results in your browser. Find parameter plateaus, Top 3 with reasons, evidence strength.">
@@ -46,7 +49,7 @@
     <div class="sidebar-scroll">
     <nav class="sidebar-section" id="nav" aria-label="Analysis">
       <div class="sidebar-label" data-i18n="nav.group.result">Result</div>
-      <button class="nav-item active" data-tab="verdict"><span>01</span> <span data-i18n="nav.verdict">Verdict</span></button>
+      <button class="nav-item active" data-tab="verdict" aria-current="page"><span>01</span> <span data-i18n="nav.verdict">Verdict</span></button>
 
       <div class="sidebar-label sidebar-label-gap" data-i18n="nav.group.evidence">Evidence</div>
       <button class="nav-item" data-tab="plateaus" disabled><span>02</span> <span data-i18n="nav.plateaus">Plateaus</span></button>
@@ -103,7 +106,7 @@
     <section class="intake" aria-label="File upload" data-i18n="intake.label" data-i18n-attr="aria-label">
       <div class="intake-summary" id="intakeSummary">
         <span id="intakeSummaryText"></span>
-        <button class="text-btn" id="intakeExpandBtn" type="button" data-i18n="intake.change">Change files</button>
+        <button class="text-btn" id="intakeExpandBtn" type="button" data-i18n="intake.change">Change files or minima</button>
       </div>
       <div class="upload-grid">
         <label class="dropzone" id="isDrop" for="isFile">
@@ -130,7 +133,7 @@
           <div class="analyze-icon" aria-hidden="true">&#8599;</div>
           <div>
             <strong id="analyzeLabel" data-i18n="analyze.label">Audit</strong>
-            <span id="analyzeSub" data-i18n="analyze.sub">Load at least the in-sample file</span>
+            <span id="analyzeSub" data-i18n="analyze.sub">Load the in-sample (and the forward, if you have it)</span>
           </div>
           <div class="analyze-arrow" aria-hidden="true">&rarr;</div>
         </button>
@@ -143,7 +146,7 @@
       <div class="preflight" id="preflight" hidden>
         <div class="preflight-head">
           <span class="preflight-kicker" data-i18n="preflight.kicker">Data check</span>
-          <strong data-i18n="preflight.title">Ready to audit</strong>
+          <strong id="preflightTitle">Ready to audit</strong>
         </div>
         <div class="preflight-grid" id="preflightGrid"></div>
         <p class="preflight-note" id="preflightNote"></p>
@@ -152,7 +155,7 @@
       <div class="policy-panel" id="policyPanel">
         <div class="policy-head">
           <h2 data-i18n="policy.h2">Minimums a configuration must meet</h2>
-          <p data-i18n-html="policy.p">Required in <strong>both periods</strong>. Anything that fails is out, no matter how high it ranks in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
+          <p data-i18n-html="policy.p">The plateau is searched among configurations that meet these minima <strong>in-sample</strong>. On the <strong>forward</strong> they are required again to validate it: if many of its configurations fail them, the plateau drops in rank and you are warned. Nothing gets in just for ranking high in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
         </div>
         <div class="policy-grid">
           <label class="field">
@@ -196,7 +199,9 @@
       </div>
     </section>
 
-    <section class="content" id="view" aria-live="polite"></section>
+    <section class="content" id="view"></section>
+    <!-- Anuncio corto al cambiar de pestaña. Con aria-live en #view entero, el lector leia el informe completo. -->
+    <div class="sr-only" id="viewStatus" role="status" aria-live="polite"></div>
 
     <footer class="app-footer">
       <div class="legal-links">

@@ -19,6 +19,8 @@ import {
   setBusy,
   prepareTable,
   runAudit,
+  runInWorker,
+  preflightFile,
 } from './ui-audit.js';
 
 import {
@@ -27,6 +29,7 @@ import {
   loadPrefs,
   savePrefs,
   updatePolicyPreview,
+  policyInputProblem,
   readPolicy,
   setTab,
   render,
@@ -63,6 +66,8 @@ Object.assign(api, {
   setBusy,
   prepareTable,
   runAudit,
+  runInWorker,
+  preflightFile,
   readPolicy,
   refreshAnalyzeButton,
   renderPreflight,
@@ -70,6 +75,7 @@ Object.assign(api, {
   setTab,
   render,
   updatePolicyPreview,
+  policyInputProblem,
   savePrefs,
   runUnseenCheck,
   readUnseenForm,

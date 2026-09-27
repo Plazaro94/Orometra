@@ -1,13 +1,22 @@
-// Clasificador de hallazgos (js/ui-state.js#categorizeFinding): decide a que panel de
-// Diagnostico/Parametros se engancha cada hallazgo del motor, o si se queda suelto en
-// Verdict. Clasifica por texto, no por un campo del motor, así que si alguien cambia la
-// redacción de un hallazgo en core/verdict.js sin tocar este archivo, este test debe
-// fallar en vez de dejar el hallazgo huérfano o mal enganchado en silencio.
+// Categoria de cada hallazgo del motor: en que panel de Diagnostico/Parametros se
+// explica con su tabla, o null si se queda suelto en Verdict.
+//
+// La declara core/verdict.js en cada add(); la interfaz (js/ui-state.js#categorizeFinding)
+// solo la lee. Antes la adivinaba buscando palabras en el texto, y cambiar una frase
+// movia o perdia un hallazgo en silencio (auditoria 2026-09, AUD-17).
 //
 //   node tests/finding-categories.test.js
 
-import { categorizeFinding } from '../js/ui-state.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { categorizeFinding, findingsForCategory } from '../js/ui-state.js';
+import { buildDemoTables } from '../js/demo.js';
+import { runAnalysis } from '../core/analysis.js';
+import { DEFAULT_POLICY } from '../core/metrics.js';
+import { setLocale } from '../js/i18n.js';
 
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let failures = 0;
 let checks = 0;
 function check(name, cond, detail = '') {
@@ -22,136 +31,82 @@ function section(t) {
   console.log(`\n${'='.repeat(70)}\n${t}\n${'='.repeat(70)}`);
 }
 
-// Un titulo real (ES y su par EN) por cada rama de core/verdict.js que genera un
-// hallazgo, con la categoria que le corresponde. null = sin tabla que lo explique en
-// otro sitio: se queda como hallazgo suelto en Verdict.
-const CASES = [
-  ['Ninguna configuración pasa los mínimos', null],
-  ['No configuration passes the minimum gates', null],
-  ['Solo un resquicio del espacio sobrevive', null],
-  ['Only a sliver of the space survives', null],
-  ['Poca evidencia: ~10 operaciones por parámetro', null],
-  ['Thin evidence: ~10 trades per parameter', null],
-  ['Evidencia limitada: ~30 operaciones por parámetro', null],
-  ['Limited evidence: ~30 trades per parameter', null],
-  ['~115 operaciones por parámetro ajustado', null],
-  ['~115 trades per fitted parameter', null],
-  ['El conjunto es demasiado pequeño para pronunciarse', null],
-  ['The set is too small to pronounce on', null],
-  ['No se ha encontrado ninguna meseta', null],
-  ['No plateau was found', null],
-  ['Mesetas descubiertas in-sample y validadas en forward', null],
-  ['Plateaus discovered in-sample and validated on forward', null],
-  ['La meseta recomendada solo aguanta el 40% en forward', null],
-  ['The recommended plateau only holds 40% on forward', null],
-  ['Modo joint: el forward participa en la selección', null],
-  ['Joint mode: forward takes part in selection', null],
-  ['Sin periodo forward no hay validacion posible', null],
-  ['Without a forward period there is no possible validation', null],
-  ['Las cifras del forward ya se han usado para elegir', null],
-  ['Forward figures have already been used for selection', null],
-  ['La vecindad se ha medido de forma aproximada', null],
-  ['Neighborhood was measured approximately', null],
-  ['La estrategia aguanta en casi todo el espacio de parámetros', null],
-  ['The strategy holds across nearly the whole parameter space', null],
-  ['Hay una parte amplia del espacio que supera los mínimos', null],
-  ['A broad part of the space clears the minima', null],
-  ['El periodo forward fue más benigno que el in-sample', null],
-  ['The forward period was more benign than the in-sample', null],
-  ['Las dos primeras mesetas estan empatadas', null],
-  ['The first two plateaus are tied', null],
+// Las que la interfaz sabe pintar junto a su tabla. 'plateau' se descarta (ya lo explican
+// los badges de Top 3 y la ficha de la meseta).
+const KNOWN = new Set(['stats', 'stability', 'coverage', 'gates', 'sensitivity', 'parameters', 'integrity', 'plateau', null]);
 
-  ['Tu ranking MT5 (Result) esta invertido: falla el 60%', 'stats'],
-  ['Your MT5 ranking (Result) is inverted: fails 60%', 'stats'],
-  ['La regla "primera de Result" falla el 70% de las veces', 'stats'],
-  ['The "top Result row" rule fails 70% of the time', 'stats'],
-  ['Fragilidad del ranking Result: 40%', 'stats'],
-  ['Result-ranking fragility: 40%', 'stats'],
-  ['Los dos periodos no son intercambiables', 'stats'],
-  ['The two periods are not interchangeable', 'stats'],
-  ['El mejor Sharpe no supera el umbral del azar', 'stats'],
-  ['Best Sharpe does not beat the chance threshold', 'stats'],
-  ['El mejor Sharpe supera el umbral del azar', 'stats'],
-  ['Best Sharpe beats the chance threshold', 'stats'],
-  ['El ranking no transfiere de un periodo al otro (rho = 0.05)', 'stats'],
-  ['The ranking does not transfer from one period to the other (rho = 0.05)', 'stats'],
-  ['Correlación IS -> OOS prácticamente nula (rho = 0.05)', 'stats'],
-  ['IS -> OOS correlation practically null (rho = 0.05)', 'stats'],
-  ['Correlación IS -> OOS debil (rho = 0.2)', 'stats'],
-  ['Weak IS -> OOS correlation (rho = 0.2)', 'stats'],
-  ['Correlación IS -> OOS de 0.74', 'stats'],
-  ['IS -> OOS correlation of 0.74', 'stats'],
+section('1. Cada add() de core/verdict.js declara una categoria valida');
+{
+  const src = fs.readFileSync(path.join(ROOT, 'core/verdict.js'), 'utf8');
+  let i = 0;
+  let calls = 0;
+  let declared = 0;
+  while ((i = src.indexOf('add(SEV.', i)) >= 0) {
+    let depth = 0;
+    let j = i + 3;
+    for (; j < src.length; j++) {
+      if (src[j] === '(') depth++;
+      else if (src[j] === ')') { depth--; if (depth === 0) break; }
+    }
+    const call = src.slice(i, j + 1);
+    calls++;
+    const m = call.match(/,\s*(null|'([a-z]+)')\s*\)$/);
+    if (m && KNOWN.has(m[2] ?? null)) declared++;
+    else check(`categoria valida en linea ${src.slice(0, i).split('\n').length}`, false, call.slice(-60));
+    i = j;
+  }
+  check(`las ${calls} llamadas declaran categoria`, calls > 40 && declared === calls, `${declared}/${calls}`);
+}
 
-  ['La recomendación aguanta el 82 % de las variaciones de umbral', 'stability'],
-  ['The recommendation holds through 82% of threshold variations', 'stability'],
-  ['La recomendación solo aguanta el 40 % de las variaciones de umbral', 'stability'],
-  ['The recommendation only holds through 40% of threshold variations', 'stability'],
-  ['La recomendación no sobrevive a sus propios umbrales (20 %)', 'stability'],
-  ['The recommendation does not survive its own thresholds (20%)', 'stability'],
-  ['La recomendación aguanta el 100 % de las variaciones de TUS mínimos', 'stability'],
-  ['The recommendation holds through 100% of YOUR minima variations', 'stability'],
-  ['Tus mínimos mueven la recomendación (aguanta el 40 %)', 'stability'],
-  ['Your minima move the recommendation (it holds 40%)', 'stability'],
-  ['La recomendación depende de los mínimos que elijas (20 %)', 'stability'],
-  ['The recommendation depends on the minima you choose (20%)', 'stability'],
-  ['No se ha podido auditar el efecto de tus mínimos', 'stability'],
-  ['The effect of your minima could not be audited', 'stability'],
+section('2. Los hallazgos reales llevan la categoria esperada');
+{
+  const demo = buildDemoTables();
+  const pol = (g) => ({ ...DEFAULT_POLICY, gates: { ...DEFAULT_POLICY.gates, ...g } });
+  const runs = [
+    runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable }),
+    runAnalysis({ isTable: demo.isTable }),
+    runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable, policy: pol({ minProfitFactor: 1.35, maxDrawdownPct: 8 }) }),
+  ];
+  const all = runs.flatMap((a) => a.verdict.findings);
+  check('todos los hallazgos tienen categoria conocida', all.every((f) => 'category' in f && KNOWN.has(f.category)),
+    all.filter((f) => !KNOWN.has(f.category)).map((f) => f.title).join(' | '));
+  // Una muestra por categoria, con el titulo como pista para leer el fallo.
+  const expect = [
+    [/Fragilidad del ranking Result/, 'stats'],
+    [/umbral del azar/, 'stats'],
+    [/Correlación IS -> OOS/, 'stats'],
+    [/aguanta el .* variaciones de umbral|sus propios umbrales/, 'stability'],
+    [/Sin \.set de optimización/, 'coverage'],
+    [/no está filtrando nada|no están filtrando nada/, 'gates'],
+    [/Sin periodo forward no hay validación posible/, null],
+    [/El forward ya se ha usado para validar y ordenar/, null],
+  ];
+  for (const [re, cat] of expect) {
+    const hit = all.filter((f) => re.test(f.title));
+    if (!hit.length) continue; // no todas las ramas salen con estos datos
+    check(`${cat ?? 'null'} <- ${re}`, hit.every((f) => f.category === cat), hit.map((f) => f.category).join(','));
+  }
+}
 
-  ['Uno de tus mínimos no está filtrando nada', 'gates'],
-  ['One of your minima is not filtering anything', 'gates'],
-  ['2 de tus mínimos no están filtrando nada', 'gates'],
-  ['2 of your minima are not filtering anything', 'gates'],
+section('3. La interfaz usa la categoria declarada, no el texto');
+{
+  const f = { title: 'Correlación IS -> OOS de 0,74', detail: 'texto cualquiera', category: 'stats' };
+  check('categorizeFinding devuelve la declarada', categorizeFinding(f) === 'stats');
+  const reworded = { ...f, title: 'Una frase nueva sin ninguna palabra clave' };
+  check('reescribir el titulo no mueve el hallazgo', categorizeFinding(reworded) === 'stats');
+  check('sin categoria se queda suelto en Verdict', categorizeFinding({ title: 'Correlación IS -> OOS', detail: '' }) === null);
+  check('findingsForCategory filtra por la declarada', findingsForCategory([f, reworded, { title: 'x', detail: '', category: null }], 'stats').length === 2);
+}
 
-  ['Muestreo disperso (sobre niveles vistos): 0.0004%', 'coverage'],
-  ['Sparse sampling (on seen levels): 0.0004%', 'coverage'],
-  ['Solo 1.50% del rango del .set', 'coverage'],
-  ['Only 1.50% of the .set search range', 'coverage'],
-  ['La cobertura observada engaña frente al .set', 'coverage'],
-  ['Observed coverage misleads vs the .set', 'coverage'],
-  ['Cobertura del .set: 96.0%', 'coverage'],
-  ['.set coverage: 96.0%', 'coverage'],
-  ['Cobertura del .set: 40.00%', 'coverage'],
-  ['.set coverage: 40.00%', 'coverage'],
-  ['Hay pasadas fuera del rango del .set', 'coverage'],
-  ['Some passes fall outside the .set range', 'coverage'],
-  ['2 parámetro(s) del archivo no están en el .set', 'coverage'],
-  ['2 file parameter(s) missing from the .set', 'coverage'],
-  ['Sin .set de optimización: cobertura solo sobre niveles vistos', 'coverage'],
-  ['No optimization .set: coverage is on seen levels only', 'coverage'],
-  ['Soporte local insuficiente (mediana de 3 vecinos)', 'coverage'],
-  ['Insufficient local support (median of 3 neighbors)', 'coverage'],
-  ['El periodo OOS es muy corto (aprox. 10% del IS)', 'coverage'],
-  ['The OOS period is very short (approx. 10% of IS)', 'coverage'],
-  ['El periodo OOS es más largo que el IS (aprox. 130%)', 'coverage'],
-  ['The OOS period is longer than IS (approx. 130%)', 'coverage'],
-
-  ['2 parámetro(s) se han conservado por su efecto combinado', 'sensitivity'],
-  ['2 parameter(s) were kept for their combined effect', 'sensitivity'],
-  ['La rejilla de 1 parámetro(s) tiene saltos desiguales', 'sensitivity'],
-  ['The grid of 1 parameter(s) has uneven steps', 'sensitivity'],
-
-  ['En 2 parametro(s), el valor que gana en el in-sample es de los que pierden en el forward', 'parameters'],
-  ['In 2 parameter(s), the value that wins in-sample is among those that lose on the forward', 'parameters'],
-
-  ['Los dos archivos no parecen de la misma optimizacion', 'integrity'],
-  ['The two files do not appear to be from the same optimization', 'integrity'],
-  ['El forward parece un subconjunto del in-sample (posible sesgo de selección)', 'integrity'],
-  ['Forward looks like a subset of in-sample (possible selection bias)', 'integrity'],
-  ['3 identificadores duplicados', 'integrity'],
-  ['3 duplicate identifiers', 'integrity'],
-  ['5 pasadas sin pareja', 'integrity'],
-  ['5 unpaired passes', 'integrity'],
-
-  ['La configuración propuesta se apoya en un valor que el forward castiga', 'plateau'],
-  ['The proposed configuration leans on a value the forward punishes', 'plateau'],
-  ['La configuración recomendada esta pegada al borde del rango probado', 'plateau'],
-  ['The recommended configuration sits on the edge of the tested range', 'plateau'],
-];
-
-section('1. Cada titulo real de core/verdict.js clasifica donde debe');
-for (const [title, expected] of CASES) {
-  const got = categorizeFinding({ title, detail: '' });
-  check(`${expected ?? 'null'} <- "${title.slice(0, 60)}"`, got === expected, `obtenido: ${got}`);
+section('4. La categoria sobrevive al cambio de idioma');
+{
+  const demo = buildDemoTables();
+  setLocale('es');
+  const es = runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable }).verdict.findings.map((f) => f.category);
+  setLocale('en');
+  const en = runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable }).verdict.findings.map((f) => f.category);
+  setLocale('es');
+  check('mismas categorias en ES y EN', JSON.stringify(es) === JSON.stringify(en), `${es} vs ${en}`);
 }
 
 // ---------------------------------------------------------------- resumen
