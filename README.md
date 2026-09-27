@@ -29,8 +29,11 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
 3. **Umbrales absolutos, no percentiles.** Un percentil siempre encuentra un «mejor 5 %»,
    incluso donde todo pierde dinero. Con mínimos absolutos la aplicación puede decir que no
    hay nada.
-4. **La calidad combinada es el mínimo de los dos periodos, no la media.** Una configuración
-   vale lo que vale su peor periodo.
+4. **Se descubre en el in-sample y se valida en el forward; nunca se promedian.** La meseta
+   se busca con la calidad y los mínimos del in-sample. El forward vuelve a exigir los mínimos
+   para validarla: si muchas de sus configuraciones fallan allí, esa meseta baja de puesto.
+   (Existe un modo `joint`, no activado por defecto, en el que cada configuración vale lo que
+   vale su peor periodo.)
 5. **Se elige el centro de la meseta, no su cima**, por criterio maximin: la configuración
    cuyo *peor* vecino es el mejor posible.
 6. **Solo se ignora lo demostrablemente plano, medido de dos formas.** La influencia de un

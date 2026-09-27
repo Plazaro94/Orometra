@@ -132,8 +132,8 @@ export function buildVerdict(ctx) {
   if (Number.isFinite(fragilityQuality)) {
     if (fragilityQuality >= 0.5) {
       add(SEV.WARN, L(`Fragilidad de la calidad Orometra: ${(100 * fragilityQuality).toFixed(0)}%`, `Orometra quality fragility: ${(100 * fragilityQuality).toFixed(0)}%`),
-        L('Aunque no uses Result, la calidad reconstruida (PF/DD/ops…) también pierde orden al cruzar periodos. La meseta sigue siendo mejor que la cima, pero el holdout es imprescindible.',
-          'Even without Result, rebuilt quality (PF/DD/trades…) also loses rank across periods. The plateau is still better than the peak, but holdout is essential.'));
+        L('Aunque no uses Result, la calidad reconstruida (PF/DD/ops…) también pierde orden al cruzar periodos. La meseta sigue siendo mejor que la cima, pero el periodo no visto es imprescindible.',
+          'Even without Result, rebuilt quality (PF/DD/trades…) also loses rank across periods. The plateau is still better than the peak, but the unseen period is essential.'));
     } else if (fragilityQuality < 0.3) {
       add(SEV.OK, L(`Fragilidad de la calidad Orometra: ${(100 * fragilityQuality).toFixed(0)}%`, `Orometra quality fragility: ${(100 * fragilityQuality).toFixed(0)}%`),
         L('La calidad reconstruida conserva orden entre periodos mejor que un ranking frágil.',
@@ -143,13 +143,13 @@ export function buildVerdict(ctx) {
 
   if (selectionMode === 'isThenOos' && hasForward) {
     add(SEV.INFO, L('Mesetas descubiertas in-sample y validadas en forward', 'Plateaus discovered in-sample and validated on forward'),
-      L('El motor busca zonas con calidad y mínimos del in-sample; el forward no elige la meseta, la puntúa después. Así el forward no contamina la selección.',
-        'The engine finds regions with in-sample quality and gates; forward does not choose the plateau, it scores it afterwards. Forward does not contaminate selection.'));
+      L('El motor busca zonas con la calidad y los mínimos del in-sample. El forward no crea ni amplía la meseta: la valida después, y si muchas de sus configuraciones fallan tus mínimos en forward, esa meseta baja de puesto. Pesa menos en la elección que si puntuara, pero no es un tramo ciego.',
+        'The engine finds regions with in-sample quality and minima. The forward neither creates nor widens the plateau: it validates it afterwards, and if many of its configurations fail your minima on the forward, that plateau drops in rank. It weighs less in the choice than if it scored, but it is not a blind period.'));
     const v = bestPlateau && bestPlateau.oosValidation;
     if (v && v.passFrac < 0.5) {
       add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${(100 * v.passFrac).toFixed(0)}% en forward`, `The recommended plateau only holds ${(100 * v.passFrac).toFixed(0)}% on forward`),
-        L('Muchas configs de la región fallan los mínimos del forward. Trátala como provisional hasta un holdout limpio.',
-          'Many configs in the region fail forward gates. Treat it as provisional until a clean holdout.'));
+        L('Muchas configs de la región fallan los mínimos del forward. Trátala como provisional hasta probarla en un periodo no visto.',
+          'Many configs in the region fail forward gates. Treat it as provisional until you test it on an unseen period.'));
     }
   } else if (selectionMode === 'joint' && hasForward) {
     add(SEV.INFO, L('Modo joint: el forward participa en la selección', 'Joint mode: forward takes part in selection'),
@@ -272,8 +272,8 @@ export function buildVerdict(ctx) {
 
   // ---- Avisos metodologicos
   if (!hasForward) {
-    add(SEV.CRITICAL, L('Sin periodo forward no hay validacion posible', 'Without a forward period there is no possible validation'),
-      L('Solo has subido el in-sample, asi que todo lo que ves esta medido sobre los mismos datos con los que se eligieron los parametros. Las mesetas son reales como estructura, pero nadie ha comprobado que sobrevivan fuera. Repite la optimizacion en MT5 con la opcion Forward activada: es la diferencia entre describir el pasado y predecir algo.',
+    add(SEV.CRITICAL, L('Sin periodo forward no hay validación posible', 'Without a forward period there is no possible validation'),
+      L('Solo has subido el in-sample, así que todo lo que ves está medido sobre los mismos datos con los que se eligieron los parámetros. Las mesetas son reales como estructura, pero nadie ha comprobado que sobrevivan fuera. Repite la optimización en MT5 con la opción Forward activada: es la diferencia entre describir el pasado y predecir algo.',
         'You only uploaded the in-sample, so everything you see is measured on the same data used to choose the parameters. The plateaus are real as structure, but nobody has checked that they survive outside. Repeat the optimization in MT5 with Forward enabled: that is the difference between describing the past and predicting something.'));
   }
 
@@ -283,10 +283,14 @@ export function buildVerdict(ctx) {
    * FILTRAR y para PUNTUAR, sus cifras dejan de ser una estimacion limpia de lo que viene.
    * Usarlo asi es lo correcto -desperdiciar esa informacion seria peor-, pero callarlo no.
    */
-  if (hasForward) {
+  if (hasForward && selectionMode === 'joint') {
     add(SEV.INFO, L('Las cifras del forward ya se han usado para elegir', 'Forward figures have already been used for selection'),
-      L('Los mínimos se aplican también al forward, y la puntuación de cada configuración es el peor de los dos periodos, así que el forward interviene en la selección. Eso hace que sus números salgan algo mejores de lo que serian sobre datos de verdad no vistos, igual que pasa con el in-sample. No es un defecto del metodo: aprovechar esa información es preferible a tirarla. Pero significa que el ÚNICO número no contaminado que vas a ver es el del periodo no visto, y por eso ese paso no es un extra.',
+      L('Los mínimos se aplican también al forward, y la puntuación de cada configuración es el peor de los dos periodos, así que el forward interviene en la selección. Eso hace que sus números salgan algo mejores de lo que serían sobre datos de verdad no vistos, igual que pasa con el in-sample. No es un defecto del método: aprovechar esa información es preferible a tirarla. Pero significa que el ÚNICO número no contaminado que vas a ver es el del periodo no visto, y por eso ese paso no es un extra.',
         'The minimum gates are also applied to the forward, and each configuration\'s score is the worse of the two periods, so the forward takes part in selection. That makes its numbers come out somewhat better than they would on truly unseen data, just as with the in-sample. That is not a flaw of the method: using that information is preferable to discarding it. But it means the ONLY uncontaminated number you will see is the unseen period\'s, and that is why that step is not optional.'));
+  } else if (hasForward) {
+    add(SEV.INFO, L('El forward ya se ha usado para validar y ordenar', 'The forward has already been used to validate and rank'),
+      L('La meseta se descubre solo con el in-sample, pero el forward decide qué mesetas bajan de puesto y es la base de todas las cifras de validación. Eso hace que sus números salgan algo mejores de lo que serían sobre datos de verdad no vistos. No es un defecto del método: aprovechar esa información es preferible a tirarla. Pero significa que el ÚNICO número no contaminado que vas a ver es el del periodo no visto, y por eso ese paso no es un extra.',
+        'The plateau is discovered from the in-sample alone, but the forward decides which plateaus drop in rank and underlies every validation figure. That makes its numbers come out somewhat better than they would on truly unseen data. That is not a flaw of the method: using that information is preferable to discarding it. But it means the ONLY uncontaminated number you will see is the unseen period\'s, and that is why that step is not optional.'));
   }
 
   if (rescuedDims && rescuedDims.length) {

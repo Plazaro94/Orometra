@@ -280,8 +280,10 @@ section('7. Estabilidad del veredicto frente a sus propias constantes');
     a.verdict.findings.map((f) => f.title).join(' | ').slice(0, 120));
 
   // Y el diagnostico que evita malentendidos sobre el forward.
-  check('se avisa de que el forward ya se uso para elegir',
-    a.verdict.findings.some((f) => /ya se han usado para elegir/i.test(f.title)));
+  // El titulo depende del modo: "para elegir" (joint) o "para validar y ordenar"
+  // (isThenOos, el de por defecto). Lo que importa es que el aviso exista siempre.
+  check('se avisa de que el forward ya se ha usado',
+    a.verdict.findings.some((f) => /ya se han usado para elegir|ya se ha usado para validar y ordenar/i.test(f.title)));
 }
 
 // ============================================================================

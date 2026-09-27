@@ -25,9 +25,9 @@ export function holdoutFact(a) {
     return {
       value: L('No aportado', 'Not supplied'),
       note: a && a.meta && a.meta.hasForward
-        ? L('El forward ya entró en la selección. Falta un tramo no visto.', 'Forward already entered selection. An unseen segment is still missing.')
+        ? L('El forward ya se usó para validar. Falta un periodo no visto.', 'The forward was already used to validate. An unseen period is still missing.')
         : L('Validación independiente aún no cargada.', 'Independent validation not loaded yet.'),
-      short: L('Holdout: no aportado', 'Holdout: not supplied'),
+      short: L('Periodo no visto: no aportado', 'Unseen period: not supplied'),
       done: false,
       ok: false,
     };
@@ -40,7 +40,7 @@ export function holdoutFact(a) {
   return {
     value,
     note: res.headline || '',
-    short: L(`Holdout: ${value}`, `Holdout: ${value}`),
+    short: L(`Periodo no visto: ${value}`, `Unseen period: ${value}`),
     done: true,
     ok: res.level === 'normal' || res.level === 'tail',
   };
@@ -72,10 +72,12 @@ export function displayVerdictCopy(a) {
   // Unico caso posible hoy: sólida -> moderada por falta de holdout.
   return {
     level,
-    headline: L('Evidencia sólida, aún sin validar', 'Solid evidence, not yet validated'),
+    // El titular empieza por el nivel MOSTRADO. Antes decia "Evidencia sólida, aún sin
+    // validar" bajo un sello "moderada": la frase mas leida admitia dos lecturas.
+    headline: L('Evidencia moderada: meseta sólida, falta el periodo no visto', 'Moderate evidence: solid plateau, unseen period still missing'),
     summary: L(
-      'La región propuesta se apoya en vecinos que también superan tus mínimos, y el resultado aguanta al mover los umbrales — es lo máximo que da de sí la comparación in-sample/forward. Se muestra como moderada, no sólida, porque el forward ya participó en la selección: todavía no hay un tramo independiente que la confirme.',
-      'The proposed region rests on neighbors that also clear your minima, and the result holds when thresholds are moved — that is as far as the in-sample/forward comparison can go. It is shown as moderate, not solid, because forward already took part in selection: there is no independent segment yet to confirm it.',
+      'La región propuesta se apoya en vecinos que también superan tus mínimos y aguanta al mover los umbrales: con in-sample y forward no se puede pedir más. Se queda en moderada porque el forward ya se ha usado para validar y ordenar las mesetas, y falta un periodo que no hayas tocado para confirmarla.',
+      'The proposed region rests on neighbors that also clear your minima and holds when thresholds are moved: in-sample and forward cannot give more. It stays at moderate because the forward was already used to validate and rank the plateaus, and a period you have not touched is still missing to confirm it.',
     ),
   };
 }
@@ -120,7 +122,7 @@ export function renderVerdict(a) {
       </div>`;
 
   const holdBlock = `<div class="verdict-fact${hold.done && !hold.ok ? ' verdict-fact-risk' : ''}">
-      <span class="verdict-fact-label">${L('Holdout', 'Holdout')}</span>
+      <span class="verdict-fact-label">${L('Periodo no visto', 'Unseen period')}</span>
       <strong class="verdict-fact-value">${esc(hold.value)}</strong>
       <span class="verdict-fact-note">${esc(hold.note)}</span>
       ${!hold.done ? `<button class="text-btn verdict-fact-cta" data-goto="unseen">${L('Ir al periodo no visto &rarr;', 'Go to unseen period &rarr;')}</button>` : ''}
@@ -253,7 +255,9 @@ export function renderEvidenceSheet(a, best) {
   if (nb) {
     neighborsVal = `${int(nb.passing)} / ${int(nb.observed)}`;
     const bits = [
-      L(`${int(nb.passing)} pasan mínimos`, `${int(nb.passing)} pass minima`),
+      a.meta.hasForward && a.meta.selectionMode !== 'joint'
+        ? L(`${int(nb.passing)} pasan mínimos in-sample`, `${int(nb.passing)} pass in-sample minima`)
+        : L(`${int(nb.passing)} pasan mínimos`, `${int(nb.passing)} pass minima`),
       L(`${int(nb.failing)} fallan`, `${int(nb.failing)} fail`),
     ];
     if (nb.slotsComplete && Number.isFinite(nb.gaps)) {
@@ -268,7 +272,7 @@ export function renderEvidenceSheet(a, best) {
     ? pct(best.medianRetention, 0)
     : (best && hasF && Number.isFinite(best.record.retention) ? pct(best.record.retention, 0) : '—');
   const retentionNote = hasF
-    ? L('Retención de calidad en el forward (participó en la selección)', 'Quality retention on forward (took part in selection)')
+    ? L('Mediana de la meseta: calidad forward ÷ calidad in-sample', 'Plateau median: forward quality ÷ in-sample quality')
     : L('Sin archivo forward', 'No forward file');
 
   const boundaryVal = best
@@ -295,7 +299,7 @@ export function renderEvidenceSheet(a, best) {
     [L('Vecinos (pasan / observados)', 'Neighbors (pass / observed)'), neighborsVal, neighborsNote],
     [L('Retención forward', 'Forward retention'), retentionVal, retentionNote],
     [L('Toca borde del rango', 'Touches search boundary'), boundaryVal, boundaryNote],
-    [L('Holdout independiente', 'Independent holdout'), holdoutVal, holdoutNote],
+    [L('Periodo no visto', 'Unseen period'), holdoutVal, holdoutNote],
   ];
 
   return `<section class="panel panel-evidence-sheet" aria-label="${esc(L('Hoja de evidencia', 'Evidence sheet'))}">
@@ -312,9 +316,12 @@ export function renderEvidenceSheet(a, best) {
         <em>${esc(note)}</em>
       </div>`).join('')}
     </div>
-    <p class="chart-note">${L(
-      'Forward forma parte de la selección. Un holdout no visto es la comprobación limpia. Una meseta es estabilidad en tu muestra — no una promesa de beneficio futuro.',
-      'Forward takes part in selection. An unseen holdout is the clean check. A plateau is stability in your sample — not a promise of future profit.',
+    <p class="chart-note">${a.meta.hasForward ? L(
+      'El forward ya se usó para validar y ordenar las mesetas. Un periodo no visto es la comprobación limpia. Una meseta es estabilidad en tu muestra — no una promesa de beneficio futuro.',
+      'The forward was already used to validate and rank plateaus. An unseen period is the clean check. A plateau is stability in your sample — not a promise of future profit.',
+    ) : L(
+      'Sin forward, todo está medido sobre los datos con los que se optimizó. Un periodo no visto es la comprobación limpia. Una meseta es estabilidad en tu muestra — no una promesa de beneficio futuro.',
+      'Without a forward, everything is measured on the data used to optimize. An unseen period is the clean check. A plateau is stability in your sample — not a promise of future profit.',
     )}</p>
   </section>`;
 }
@@ -445,7 +452,15 @@ export function renderTop3(a) {
     if (p.boundary.length) {
       flags.push(`<span class="badge warn" title="${esc(L('Pegada al borde del rango probado', 'Stuck to the edge of the tested range'))}">${L('borde', 'edge')}</span>`);
     }
-    return flags.join(' ') || `<span class="badge ok">${L('sin avisos', 'no warnings')}</span>`;
+    // La configuracion elegida puede fallar tus minimos en el forward: la meseta se
+    // descubre en el in-sample. Que el chip diga "sin avisos" en ese caso era mentir.
+    if (hasF && p.record.failsOos && p.record.failsOos.length) {
+      flags.push(`<span class="badge warn" title="${esc(L('Esta configuración no cumple tus mínimos en el forward', 'This configuration does not meet your minima on the forward'))}">${L('falla en forward', 'fails on forward')}</span>`);
+    }
+    if (p.oosValidation && p.oosValidation.passFrac < 0.5) {
+      flags.push(`<span class="badge warn" title="${esc(L('Menos de la mitad de la meseta cumple tus mínimos en el forward', 'Less than half of the plateau meets your minima on the forward'))}">${L('meseta frágil en forward', 'plateau weak on forward')}</span>`);
+    }
+    return flags.join(' ') || `<span class="badge ok">${L('sin avisos de la meseta', 'no plateau warnings')}</span>`;
   };
 
   const featuredCard = `<article class="t3-featured">

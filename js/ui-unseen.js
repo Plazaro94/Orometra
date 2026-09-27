@@ -213,7 +213,7 @@ export function renderTradesAudit() {
   const sampleRow = `<div class="evidence-list">
       <div><span>${L('Días de datos', 'Days of data')}</span><strong>${int(sa.n)}</strong></div>
       <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${sufficient ? 'ok' : 'warn'}">${sa.power.usable ? pct(sa.power.power) : '—'}</strong></div>
-      <div><span>${L('Intervalo de confianza del resultado diario medio', 'Confidence interval of the average daily result')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 3)} &ndash; ${num(sa.meanCi.ci.p95, 3)}` : '—'}</strong></div>
+      <div><span>${L('Intervalo de confianza del resultado diario medio', 'Confidence interval of the average daily result')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 2)} &ndash; ${num(sa.meanCi.ci.p95, 2)}` : '—'}</strong></div>
     </div>
     <p class="chart-note">${sufficient
       ? L(

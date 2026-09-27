@@ -106,7 +106,12 @@ export function buildReport(analysis, extra = {}) {
     tool: 'Orometra v2',
     fingerprint: fingerprintAnalysis(analysis),
     source: extra.source || null,
-    verdict: analysis.verdict,
+    // El nivel que el usuario vio en pantalla, no el crudo del motor: exportar "strong"
+    // mientras la interfaz dice "moderada" hacia que el informe compartido contradijera
+    // a la app. El del motor se conserva aparte, para trazabilidad.
+    verdict: extra.shownVerdict
+      ? { ...analysis.verdict, level: extra.shownVerdict.level, headline: extra.shownVerdict.headline, summary: extra.shownVerdict.summary, engineLevel: analysis.verdict.level }
+      : analysis.verdict,
     meta: analysis.meta,
     integrity: analysis.integrity,
     statistics: analysis.stats,

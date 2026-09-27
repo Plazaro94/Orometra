@@ -139,8 +139,8 @@ export async function acceptFiles(fileList, preferred) {
     // Ambos parecen in-sample: no asignar el segundo a forward en silencio.
     setFile('is', files[0]);
     api.showError(L(
-      'Los dos archivos parecen in-sample (ninguno trae columnas Forward Result / Back Result). Carga el export del forward en la caja Forward, o un solo archivo si no usaste forward.',
-      'Both files look like in-sample (neither has Forward Result / Back Result columns). Load the forward export into the Forward box, or a single file if you did not use forward.',
+      'Los dos archivos parecen in-sample (ninguno trae columnas Forward Result / Back Result). Se ha cargado solo el primero. Si tienes el export forward, suéltalo también; si no, puedes auditar solo el in-sample.',
+      'Both files look like in-sample (neither has Forward Result / Back Result columns). Only the first one was loaded. If you have the forward export, drop it too; if not, you can audit the in-sample alone.',
     ));
   } else {
     setFile('is', files[0]);
@@ -313,16 +313,18 @@ export function renderPreflight() {
 export function refreshAnalyzeButton() {
   const hasIs = Boolean(state.isFile || (state.isDemo && state.isTable));
   const hasOos = Boolean(state.oosFile || (state.isDemo && state.oosTable));
-  const ready = hasIs && hasOos;
+  // El forward es opcional: sin el, el motor audita solo el in-sample, lo avisa como
+  // critico y no pasa de "debil". Bloquearlo dejaba sin salida a quien no usa Forward.
+  const ready = hasIs;
   const preflightBlocked = (state.preflight.is && state.preflight.is.ok === false)
     || (state.preflight.oos && state.preflight.oos.ok === false);
   $('#analyzeBtn').disabled = !ready || state.busy || preflightBlocked;
   $('#analyzeSub').textContent = !hasIs
     ? t('analyze.needIs')
-    : !hasOos
-      ? t('analyze.needOos')
-      : preflightBlocked
-        ? t('preflight.note.warn')
+    : preflightBlocked
+      ? t('preflight.note.warn')
+      : !hasOos
+        ? t('analyze.needOos')
         : t('analyze.ready');
 }
 

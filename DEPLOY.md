@@ -101,8 +101,9 @@ Conviene tenerlo escrito, porque la tentación de aparentar más de lo que se mi
   `docs/MT5_ASSUMPTIONS.md`). En una malla densa de una sola estrategia esa dispersión la
   produce en parte la forma de la superficie de parámetros, no solo el ruido, así que el
   umbral sube cuanta más señal real hay — nunca da falsa confianza.
-- **Cifras limpias del forward.** El forward filtra y puntúa, luego participa en la selección y
-  sus números están algo inflados. El único número no contaminado es el del periodo no visto.
+- **Cifras limpias del forward.** La meseta se descubre en el in-sample, pero el forward la valida
+  y decide el orden entre mesetas, así que sus números están algo favorecidos. El único número no
+  contaminado es el del periodo no visto.
 
 ## Compatibilidad
 

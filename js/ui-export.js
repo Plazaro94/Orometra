@@ -114,6 +114,7 @@ export function doExport(kind, plateauIndex) {
   } else if (kind === 'json') {
     downloadText(`robustness-informe-${stamp}.json`, JSON.stringify(buildReport(a, {
       source: state.source ? { is: state.source.is, oos: state.source.oos || null, at: state.source.at } : null,
+      shownVerdict: displayVerdictCopy(a),
     }), null, 2), 'application/json');
   } else if (kind === 'csv') {
     downloadText(`robustness-configuraciones-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');

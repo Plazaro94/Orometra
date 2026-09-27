@@ -185,12 +185,12 @@ export function updatePolicyPreview() {
   $('#policyPreviewCount').textContent = L(`${int(pass)} de ${int(total)}`, `${int(pass)} of ${int(total)}`);
   $('#policyPreviewNote').textContent = delta === 0
     ? L(
-      `superarían estos mínimos (${pct(pass / total, 0)}), igual que el análisis actual`,
-      `would pass these minima (${pct(pass / total, 0)}), same as the current analysis`,
+      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el in-sample'} (${pct(pass / total, 0)}), igual que el análisis actual`,
+      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the in-sample'} (${pct(pass / total, 0)}), same as the current analysis`,
     )
     : L(
-      `superarían estos mínimos (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
-      `would pass these minima (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
+      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
+      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
     );
   $('#policyRerun').disabled = state.busy || delta === 0;
 }
@@ -580,11 +580,11 @@ export function renderMethod() {
       L('No se fía del nombre de columna. Misma Pass → un parámetro coincide en IS y forward; una métrica no.',
         'It does not trust column names. Same Pass → a parameter matches in IS and forward; a metric does not.')],
     ['03', L('Calidad sin Result', 'Quality without Result'),
-      L('Result es tu criterio de optimización y está sesgado. La calidad se reconstruye con PF, recuperación, Sharpe, drawdown y operaciones. Puntuación = el peor de IS y forward.',
-        'Result is your optimization criterion and is biased. Quality is rebuilt from PF, recovery, Sharpe, drawdown and trades. Score = the worse of IS and forward.')],
+      L('Result es tu criterio de optimización y está sesgado. La calidad se reconstruye con PF, recuperación, Sharpe, drawdown y operaciones. La meseta se busca con la calidad in-sample y el forward la valida: si allí cae, baja de puesto. Nunca se promedian.',
+        'Result is your optimization criterion and is biased. Quality is rebuilt from PF, recovery, Sharpe, drawdown and trades. The plateau is found with in-sample quality and the forward validates it: if quality drops there, it drops in rank. They are never averaged.')],
     ['04', L('Mínimos antes que rankings', 'Minima before rankings'),
-      L('Solo entran configs que superan tus suelos en ambos periodos. Un percentil siempre inventa un “top 5 %”, aunque todo pierda.',
-        'Only setups that clear your floors in both periods enter. A percentile always invents a “top 5%”, even if everything loses.')],
+      L('Para buscar mesetas solo cuentan las configs que superan tus suelos en el in-sample; el forward vuelve a exigirlos para validar. Un percentil siempre inventa un “top 5 %”, aunque todo pierda.',
+        'Only setups that clear your floors in-sample enter the plateau search; the forward requires them again to validate. A percentile always invents a “top 5%”, even if everything loses.')],
     ['05', L('Vecinos en pasos', 'Neighbors in steps'),
       L('La distancia es en pasos de tu rejilla (30→50 y 0,1→0,2 = un paso). Si la rejilla es irregular, se avisa.',
         'Distance is in steps of your grid (30→50 and 0.1→0.2 = one step). Uneven grids get a warning.')],
@@ -623,8 +623,8 @@ export function renderMethod() {
           'It does not compute classic PBO / Reality Check / SPA: MT5 exports lack per-config equity curves. It measures selection-rule fragility — which is why it is not called PBO.',
         )}</li>
         <li>${L(
-          'El forward ya filtra y puntúa, así que está algo inflado (igual que el IS). El número más limpio es el del periodo no visto.',
-          'Forward already filters and scores, so it is somewhat inflated (like IS). The cleanest number is the unseen period.',
+          'El forward ya se usa para validar y ordenar las mesetas, así que sus cifras están algo favorecidas (igual que el IS). El número más limpio es el del periodo no visto.',
+          'Forward is already used to validate and rank plateaus, so its figures are somewhat favored (like IS). The cleanest number is the unseen period.',
         )}</li>
         <li>${L(
           'No juzga la lógica del EA, la calidad del histórico ni el spread/comisión. Un backtest optimista de origen sigue siendo optimista aquí.',

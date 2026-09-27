@@ -16,11 +16,16 @@ export function meanConfidenceInterval(returns, opts = {}) {
     meanBlock: opts.meanBlock,
   });
   if (!boot.usable) return boot;
+  const n = returns.filter(Number.isFinite).length;
+  // `returnCi` son cuantiles del TOTAL de cada camino simulado (n dias). La media diaria
+  // de ese camino es total / n; devolver el total con la etiqueta "resultado diario
+  // medio" mostraba, p. ej., 6 – 11.777 para una media real de ~20 al dia.
+  const perDay = (v) => (Number.isFinite(v) && n > 0 ? v / n : NaN);
   return {
     usable: true,
     mean: mean(returns),
-    n: returns.filter(Number.isFinite).length,
-    ci: boot.returnCi,
+    n,
+    ci: { p05: perDay(boot.returnCi.p05), p50: perDay(boot.returnCi.p50), p95: perDay(boot.returnCi.p95) },
   };
 }
 

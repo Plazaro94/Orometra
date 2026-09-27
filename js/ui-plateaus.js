@@ -217,8 +217,8 @@ function renderPlateauSurfacePanel(a, plateau) {
       </div>
     </div>
     <p class="panel-intro">${L(
-      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta — las que también aguantan en el periodo forward. El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra para rotar.`,
-      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau — the ones that also hold up in the forward period. The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag to rotate.`,
+      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta (se descubre con el in-sample; el forward solo la valida). El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra para rotar.`,
+      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau (found in-sample; the forward only validates it). The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag to rotate.`,
     )}</p>
     <div class="surface-wrap">
       <canvas id="plateauSurfaceCanvas" role="img" aria-label="${esc(L('Superficie 3D de calidad real para dos parámetros', '3D surface of real quality for two parameters'))}"></canvas>
@@ -486,7 +486,7 @@ export function renderDiagnostics(a) {
         <div><span>${L('Operaciones mínimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>
         ${(a.meta.gateInfluence || []).filter((gi) => gi.name !== 'beneficio').map((gi) => `
         <div><span>· ${gateName(gi.name)}: ${L('descarta ella sola', 'rejects on its own')}</span><strong>${gi.sole ? int(gi.sole) + L(' configuraciones', ' configurations') : `<em>${L('ninguna (no filtra nada)', 'none (filters nothing)')}</em>`}</strong></div>`).join('')}
-        <div><span>${L('Se exigen en', 'Required in')}</span><strong>${a.meta.hasForward ? L('los dos periodos', 'both periods') : L('el in-sample', 'in-sample')}</strong></div>
+        <div><span>${L('Se exigen en', 'Required in')}</span><strong>${a.meta.hasForward ? (a.meta.selectionMode === 'joint' ? L('los dos periodos', 'both periods') : L('in-sample (buscar) · forward (validar)', 'in-sample (search) · forward (validate)')) : L('el in-sample', 'in-sample')}</strong></div>
       </div>
       ${findingsNote(gatesFindings)}
     </section>

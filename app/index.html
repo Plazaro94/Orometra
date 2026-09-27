@@ -133,7 +133,7 @@
           <div class="analyze-icon" aria-hidden="true">&#8599;</div>
           <div>
             <strong id="analyzeLabel" data-i18n="analyze.label">Audit</strong>
-            <span id="analyzeSub" data-i18n="analyze.sub">Load at least the in-sample file</span>
+            <span id="analyzeSub" data-i18n="analyze.sub">Load the in-sample (and the forward, if you have it)</span>
           </div>
           <div class="analyze-arrow" aria-hidden="true">&rarr;</div>
         </button>
@@ -155,7 +155,7 @@
       <div class="policy-panel" id="policyPanel">
         <div class="policy-head">
           <h2 data-i18n="policy.h2">Minimums a configuration must meet</h2>
-          <p data-i18n-html="policy.p">Required in <strong>both periods</strong>. Anything that fails is out, no matter how high it ranks in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
+          <p data-i18n-html="policy.p">The plateau is searched among configurations that meet these minima <strong>in-sample</strong>. On the <strong>forward</strong> they are required again to validate it: if many of its configurations fail them, the plateau drops in rank and you are warned. Nothing gets in just for ranking high in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
         </div>
         <div class="policy-grid">
           <label class="field">

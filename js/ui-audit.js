@@ -174,10 +174,10 @@ export async function runAudit() {
   if (state.busy) return;
   clearError();
   const demoOk = state.isDemo && state.isTable && state.oosTable;
-  if (!demoOk && (!state.isFile || !state.oosFile)) {
+  if (!demoOk && !state.isFile) {
     showError(L(
-      'Para auditar hacen falta in-sample y forward. Sin forward no hay contraste fuera de muestra.',
-      'Audit needs both in-sample and forward. Without forward there is no out-of-sample contrast.',
+      'Carga al menos el archivo in-sample para auditar.',
+      'Load at least the in-sample file to audit.',
     ));
     return;
   }
