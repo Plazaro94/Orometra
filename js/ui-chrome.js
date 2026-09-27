@@ -6,7 +6,7 @@ import { mountHeroSurface } from './hero-surface.js';
 import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, pct, esc } from './ui-state.js';
-import { displayVerdictCopy } from './ui-verdict.js';
+import { displayVerdictCopy, configsLabel } from './ui-verdict.js';
 
 // ---------------------------------------------------------------- preferencias
 export const PREFS_KEY = 'orometra.gates';
@@ -270,7 +270,7 @@ export function render() {
     if (rm && state.source) {
       const parts = [state.source.is];
       if (state.source.oos) parts.push(state.source.oos);
-      parts.push(`${int(state.analysis.meta.total)} ${L('configs', 'configs')}`);
+      parts.push(configsLabel(state.analysis, true));
       rm.textContent = parts.join(' · ');
     }
   }

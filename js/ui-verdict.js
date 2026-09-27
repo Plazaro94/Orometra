@@ -11,6 +11,29 @@ import { state, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding } fro
  * "NO RECOMENDADO" / "SUPERA LA AUDITORIA", que era decidir por el usuario sobre algo
  * que la aplicacion no mide. Ahora describe lo que sostiene el hallazgo.
  */
+/**
+ * Cuantas configuraciones se han analizado, contado como lo entiende el usuario.
+ *
+ * `meta.total` es lo que queda tras agrupar las pasadas que solo se diferencian en
+ * parametros sin efecto medible: con un export real (256 pasadas emparejadas) salia
+ * "92 configuraciones" y parecia que se habian leido mal los archivos.
+ */
+export function configsLabel(a, short = false) {
+  const integ = a.integrity || {};
+  const paired = Number.isFinite(integ.matchedRows) ? integ.matchedRows : a.meta.total;
+  const grouped = integ.collapsedTopology > 0 && paired > a.meta.total;
+  const base = a.meta.hasForward
+    ? L(`${int(paired)} pasadas emparejadas`, `${int(paired)} paired passes`)
+    : L(`${int(paired)} pasadas`, `${int(paired)} passes`);
+  if (!grouped) return base;
+  if (short) return L(`${base} (${int(a.meta.total)} distintas)`, `${base} (${int(a.meta.total)} distinct)`);
+  const flat = (a.meta.flatDims || []).join(', ');
+  return L(
+    `${base} · ${int(a.meta.total)} tras agrupar ${flat || 'parámetros'} (sin efecto medible)`,
+    `${base} · ${int(a.meta.total)} after grouping ${flat || 'parameters'} (no measurable effect)`,
+  );
+}
+
 export function verdictCopy(level) {
   if (level === 'insufficient') return { label: t('verdict.insufficient'), cls: 'v-no' };
   if (level === 'weak') return { label: t('verdict.weak'), cls: 'v-weak' };
@@ -100,7 +123,7 @@ export function renderVerdict(a) {
     ? `<div class="run-stamp">
         <span class="run-files">${esc(src.is)}${src.oos ? ' <b>+</b> ' + esc(src.oos) : ''}</span>
         <span class="run-sep">·</span>
-        <span>${int(a.meta.total)} ${L('configuraciones', 'configurations')}</span>
+        <span>${esc(configsLabel(a))}</span>
         <span class="run-sep">·</span>
         <span>${esc(L('analizado', 'analyzed'))} ${esc(src.at.toLocaleString(localeTag(), { dateStyle: 'short', timeStyle: 'short' }))}</span>
         <span class="run-sep">·</span>
@@ -342,7 +365,7 @@ export function renderWhyGrade(a, highlights) {
   const col = (title, items, cls) => `<div class="why-col ${cls}">
     <h3>${esc(title)}</h3>
     <ul>${items.length
-      ? items.map((f) => `<li><strong>${esc(f.title)}</strong><span>${esc(f.detail)}</span></li>`).join('')
+      ? items.map((f) => `<li><strong>${esc(f.title)}</strong><span>${rich(f.detail)}</span></li>`).join('')
       : `<li class="why-empty">${L('Nada destacado', 'Nothing notable')}</li>`}
     </ul>
   </div>`;

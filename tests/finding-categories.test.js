@@ -41,7 +41,15 @@ section('1. Cada add() de core/verdict.js declara una categoria valida');
   let i = 0;
   let calls = 0;
   let declared = 0;
-  while ((i = src.indexOf('add(SEV.', i)) >= 0) {
+  // Todas las llamadas, tambien las que pasan la severidad en una variable (add(sev, …)):
+  // buscar solo 'add(SEV.' dejo fuera "pasadas sin pareja" y rompia el analisis con
+  // exports reales de MT5, donde el forward trae menos pasadas que el in-sample.
+  const re = /(?<![\w.])add\((?!severity)/g;
+  let mm;
+  const starts = [];
+  while ((mm = re.exec(src))) starts.push(mm.index);
+  for (const start of starts) {
+    i = start;
     let depth = 0;
     let j = i + 3;
     for (; j < src.length; j++) {
@@ -53,7 +61,6 @@ section('1. Cada add() de core/verdict.js declara una categoria valida');
     const m = call.match(/,\s*(null|'([a-z]+)')\s*\)$/);
     if (m && KNOWN.has(m[2] ?? null)) declared++;
     else check(`categoria valida en linea ${src.slice(0, i).split('\n').length}`, false, call.slice(-60));
-    i = j;
   }
   check(`las ${calls} llamadas declaran categoria`, calls > 40 && declared === calls, `${declared}/${calls}`);
 }
@@ -62,7 +69,10 @@ section('2. Los hallazgos reales llevan la categoria esperada');
 {
   const demo = buildDemoTables();
   const pol = (g) => ({ ...DEFAULT_POLICY, gates: { ...DEFAULT_POLICY.gates, ...g } });
+  // Forward con menos pasadas que el in-sample, como en los exports reales de MT5.
+  const shortOos = { ...demo.oosTable, rows: demo.oosTable.rows.filter((_, k) => k % 3 === 0) };
   const runs = [
+    runAnalysis({ isTable: demo.isTable, oosTable: shortOos }),
     runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable }),
     runAnalysis({ isTable: demo.isTable }),
     runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable, policy: pol({ minProfitFactor: 1.35, maxDrawdownPct: 8 }) }),
@@ -79,6 +89,7 @@ section('2. Los hallazgos reales llevan la categoria esperada');
     [/Sin \.set de optimización/, 'coverage'],
     [/no está filtrando nada|no están filtrando nada/, 'gates'],
     [/Sin periodo forward no hay validación posible/, null],
+    [/pasadas sin pareja/, 'integrity'],
     [/El forward ya se ha usado para validar y ordenar/, null],
   ];
   for (const [re, cat] of expect) {

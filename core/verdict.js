@@ -42,8 +42,9 @@ export function buildVerdict(ctx) {
   // `category` dice en que panel de la interfaz se explica el hallazgo con su tabla
   // ('stats', 'coverage'…); null = se queda suelto en el veredicto. Antes la interfaz lo
   // adivinaba buscando palabras en el texto, y cambiar una frase lo movia en silencio.
-  const add = (severity, title, detail, category) => {
-    if (category === undefined) throw new Error('add(): falta la categoria del hallazgo');
+  // Una categoria olvidada NUNCA debe parar un analisis: el hallazgo se queda suelto en
+  // el veredicto. Quien la vigila es tests/finding-categories.test.js (todas las llamadas).
+  const add = (severity, title, detail, category = null) => {
     findings.push({ severity, title, detail, category });
   };
 
@@ -497,7 +498,7 @@ export function buildVerdict(ctx) {
       const sev = (integrity.isRows > 0 && integrity.unmatchedIs / integrity.isRows > 0.05) ? SEV.WARN : SEV.INFO;
       add(sev, L(`${integrity.unmatchedIs} pasadas sin pareja`, `${integrity.unmatchedIs} unpaired passes`),
         L('Estas filas existen en un archivo y no en el otro, y se han descartado del análisis.',
-          'These rows exist in one file and not the other, and were discarded from the analysis.'));
+          'These rows exist in one file and not the other, and were discarded from the analysis.'), 'integrity');
     }
   }
 
