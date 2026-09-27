@@ -1104,12 +1104,20 @@ tr.sel td{color:var(--text-2)}
 .lp-brand .brand-mark{width:var(--brand-mark);height:var(--brand-mark)}
 .lp-brand .brand-name{font-weight:700;font-size:var(--brand-name);letter-spacing:-.025em;line-height:1}
 .brand-name,.lp-brand .brand-name{color:var(--text-hi)}
-.lp-top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.lp-top-actions .lang-row,.lp-top-actions .theme-row{padding:0}
-.lp-top-actions .lang-btn{padding:7px 9px;min-height:var(--control-h)}
-.lp-top-actions .theme-btn{
-  min-width:var(--control-h);min-height:var(--control-h);padding:8px;flex:none;
+/* Cabecera de portada, metodologia y privacidad: idioma y tema como dos
+   interruptores compactos (un solo borde por pareja) y, en movil, todo en una
+   fila. El enlace a Metodologia se queda en el pie. */
+.lp-top-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lp-top-actions .lang-row,.lp-top-actions .theme-row{
+  gap:2px;padding:2px;border:1px solid var(--line);border-radius:10px;background:var(--surface);
 }
+.lp-top-actions .lang-btn,.lp-top-actions .theme-btn{
+  border-color:transparent;border-radius:8px;min-height:calc(var(--control-h) - 6px);
+}
+.lp-top-actions .lang-btn{padding:5px 9px}
+.lp-top-actions .theme-btn{min-width:calc(var(--control-h) - 6px);padding:6px;flex:none}
+.lp-top-actions .lang-btn[aria-checked="true"],
+.lp-top-actions .theme-btn[aria-checked="true"]{border-color:transparent;background:var(--surface-3);color:var(--text-hi)}
 .landing-page .lp-top-actions .theme-btn > span:not(.swatch),
 .header-controls .theme-btn > span:not(.swatch){
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0
@@ -1446,4 +1454,12 @@ html.i18n-pending body{visibility:hidden}
   .hm-actions .hm-cta{flex:1 1 100%;justify-content:center}
   .hm-card{padding:20px}
   .hm-final{padding:40px 20px}
+}
+
+/* Cabecera en movil: una sola fila (Metodologia sigue en el pie). */
+@media (max-width:720px){
+  .lp-top .lp-shell{flex-wrap:nowrap;gap:12px}
+  .lp-top-actions{flex-wrap:nowrap;gap:8px}
+  .lp-top-actions .lp-nav-link{display:none}
+  .lp-top-actions .lang-btn{padding:5px 7px;min-width:34px}
 }
