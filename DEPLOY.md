@@ -53,14 +53,21 @@ caché, para que al recargar nunca se quede una versión antigua. Se para con Ct
 
 ## Seguridad y dependencias
 
-**Cero dependencias externas en tiempo de ejecución.** No hay CDN, ni analítica, ni
-tipografías remotas. Eso permite una política de seguridad de contenido estricta, que se
-sirve **igual en desarrollo que en producción** (`tools/serve.js` y `vercel.json`) para que
-un fallo de política aparezca al programar y no el día del despliegue:
+**Sin dependencias externas en tiempo de ejecución, salvo una: analítica de tráfico.**
+No hay CDN de librerías ni tipografías remotas — el código propio (`js/xlsx.js`, tema,
+etc.) es toda la lógica. La única excepción es
+[Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/), que cuenta visitas
+agregadas a la página: sin cookies, sin huella de navegador, sin identificar a nadie, y sin
+ninguna visibilidad sobre los archivos que subes (esos no salen del navegador, así que no
+hay nada ahí que medir). Eso permite una política de seguridad de contenido estricta —con
+esa única excepción explícita, no un agujero abierto— que se sirve **igual en desarrollo que
+en producción** (`tools/serve.js` y `vercel.json`) para que un fallo de política aparezca al
+programar y no el día del despliegue:
 
 ```
-default-src 'self'      · script-src 'self'   · style-src 'self'
-connect-src 'self'      · object-src 'none'   · base-uri 'self'
+default-src 'self'      · script-src 'self' + Cloudflare Analytics
+style-src 'self'        · connect-src 'self' + Cloudflare Analytics
+object-src 'none'       · base-uri 'self'
 form-action 'none'      · frame-ancestors 'none'
 img-src 'self' data:    · worker-src 'self' blob:
 style-src-attr 'unsafe-inline'   (tres atributos style= generados en plantillas)
