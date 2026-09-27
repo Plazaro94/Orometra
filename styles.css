@@ -209,7 +209,8 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 }
 .skip-link:focus{left:8px}
 .hero-back{display:flex;gap:10px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
-.legal-links{padding:10px 8px 0}
+.legal-links{padding:10px 8px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+.legal-links a.text-btn{text-decoration:none;white-space:nowrap}
 .legal-links .text-btn{font-size:12px;color:var(--muted-2)}
 .legal-links .text-btn:hover{color:var(--ok-text)}
 .legal-panel .limits li{margin-bottom:11px}
