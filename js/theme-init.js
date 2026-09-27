@@ -32,6 +32,13 @@
     }
     document.documentElement.setAttribute('lang', lang);
     document.documentElement.setAttribute('data-lang', lang);
+    // El HTML estatico esta en ingles. Si el visitante lo ve en español, pintarlo antes
+    // de traducir hace que los textos cambien de longitud y todo salte (CLS 0,24 en la
+    // app en movil). Se oculta hasta que i18n.js traduce; por seguridad, 1,5 s como mucho.
+    if (lang !== 'en') {
+      document.documentElement.classList.add('i18n-pending');
+      setTimeout(function () { document.documentElement.classList.remove('i18n-pending'); }, 1500);
+    }
   } catch (e2) {
     document.documentElement.setAttribute('lang', 'en');
     document.documentElement.setAttribute('data-lang', 'en');

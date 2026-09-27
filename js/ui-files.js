@@ -372,7 +372,14 @@ export function bindDropzone(zoneSel, inputSel, which) {
 }
 
 // ---------------------------------------------------------------- arranque
-export function loadDemo() {
+export async function loadDemo() {
+  if (state.busy) return;
+  // Generar las 30.240 filas del ejemplo bloquea ~200 ms. Hacerlo dentro del clic
+  // retrasaba la respuesta del boton (INP "mejorable" en Cloudflare): primero se pinta
+  // el aviso de progreso y despues se genera.
+  $('#demoBtn').disabled = true;
+  api.showProgress(1, L('Generando el ejemplo…', 'Generating the example…'));
+  await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
   const demo = buildDemoTables();
   state.isTable = demo.isTable;
   state.oosTable = demo.oosTable;
