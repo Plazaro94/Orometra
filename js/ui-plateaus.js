@@ -217,8 +217,8 @@ function renderPlateauSurfacePanel(a, plateau) {
       </div>
     </div>
     <p class="panel-intro">${L(
-      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta (se descubre con el in-sample; el forward solo la valida). El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra para rotar.`,
-      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau (found in-sample; the forward only validates it). The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag to rotate.`,
+      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta (se descubre con el in-sample; el forward solo la valida). El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
+      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau (found in-sample; the forward only validates it). The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
     )}</p>
     <div class="surface-wrap">
       <canvas id="plateauSurfaceCanvas" role="img" aria-label="${esc(L('Superficie 3D de calidad real para dos parámetros', '3D surface of real quality for two parameters'))}"></canvas>
@@ -230,7 +230,10 @@ function renderPlateauSurfacePanel(a, plateau) {
 
 function renderSurfaceDetail(a, grid, hit) {
   if (!hit) {
-    return `<p class="muted">${L('Pasa el ratón sobre una barra para ver la pasada exacta.', 'Hover a bar to see the exact pass.')}</p>`;
+    const fine = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
+    return `<p class="muted">${fine
+      ? L('Pasa el ratón sobre una barra para ver la pasada exacta.', 'Hover a bar to see the exact pass.')
+      : L('Toca una barra para ver la pasada exacta.', 'Tap a bar to see the exact pass.')}</p>`;
   }
   const rec = a.records[hit.recordIndex];
   return `<div class="evidence-list">
@@ -264,6 +267,23 @@ export function mountPlateauSurfaceView(a) {
   });
 }
 
+/**
+ * Los puestos que faltan en la tabla (p. ej. empieza en #5) son configuraciones que SI
+ * estan en una meseta. Sin decirlo, parecia que la tabla estaba rota.
+ */
+function skippedRanksNote(peaks) {
+  const shown = new Set(peaks.map((p) => p.criterionRank));
+  const last = Math.max(...shown);
+  const missing = [];
+  for (let r = 1; r <= last; r++) if (!shown.has(r)) missing.push(r);
+  if (!missing.length) return '';
+  const list = missing.length <= 6 ? missing.map((r) => `#${r}`).join(', ') : L(`${missing.length} puestos`, `${missing.length} ranks`);
+  return `<p class="chart-note">${L(
+    `Faltan ${list}: esas configuraciones forman parte de una meseta, así que no son descartes.`,
+    `${list} are missing: those configurations belong to a plateau, so they are not rejections.`,
+  )}</p>`;
+}
+
 export function renderRejected(a) {
   const critName = a.meta.hasForward
     ? (a.meta.criterionOosName || L('criterio forward', 'forward criterion'))
@@ -279,9 +299,10 @@ export function renderRejected(a) {
       <div class="detail-kicker">${L('03 / Descartes', '03 / Rejected')}</div>
       <h2>${L('Las que encabezan tu tabla y aún así no se recomiendan', 'Ones that top your table and still are not recommended')}</h2>
       <p>${L(
-        `Ordenadas por <code>${esc(critName)}</code>, que es la columna por la que MT5 te las presenta. Para cada una se indica por que el motor no la respalda. Esta es la tabla que evita la mayoria de los errores.`,
+        `Ordenadas por <code>${esc(critName)}</code>, que es la columna por la que MT5 te las presenta. Para cada una se indica por qué el motor no la respalda. Esta es la tabla que evita la mayoría de los errores.`,
         `Ordered by <code>${esc(critName)}</code>, the column MT5 presents them by. For each one the engine explains why it does not back it. This is the table that prevents most mistakes.`,
       )}</p>
+      ${skippedRanksNote(a.peaks)}
     </div>
     <section class="panel">
       <div class="table-wrap"><table class="stack-table">
@@ -304,7 +325,7 @@ export function renderParams(a) {
   const options = a.sensitivity.map((s) => `<option value="${s.index}"${s.index === state.selectedParam ? ' selected' : ''}${s.constant ? ' disabled' : ''}>${esc(s.name)}${s.constant ? L(' (constante)', ' (constant)') : ''}</option>`).join('');
   return `<div class="detail-head">
       <div class="detail-kicker">${L('04 / Parámetros', '04 / Parameters')}</div>
-      <h2>${L('Que parámetros mandan de verdad', 'Which parameters really matter')}</h2>
+      <h2>${L('Qué parámetros mandan de verdad', 'Which parameters really matter')}</h2>
       <p>${L(
         'La sensibilidad mide cuánto se mueve la calidad al recorrer los valores de un parámetro. Los numéricos que influyen <strong>miden la distancia</strong>. Los booleanos y las enumeraciones <strong>parten el espacio</strong>: dos configuraciones solo son vecinas si coinciden en ellos, porque activar o no un filtro no es un paso pequeño sino otra estrategia. Solo se ignora lo demostrablemente plano.',
         'Sensitivity measures how much quality moves as you walk a parameter\'s values. Influential numerics <strong>measure distance</strong>. Booleans and enums <strong>partition the space</strong>: two configurations are neighbors only if they match on them, because enabling a filter is not a small step — it is another strategy. Only demonstrably flat axes are ignored.',
@@ -437,8 +458,8 @@ export function renderDiagnostics(a) {
         <div class="evidence-list">
           <div><span>${L('Espacio cartesiano', 'Cartesian space')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones probadas', 'Configurations tested')}</span><strong>${int(a.meta.total)}</strong></div>
-          <div><span>${L('Cobertura (niveles vistos)', 'Coverage (seen levels)')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(5).format(a.meta.coverage * 100) + ' %' : '—'}</strong></div>
-          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(4).format(a.meta.searchCoverage.coverageSearch * 100) + ' %' : L('sin .set', 'no .set')}</strong></div>
+          <div><span>${L('Cobertura (niveles vistos)', 'Coverage (seen levels)')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(1).format(a.meta.coverage * 100) + ' %' : '—'}</strong></div>
+          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(1).format(a.meta.searchCoverage.coverageSearch * 100) + ' %' : L('sin .set', 'no .set')}</strong></div>
           <div><span>${L('Radio de vecindad', 'Neighborhood radius')}</span><strong>${int(a.meta.radius)} ${L('paso(s)', 'step(s)')}</strong></div>
           <div><span>${L('Vecinos por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del in-sample', ' of in-sample') : '—'}</strong></div>
@@ -451,7 +472,7 @@ export function renderDiagnostics(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Clasificación', 'Classification')}</div><h2>${L('Columnas detectadas', 'Detected columns')}</h2></div></div>
       <p class="panel-intro">${L(
-        'Los parámetros no se reconocen por su nombre sino por su estructura: para un mismo Pass, un parámetro vale lo mismo en los dos archivos y una métrica no, porque se midio sobre otro periodo.',
+        'Los parámetros no se reconocen por su nombre sino por su estructura: para un mismo Pass, un parámetro vale lo mismo en los dos archivos y una métrica no, porque se midió sobre otro periodo.',
         'Parameters are not recognized by name but by structure: for the same Pass, a parameter has the same value in both files and a metric does not, because it was measured on another period.',
       )}</p>
       <div class="columns-grid">
@@ -477,7 +498,7 @@ export function renderDiagnostics(a) {
     </section>
 
     <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Politica', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minima')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Política', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minima')}</h2></div></div>
       <div class="evidence-list">
         <div><span>${L('Beneficio positivo', 'Positive profit')}</span><strong>${g.requireProfit ? L('exigido', 'required') : L('no exigido', 'not required')}</strong></div>
         <div><span>${gloss('profitFactor', L('Factor de beneficio mínimo', 'Minimum profit factor'))}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>

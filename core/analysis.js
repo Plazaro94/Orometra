@@ -553,7 +553,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     .map((p) => ({ ...p, reasons: peakRejectReasons(p, opts) }))
     .slice(0, 12);
 
-  progress(onProgress, 90, L('Contrastes estadisticos', 'Statistical contrasts'));
+  progress(onProgress, 90, L('Contrastes estadísticos', 'Statistical contrasts'));
   const isCriterion = records.map((r) => (Number.isFinite(r.criterionIs) ? r.criterionIs : r.qualityIs));
   const oosCriterion = records.map((r) => (Number.isFinite(r.criterionOos) ? r.criterionOos : r.qualityOos));
   const rho = hasForward ? spearman(isCriterion, oosCriterion) : NaN;

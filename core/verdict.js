@@ -19,6 +19,13 @@
 
 import { L, localeTag } from '../js/i18n.js';
 
+/** Numero en el formato del idioma activo (1,20 en ES, 1.20 en EN). */
+const fmt = (v, d = 2) => (Number.isFinite(v)
+  ? new Intl.NumberFormat(localeTag(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(v)
+  : '—');
+/** Cifra observada de un minimo, con las unidades y decimales de ese minimo. */
+const gateValue = (name, v) => (name === 'drawdown' ? `${fmt(v, 1)} %` : name === 'trades' ? fmt(v, 0) : fmt(v, 2));
+
 export const LEVELS = {
   STRONG: 'strong',            // region amplia y bien sostenida
   MODERATE: 'moderate',        // hay region, con avisos que leer
@@ -184,13 +191,13 @@ export function buildVerdict(ctx) {
     if (inertes.length) {
       const listEs = inertes.map((g) => {
         const obs = Number.isFinite(g.observed)
-          ? ` (tu límite es ${g.limit}, y la mediana de lo que pasa está en ${g.name === 'drawdown' ? g.observed.toFixed(1) + ' %' : g.observed.toFixed(2)})`
+          ? ` (tu límite es ${gateValue(g.name, g.limit)}, y la mediana de lo que pasa está en ${gateValue(g.name, g.observed)})`
           : '';
         return `<strong>${ETIQUETA_ES[g.name]}</strong>${obs}`;
       }).join('; ');
       const listEn = inertes.map((g) => {
         const obs = Number.isFinite(g.observed)
-          ? ` (your limit is ${g.limit}, and the median of what passes sits at ${g.name === 'drawdown' ? g.observed.toFixed(1) + ' %' : g.observed.toFixed(2)})`
+          ? ` (your limit is ${gateValue(g.name, g.limit)}, and the median of what passes sits at ${gateValue(g.name, g.observed)})`
           : '';
         return `<strong>${ETIQUETA_EN[g.name]}</strong>${obs}`;
       }).join('; ');
@@ -216,7 +223,7 @@ export function buildVerdict(ctx) {
     const pctRegion = 100 * stabilityCheck.regionRate;
     if (stabilityCheck.regionRate >= 0.8) {
       add(SEV.OK, L(`La recomendación aguanta el ${pctRegion.toFixed(0)} % de las variaciones de umbral`, `The recommendation holds through ${pctRegion.toFixed(0)}% of threshold variations`),
-        L(`Se ha repetido la busqueda ${stabilityCheck.draws} veces moviendo al azar un ±20 % los umbrales internos (suelo de calidad, robustez minima, soporte minimo...). En el ${pctRegion.toFixed(0)} % de los casos la configuración ganadora sigue cayendo dentro de la MISMA región. La recomendación es una propiedad de tus datos, no del ajuste de la herramienta.`,
+        L(`Se ha repetido la búsqueda ${stabilityCheck.draws} veces moviendo al azar un ±20 % los umbrales internos (suelo de calidad, robustez mínima, soporte mínimo...). En el ${pctRegion.toFixed(0)} % de los casos la configuración ganadora sigue cayendo dentro de la MISMA región. La recomendación es una propiedad de tus datos, no del ajuste de la herramienta.`,
           `The search was repeated ${stabilityCheck.draws} times randomly shifting internal thresholds by ±20% (quality floor, minimum robustness, minimum support…). In ${pctRegion.toFixed(0)}% of cases the winning configuration still falls inside the SAME region. The recommendation is a property of your data, not of the tool's tuning.`));
     } else if (stabilityCheck.regionRate >= 0.5) {
       add(SEV.WARN, L(`La recomendación solo aguanta el ${pctRegion.toFixed(0)} % de las variaciones de umbral`, `The recommendation only holds through ${pctRegion.toFixed(0)}% of threshold variations`),
@@ -312,7 +319,7 @@ export function buildVerdict(ctx) {
       ? ` The recommended region crosses one of those jumps (${spansIrregular.map((x) => x.name).join(', ')}).`
       : '';
     add(SEV.WARN, L(`La rejilla de ${irregularGrids.length} parámetro(s) tiene saltos desiguales`, `The grid of ${irregularGrids.length} parameter(s) has uneven steps`),
-      L(`${listEs}. El motor cuenta POSICIONES, no distancias: dos valores consecutivos de tu lista estan siempre "a un paso" aunque entre ellos haya un abismo. Donde los saltos son desiguales, la continuidad de una meseta puede ser un espejismo. Optimiza esos parámetros con un paso uniforme.${spanEs}`,
+      L(`${listEs}. El motor cuenta POSICIONES, no distancias: dos valores consecutivos de tu lista están siempre "a un paso" aunque entre ellos haya un abismo. Donde los saltos son desiguales, la continuidad de una meseta puede ser un espejismo. Optimiza esos parámetros con un paso uniforme.${spanEs}`,
         `${listEn}. The engine counts POSITIONS, not distances: two consecutive values on your list are always "one step apart" even if there is a gulf between them. Where steps are uneven, plateau continuity can be an illusion. Optimize those parameters with a uniform step.${spanEn}`));
   }
 
@@ -381,7 +388,7 @@ export function buildVerdict(ctx) {
           `Read carefully: ${(100 * gatePassCount / total).toFixed(0)}% of configurations meet the minima in both periods, so the strategy does have an edge. What has no value is the ORDER: which one ranks first in-sample does not predict which will rank first on the forward. Choose by a region stable in both periods, never by table rank.`));
     } else if (spearman < 0.1) {
       add(SEV.CRITICAL, L(`Correlación IS -> OOS prácticamente nula (rho = ${spearman.toFixed(2)})`, `IS -> OOS correlation practically null (rho = ${spearman.toFixed(2)})`),
-        L(`Solo el ${(100 * gatePassCount / total).toFixed(0)} % de las configuraciones cumple los mínimos y ademas el comportamiento en entrenamiento no dice nada sobre el de validacion. Es la firma de un sistema sin ventaja real.`,
+        L(`Solo el ${(100 * gatePassCount / total).toFixed(0)} % de las configuraciones cumple los mínimos y además el comportamiento en entrenamiento no dice nada sobre el de validación. Es la firma de un sistema sin ventaja real.`,
           `Only ${(100 * gatePassCount / total).toFixed(0)}% of configurations meet the minima and training behavior says nothing about validation. That is the signature of a system with no real edge.`));
     } else if (spearman < 0.3) {
       add(SEV.WARN, L(`Correlación IS -> OOS debil (rho = ${spearman.toFixed(2)})`, `Weak IS -> OOS correlation (rho = ${spearman.toFixed(2)})`),
@@ -400,7 +407,7 @@ export function buildVerdict(ctx) {
         `${(100 * viableShare).toFixed(0)}% of configurations meet the minima in both periods. Whatever the rest of the diagnosis, the result does not depend on having hit particular values, which is the most useful form of robustness.`));
   } else if (hasForward && hasRefuge) {
     add(SEV.OK, L('Hay una parte amplia del espacio que supera los mínimos', 'A broad part of the space clears the minima'),
-      L(`El ${(100 * viableShare).toFixed(0)} % de las configuraciones los cumple en los dos periodos, y se agrupan en ${plateaus.length} region(es) estables. No dependes de haber acertado un valor concreto: hay de donde elegir.`,
+      L(`El ${(100 * viableShare).toFixed(0)} % de las configuraciones los cumple en los dos periodos, y se agrupan en ${plateaus.length} región(es) estable(s). No dependes de haber acertado un valor concreto: hay de dónde elegir.`,
         `${(100 * viableShare).toFixed(0)}% of configurations meet them in both periods, and they cluster into ${plateaus.length} stable region(s). You do not depend on having hit a particular value: there is room to choose.`));
   }
 
@@ -408,7 +415,7 @@ export function buildVerdict(ctx) {
     const top = inversions.slice(0, 5);
     const listEs = top.map((x) => `${x.name}: el in-sample prefiere ${x.bestIs}, pero en el forward gana ${x.bestOos} (quedarte con el valor del in-sample tira el ${(100 * x.regretShare).toFixed(0)} % del margen disponible)`).join('; ');
     const listEn = top.map((x) => `${x.name}: in-sample prefers ${x.bestIs}, but on the forward ${x.bestOos} wins (keeping the in-sample value throws away ${(100 * x.regretShare).toFixed(0)}% of the available margin)`).join('; ');
-    add(SEV.WARN, L(`En ${inversions.length} parametro(s), el valor que gana en el in-sample es de los que pierden en el forward`, `In ${inversions.length} parameter(s), the value that wins in-sample is among those that lose on the forward`),
+    add(SEV.WARN, L(`En ${inversions.length} parámetro(s), el valor que gana en el in-sample es de los que pierden en el forward`, `In ${inversions.length} parameter(s), the value that wins in-sample is among those that lose on the forward`),
       L(`${listEs}. Esta es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al reves. El óptimo de esos parámetros depende del regimen de mercado y no de la estrategia, así que afinarlos sobre el in-sample es tiempo perdido. Déjalos en un valor central y decide con los que sí son coherentes entre periodos.`,
         `${listEn}. This is the mechanical cause of the ranking not transferring: signal is not missing, it points the wrong way. The optimum of those parameters depends on market regime, not on the strategy, so tuning them on the in-sample is wasted time. Leave them at a central value and decide with those that are coherent across periods.`));
   }
@@ -418,13 +425,13 @@ export function buildVerdict(ctx) {
     if (Number.isFinite(medianQualityOos) && Number.isFinite(medianQualityIs)
       && medianQualityOos > medianQualityIs + 0.05 && passOosPct > passIsPct + 0.05) {
       add(SEV.WARN, L('El periodo forward fue más benigno que el in-sample', 'The forward period was more benign than the in-sample'),
-        L(`Calidad mediana ${medianQualityOos.toFixed(2)} en el forward frente a ${medianQualityIs.toFixed(2)} en el in-sample, y pasan los mínimos el ${(100 * passOosPct).toFixed(0)} % frente al ${(100 * passIsPct).toFixed(0)} %. Que casi todo funcione fuera de muestra puede deberse tanto a la solidez de la estrategia como a que le toco un tramo facil. No tomes el forward como prueba de fuego mientras no lo repitas en un tramo distinto.`,
+        L(`Calidad mediana ${medianQualityOos.toFixed(2)} en el forward frente a ${medianQualityIs.toFixed(2)} en el in-sample, y pasan los mínimos el ${(100 * passOosPct).toFixed(0)} % frente al ${(100 * passIsPct).toFixed(0)} %. Que casi todo funcione fuera de muestra puede deberse tanto a la solidez de la estrategia como a que le tocó un tramo fácil. No tomes el forward como prueba de fuego mientras no lo repitas en un tramo distinto.`,
           `Median quality ${medianQualityOos.toFixed(2)} on the forward versus ${medianQualityIs.toFixed(2)} in-sample, and ${(100 * passOosPct).toFixed(0)}% pass the minima versus ${(100 * passIsPct).toFixed(0)}%. That almost everything works out of sample may owe as much to the strategy's strength as to an easy stretch. Do not treat the forward as a trial by fire until you repeat it on a different stretch.`));
     }
   }
 
   if (tiedCount > 1) {
-    add(SEV.INFO, L(`Las ${tiedCount === 2 ? 'dos' : tiedCount === 3 ? 'tres' : tiedCount} primeras mesetas estan empatadas`, `The first ${tiedCount === 2 ? 'two' : tiedCount === 3 ? 'three' : tiedCount} plateaus are tied`),
+    add(SEV.INFO, L(`Las ${tiedCount === 2 ? 'dos' : tiedCount === 3 ? 'tres' : tiedCount} primeras mesetas están empatadas`, `The first ${tiedCount === 2 ? 'two' : tiedCount === 3 ? 'three' : tiedCount} plateaus are tied`),
       L(`${tiedRanks.map((r) => 'M' + r).join(', ')} puntuan practicamente igual: la diferencia esta dentro del ruido y el orden en que aparecen no significa que una sea mejor. Comparalas en la tabla del Top y elige por criterio operativo.`,
         `${tiedRanks.map((r) => 'M' + r).join(', ')} score practically the same: the difference is within noise and the order they appear does not mean one is better. Compare them in the Top table and choose by operational criteria.`));
   }
@@ -437,7 +444,7 @@ export function buildVerdict(ctx) {
       ? ` Plateau ${alternativePlateau.rank} (representative Pass ${alternativePlateau.record.id}) does not have that problem and is the natural alternative.`
       : '';
     add(SEV.WARN, L('La configuración propuesta se apoya en un valor que el forward castiga', 'The proposed configuration leans on a value the forward punishes'),
-      L(`${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: es el valor que gana en el in-sample, pero su nivel es de los peores en el forward. Que esta configuración concreta aguante ahi puede ser merito suyo o puede ser suerte, y no hay forma de distinguirlo con estos datos.${altEs}`,
+      L(`${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: es el valor que gana en el in-sample, pero su nivel es de los peores en el forward. Que esta configuración concreta aguante ahí puede ser mérito suyo o puede ser suerte, y no hay forma de distinguirlo con estos datos.${altEs}`,
         `${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: that is the value that wins in-sample, but its level is among the worst on the forward. That this specific configuration holds there may be its merit or may be luck, and there is no way to tell with these data.${altEn}`));
   }
 
@@ -461,7 +468,7 @@ export function buildVerdict(ctx) {
 
   if (integrity) {
     if (integrity.provenance && integrity.provenance.checked && integrity.provenance.mismatches > 0) {
-      add(SEV.CRITICAL, L('Los dos archivos no parecen de la misma optimizacion', 'The two files do not appear to be from the same optimization'),
+      add(SEV.CRITICAL, L('Los dos archivos no parecen de la misma optimización', 'The two files do not appear to be from the same optimization'),
         L(`En ${integrity.provenance.mismatches} filas el resultado del backtest del archivo forward no coincide con el del archivo in-sample. Revisa que no hayas mezclado exportaciones.`,
           `In ${integrity.provenance.mismatches} rows the forward file's backtest result does not match the in-sample file. Check that you have not mixed exports.`));
     }
@@ -483,7 +490,7 @@ export function buildVerdict(ctx) {
     if (integrity.unmatchedIs > 0) {
       const sev = (integrity.isRows > 0 && integrity.unmatchedIs / integrity.isRows > 0.05) ? SEV.WARN : SEV.INFO;
       add(sev, L(`${integrity.unmatchedIs} pasadas sin pareja`, `${integrity.unmatchedIs} unpaired passes`),
-        L('Estas filas existen en un archivo y no en el otro, y se han descartado del analisis.',
+        L('Estas filas existen en un archivo y no en el otro, y se han descartado del análisis.',
           'These rows exist in one file and not the other, and were discarded from the analysis.'));
     }
   }
@@ -538,7 +545,7 @@ export function buildVerdict(ctx) {
     nextStep = L('Para que estos datos puedan decir algo, amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar. Con lo que hay ahora, cualquier conclusión sería inventada.',
       'For these data to say anything, widen the parameter ranges, add intermediate values or relax the minima, and optimize again. With what is here now, any conclusion would be made up.');
   } else if (!bestPlateau) {
-    nextStep = L('Refina la optimizacion antes de seguir.', 'Refine the optimization before continuing.');
+    nextStep = L('Refina la optimización antes de seguir.', 'Refine the optimization before continuing.');
   } else if (Number.isFinite(fragility) && fragility >= 0.5) {
     nextStep = L('Ignora el orden de tu tabla de MT5: aquí engaña. La región de abajo sigue siendo el hallazgo; exporta el .set de la configuración representativa y pruébala en un tramo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptación ANTES de mirar el resultado.',
       'Ignore the order of your MT5 table: here it misleads. The region below is still the finding; export the .set of the representative configuration and test it on a stretch you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
@@ -554,6 +561,18 @@ export function buildVerdict(ctx) {
 }
 
 /** Motivos de descarte de picos (bilingües; se pueden regenerar al cambiar idioma). */
+/** Traduce un fallo de minimos del motor ('PF < 1.2', 'operaciones < 50'…) al idioma activo. */
+function gateFailLabel(token) {
+  let m = /^PF < (.+)$/.exec(token);
+  if (m) return `PF < ${fmt(Number(m[1]), 2)}`;
+  m = /^DD > (.+)%$/.exec(token);
+  if (m) return `DD > ${fmt(Number(m[1]), 0)} %`;
+  m = /^operaciones < (.+)$/.exec(token);
+  if (m) return L(`operaciones < ${m[1]}`, `trades < ${m[1]}`);
+  if (token === 'beneficio <= 0') return L('beneficio ≤ 0', 'profit ≤ 0');
+  return token;
+}
+
 export function peakRejectReasons(p, opts = {}) {
   const minSupport = opts.minSupport ?? 4;
   const plateauFloorQuality = opts.plateauFloorQuality ?? 0.42;
@@ -567,20 +586,26 @@ export function peakRejectReasons(p, opts = {}) {
   if (Number.isFinite(p.st.cliff) && p.st.cliff > 1.5) {
     reasons.push(L('acantilado a un paso', 'cliff one step away'));
   }
-  if (!p.record.passes) {
-    const fails = [...(p.record.failsIs || []), ...(p.record.failsOos || [])].join(', ');
-    reasons.push(L(`no pasa los mínimos (${fails})`, `does not clear minimum gates (${fails})`));
+  const failsIs = (p.record.failsIs || []).map(gateFailLabel);
+  const failsOos = (p.record.failsOos || []).map(gateFailLabel);
+  if (!p.record.passes || failsOos.length) {
+    // Con el periodo delante: una configuracion puede cumplir en el in-sample y fallar
+    // solo en el forward, y esa diferencia es justo lo que interesa ver.
+    const parts = [];
+    if (failsIs.length) parts.push(`in-sample: ${failsIs.join(', ')}`);
+    if (failsOos.length) parts.push(`forward: ${failsOos.join(', ')}`);
+    if (parts.length) reasons.push(L(`no cumple los mínimos (${parts.join(' · ')})`, `does not meet the minima (${parts.join(' · ')})`));
   }
   if (Number.isFinite(p.st.fracPass) && p.st.fracPass < 0.9) {
     reasons.push(L(
-      `solo el ${(100 * p.st.fracPass).toFixed(0)}% de sus vecinos pasa los mínimos`,
-      `only ${(100 * p.st.fracPass).toFixed(0)}% of its neighbors clear the gates`,
+      `solo el ${fmt(100 * p.st.fracPass, 0)} % de sus vecinos pasa los mínimos`,
+      `only ${fmt(100 * p.st.fracPass, 0)}% of its neighbors clear the minima`,
     ));
   }
   if (Number.isFinite(p.st.q25) && p.st.q25 < plateauFloorQuality) {
     reasons.push(L(
-      `el cuartil bajo de su entorno se queda en ${p.st.q25.toFixed(2)}`,
-      `the lower quartile of its surroundings sits at ${p.st.q25.toFixed(2)}`,
+      `el cuartil bajo (Q25) de su entorno se queda en ${fmt(p.st.q25, 2)}`,
+      `the lower quartile (Q25) of its surroundings sits at ${fmt(p.st.q25, 2)}`,
     ));
   }
   if (!reasons.length) {

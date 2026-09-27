@@ -100,6 +100,7 @@ export function changeLanguage(lang) {
   syncLangButtons();
   applyStaticI18n();
   api.refreshAnalyzeButton();
+  api.renderPreflight();
   // El veredicto se generó en el idioma del análisis: regenerar copy sin recalcular.
   if (state.analysis) {
     state.analysis = rebuildLocalizedCopy(state.analysis);
@@ -160,12 +161,33 @@ export function readPolicy() {
  * al momento si el resultado aguanta al apretar, que es la pregunta que todo el mundo se
  * hace y que hasta ahora exigía un análisis entero para responder.
  */
+/** Texto del problema de los campos de minimos, o null si son validos. */
+export function policyInputProblem() {
+  const pf = parseFloat($('#gPf').value);
+  const dd = parseFloat($('#gDd').value);
+  const tr = parseFloat($('#gTrades').value);
+  if (!Number.isFinite(pf) || pf < 0) return L('El factor de beneficio mínimo tiene que ser un número mayor o igual que 0.', 'The minimum profit factor must be a number greater than or equal to 0.');
+  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return L('El drawdown máximo tiene que estar entre 1 y 100 %.', 'The maximum drawdown must be between 1 and 100%.');
+  if (!Number.isFinite(tr) || tr < 0) return L('Las operaciones mínimas tienen que ser un número mayor o igual que 0.', 'The minimum trades must be a number greater than or equal to 0.');
+  return null;
+}
+
 export function updatePolicyPreview() {
   const box = $('#policyPreview');
   if (!box) return;
   const a = state.analysis;
   if (!a || !a.records || !a.records.length) {
     box.hidden = true;
+    return;
+  }
+  // Valores fuera de rango o vacios: readPolicy() los sustituiria en silencio por los de
+  // por defecto y el analisis no corresponderia a lo que se ve en los campos.
+  const problem = policyInputProblem();
+  if (problem) {
+    box.hidden = false;
+    $('#policyPreviewCount').textContent = '—';
+    $('#policyPreviewNote').textContent = problem;
+    $('#policyRerun').disabled = true;
     return;
   }
   const policy = readPolicy();
@@ -192,7 +214,16 @@ export function updatePolicyPreview() {
       `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
       `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
     );
-  $('#policyRerun').disabled = state.busy || delta === 0;
+  // Se compara la POLITICA, no el recuento: otros minimos con el mismo numero de
+  // supervivientes (0 = 0) no dejaban recalcular y los campos no casaban con el informe.
+  const used = a.meta.policy && a.meta.policy.gates;
+  const g = policy.gates;
+  const samePolicy = Boolean(used) && used.minProfitFactor === g.minProfitFactor && used.maxDrawdownPct === g.maxDrawdownPct
+    && used.minTrades === g.minTrades && used.requireProfit === g.requireProfit;
+  if (!samePolicy && delta === 0) {
+    $('#policyPreviewNote').textContent += L(' · los mínimos han cambiado: recalcula para actualizar el informe', ' · the minima changed: recalculate to update the report');
+  }
+  $('#policyRerun').disabled = state.busy || samePolicy;
 }
 
 // ---------------------------------------------------------------- navegacion
@@ -210,8 +241,15 @@ export function setTab(tab, fromHash) {
   if (!fromHash && TAB_HASH[tab] && location.hash !== '#' + TAB_HASH[tab]) {
     history.replaceState(null, '', '#' + TAB_HASH[tab]);
   }
-  $$('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  $$('.nav-item').forEach((b) => {
+    const on = b.dataset.tab === tab;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
   render();
+  const status = $('#viewStatus');
+  const current = document.querySelector(`.nav-item[data-tab="${tab}"] span:last-child`);
+  if (status) status.textContent = current ? current.textContent : '';
   $('#view').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 

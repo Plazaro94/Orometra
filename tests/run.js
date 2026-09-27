@@ -362,7 +362,10 @@ section('8. Ejemplo sintetico: debe encontrar el centro plantado y aprobar');
   check('reconoce rejilla completa', an.meta.sampling === 'grid', an.meta.sampling);
   check('encuentra exactamente una meseta', an.plateaus.length === 1, String(an.plateaus.length));
   check('la evidencia es solida en datos limpios', an.verdict.level === 'strong', an.verdict.level);
-  check('la fragilidad de seleccion es baja en datos limpios', an.stats.fragility < 0.1, String(an.stats.fragility));
+  // < 0,3 es el umbral con el que el propio veredicto la da por baja. Antes se exigia
+  // < 0,1, pero ese 2 % venia de que todos los picos de la demo empataban en el mismo
+  // Forward Result; con picos de distinta altura (realista) sale ~18 %.
+  check('la fragilidad de seleccion es baja en datos limpios', an.stats.fragility < 0.3, String(an.stats.fragility));
   const rep = an.plateaus[0].record;
   const hits = an.meta.paramNames.filter((n, j) => demo.truth.center[n] === rep.params[j]).length;
   console.log(`  representante: ${an.meta.paramNames.map((n, j) => n + '=' + rep.params[j]).join(' ')}`);

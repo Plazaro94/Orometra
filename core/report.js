@@ -13,6 +13,7 @@
 // MT5 lo guarda en UTF-16 con BOM y con las etiquetas en el idioma del terminal, asi que
 // cada campo se busca con patrones que cubren castellano e ingles.
 
+import { L } from '../js/i18n.js';
 import { toNumber } from './parse.js';
 
 const REPORT_SIGNATURE = /Strategy\s*Tester\s*Report|Informe\s*del\s*Probador|Testbericht|Rapport\s*du\s*testeur/i;
@@ -109,7 +110,7 @@ const P = {
  */
 export function parseBacktestReport(text, fileName = '') {
   if (!looksLikeReport(text)) {
-    throw new Error('Esto no parece el informe de un backtest de MT5. En el probador: clic derecho sobre los resultados > Informe > HTML.');
+    throw new Error(L('Esto no parece el informe de un backtest de MT5. En el probador: clic derecho sobre los resultados > Informe > HTML.', 'This does not look like an MT5 backtest report. In the tester: right-click the results > Report > HTML.'));
   }
   const rows = tableRows(text);
   const pairs = labelledValues(rows);

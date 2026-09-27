@@ -68,7 +68,11 @@ export function buildDemoTables() {
     const nz = gauss(rng) * 0.09;
 
     const isGood = base * 0.98 + nz * 0.25;
-    const oosGood = isSpike ? 0.97 : base * 0.86 + gauss(rng) * 0.1;
+    // Los picos varian entre 0,90 y 0,99 segun la pasada. Con un 0,97 fijo todos daban el
+    // mismo Forward Result (79,66) y la tabla de descartes parecia rota. La variacion no
+    // consume el generador: el resto del ejemplo sale identico.
+    const spikeGood = 0.9 + 0.09 * (((pass * 7919) % 101) / 100);
+    const oosGood = isSpike ? spikeGood : base * 0.86 + gauss(rng) * 0.1;
 
     const mi = metrics(isGood, nz, 1500);
     const mo = metrics(oosGood, gauss(rng) * 0.09, 780);

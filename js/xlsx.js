@@ -12,6 +12,7 @@
 // NO se admite el .xls binario antiguo (formato BIFF, OLE): es mucho mas complejo y MT5
 // no lo genera nunca. Ese caso recibe un mensaje que explica que hacer.
 
+import { L } from './i18n.js';
 const td = new TextDecoder('utf-8');
 
 /** Tope por entrada y acumulado: evita bombas ZIP (poco comprimido → mucho XML). */
@@ -28,7 +29,7 @@ function leerZip(buffer) {
   for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) {
     if (dv.getUint32(i, true) === 0x06054b50) { fin = i; break; }
   }
-  if (fin < 0) throw new Error('El archivo no es un ZIP valido.');
+  if (fin < 0) throw new Error(L('El archivo no es un ZIP valido.', 'The file is not a valid ZIP.'));
 
   const total = dv.getUint16(fin + 10, true);
   let p = dv.getUint32(fin + 16, true);
@@ -45,12 +46,12 @@ function leerZip(buffer) {
     const offsetLocal = dv.getUint32(p + 42, true);
     const nombre = td.decode(u8.subarray(p + 46, p + 46 + nomLen));
     if (tamSinComprimir !== 0xffffffff && tamSinComprimir > MAX_XLSX_ENTRY_BYTES) {
-      throw new Error(`Entrada ZIP demasiado grande (${nombre}). Exporta un XML más reducido.`);
+      throw new Error(L(`Entrada ZIP demasiado grande (${nombre}). Exporta un XML más reducido.`, `ZIP entry too large (${nombre}). Export a smaller XML.`));
     }
     if (tamSinComprimir !== 0xffffffff) {
       declarado += tamSinComprimir;
       if (declarado > MAX_XLSX_TOTAL_BYTES) {
-        throw new Error('El libro descomprimido supera el límite permitido. Exporta un XML más reducido.');
+        throw new Error(L('El libro descomprimido supera el límite permitido. Exporta un XML más reducido.', 'The decompressed workbook exceeds the allowed limit. Export a smaller XML.'));
       }
     }
     entradas.set(nombre, { metodo, tamComprimido, tamSinComprimir, offsetLocal });
@@ -69,7 +70,7 @@ async function leerLimitado(stream, maxBytes) {
       if (done) break;
       total += value.byteLength;
       if (total > maxBytes) {
-        throw new Error('Descompresión ZIP supera el límite permitido. Exporta un XML más reducido.');
+        throw new Error(L('Descompresión ZIP supera el límite permitido. Exporta un XML más reducido.', 'ZIP decompression exceeds the allowed limit. Export a smaller XML.'));
       }
       chunks.push(value);
     }
@@ -89,7 +90,7 @@ async function extraer(zip, nombre) {
   // diferir de los del directorio central: hay que releerlos aqui.
   const { dv, u8 } = zip;
   const base = e.offsetLocal;
-  if (dv.getUint32(base, true) !== 0x04034b50) throw new Error('Entrada ZIP corrupta.');
+  if (dv.getUint32(base, true) !== 0x04034b50) throw new Error(L('Entrada ZIP corrupta.', 'Corrupt ZIP entry.'));
   const nomLen = dv.getUint16(base + 26, true);
   const extraLen = dv.getUint16(base + 28, true);
   const inicio = base + 30 + nomLen + extraLen;
@@ -101,20 +102,20 @@ async function extraer(zip, nombre) {
   );
   const capRestante = MAX_XLSX_TOTAL_BYTES - zip.bytesLeidos;
   if (capRestante <= 0) {
-    throw new Error('El libro descomprimido supera el límite permitido. Exporta un XML más reducido.');
+    throw new Error(L('El libro descomprimido supera el límite permitido. Exporta un XML más reducido.', 'The decompressed workbook exceeds the allowed limit. Export a smaller XML.'));
   }
   const cap = Math.min(capEntrada, capRestante);
 
   if (e.metodo === 0) {
     if (datos.length > cap) {
-      throw new Error('Entrada ZIP demasiado grande. Exporta un XML más reducido.');
+      throw new Error(L('Entrada ZIP demasiado grande. Exporta un XML más reducido.', 'ZIP entry too large. Export a smaller XML.'));
     }
     zip.bytesLeidos += datos.length;
     return td.decode(datos);
   }
-  if (e.metodo !== 8) throw new Error(`Compresion ZIP no soportada (metodo ${e.metodo}).`);
+  if (e.metodo !== 8) throw new Error(L(`Compresión ZIP no soportada (método ${e.metodo}).`, `Unsupported ZIP compression (method ${e.metodo}).`));
   if (typeof DecompressionStream === 'undefined') {
-    throw new Error('Tu navegador no puede descomprimir este archivo. Exporta desde MT5 en XML, o guardalo como CSV.');
+    throw new Error(L('Tu navegador no puede descomprimir este archivo. Exporta desde MT5 en XML, o guardalo como CSV.', 'Your browser cannot decompress this file. Export from MT5 as XML, or save it as CSV.'));
   }
   const flujo = new Blob([datos]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
   const plain = await leerLimitado(flujo, cap);
@@ -224,5 +225,5 @@ export async function parseXlsx(buffer) {
     const rows = leerHoja(xml, cadenas);
     if (rows.length > 1) return { sheet: hoja.nombre, rows, format: 'xlsx' };
   }
-  throw new Error('El libro no contiene ninguna hoja con datos.');
+  throw new Error(L('El libro no contiene ninguna hoja con datos.', 'The workbook has no sheet with data.'));
 }

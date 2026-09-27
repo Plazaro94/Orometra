@@ -248,7 +248,10 @@ export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
       schedule();
       return;
     }
-    const hit = cellAt(e.clientX, e.clientY);
+    selectAt(e.clientX, e.clientY);
+  }
+  function selectAt(x, y) {
+    const hit = cellAt(x, y);
     const changed = (hit ? `${hit.a},${hit.b}` : null) !== (hoverCell ? `${hoverCell.a},${hoverCell.b}` : null);
     hoverCell = hit ? { a: hit.a, b: hit.b } : null;
     if (changed) {
@@ -256,15 +259,29 @@ export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
       if (onHover) onHover(hit ? hit.cell : null, hit ? hit.a : -1, hit ? hit.b : -1);
     }
   }
-  function onDown(e) { dragging = true; dragX = e.clientX; canvas.style.cursor = 'grabbing'; }
-  function onUp() { dragging = false; canvas.style.cursor = 'grab'; }
-  function onLeave() {
-    if (hoverCell) { hoverCell = null; schedule(); if (onHover) onHover(null, -1, -1); }
+  let downX = 0;
+  let downY = 0;
+  function onDown(e) { dragging = true; dragX = e.clientX; downX = e.clientX; downY = e.clientY; canvas.style.cursor = 'grabbing'; }
+  function onUp(e) {
+    // En tactil no hay hover: un toque sin arrastre selecciona la barra.
+    if (dragging && e && e.pointerType && e.pointerType !== 'mouse'
+      && Math.abs(e.clientX - downX) < 8 && Math.abs(e.clientY - downY) < 8) {
+      selectAt(e.clientX, e.clientY);
+    }
+    dragging = false;
+    canvas.style.cursor = 'grab';
+  }
+  function onLeave(e) {
+    // Un dedo "sale" del lienzo justo al levantarse: si se limpiara aqui, el toque que
+    // acaba de seleccionar una barra la borraria al instante.
+    if (hoverCell && (!e || e.pointerType === 'mouse')) { hoverCell = null; schedule(); if (onHover) onHover(null, -1, -1); }
     dragging = false;
   }
 
   canvas.style.cursor = 'grab';
-  canvas.style.touchAction = 'none';
+  // pan-y: el arrastre horizontal rota y el vertical sigue desplazando la pagina. Con
+  // 'none' el lienzo atrapaba el scroll en movil.
+  canvas.style.touchAction = 'pan-y';
   canvas.addEventListener('pointermove', onMove);
   canvas.addEventListener('pointerdown', onDown);
   window.addEventListener('pointerup', onUp);

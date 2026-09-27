@@ -4,7 +4,7 @@ import { parseTable } from '../core/parse.js';
 import { metricColumns, inferParamsSingle, roleFromTable } from '../core/schema.js';
 import { looksLikeReport } from '../core/report.js';
 import { looksLikeSetFile, parseSetText } from '../core/setfile.js';
-import { classifyError } from '../core/errors.js';
+import { classifyError, CODE } from '../core/errors.js';
 import { buildDemoTables } from './demo.js';
 import { t, L } from './i18n.js';
 import { state, api, $, $$, esc, int, decodeHead } from './ui-state.js';
@@ -57,7 +57,7 @@ export async function setSearchSet(file) {
     const text = decodeHead(await file.arrayBuffer());
     const parsed = parseSetText(text);
     if (!parsed.params.length) {
-      api.showError(L('El .set no contiene parámetros legibles.', 'The .set contains no readable parameters.'));
+      api.showError(L('El .set no contiene parámetros legibles.', 'The .set contains no readable parameters.'), CODE.FILE_ERROR);
       return;
     }
     state.searchSet = parsed;
@@ -119,7 +119,7 @@ export async function acceptFiles(fileList, preferred) {
     api.showError(L(
       'Has soltado el mismo archivo dos veces. Hacen falta el export in-sample y el export forward de la misma optimización.',
       'You dropped the same file twice. The in-sample export and the forward export of the same optimization are needed.',
-    ));
+    ), CODE.SCHEMA_ERROR);
     return;
   }
   const oosIdx = roles.indexOf('oos');
@@ -129,7 +129,7 @@ export async function acceptFiles(fileList, preferred) {
     api.showError(L(
       'Los dos archivos son exportaciones forward (traen Forward Result / Back Result). Falta el export in-sample: en MT5, pestaña de resultados de optimización → clic derecho → exportar XML.',
       'Both files are forward exports (they have Forward Result / Back Result). The in-sample export is missing: in MT5, optimization results tab → right-click → export XML.',
-    ));
+    ), CODE.SCHEMA_ERROR);
     return;
   }
   if (oosIdx >= 0) {
@@ -141,7 +141,7 @@ export async function acceptFiles(fileList, preferred) {
     api.showError(L(
       'Los dos archivos parecen in-sample (ninguno trae columnas Forward Result / Back Result). Se ha cargado solo el primero. Si tienes el export forward, suéltalo también; si no, puedes auditar solo el in-sample.',
       'Both files look like in-sample (neither has Forward Result / Back Result columns). Only the first one was loaded. If you have the forward export, drop it too; if not, you can audit the in-sample alone.',
-    ));
+    ), CODE.SCHEMA_ERROR);
   } else {
     setFile('is', files[0]);
     setFile('oos', files[1]);
@@ -200,18 +200,7 @@ export async function resolveTable(file) {
 }
 
 export async function buildPreflightSummary(file) {
-  const table = await resolveTable(file);
-  const metrics = metricColumns(table);
-  const inferred = inferParamsSingle(table);
-  return {
-    ok: true,
-    name: file.name,
-    rows: table.rows.length,
-    cols: table.headers.length,
-    params: inferred.params.length,
-    metrics: Object.keys(metrics).length,
-    format: table.format || 'table',
-  };
+  return api.preflightFile(file);
 }
 
 export async function queuePreflight(which) {
@@ -239,7 +228,8 @@ export async function queuePreflight(which) {
     };
     const boxEl = key === 'is' ? $('#isDrop') : $('#oosDrop');
     const statusEl = key === 'is' ? $('#isStatus') : $('#oosStatus');
-    if (boxEl) boxEl.classList.add('error');
+    // Sin quitar 'ready' la caja seguia en verde junto al error.
+    if (boxEl) { boxEl.classList.add('error'); boxEl.classList.remove('ready'); }
     if (statusEl) statusEl.textContent = `${file.name} · ${t('preflight.error')}`;
   }
   renderPreflight();
@@ -293,11 +283,23 @@ export function renderPreflight() {
     </div>`;
   }).join('');
 
+  const title = $('#preflightTitle');
+  if (title) {
+    title.textContent = hasError
+      ? t('preflight.title.error')
+      : reading
+        ? t('preflight.title.reading')
+        : state.preflight.oos
+          ? t('preflight.title')
+          : t('preflight.title.isOnly');
+  }
   if (note) {
     if (hasError) {
       note.textContent = t('preflight.note.warn');
     } else if (reading) {
       note.textContent = t('preflight.reading');
+    } else if (!state.preflight.oos && !state.analysis) {
+      note.textContent = t('preflight.note.isOnly');
     } else if (state.analysis) {
       note.textContent = L(
         'Archivos leídos. Puedes volver a auditar si cambias los mínimos.',
@@ -318,10 +320,14 @@ export function refreshAnalyzeButton() {
   const ready = hasIs;
   const preflightBlocked = (state.preflight.is && state.preflight.is.ok === false)
     || (state.preflight.oos && state.preflight.oos.ok === false);
-  $('#analyzeBtn').disabled = !ready || state.busy || preflightBlocked;
+  // Mientras se lee un archivo no se puede auditar: se lanzaria con la lectura a medias.
+  const reading = Boolean((state.preflight.is && state.preflight.is.reading) || (state.preflight.oos && state.preflight.oos.reading));
+  $('#analyzeBtn').disabled = !ready || state.busy || preflightBlocked || reading;
   $('#analyzeSub').textContent = !hasIs
     ? t('analyze.needIs')
-    : preflightBlocked
+    : reading
+      ? t('preflight.title.reading')
+      : preflightBlocked
       ? t('preflight.note.warn')
       : !hasOos
         ? t('analyze.needOos')

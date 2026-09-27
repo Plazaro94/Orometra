@@ -415,7 +415,7 @@ export function renderUnseen(a) {
         <p>${esc(subline)}</p></div>
     </section>
     <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Donde cae cada cifra', 'Where each figure falls')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>
       <div class="table-wrap"><table class="u-table">
         <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango que el EA ya demostró', 'Range the EA already showed')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
