@@ -64,6 +64,11 @@ export function applyStaticI18n() {
     if (key) el.innerHTML = t(key);
   });
   syncDocumentMeta();
+  // Se muestra en el siguiente fotograma: da tiempo a que la app termine su primer
+  // pintado, que corre en la misma tarea (ver theme-init.js).
+  if (document.documentElement.classList.contains('i18n-pending')) {
+    requestAnimationFrame(() => document.documentElement.classList.remove('i18n-pending'));
+  }
 }
 
 /** Pagina actual, para usar su propio titulo y descripcion (no los de la portada). */
@@ -226,7 +231,6 @@ const STRINGS = {
     'lp.lead': 'MT5 sorts thousands of configurations by whichever criterion you pick — profit, profit factor, drawdown — and hands you a winner. Orometra finds the one that survives when the market shifts — the stable <strong>plateau</strong>, not the lucky <strong>peak</strong>.',
     'lp.cta': 'Analyze my results',
     'lp.cta.footer': 'App',
-    'contact.link': 'Contact',
     'contact.feedback': 'Send feedback',
     'doc.privacy.sC.title': 'If you write to us',
     'doc.privacy.sC.body': 'You can reach us at <a href="mailto:hello@orometra.com">hello@orometra.com</a>. If you write, we only use your address to reply. Please do not attach your optimization files unless you want us to look at a specific problem.',
@@ -505,7 +509,6 @@ const STRINGS = {
     'lp.lead': 'MT5 ordena miles de configuraciones según el criterio que elijas — beneficio, factor de beneficio, drawdown — y te da un ganador. Orometra encuentra la que aguanta cuando el mercado cambia — la <strong>meseta</strong> estable, no el <strong>pico</strong> con suerte.',
     'lp.cta': 'Analizar mis resultados',
     'lp.cta.footer': 'App',
-    'contact.link': 'Contacto',
     'contact.feedback': 'Enviar comentarios',
     'doc.privacy.sC.title': 'Si nos escribes',
     'doc.privacy.sC.body': 'Puedes escribirnos a <a href="mailto:hello@orometra.com">hello@orometra.com</a>. Si lo haces, solo usamos tu dirección para responderte. No adjuntes tus archivos de optimización salvo que quieras que revisemos un problema concreto.',
