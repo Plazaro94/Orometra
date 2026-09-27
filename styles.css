@@ -1413,9 +1413,7 @@ html.i18n-pending body{visibility:hidden}
 .hm-steps p{margin:0;color:var(--text-2);line-height:1.6}
 
 .hm-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.hm-card a{color:var(--ok-text)}
 
-.hm-faq-title{margin-top:72px !important}
 .hm-faq{border-top:1px solid var(--line);max-width:780px}
 .hm-faq details{border-bottom:1px solid var(--line)}
 .hm-faq summary{
@@ -1484,4 +1482,31 @@ html.i18n-pending body{visibility:hidden}
   .hm-engine h3{display:inline}
   .hm-engine p{margin-top:6px}
   .hm-sub{margin-top:-12px;font-size:16px}
+}
+
+/* Portada: por que no una IA. Tabla comparativa; en movil cada fila se apila
+   con su pregunta arriba y las dos respuestas lado a lado. */
+.hm-ai-lead{
+  margin:-12px 0 12px;font-size:clamp(20px,2.2vw,26px);line-height:1.3;letter-spacing:-.02em;
+  font-weight:600;color:var(--ok-text);max-width:32ch;
+}
+.hm-ai .hm-sub{margin-top:0}
+.hm-vs{width:100%;border-collapse:collapse;margin:8px 0 0;table-layout:fixed}
+.hm-vs th,.hm-vs td{text-align:left;vertical-align:top;padding:16px 20px;border-bottom:1px solid var(--line);line-height:1.5;white-space:normal;font-size:15px;text-transform:none;letter-spacing:0}
+.hm-vs thead th{font-size:var(--fs-sm);font-weight:600;color:var(--muted);padding-top:12px;padding-bottom:12px}
+.hm-vs thead td{width:30%;border-bottom:1px solid var(--line)}
+.hm-vs tbody th{font-weight:600;color:var(--text-hi);padding-left:0}
+.hm-vs td.hm-vs-ai{color:var(--muted)}
+.hm-vs td.hm-vs-oro{color:var(--text-hi);background:color-mix(in srgb, var(--ok-bg) 70%, transparent)}
+.hm-vs thead th.hm-vs-oro{color:var(--ok-text);background:color-mix(in srgb, var(--ok-bg) 70%, transparent);border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+.hm-ai-close{margin:28px 0 0;color:var(--text-2);line-height:1.65;max-width:70ch;font-size:16px}
+@media (max-width:640px){
+  .hm-vs,.hm-vs thead,.hm-vs tbody{display:block}
+  .hm-vs tr{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+  .hm-vs thead td{display:none}
+  .hm-vs th,.hm-vs td{border-bottom:0;padding:12px 12px}
+  .hm-vs tbody th{grid-column:1 / -1;padding:16px 0 4px}
+  .hm-vs thead th{padding:10px 12px}
+  .hm-vs td{font-size:14.5px}
+  .hm-vs tbody th{font-size:15px}
 }
