@@ -115,7 +115,10 @@ export function parseDelimited(text) {
   const commas = (header.match(/,/g) || []).length;
   const delimiter = tabs >= semis && tabs >= commas ? '\t' : semis >= commas ? ';' : ',';
   const rows = lines.map((l) => splitDelimited(l, delimiter).map((c) => c.trim()));
-  return { sheet: 'csv', rows, format: `delimitado (${delimiter === '\t' ? 'TAB' : delimiter})` };
+  // Pista para columnas ambiguas: Excel en locales con coma decimal separa con ';'; con
+  // ',' como delimitador la coma no puede ser decimal (salvo entre comillas).
+  const decimalHint = delimiter === ';' ? ',' : delimiter === ',' ? '.' : null;
+  return { sheet: 'csv', rows, format: `delimitado (${delimiter === '\t' ? 'TAB' : delimiter})`, decimalHint };
 }
 
 /**
@@ -176,7 +179,68 @@ export function finishTable(parsed, fileName = '') {
   }
   if (!rows.length) throw new Error('Se ha encontrado la cabecera pero no hay ninguna fila debajo. El archivo está vacío de resultados.');
 
+  normalizeDecimalColumns(headers, rows, parsed.decimalHint || null);
   return { name: fileName, sheet: parsed.sheet, format: parsed.format, headers, rows };
+}
+
+const NUMERIC_TEXT = /^[+-]?\d[\d.,]*$/;
+const cleanNumericText = (v) => String(v).trim().replace(/[\s  ']/g, '').replace(/%$/, '');
+
+/**
+ * Separador decimal de UNA columna, deducido de todos sus valores.
+ *
+ * Decidirlo celda a celda es ambiguo: "1,101" puede ser 1101 o 1,101. Un factor de
+ * beneficio 1,101 leido como 1101 cambiaba en silencio la configuracion recomendada.
+ * En una columna casi siempre hay valores que lo delatan ("1,5", "1.234,56"), y todos
+ * comparten formato. '.' / ',' = decidido; null = sin pistas o mezcla (se deja a toNumber).
+ */
+export function columnDecimalSeparator(values, hint = null) {
+  let comma = 0;
+  let dot = 0;
+  for (const v of values) {
+    if (typeof v !== 'string') continue;
+    const s = cleanNumericText(v);
+    if (!NUMERIC_TEXT.test(s)) continue;
+    const hasDot = s.includes('.');
+    const hasComma = s.includes(',');
+    if (hasDot && hasComma) {
+      if (s.lastIndexOf(',') > s.lastIndexOf('.')) comma++; else dot++;
+    } else if (hasComma) {
+      const parts = s.split(',');
+      if (parts.length > 2) dot++; // 1,234,567: comas de millar
+      else if (parts[1].length !== 3) comma++;
+    } else if (hasDot) {
+      const parts = s.split('.');
+      if (parts.length > 2) comma++; // 1.234.567: puntos de millar
+      else if (parts[1].length !== 3) dot++;
+    }
+  }
+  if (comma && !dot) return ',';
+  if (dot && !comma) return '.';
+  if (!comma && !dot) return hint;
+  return null;
+}
+
+function textToNumber(v, decimal) {
+  const s = cleanNumericText(v);
+  if (!NUMERIC_TEXT.test(s)) return v;
+  const normalized = decimal === ',' ? s.replace(/\./g, '').replace(',', '.') : s.replace(/,/g, '');
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : v;
+}
+
+/** Convierte a número las celdas de texto de cada columna con su separador deducido. */
+function normalizeDecimalColumns(headers, rows, hint) {
+  for (let c = 0; c < headers.length; c++) {
+    const values = [];
+    for (const row of rows) if (typeof row[c] === 'string') values.push(row[c]);
+    if (!values.length) continue;
+    const decimal = columnDecimalSeparator(values, hint);
+    if (!decimal) continue;
+    for (const row of rows) {
+      if (typeof row[c] === 'string') row[c] = textToNumber(row[c], decimal);
+    }
+  }
 }
 
 /**

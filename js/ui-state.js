@@ -103,6 +103,13 @@ export const paramValue = (v) => {
   return Number.isInteger(v) ? String(v) : nf(4).format(v).replace(/,?0+$/, '');
 };
 
+/**
+ * `paramValue` listo para HTML. Los valores de texto (enums) vienen tal cual del
+ * archivo del usuario: sin escapar, un export manipulado podia inyectar HTML y
+ * ejecutar script. Toda interpolacion en plantillas usa esta, nunca `paramValue`.
+ */
+export const paramHtml = (v) => esc(paramValue(v));
+
 /** MT5 guarda el informe en UTF-16; las optimizaciones, en UTF-8. */
 export function decodeHead(buffer) {
   const b = new Uint8Array(buffer);

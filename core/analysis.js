@@ -3,7 +3,7 @@
 
 import { AnalysisError, CODE } from './errors.js';
 import { toNumber, canonicalValue } from './parse.js';
-import { pairTables, metricColumns, inferParamsSingle, estimatePeriodRatio } from './schema.js';
+import { pairTables, metricColumns, inferParamsSingle, estimatePeriodRatio, roleFromTable } from './schema.js';
 import { DEFAULT_POLICY, resolvePolicy, periodQuality, payoffScale, gateFailures, combineScores, retention } from './metrics.js';
 import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
@@ -52,6 +52,15 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   let oosRoles = oosTable ? metricColumns(oosTable) : {};
 
   if (hasForward) {
+    // Un export forward trae "Forward Result"/"Back Result". Si el que llega como
+    // in-sample tambien los trae, son dos forward (o el mismo archivo dos veces) y el
+    // periodo se compararia consigo mismo: fragilidad 0 % y un veredicto limpio falso.
+    if (roleFromTable(isTable) === 'oos') {
+      throw new AnalysisError(CODE.SCHEMA_ERROR, L(
+        'El archivo in-sample es en realidad una exportación forward (trae las columnas Forward Result / Back Result). Carga el export de la pestaña de optimización in-sample y el de la pestaña forward.',
+        'The in-sample file is actually a forward export (it has Forward Result / Back Result columns). Load the export from the in-sample optimization tab and the one from the forward tab.',
+      ), { reason: 'isLooksForward' });
+    }
     const paired = pairTables(isTable, oosTable);
     integrity = paired.integrity;
     // FWD-1: si el forward trae menos filas que el IS, MT5 puede haber exportado solo
@@ -85,6 +94,25 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       criterionIs: isRoles.result ? toNumber(m.isRow[isRoles.result.col]) : NaN,
       criterionOos: oosRoles.forwardResult ? toNumber(m.oosRow[oosRoles.forwardResult.col]) : NaN,
     }));
+    // Dos periodos distintos no dan las mismas cifras pasada a pasada. Si coinciden casi
+    // siempre, es el mismo periodo cargado dos veces.
+    {
+      const KEYS = ['profit', 'profitFactor', 'drawdown', 'trades'];
+      let compared = 0;
+      let identical = 0;
+      for (const r of records) {
+        const pairs = KEYS.filter((k) => Number.isFinite(r.is[k]) && Number.isFinite(r.oos[k]));
+        if (pairs.length < 2) continue;
+        compared++;
+        if (pairs.every((k) => r.is[k] === r.oos[k])) identical++;
+      }
+      if (compared >= 10 && identical / compared >= 0.95) {
+        throw new AnalysisError(CODE.SCHEMA_ERROR, L(
+          `Los dos archivos tienen las mismas cifras en ${identical} de ${compared} pasadas: parece el mismo periodo cargado dos veces. Carga el in-sample y el forward de la misma optimización.`,
+          `Both files have the same figures in ${identical} of ${compared} passes: it looks like the same period loaded twice. Load the in-sample and the forward from the same optimization.`,
+        ), { reason: 'samePeriodTwice', identical, compared });
+      }
+    }
   } else {
     const inferred = inferParamsSingle(isTable);
     if (!inferred.params.length) {

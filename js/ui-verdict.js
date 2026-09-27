@@ -4,7 +4,7 @@ import { qualityLabel } from '../core/metrics.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag } from './i18n.js';
-import { state, num, int, pct, esc, rich, nf, paramValue, categorizeFinding } from './ui-state.js';
+import { state, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding } from './ui-state.js';
 
 /*
  * El sello califica la FUERZA DE LA EVIDENCIA, no la estrategia. Antes decia
@@ -391,8 +391,8 @@ export function renderStableRanges(a, best) {
         <tbody>
           ${rows.map((r) => `<tr>
             <td>${esc(r.name)}</td>
-            <td class="mono">${paramValue(r.center)}</td>
-            <td class="mono">${paramValue(r.start)} – ${paramValue(r.stop)}</td>
+            <td class="mono">${paramHtml(r.center)}</td>
+            <td class="mono">${paramHtml(r.start)} – ${paramHtml(r.stop)}</td>
             <td>${sensLabel(r.name)}</td>
           </tr>`).join('')}
         </tbody>
@@ -466,7 +466,7 @@ export function renderTop3(a) {
       ${hasF ? `<div><span>${L('Calidad FW', 'FW quality')}</span><strong>${num(featured.record.qualityOos, 2)}</strong></div>` : ''}
     </div>
     ${alts.length ? '' : `<div class="t3-param-chips">
-      ${names.map((n, j) => `<span>${esc(n)} <b>${paramValue(featured.record.params[j])}</b></span>`).join('')}
+      ${names.map((n, j) => `<span>${esc(n)} <b>${paramHtml(featured.record.params[j])}</b></span>`).join('')}
     </div>`}
     <div class="t3-featured-actions">
       <button class="primary-btn t3-btn-inline" data-export="set" data-plateau-index="${featured.rank - 1}">${L('Descargar .set', 'Download .set')}</button>
@@ -503,7 +503,7 @@ export function renderTop3(a) {
 
   const paramRows = names.map((n, j) => `<tr class="${agree[j] ? 't3-agree' : ''}">
     <th class="t3-label mono">${esc(n)}${agree[j] ? `<span class="t3-tick" title="${esc(L(`Coinciden las ${word}`, `The ${word} agree`))}">✓</span>` : ''}</th>
-    ${top.map((p, i) => `<td class="t3-col t3-value ${i === 0 ? 't3-best' : ''}">${paramValue(p.record.params[j])}</td>`).join('')}
+    ${top.map((p, i) => `<td class="t3-col t3-value ${i === 0 ? 't3-best' : ''}">${paramHtml(p.record.params[j])}</td>`).join('')}
   </tr>`).join('');
 
   return `<section class="panel t3-panel panel-recommend">

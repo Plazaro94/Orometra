@@ -74,6 +74,13 @@ export async function setSearchSet(file) {
   }
 }
 
+/** Mismo archivo soltado dos veces (o una copia exacta con otro nombre). */
+function sameFile(a, b) {
+  if (!a || !b) return false;
+  if (a.size !== b.size) return false;
+  return a.name === b.name || (a.lastModified && a.lastModified === b.lastModified);
+}
+
 /** Reparte una tanda de archivos entre las dos cajas según lo que sean. */
 export async function acceptFiles(fileList, preferred) {
   // Hasta cuatro: IS, forward, informe unseen y .set de rangos.
@@ -107,7 +114,24 @@ export async function acceptFiles(fileList, preferred) {
     if (rest.length) await acceptFiles(rest, preferred);
     return;
   }
+  const pair = files.slice(0, 2);
+  if (pair.length === 2 && sameFile(pair[0], pair[1])) {
+    api.showError(L(
+      'Has soltado el mismo archivo dos veces. Hacen falta el export in-sample y el export forward de la misma optimización.',
+      'You dropped the same file twice. The in-sample export and the forward export of the same optimization are needed.',
+    ));
+    return;
+  }
   const oosIdx = roles.indexOf('oos');
+  if (oosIdx >= 0 && roles.filter((r) => r === 'oos').length >= 2) {
+    // Dos exports forward: asignar uno como in-sample en silencio compararia el forward
+    // consigo mismo y daria un veredicto limpio falso.
+    api.showError(L(
+      'Los dos archivos son exportaciones forward (traen Forward Result / Back Result). Falta el export in-sample: en MT5, pestaña de resultados de optimización → clic derecho → exportar XML.',
+      'Both files are forward exports (they have Forward Result / Back Result). The in-sample export is missing: in MT5, optimization results tab → right-click → export XML.',
+    ));
+    return;
+  }
   if (oosIdx >= 0) {
     setFile('oos', files[oosIdx]);
     setFile('is', files[1 - oosIdx] || files.find((_, i) => i !== oosIdx));

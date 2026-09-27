@@ -169,8 +169,9 @@ section('4. EA perdedor: debe decir NO, no elegir "el mejor de los malos"');
   for (let a = 0; a < 6; a++) for (let b = 0; b < 6; b++) for (let c = 0; c < 6; c++) for (let d = 0; d < 6; d++) {
     const dist = [a, b, c, d].reduce((s, v) => s + ((v - 3) / 2) ** 2, 0);
     const g = Math.exp(-dist / 2);
-    const nz = gauss(r) * 0.08;
-    const mk = () => ({
+    // Ruido propio de cada periodo: dos periodos reales nunca dan las mismas cifras
+    // pasada a pasada (el motor lo rechaza como "mismo periodo cargado dos veces").
+    const mk = (nz) => ({
       profit: -60000 + 20000 * g + nz * 3000,
       profitFactor: 0.82 + 0.1 * g + nz * 0.01,
       recoveryFactor: -0.9 + 0.3 * g,
@@ -178,7 +179,7 @@ section('4. EA perdedor: debe decir NO, no elegir "el mejor de los malos"');
       drawdown: 70 - 15 * g,
       trades: 900,
     });
-    points.push({ x: [a + 1, b + 1, c + 1, d + 1], is: mk(), oos: mk(), isResult: 10 + 8 * g, oosResult: 8 + 7 * g });
+    points.push({ x: [a + 1, b + 1, c + 1, d + 1], is: mk(gauss(r) * 0.08), oos: mk(gauss(r) * 0.08), isResult: 10 + 8 * g, oosResult: 8 + 7 * g });
   }
   const [isT, oosT] = synthTables(points, ['a', 'b', 'c', 'd']);
   const a = runAnalysis({ isTable: isT, oosTable: oosT, policy: ENGINE_POLICY });

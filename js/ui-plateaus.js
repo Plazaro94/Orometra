@@ -6,7 +6,7 @@ import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L } from './i18n.js';
 import { gloss } from './glossary.js';
-import { state, $, num, int, pct, esc, rich, nf, paramValue, roleBadge, findingsForCategory } from './ui-state.js';
+import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory } from './ui-state.js';
 
 /**
  * Hallazgos del motor que narran en prosa el mismo numero que esta tabla muestra en
@@ -53,7 +53,7 @@ export function renderRepCard(a, p) {
       <div class="rep-score">${num(p.robust, 0)}<small>${gloss('robustness', L('robustez', 'robustness'), { align: 'right' })}</small></div>
     </div>
     <div class="param-grid">
-      ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramValue(r.params[j])}</strong></div>`).join('')}
+      ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramHtml(r.params[j])}</strong></div>`).join('')}
     </div>
     <div class="evidence-list">
       <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(r.qualityIs, 2)} <em>${esc(qualityLabel(r.qualityIs))}</em></strong></div>
@@ -70,12 +70,12 @@ export function renderRepCard(a, p) {
       <div><span>${L('In-sample · PF / DD / ops', 'In-sample · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}% / ${int(r.is.trades)}</strong></div>
     </div>
     ${p.invertedRisk && p.invertedRisk.length ? `<div class="inline-warn">${L(
-      `Se apoya en ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramValue(x.bestIs)}</code>`).join(', ')}, el valor que gana en el in-sample pero que el forward castiga. Puede ser mérito suyo o suerte.`,
-      `It relies on ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramValue(x.bestIs)}</code>`).join(', ')}, the value that wins in-sample but that the forward punishes. It may be merit or luck.`,
+      `Se apoya en ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, el valor que gana en el in-sample pero que el forward castiga. Puede ser mérito suyo o suerte.`,
+      `It relies on ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, the value that wins in-sample but that the forward punishes. It may be merit or luck.`,
     )}</div>` : ''}
     ${p.boundary.length ? `<div class="inline-warn">${L(
-      `Pegada al borde del rango en: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramValue(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
-      `Stuck to the range edge at: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramValue(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
+      `Pegada al borde del rango en: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
+      `Stuck to the range edge at: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
     )}</div>` : ''}
     <div class="rep-actions">
       <button class="ghost-btn" data-copy="${p.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
@@ -149,12 +149,12 @@ export function renderPlateaus(a) {
         <tbody>${sel.refinement.map((x) => `<tr>
           <td class="mono">${esc(x.name)}</td>
           ${x.constant
-            ? `<td>${paramValue(x.value)}</td><td colspan="4" class="muted">${L('no se optimizó', 'was not optimized')}</td>`
+            ? `<td>${paramHtml(x.value)}</td><td colspan="4" class="muted">${L('no se optimizó', 'was not optimized')}</td>`
             : x.fixed
-              ? `<td class="strong">${paramValue(x.center)}</td><td colspan="4" class="muted">${x.categorical
+              ? `<td class="strong">${paramHtml(x.center)}</td><td colspan="4" class="muted">${x.categorical
                 ? L('booleano o enumeración: se fija, actívalo a mano si quieres barrerlo', 'boolean or enum: fixed; enable manually if you want to sweep it')
                 : L('se fija: el presupuesto de la rejilla se gasta en parámetros más influyentes', 'fixed: the grid budget is spent on more influential parameters')}</td>`
-              : `<td class="strong">${paramValue(x.center)}</td><td>${paramValue(x.start)}</td><td>${paramValue(x.step)}</td><td>${paramValue(x.stop)}</td><td>${int(x.levels)}</td>`}
+              : `<td class="strong">${paramHtml(x.center)}</td><td>${paramHtml(x.start)}</td><td>${paramHtml(x.step)}</td><td>${paramHtml(x.stop)}</td><td>${int(x.levels)}</td>`}
         </tr>`).join('')}</tbody>
       </table></div>
       <div class="rep-actions"><button class="ghost-btn" data-export="refine">${L('Descargar .set de refinamiento', 'Download refinement .set')}</button></div>
@@ -234,8 +234,8 @@ function renderSurfaceDetail(a, grid, hit) {
   }
   const rec = a.records[hit.recordIndex];
   return `<div class="evidence-list">
-    <div><span>${esc(grid.names[0])}</span><strong>${paramValue(grid.levelsA[hit.a])}</strong></div>
-    <div><span>${esc(grid.names[1])}</span><strong>${paramValue(grid.levelsB[hit.b])}</strong></div>
+    <div><span>${esc(grid.names[0])}</span><strong>${paramHtml(grid.levelsA[hit.a])}</strong></div>
+    <div><span>${esc(grid.names[1])}</span><strong>${paramHtml(grid.levelsB[hit.b])}</strong></div>
     <div><span>Pass</span><strong class="mono">${esc(rec.id)}</strong></div>
     <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(hit.quality, 3)}</strong></div>
     <div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${Number.isFinite(hit.qualityOos) ? num(hit.qualityOos, 3) : '—'}</strong></div>
@@ -333,10 +333,10 @@ export function renderParams(a) {
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Gana en IS', 'Wins in IS')}</th><th>${L('Gana en forward', 'Wins in forward')}</th><th>${L('Margen que tiras', 'Margin you waste')}</th><th>${L('Perfil de calidad (valor: IS / forward)', 'Quality profile (value: IS / forward)')}</th></tr></thead>
         <tbody>${a.inversions.map((x) => `<tr>
           <td class="mono">${esc(x.name)}</td>
-          <td class="strong">${paramValue(x.bestIs)}</td>
-          <td class="strong">${paramValue(x.bestOos)}</td>
+          <td class="strong">${paramHtml(x.bestIs)}</td>
+          <td class="strong">${paramHtml(x.bestOos)}</td>
           <td><span class="badge warn">${pct(x.regretShare, 0)}</span></td>
-          <td class="values">${x.profile.map((p) => `${paramValue(p.level)}: ${num(p.is, 2)}/${num(p.oos, 2)}`).join('  ·  ')}</td>
+          <td class="values">${x.profile.map((p) => `${paramHtml(p.level)}: ${num(p.is, 2)}/${num(p.oos, 2)}`).join('  ·  ')}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>` : ''}
@@ -371,7 +371,7 @@ export function renderParams(a) {
           <td class="mono">${esc(s.name)}${a.meta.paramTypes && a.meta.paramTypes[s.index] !== 'number' ? ` <span class="badge">${esc(a.meta.paramTypes[s.index] === 'bool' ? 'bool' : 'enum')}</span>` : ''}</td>
           <td>${int(s.levels)}</td>
           <td>${roleBadge(dimRole(a, s))}</td>
-          <td class="values">${(s.values || []).map(paramValue).join(' · ')}</td>
+          <td class="values">${(s.values || []).map(paramHtml).join(' · ')}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>`;

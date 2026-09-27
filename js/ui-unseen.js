@@ -4,7 +4,7 @@ import { evaluateUnseen } from '../core/unseen.js';
 import { parseBacktestReport, compareParams } from '../core/report.js';
 import { auditUnseenTrades } from '../core/matrix/from-deals.js';
 import { L, localeTag } from './i18n.js';
-import { state, api, $, num, int, pct, esc, rawValue, paramValue, decodeHead } from './ui-state.js';
+import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
 
 export async function setReport(file) {
   try {
@@ -372,7 +372,7 @@ export function renderUnseen(a) {
     <div class="panel-head compact"><div><div class="panel-kicker">${L('Recordatorio', 'Reminder')}</div><h2>${L('Configuración que debes probar', 'Configuration you must test')}</h2></div>
       <button class="ghost-btn" data-export="set" data-plateau-index="${idx}">${L('Descargar .set', 'Download .set')}</button></div>
     <div class="param-grid">
-      ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramValue(p.record.params[j])}</strong></div>`).join('')}
+      ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramHtml(p.record.params[j])}</strong></div>`).join('')}
     </div>
   </section>`;
 
