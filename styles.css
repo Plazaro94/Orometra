@@ -1463,3 +1463,25 @@ html.i18n-pending body{visibility:hidden}
   .lp-top-actions .lp-nav-link{display:none}
   .lp-top-actions .lang-btn{padding:5px 7px;min-width:34px}
 }
+
+/* Portada: el motor por dentro. Sin cajas, para no repetir el aspecto de las tarjetas. */
+.hm-sub{margin:-16px 0 32px;color:var(--text-2);font-size:17px;line-height:1.55;max-width:60ch}
+.hm-engine{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:36px 32px}
+.hm-engine li{min-width:0;padding-top:18px;border-top:1px solid var(--line)}
+.hm-engine-num{display:block;margin-bottom:10px;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ok-text)}
+.hm-engine h3{margin:0 0 6px;font-size:17px;color:var(--text-hi);letter-spacing:-.01em}
+.hm-engine p{margin:0;color:var(--text-2);line-height:1.6}
+.hm-more{margin:32px 0 0}
+.hm-more a{color:var(--ok-text);font-weight:600;text-underline-offset:3px}
+.hm-more a:hover{color:var(--ok-hi)}
+@media (max-width:860px){
+  .hm-engine{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .hm-engine{grid-template-columns:1fr;gap:24px}
+  .hm-engine li{padding-top:16px}
+  .hm-engine-num{display:inline;margin:0 8px 0 0}
+  .hm-engine h3{display:inline}
+  .hm-engine p{margin-top:6px}
+  .hm-sub{margin-top:-12px;font-size:16px}
+}

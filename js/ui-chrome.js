@@ -568,9 +568,9 @@ export function renderLegal() {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Condiciones de uso', 'Terms of use')}</div><h2>${L('Qué puedes esperar', 'What you can expect')}</h2></div></div>
       <ul class="limits">
         <li>${L(
-          `El uso es gratuito y sin registro. No se garantiza que la página esté siempre disponible ni que
+          `El uso no requiere registro. No se garantiza que la página esté siempre disponible ni que
         se mantenga indefinidamente.`,
-          `Use is free and without signup. There is no guarantee the page will always be available or
+          `Use requires no signup. There is no guarantee the page will always be available or
         maintained indefinitely.`,
         )}</li>
         <li>${L(

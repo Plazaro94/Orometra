@@ -16,7 +16,7 @@
 <link rel="canonical" href="https://orometra.com/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Orometra — MT5 Overfitting &amp; Robustness Audit">
-<meta property="og:description" content="Your best MT5 result might be luck. Orometra tells you which configuration actually holds up — free, in your browser.">
+<meta property="og:description" content="Your best MT5 result might be luck. Orometra tells you which configuration actually holds up — right in your browser.">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://orometra.com/og-image.jpg">
 <meta property="og:image:type" content="image/jpeg">
@@ -72,7 +72,7 @@
         <a class="primary-btn hm-cta" href="app/" data-i18n="lp.cta">Analyze my results</a>
         <a class="ghost-btn hm-cta" href="app/?demo=1" data-i18n="home.demo">See an example</a>
       </div>
-      <p class="hm-trust" data-i18n="home.trust">Free · No sign-up · Your files never leave your computer</p>
+      <p class="hm-trust" data-i18n="home.trust">No sign-up · Your files never leave your computer</p>
     </div>
     <div class="hm-hero-visual">
       <div class="lp-surface" id="heroSurfaceHost" tabindex="0" role="button" data-i18n="lp.surface.aria" data-i18n-attr="aria-label" aria-label="Parameter surface: isolated peaks collapse into a stable plateau">
@@ -111,6 +111,21 @@
     </div>
   </section>
 
+  <!-- 2b. El motor por dentro -->
+  <section class="hm-section" aria-labelledby="hm-engine-title">
+    <h2 id="hm-engine-title" data-i18n="home.engine.title">What the engine does for you</h2>
+    <p class="hm-sub" data-i18n="home.engine.sub">What would take you hours in a spreadsheet and a lot of judgment — done in seconds, the same way every time.</p>
+    <ol class="hm-engine">
+      <li><span class="hm-engine-num" aria-hidden="true">01</span><h3 data-i18n="home.engine.1.title">Drops what doesn't qualify</h3><p data-i18n="home.engine.1.body">Out go the passes that miss your minimums for profit, drawdown and number of trades — in-sample and forward.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">02</span><h3 data-i18n="home.engine.2.title">Doesn't trust the Result column</h3><p data-i18n="home.engine.2.body">It rebuilds quality from objective metrics (profit factor, recovery, Sharpe, drawdown), not from the criterion you optimized for.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">03</span><h3 data-i18n="home.engine.3.title">Checks the neighbors</h3><p data-i18n="home.engine.3.body">For every configuration it checks whether the surrounding values also work, and picks the center of the plateau: the point whose weakest neighbor is still solid.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">04</span><h3 data-i18n="home.engine.4.title">Confirms it on the forward</h3><p data-i18n="home.engine.4.body">Plateaus that also hold up in the forward period move up; those that fall apart move down.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">05</span><h3 data-i18n="home.engine.5.title">Measures how much could be luck</h3><p data-i18n="home.engine.5.body">It estimates the best result pure chance would produce when testing that many combinations, and warns you if yours doesn't beat it.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">06</span><h3 data-i18n="home.engine.6.title">Tests itself</h3><p data-i18n="home.engine.6.body">It repeats the search moving its own thresholds by ±20%. If the recommendation only appears with the exact numbers, it tells you.</p></li>
+    </ol>
+    <p class="hm-more"><a href="methodology/" data-i18n="home.engine.more">See the method step by step →</a></p>
+  </section>
+
   <!-- 3. Como funciona -->
   <section class="hm-section" aria-labelledby="hm-how-title">
     <h2 id="hm-how-title" data-i18n="lp.how.title">How it works</h2>
@@ -144,7 +159,6 @@
     <div class="hm-faq" aria-labelledby="hm-faq-title">
       <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n="home.faq.1.a">The XML exports of your MT5 optimization: the results tab (in-sample) and, if you enabled forward, the forward tab too. The .opt file does not work.</p></details>
       <details><summary data-i18n="home.faq.2.q">Do I need the forward period?</summary><p data-i18n="home.faq.2.a">No, but it is highly recommended. Without it, Orometra analyzes the in-sample only and the evidence cannot go beyond weak.</p></details>
-      <details><summary data-i18n="home.faq.3.q">Is it free?</summary><p data-i18n="home.faq.3.a">Yes. No sign-up and no limits.</p></details>
       <details><summary data-i18n="home.faq.4.q">What happens to my data?</summary><p data-i18n-html="home.faq.4.a">Nothing leaves your computer: the analysis runs in your browser. We only count visits, anonymously. Details in the <a href="privacy/">privacy page</a>.</p></details>
       <details><summary data-i18n="home.faq.5.q">Why not just ask an AI?</summary><p data-i18n="home.faq.5.a">Testing thousands of combinations always produces some good-looking result by pure chance. Orometra applies a fixed, tested and reproducible criterion: same data, same answer.</p></details>
       <details><summary data-i18n="home.faq.6.q">What does it not do?</summary><p data-i18n="home.faq.6.a">It does not predict the market, guarantee returns or turn a weak EA into a good one. With genetic optimization it is more cautious, and tells you so.</p></details>
