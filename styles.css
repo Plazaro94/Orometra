@@ -1304,7 +1304,13 @@ tr.sel td{color:var(--text-2)}
    solo para num+texto. El texto, aqui, se acota a un ancho fijo (en vez de dejarlo
    ocupar todo lo que sobre): sin el limite se comia casi todo el bloque y la imagen
    se quedaba con una franja estrecha -- justo lo apretado que no queriamos. */
-.lp-method-step.has-media{width:100%;max-width:1060px;gap:72px}
+/* gap es un solo valor para TODOS los huecos del flex -- num<->texto y
+   texto<->imagen a la vez. Al separar texto e imagen (40px -> 72px, ver
+   CHANGELOG) ese mismo valor se colo tambien entre el numero y su titulo,
+   que debe quedar pegado. Se deja gap corto (el de siempre, 20px) y el
+   espacio extra antes de la imagen se añade aparte, con margin, en el lado
+   que le toca segun si el paso se ancla a la izquierda o a la derecha. */
+.lp-method-step.has-media{width:100%;max-width:100%;gap:20px}
 .lp-method-step.has-media .lp-method-step-text{flex:0 1 360px;max-width:360px}
 .lp-method-num{
   flex:none;font-family:var(--mono);font-weight:800;font-size:32px;line-height:1;
@@ -1315,24 +1321,25 @@ tr.sel td{color:var(--text-2)}
 /* La imagen va siempre al lado exterior, opuesto al borde donde se ancla el bloque:
    despues del texto en los pasos anclados a la izquierda (impares), antes del
    numero+texto en los anclados a la derecha (pares) -- asi el numero nunca deja de
-   estar pegado a su titulo, la regla de mas arriba. */
+   estar pegado a su titulo, la regla de mas arriba. Al no tener un max-width propio
+   estrecho, crece (flex-grow) para ocupar el ancho sobrante del contenedor en vez
+   de dejarlo en blanco. */
 .lp-method-step-media{
-  order:3;flex:1 1 420px;min-width:340px;align-self:stretch;
+  order:3;flex:1 1 420px;min-width:340px;align-self:stretch;margin-left:52px;
   border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
   overflow:hidden;
 }
 .lp-method-step-media svg{width:100%;height:100%;display:block}
-.lp-method-step:nth-child(even) .lp-method-step-media{order:0}
+.lp-method-step:nth-child(even) .lp-method-step-media{order:0;margin-left:0;margin-right:52px}
 @media (max-width:720px){
   .lp-method-step,.lp-method-step:nth-child(even){flex-direction:row;align-self:stretch;max-width:none;flex-wrap:wrap}
-  /* El gap grande de escritorio (72px, para separar texto e imagen en la fila) es un
-     column-gap ahi -- pero aqui, con flex-wrap, ese mismo "gap" se convierte en el
-     row-gap ENTRE cada linea apilada (numero->titulo, parrafo->imagen), y se veia
-     enorme en los tres sitios a la vez. En movil no hay columnas que separar, asi que
-     se resetea al mismo gap pequeno que usan los pasos sin imagen. */
-  .lp-method-step.has-media{gap:20px}
+  /* En escritorio el espacio extra antes de la imagen es un margin-left/right en
+     .lp-method-step-media (ver mas arriba) -- pero aqui la imagen pasa a su propia
+     linea, apilada debajo del texto a ancho completo, y ese margen la desplazaria
+     hacia un lado o le dejaria un hueco muerto en vez de ocupar todo el ancho. Se
+     resetea a 0 en los dos casos (impar y par). */
   .lp-method-step-media,.lp-method-step:nth-child(even) .lp-method-step-media{
-    order:4;flex-basis:100%;margin-top:0;aspect-ratio:16/10;
+    order:4;flex-basis:100%;margin:0;aspect-ratio:16/10;
   }
 }
 
