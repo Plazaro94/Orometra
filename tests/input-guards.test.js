@@ -112,5 +112,20 @@ section('AUD-07: CSP en <meta> en todas las paginas, igual que en vercel.json');
   check('_headers = vercel.json', headersFile.includes(header));
 }
 
+// ------------------------------------------------------------------ AUD-08
+section('AUD-08: el texto legal nombra todo lo que se guarda en el navegador');
+{
+  const keys = new Set();
+  for (const f of fs.readdirSync(path.join(ROOT, 'js'))) {
+    const src = fs.readFileSync(path.join(ROOT, 'js', f), 'utf8');
+    for (const m of src.matchAll(/'(orometra\.[a-z]+)'/g)) keys.add(m[1]);
+  }
+  const legal = fs.readFileSync(path.join(ROOT, 'js/ui-chrome.js'), 'utf8');
+  const words = { 'orometra.theme': /tema de color/, 'orometra.lang': /idioma/, 'orometra.gates': /mínimos que configures/ };
+  check('solo se usan claves conocidas', [...keys].every((k) => k in words), [...keys].join(', '));
+  check('el aviso legal dice "tres cosas"', /Se guardan tres cosas/.test(legal) && keys.size === 3, String(keys.size));
+  for (const k of keys) check(`el aviso legal menciona ${k}`, words[k] && words[k].test(legal));
+}
+
 console.log(`\n${'='.repeat(70)}\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas\n${'='.repeat(70)}`);
 if (failures) process.exit(1);

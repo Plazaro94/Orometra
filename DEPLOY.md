@@ -6,7 +6,7 @@ Sitio estático servido desde el repo. Cada `push` a `main` dispara el workflow
 `.github/workflows/static.yml`: primero corre `npm test` y, si pasa, publica
 **solo Lite** (`app/`, `js/`, `core/`, landing, methodology, privacy, assets) en:
 
-https://plazaro94.github.io/Orometra/
+https://orometra.com (dominio propio, fichero `CNAME`)
 
 No se suben a Pages `tests/`, `docs/` ni `node_modules/`.
 
@@ -60,9 +60,17 @@ etc.) es toda la lógica. La única excepción es
 agregadas a la página: sin cookies, sin huella de navegador, sin identificar a nadie, y sin
 ninguna visibilidad sobre los archivos que subes (esos no salen del navegador, así que no
 hay nada ahí que medir). Eso permite una política de seguridad de contenido estricta —con
-esa única excepción explícita, no un agujero abierto— que se sirve **igual en desarrollo que
-en producción** (`tools/serve.js` y `vercel.json`) para que un fallo de política aparezca al
-programar y no el día del despliegue:
+esa única excepción explícita, no un agujero abierto— que se aplica igual en desarrollo que
+en producción, para que un fallo de política aparezca al programar y no el día del despliegue:
+
+- **GitHub Pages (producción) no envía cabeceras propias.** Por eso la política va también en
+  un `<meta http-equiv="Content-Security-Policy">` en cada una de las cuatro páginas, antes
+  del primer script. Un `<meta>` no admite `frame-ancestors`, así que en Pages la web se
+  puede incrustar en otra; `X-Frame-Options`, `nosniff`, `Referrer-Policy` (esta sí va en un
+  `<meta name="referrer">`) y `Permissions-Policy` solo llegan con un host que envíe cabeceras.
+- **`tools/serve.js`, `vercel.json` y `_headers`** (Netlify / Cloudflare Pages) envían la
+  política completa como cabecera. `tests/input-guards.test.js` comprueba que las tres copias
+  y el `<meta>` coinciden.
 
 ```
 default-src 'self'      · script-src 'self' + Cloudflare Analytics
@@ -107,9 +115,8 @@ Conviene tenerlo escrito, porque la tentación de aparentar más de lo que se mi
 
 ## Compatibilidad
 
-Hacen falta módulos ES, Web Workers y `structuredClone`: cualquier Chrome, Edge, Firefox
-o Safari de los últimos años. El único punto donde el navegador importa es la futura
-conexión a una carpeta local (File System Access API), que Firefox no implementa.
+Hacen falta módulos ES, Web Workers (de tipo módulo), `structuredClone` y, solo para `.xlsx`,
+`DecompressionStream`: cualquier Chrome, Edge, Firefox o Safari de los últimos años.
 
 ## El informe del periodo no visto
 
@@ -120,6 +127,7 @@ forma nativa, sin cargar ninguna librería externa.
 
 ## Privacidad
 
-Los archivos se procesan en el navegador y no se envían a ningún servidor. La única petición
-externa posible es la descarga del lector opcional de Excel binario, y solo ocurre si subes un
-`.xlsx` real en lugar del `.xls` que exporta MT5.
+Los archivos se procesan en el navegador y no se envían a ningún servidor: no hay `fetch` ni
+peticiones de ningún tipo con su contenido. La única petición externa de la página es el script
+de Cloudflare Web Analytics, que cuenta visitas y no ve los archivos. En el navegador se guardan
+tres preferencias (tema, idioma y mínimos) en `localStorage`.

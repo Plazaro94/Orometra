@@ -4,6 +4,7 @@ import { parseTable } from '../core/parse.js';
 import { AnalysisError, CODE, classifyError, errorCopy } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
 import { state, api, $, $$, esc } from './ui-state.js';
+import { displayVerdictLevel } from './ui-verdict.js';
 
 export function showProgress(pct, label) {
   $('#statusBar').hidden = false;
@@ -269,7 +270,9 @@ export async function runAudit() {
       oos: state.isDemo ? null : (state.oosFile && state.oosFile.name) || null,
       at: new Date(),
     };
-    const mark = analysis.verdict.level === 'strong' ? '✓' : analysis.verdict.level === 'moderate' ? '!' : '·';
+    // El nivel MOSTRADO (sin periodo no visto, 'sólida' se muestra como moderada).
+    const shownLevel = displayVerdictLevel(analysis);
+    const mark = shownLevel === 'strong' ? '✓' : shownLevel === 'moderate' ? '!' : '·';
     document.title = `${mark} ${state.source.is} · Orometra`;
     // Primer analisis de la sesion: colapsa la ficha de carga de archivos, que si no
     // se repite entera en cada una de las 7 pestanas. Un reanalisis (mismos archivos,

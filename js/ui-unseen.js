@@ -385,7 +385,7 @@ export function renderUnseen(a) {
   const cls = !paramsOk ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
   const stamp = !paramsOk ? L('NO VALIDA', 'DOES NOT VALIDATE')
     : res.level === 'outside' ? L('FUERA DE RANGO', 'OUT OF RANGE')
-      : res.level === 'tail' ? L('EN EL LIMITE', 'AT THE EDGE') : L('DENTRO DE LO NORMAL', 'WITHIN NORMAL');
+      : res.level === 'tail' ? L('EN EL LÍMITE', 'AT THE EDGE') : L('DENTRO DE LO NORMAL', 'WITHIN NORMAL');
   const headline = paramsOk ? res.headline : L('Estas cifras son de otra configuración', 'These figures are from another configuration');
   const subline = paramsOk
     ? L(

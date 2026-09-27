@@ -108,7 +108,15 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   estadística, stress de costes (spread/slippage/comisión extra, por escenarios, con
   punto de equilibrio) y aviso si el swap pesa una parte grande del resultado neto.
 - Exportación: `.set` de la configuración propuesta, `.set` de **rango de refinamiento**
-  acotado a un número de combinaciones ejecutable, informe JSON y CSV completo.
+  acotado a un número de combinaciones ejecutable, informe JSON (con el nivel de evidencia que
+  se muestra en pantalla y, aparte, el del motor) y CSV completo en el formato numérico del
+  idioma activo.
+- **Solo in-sample**: sin archivo forward se puede auditar igualmente; el veredicto lo marca
+  como limitación crítica y no pasa de «débil».
+- **Defensas de entrada**: dos exports forward o el mismo periodo cargado dos veces se
+  rechazan (compararían un periodo consigo mismo); el separador decimal se deduce por columna
+  (`1,101` es 1,101 en un CSV con coma decimal, no 1101); los valores de los archivos se
+  escapan antes de pintarse.
 - **Vista previa de los mínimos** y **aviso de empate** entre mesetas casi igualadas.
 
 ## Ejecutar en local
@@ -130,6 +138,9 @@ npm test
 
 - **`tests/source.test.js`** revisa el propio código (tildes en identificadores, clases CSS, ids).
 - **`tests/regression.test.js`** compara el JSON canónico de la demo con un fixture fijo (Fase 0).
+- **`tests/input-guards.test.js`**: dos forward, coma decimal, escape de valores y CSP en `<meta>`.
+- **`tests/verdict-coherence.test.js`**: el copy del método coincide con el modo de selección,
+  un solo nivel de evidencia en pantalla y en el export, modo solo in-sample e IC diario.
 - **`tests/run.js`**, **`tests/stress.js`**, **`tests/method.test.js`**, etc.: motor, invariantes y lecturas.
 
 Para incluir archivos reales, colócalos como `IS(1).xls` y `OOS(1).xls` en tu carpeta de

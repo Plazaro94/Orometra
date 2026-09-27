@@ -362,16 +362,19 @@ export function renderWhyGrade(a, highlights) {
 
 export function renderStableRanges(a, best) {
   const sens = a.sensitivity || [];
-  const sensByName = new Map(sens.map((s) => [s.name, s]));
   const rows = (best.refinement || []).filter((r) => !r.constant && !r.fixed && !r.categorical && r.levels > 1);
   if (!rows.length) return '';
+  // Posicion RELATIVA, no "Alta/Media/Baja" absolutos: la medida combinada sale alta
+  // tambien con ruido puro (en un dataset aleatorio daba 0,78-0,94 a todos), asi que un
+  // umbral fijo ponia "Alta" a todos los parametros y no informaba de nada.
+  const ranked = [...sens]
+    .filter((x) => !x.constant && Number.isFinite(x.effective ?? x.sensitivity))
+    .sort((x, y) => (y.effective ?? y.sensitivity) - (x.effective ?? x.sensitivity))
+    .map((x) => x.name);
   const sensLabel = (name) => {
-    const s = sensByName.get(name);
-    const v = s && Number.isFinite(s.effective) ? s.effective : (s && s.sensitivity);
-    if (!Number.isFinite(v)) return '—';
-    if (v < 0.2) return L('Baja', 'Low');
-    if (v < 0.45) return L('Media', 'Medium');
-    return L('Alta', 'High');
+    const k = ranked.indexOf(name);
+    if (k < 0) return '—';
+    return L(`${k + 1}.º de ${ranked.length}`, `${k + 1} of ${ranked.length}`);
   };
   return `<section class="panel panel-ranges">
     <div class="panel-head compact">
@@ -392,7 +395,7 @@ export function renderStableRanges(a, best) {
             <th>${L('Parámetro', 'Parameter')}</th>
             <th>${L('Centro', 'Center')}</th>
             <th>${L('Zona estable', 'Stable zone')}</th>
-            <th>${L('Sensibilidad', 'Sensitivity')}</th>
+            <th>${L('Influencia (puesto)', 'Influence (rank)')}</th>
           </tr>
         </thead>
         <tbody>

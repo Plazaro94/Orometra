@@ -546,11 +546,11 @@ export function renderLegal() {
         who you are or what you upload; only that someone visited the page.`,
         )}</li>
         <li>${L(
-          `<strong>Se guardan dos cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
-        nadie): el tema de color que elijas y los mínimos que configures, para no tener que repetirlos. Puedes
+          `<strong>Se guardan tres cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
+        nadie): el tema de color, el idioma y los mínimos que configures, para no tener que repetirlos. Puedes
         borrarlos vaciando los datos del sitio.`,
-          `<strong>Two things are stored in your own browser</strong> (local storage, never sent to
-        anyone): the color theme you choose and the minima you set, so you do not have to repeat them. You can
+          `<strong>Three things are stored in your own browser</strong> (local storage, never sent to
+        anyone): the color theme, the language and the minima you set, so you do not have to repeat them. You can
         clear them by wiping the site data.`,
         )}</li>
         <li>${L(

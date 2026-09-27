@@ -46,7 +46,6 @@ export function setLocale(lang) {
     try { localStorage.setItem(KEY, next); } catch { /* privado */ }
   }
   applyStaticI18n();
-  syncDocumentMeta();
   return next;
 }
 
@@ -64,13 +63,26 @@ export function applyStaticI18n() {
     const key = el.getAttribute('data-i18n-html');
     if (key) el.innerHTML = t(key);
   });
+  syncDocumentMeta();
+}
+
+/** Pagina actual, para usar su propio titulo y descripcion (no los de la portada). */
+function currentPage() {
+  if (typeof location === 'undefined') return 'landing';
+  const path = location.pathname;
+  if (/\/app\//.test(path)) return 'app';
+  if (/\/methodology\//.test(path)) return 'methodology';
+  if (/\/privacy\//.test(path)) return 'privacy';
+  return 'landing';
 }
 
 function syncDocumentMeta() {
   if (typeof document === 'undefined') return;
-  const title = t('meta.title');
-  const desc = t('meta.description');
-  document.title = title;
+  const page = currentPage();
+  const title = t(`meta.title.${page}`);
+  const desc = t(`meta.description.${page}`);
+  // En la app, tras un analisis el titulo lleva el archivo ("✓ archivo · Orometra"): no pisarlo.
+  if (!(page === 'app' && document.body && document.body.classList.contains('has-analysis'))) document.title = title;
   const md = document.querySelector('meta[name="description"]');
   if (md) md.setAttribute('content', desc);
   const ogt = document.querySelector('meta[property="og:title"]');
@@ -83,8 +95,14 @@ function syncDocumentMeta() {
 
 const STRINGS = {
   en: {
-    'meta.title': 'Orometra — MT5 Optimization Robustness Analyzer',
-    'meta.description': 'Find stable parameter plateaus in your MetaTrader 5 optimizations — not isolated peaks. Top 3 configurations with reasons. Analysis runs entirely in your browser.',
+    'meta.title.landing': 'Orometra — MT5 Overfitting & Robustness Audit',
+    'meta.description.landing': 'Detect overfitting in your MetaTrader 5 optimization before you go live. Orometra finds the stable parameter plateau that survives — not the isolated peak that fooled your backtest. Runs entirely in your browser.',
+    'meta.title.app': 'Orometra App — MT5 Optimization Audit',
+    'meta.description.app': 'Audit MetaTrader 5 optimization results in your browser. Find parameter plateaus, Top 3 with reasons, evidence strength.',
+    'meta.title.methodology': 'Methodology — Orometra',
+    'meta.description.methodology': 'How Orometra decides: minima, plateaus, evidence strength — and what it does not claim.',
+    'meta.title.privacy': 'Privacy — Orometra',
+    'meta.description.privacy': 'Orometra privacy policy: MT5 optimization analysis runs entirely in your browser. No uploads, no accounts, no cookies — only anonymous, aggregate visit counts.',
 
     'skip': 'Skip to content',
     'brand.sub': 'MT5 optimization audit',
@@ -346,8 +364,14 @@ const STRINGS = {
     'doc.privacy.full': 'Full legal text in the app →',
   },
   es: {
-    'meta.title': 'Orometra — Analizador de robustez de optimizaciones MT5',
-    'meta.description': 'Encuentra las zonas estables de tu EA de MetaTrader 5: mesetas en vez de picos, Top 3 con su porqué. Todo el análisis se ejecuta en tu navegador.',
+    'meta.title.landing': 'Orometra — Auditoría de sobreajuste y robustez para MT5',
+    'meta.description.landing': 'Detecta el sobreajuste de tu optimización de MetaTrader 5 antes de operar en real. Orometra encuentra la meseta de parámetros que aguanta, no el pico aislado que engañó a tu backtest. Todo se ejecuta en tu navegador.',
+    'meta.title.app': 'Orometra App — Auditoría de optimizaciones MT5',
+    'meta.description.app': 'Audita los resultados de optimización de MetaTrader 5 en tu navegador: mesetas de parámetros, Top 3 con su porqué y fuerza de la evidencia.',
+    'meta.title.methodology': 'Metodología — Orometra',
+    'meta.description.methodology': 'Cómo decide Orometra: mínimos, mesetas, fuerza de la evidencia — y lo que no afirma.',
+    'meta.title.privacy': 'Privacidad — Orometra',
+    'meta.description.privacy': 'Política de privacidad de Orometra: el análisis de tus optimizaciones de MT5 se ejecuta entero en tu navegador. Sin subidas, sin cuentas, sin cookies; solo recuento anónimo y agregado de visitas.',
 
     'skip': 'Saltar al contenido',
     'brand.sub': 'Auditoría de optimizaciones MT5',
