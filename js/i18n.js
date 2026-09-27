@@ -68,6 +68,9 @@ export function applyStaticI18n() {
 
 /** Pagina actual, para usar su propio titulo y descripcion (no los de la portada). */
 function currentPage() {
+  if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-page')) {
+    return document.documentElement.getAttribute('data-page');
+  }
   if (typeof location === 'undefined') return 'landing';
   const path = location.pathname;
   if (/\/app\//.test(path)) return 'app';
@@ -95,6 +98,12 @@ function syncDocumentMeta() {
 
 const STRINGS = {
   en: {
+    'doc.404.eyebrow': 'Error 404',
+    'doc.404.h1': 'This page does not exist',
+    'doc.404.lead': 'The link may be old or mistyped. Nothing was lost: Orometra never stores your files, so there is nothing to recover here.',
+    'doc.404.home': 'Back to home',
+    'meta.title.notfound': 'Page not found — Orometra',
+    'meta.description.notfound': 'This page does not exist.',
     'meta.title.landing': 'Orometra — MT5 Overfitting & Robustness Audit',
     'meta.description.landing': 'Detect overfitting in your MetaTrader 5 optimization before you go live. Orometra finds the stable parameter plateau that survives — not the isolated peak that fooled your backtest. Runs entirely in your browser.',
     'meta.title.app': 'Orometra App — MT5 Optimization Audit',
@@ -364,6 +373,12 @@ const STRINGS = {
     'doc.privacy.full': 'Full legal text in the app →',
   },
   es: {
+    'doc.404.eyebrow': 'Error 404',
+    'doc.404.h1': 'Esta página no existe',
+    'doc.404.lead': 'Puede que el enlace sea antiguo o esté mal escrito. No se ha perdido nada: Orometra nunca guarda tus archivos, así que aquí no hay nada que recuperar.',
+    'doc.404.home': 'Volver al inicio',
+    'meta.title.notfound': 'Página no encontrada — Orometra',
+    'meta.description.notfound': 'Esta página no existe.',
     'meta.title.landing': 'Orometra — Auditoría de sobreajuste y robustez para MT5',
     'meta.description.landing': 'Detecta el sobreajuste de tu optimización de MetaTrader 5 antes de operar en real. Orometra encuentra la meseta de parámetros que aguanta, no el pico aislado que engañó a tu backtest. Todo se ejecuta en tu navegador.',
     'meta.title.app': 'Orometra App — Auditoría de optimizaciones MT5',
