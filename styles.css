@@ -378,7 +378,14 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .policy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:14px}
 .field{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
 .field input[type=number]{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px;font-variant-numeric:tabular-nums}
-.field.checkbox{flex-direction:row;align-items:center;gap:9px}
+/* El check no lleva una etiqueta encima como sus vecinos (PF, DD, operaciones):
+   sin un espaciador con su misma altura, queda mas abajo que el texto de los
+   otros campos pase lo que pase con align-items del grid. El espaciador es
+   invisible pero ocupa el mismo alto que una etiqueta real, en vez de un
+   margen fijo que se descuadra si el campo cae solo en su propia fila (movil,
+   una columna). */
+.field-check-spacer{visibility:hidden}
+.field-check-row{display:flex;align-items:center;gap:9px}
 .field.checkbox input{width:16px;height:16px;accent-color:var(--ok-line)}
 
 .status-bar{margin-top:11px;display:flex;align-items:center;gap:13px;font-size:12.5px;color:var(--muted)}
@@ -540,7 +547,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .kpi[title]{cursor:help}
 .kpi-help{display:inline-grid;place-items:center;width:13px;height:13px;margin-left:5px;border-radius:50%;border:1px solid var(--line-strong);color:var(--muted);font-size:9px;font-weight:700;vertical-align:1px}
 
-.grid-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.grid-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 
 .findings{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 /* Hallazgos pegados a la tabla que narran (Diagnostico), no en una lista aparte. */
@@ -1350,14 +1357,9 @@ tr.sel td{color:var(--text-2)}
 .lp-features p{margin:0;font-size:var(--fs-base);line-height:1.58;color:var(--text-2)}
 .lp-risks{
   list-style:none;margin:0;padding:0;
-  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
-  border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0 32px;
 }
-.lp-risks li{
-  padding:18px 20px 4px 0;border-right:1px solid var(--line);
-  min-width:0;
-}
-.lp-risks li:last-child{border-right:0;padding-right:0}
+.lp-risks li{min-width:0}
 .lp-risks h3{
   font-size:var(--fs-base);margin:0 0 8px;color:var(--text);letter-spacing:-.015em;font-weight:600;
 }
@@ -1398,7 +1400,7 @@ tr.sel td{color:var(--text-2)}
 }
 .lp-final h2{
   font-size:var(--fs-2xl);letter-spacing:-.025em;text-transform:none;color:var(--text-hi);
-  margin:0 0 10px;max-width:22ch;
+  margin:0 0 10px;max-width:40ch;
 }
 .lp-final p{margin:0 0 18px;color:var(--text-2);font-size:var(--fs-lg);max-width:48ch}
 .lp-cta-final{animation:lp-rise .8s ease .15s both}
@@ -1429,11 +1431,10 @@ tr.sel td{color:var(--text-2)}
   .lp-hero h1{max-width:16ch}
   .lp-lead{max-width:52ch}
   .lp-risks,.lp-grid,.lp-steps{grid-template-columns:1fr}
-  .lp-risks li{border-right:0;border-bottom:1px solid var(--line);padding:16px 0}
-  .lp-risks li:last-child{border-bottom:0}
-  /* En fila (escritorio) el border-top de cada li forma una sola linea sobre
-     los 3 pasos; apilados (movil) cada uno sacaba la suya. Aqui se separa
-     solo con espacio, sin lineas repetidas dentro del mismo apartado. */
+  /* Apiladas en movil, las lineas de separacion (verticales entre columnas o
+     border-top/bottom por item) se convierten en varias lineas seguidas
+     dentro del mismo apartado. En todo el sitio se separa solo con espacio. */
+  .lp-risks{gap:20px}
   .lp-steps{gap:20px}
   .lp-steps li{border-top:0;padding-top:0}
   .lp-pipeline{grid-template-columns:repeat(3,minmax(0,1fr))}

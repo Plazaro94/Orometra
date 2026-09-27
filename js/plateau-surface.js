@@ -134,10 +134,28 @@ export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
     }
     bars.sort((x, y) => x.depth - y.depth);
 
+    // Dentro de la meseta, la calidad ya varia de una celda a otra (es lo que
+    // decide la altura de la barra); el color no lo reflejaba, asi que una
+    // celda pegada al suelo minimo (borde real de la meseta) se veia igual de
+    // "buena" que el nucleo. Se normaliza dentro del rango de calidad que
+    // realmente tienen las celdas de esta meseta, para que el contraste se
+    // note aunque el rango absoluto sea estrecho.
+    let qMin = Infinity;
+    let qMax = -Infinity;
+    for (const bar of bars) {
+      if (!bar.cell.inPlateau) continue;
+      if (bar.cell.quality < qMin) qMin = bar.cell.quality;
+      if (bar.cell.quality > qMax) qMax = bar.cell.quality;
+    }
+    const qSpan = qMax > qMin ? qMax - qMin : 0;
+
     for (const bar of bars) {
       const { base, top, cell, isRep, isHover } = bar;
-      const baseColor = cell.inPlateau ? th.ok : th.text;
-      const topAlpha = cell.inPlateau ? (th.isLight ? 0.85 : 0.6) : (th.isLight ? 0.4 : 0.24);
+      const inPlateau = cell.inPlateau;
+      const depthT = inPlateau && qSpan ? (cell.quality - qMin) / qSpan : 1;
+      const edgeFactor = inPlateau ? 0.5 + 0.5 * depthT : 1;
+      const baseColor = inPlateau ? th.ok : th.text;
+      const topAlpha = (inPlateau ? (th.isLight ? 0.85 : 0.6) : (th.isLight ? 0.4 : 0.24)) * edgeFactor;
       const sideAlpha = topAlpha * 0.55;
       const frontAlpha = topAlpha * 0.38;
 

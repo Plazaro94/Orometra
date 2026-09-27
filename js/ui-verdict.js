@@ -58,10 +58,32 @@ export function displayVerdictLevel(a) {
   return level;
 }
 
+/**
+ * Titular y resumen coherentes con el nivel MOSTRADO, no con el que calculó el
+ * motor. displayVerdictLevel() rebaja "sólida" a "moderada" cuando falta un
+ * holdout limpio, pero a.verdict.headline/summary siguen siendo el texto que
+ * el motor generó para "sólida" -- usarlos tal cual contradice al sello (un
+ * recuadro moderado/ámbar con el titular "Evidencia sólida" encima).
+ */
+export function displayVerdictCopy(a) {
+  const level = displayVerdictLevel(a);
+  const v = a.verdict;
+  if (level === v.level) return { level, headline: v.headline, summary: v.summary };
+  // Unico caso posible hoy: sólida -> moderada por falta de holdout.
+  return {
+    level,
+    headline: L('Evidencia sólida, aún sin validar', 'Solid evidence, not yet validated'),
+    summary: L(
+      'La región propuesta se apoya en vecinos que también superan tus mínimos, y el resultado aguanta al mover los umbrales — es lo máximo que da de sí la comparación in-sample/forward. Se muestra como moderada, no sólida, porque el forward ya participó en la selección: todavía no hay un tramo independiente que la confirme.',
+      'The proposed region rests on neighbors that also clear your minima, and the result holds when thresholds are moved — that is as far as the in-sample/forward comparison can go. It is shown as moderate, not solid, because forward already took part in selection: there is no independent segment yet to confirm it.',
+    ),
+  };
+}
+
 export function renderVerdict(a) {
   const v = a.verdict;
-  const displayLevel = displayVerdictLevel(a);
-  const c = verdictCopy(displayLevel);
+  const dv = displayVerdictCopy(a);
+  const c = verdictCopy(dv.level);
   const best = a.plateaus[0];
   const hold = holdoutFact(a);
   const demoNote = state.isDemo
@@ -126,8 +148,8 @@ export function renderVerdict(a) {
       <div class="verdict-stamp">${c.label}</div>
     </div>
     <div class="verdict-body">
-      <h2>${esc(v.headline)}</h2>
-      ${v.summary ? `<p>${esc(v.summary)}</p>` : ''}
+      <h2>${esc(dv.headline)}</h2>
+      ${dv.summary ? `<p>${esc(dv.summary)}</p>` : ''}
     </div>
     <div class="verdict-aside">
       ${pickBlock}

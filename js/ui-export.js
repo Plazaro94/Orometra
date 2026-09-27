@@ -3,7 +3,7 @@
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { t, L, localeTag } from './i18n.js';
 import { state, api, $, esc, paramValue } from './ui-state.js';
-import { verdictCopy, displayVerdictLevel, holdoutFact, whyGradeHighlights } from './ui-verdict.js';
+import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights } from './ui-verdict.js';
 
 const plain = (s) => String(s ?? '').replace(/<[^>]+>/g, '');
 
@@ -15,9 +15,8 @@ const plain = (s) => String(s ?? '').replace(/<[^>]+>/g, '');
  * instantaneo, gratis, y los datos de la estrategia no salen del navegador.
  */
 export function buildPlainSummary(a) {
-  const v = a.verdict;
-  const displayLevel = displayVerdictLevel(a);
-  const c = verdictCopy(displayLevel);
+  const dv = displayVerdictCopy(a);
+  const c = verdictCopy(dv.level);
   const top = a.plateaus.slice(0, 3);
   const hold = holdoutFact(a);
   const { pros, cons } = whyGradeHighlights(a);
@@ -27,8 +26,8 @@ export function buildPlainSummary(a) {
   lines.push(L('RESUMEN OROMETRA', 'OROMETRA SUMMARY'));
   lines.push('='.repeat(40));
   lines.push('');
-  lines.push(`${c.label}: ${plain(v.headline)}`);
-  if (v.summary) lines.push(plain(v.summary));
+  lines.push(`${c.label}: ${plain(dv.headline)}`);
+  if (dv.summary) lines.push(plain(dv.summary));
   lines.push('');
 
   // Top 3, no solo "la mejor": cual conviene tambien depende de criterios operativos
@@ -64,7 +63,7 @@ export function buildPlainSummary(a) {
   lines.push('');
 
   lines.push(L('QUÉ HACER AHORA', 'WHAT TO DO NOW'));
-  lines.push(plain(v.nextStep));
+  lines.push(plain(a.verdict.nextStep));
   lines.push('');
 
   lines.push('-'.repeat(40));
