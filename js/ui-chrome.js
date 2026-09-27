@@ -540,8 +540,14 @@ export function renderLegal() {
           'You may use the results freely, including commercially, under your own responsibility.',
         )}</li>
         <li>${L(
-          'El código de la aplicación y su metodología son propiedad de su autor.',
-          'The application code and its methodology are the property of its author.',
+          `El código de la aplicación y su metodología son propiedad de su autor, publicados bajo licencia
+        <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener">PolyForm Noncommercial</a>:
+        puedes verlo, usarlo y modificarlo para fines no comerciales; el uso comercial del código en sí
+        necesita permiso.`,
+          `The application code and its methodology are the property of its author, published under the
+        <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener">PolyForm Noncommercial</a>
+        license: you may view, use and modify it for noncommercial purposes; commercial use of the code
+        itself needs permission.`,
         )}</li>
         <li>${L(
           `Si encuentras un error en los cálculos, comunícalo: un fallo en una herramienta como esta puede
