@@ -643,6 +643,8 @@ export function renderLegal() {
 // y dos versiones del metodo acaban contradiciendose.
 const METHOD_STEPS = ['lectura', 'minimos', 'calidad', 'mesetas', 'forward', 'suerte', 'umbrales', 'niveles', 'backtest'];
 const METHOD_LIMITS = 6;
+// La pagina publica tiene una version por idioma (/methodology/ y /es/methodology/).
+const methodologyHref = () => (getLocale() === 'es' ? '../es/methodology/' : '../methodology/');
 
 export function renderMethod() {
   return `<div class="detail-head">
@@ -655,10 +657,10 @@ export function renderMethod() {
         ${METHOD_STEPS.map((id, i) => `<li>
           <span class="method-num">${String(i + 1).padStart(2, '0')}</span>
           <div><h3>${esc(t(`doc.method.s${i + 1}.title`))}</h3><p>${esc(t(`doc.method.s${i + 1}.short`))}</p></div>
-          <a class="text-btn method-more" href="../methodology/#${id}">${L('Leer', 'Read')} &rarr;<span class="sr-only"> ${esc(t(`doc.method.s${i + 1}.title`))}</span></a>
+          <a class="text-btn method-more" href="${methodologyHref()}#${id}">${L('Leer', 'Read')} &rarr;<span class="sr-only"> ${esc(t(`doc.method.s${i + 1}.title`))}</span></a>
         </li>`).join('')}
       </ol>
-      <p class="method-full"><a href="../methodology/">${esc(t('doc.method.app.full'))}</a></p>
+      <p class="method-full"><a href="${methodologyHref()}">${esc(t('doc.method.app.full'))}</a></p>
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${esc(t('doc.method.lim.title'))}</h2></div></div>

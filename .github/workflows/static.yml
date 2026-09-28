@@ -49,8 +49,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p site
-          cp index.html 404.html styles.css favicon.svg favicon-32.png apple-touch-icon.png icon-192.png icon-512.png manifest.json og-image.jpg robots.txt sitemap.xml .nojekyll CNAME site/
-          cp -r app js core methodology privacy fonts site/
+          cp index.html 404.html styles.css favicon.svg favicon-32.png apple-touch-icon.png icon-192.png icon-512.png manifest.json og-image.jpg og-image-es.jpg robots.txt sitemap.xml .nojekyll CNAME site/
+          cp -r app js core methodology privacy es fonts site/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

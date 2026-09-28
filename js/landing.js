@@ -37,6 +37,20 @@ try {
 
 $$('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
 $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => {
+  // Paginas con version propia en cada idioma (/ y /es/): cambiar de idioma es ir a la
+  // otra direccion, recordando la eleccion para las proximas visitas.
+  const root = document.documentElement;
+  const fixed = root.getAttribute('data-lang-fixed');
+  const alt = root.getAttribute('data-alt-href');
+  if (fixed && alt && b.dataset.langSet !== fixed) {
+    try { localStorage.setItem('orometra.lang', b.dataset.langSet); } catch { /* privado */ }
+    location.href = alt + location.hash;
+    return;
+  }
+  if (fixed) {
+    try { localStorage.setItem('orometra.lang', fixed); } catch { /* privado */ }
+    return;
+  }
   setLocale(b.dataset.langSet);
   syncLang();
   syncSurfaceHint();
