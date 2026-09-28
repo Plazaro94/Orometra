@@ -1,0 +1,156 @@
+<!doctype html>
+<!-- GENERADO por tools/build-es.js a partir de guides/mt5-genetic-vs-complete-optimization/index.html. No editar a mano: cambia la pagina inglesa o js/i18n.js y vuelve a ejecutarlo. -->
+<html lang="es" data-page="guide-genetic" data-lang-fixed="es" data-alt-href="/guides/mt5-genetic-vs-complete-optimization/">
+<head>
+<meta charset="utf-8">
+<!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<meta name="description" content="La diferencia entre la optimización completa y la genética en el probador de estrategias de MetaTrader 5, cuándo usar cada una y por qué la genética exige más prudencia con el mejor resultado.">
+<title>Optimización genética o completa en MT5: cuál usar — Orometra</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="canonical" href="https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/">
+<link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/">
+<link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/">
+<link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Optimización genética o completa en MT5: cuál usar — Orometra">
+<meta property="og:description" content="La diferencia entre la optimización completa y la genética en el probador de estrategias de MetaTrader 5, cuándo usar cada una y por qué la genética exige más prudencia con el mejor resultado.">
+<meta property="og:locale" content="es_ES">
+<meta property="og:image" content="https://orometra.com/og-image-es.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://orometra.com/og-image-es.jpg">
+<meta name="color-scheme" content="dark">
+<link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json" data-ld="guide-genetic">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Optimización genética o completa en MT5: cuál usar","description":"La diferencia entre la optimización completa y la genética en el probador de estrategias de MetaTrader 5, cuándo usar cada una y por qué la genética exige más prudencia con el mejor resultado.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/","url":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image-es.jpg","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Optimización genética o completa en MT5: cuál usar","item":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/"}]}]}</script>
+<script src="/js/theme-init.js"></script>
+</head>
+<body class="landing-page">
+<a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
+
+<header class="lp-top">
+  <div class="lp-shell">
+  <a class="lp-brand" href="/es/">
+    <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
+    <span class="brand-name">Orometra</span>
+  </a>
+  <div class="lp-top-actions">
+    <div class="lang-row" role="radiogroup" aria-label="Idioma" data-i18n="lang.label" data-i18n-attr="aria-label">
+      <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
+      <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
+    </div>
+    <div class="theme-row" role="radiogroup" aria-label="Tema de color" data-i18n="theme.label" data-i18n-attr="aria-label">
+      <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" type="button" title="Oscuro" data-i18n="theme.dark" data-i18n-attr="title">
+        <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Oscuro</span>
+      </button>
+      <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" type="button" title="Claro" data-i18n="theme.light" data-i18n-attr="title">
+        <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Claro</span>
+      </button>
+    </div>
+    <a class="ghost-btn lp-cta-top" href="/app/" data-i18n="lp.cta">Analizar mis resultados</a>
+  </div>
+  </div>
+</header>
+
+<main id="main" class="lp-main lp-doc guide">
+  <p class="lp-eyebrow"><a href="/es/guias/" data-i18n="guide.genetic.eyebrow">Guía</a></p>
+  <h1 data-i18n="guide.genetic.h1">Optimización genética o completa en MT5: cuál usar</h1>
+  <p class="lp-lead" data-i18n="guide.genetic.lead">Al optimizar en MT5 eliges entre probar todas las combinaciones o dejar que un algoritmo genético busque las mejores. La elección no solo cambia cuánto esperas: cambia qué puedes concluir de los resultados.</p>
+
+  <aside class="guide-summary" aria-labelledby="guide-sum-title">
+    <h2 id="guide-sum-title" data-i18n="guide.genetic.sum.title">En resumen</h2>
+    <ol>
+      <li data-i18n="guide.genetic.sum.1">La completa prueba todas las combinaciones: lenta, pero no deja huecos.</li>
+      <li data-i18n="guide.genetic.sum.2">La genética prueba una parte, guiada por el criterio que optimizas: rápida, pero deja zonas sin explorar.</li>
+      <li data-i18n="guide.genetic.sum.3">Si la completa tarda horas y no días, úsala.</li>
+      <li data-i18n="guide.genetic.sum.4">Si usas la genética, fíate aún menos de la primera fila y comprueba sus vecinas.</li>
+    </ol>
+  </aside>
+
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.s1.title">Optimización completa</h2>
+    <p data-i18n="guide.genetic.s1.body">El algoritmo lento y completo prueba cada combinación de tus rangos. Con 3 parámetros de 20 valores cada uno son 8.000 pasadas; con 5, 3,2 millones. Su ventaja es que el mapa queda entero: puedes ver cómo cambia el resultado al mover cada parámetro y si la mejor zona es amplia o un punto suelto.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.s2.title">Optimización genética</h2>
+    <p data-i18n="guide.genetic.s2.body">El algoritmo genético rápido empieza con combinaciones al azar, se queda con las que mejor puntúan según tu criterio y las cruza y muta para generar las siguientes, generación tras generación, hasta que dejan de mejorar. Puede encontrar buenas zonas en una fracción del tiempo, pero no lo prueba todo: se concentra donde el criterio es alto y apenas visita el resto.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.s3.title">Por qué la genética facilita la sobreoptimización</h2>
+    <p data-i18n="guide.genetic.s3.body">El algoritmo persigue activamente la combinación que más puntúa, y esa búsqueda también premia a la que tuvo suerte. Además, deja el mapa a trozos: alrededor de la mejor pasada puede haber pocas vecinas probadas, y sin ellas no puedes saber si estás en una meseta o en un pico. Por eso, con la genética, la primera fila merece todavía menos confianza.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.s4.title">Cuál elegir</h2>
+    <p data-i18n="guide.genetic.s4.body">Si la completa cabe en un tiempo razonable, úsala. Si no, antes de pasar a la genética, mira si puedes reducir el problema: quitar parámetros que apenas influyen, ampliar el paso o recortar rangos absurdos. Menos combinaciones no solo es más rápido: también da menos oportunidades a que gane el azar. Si aun así necesitas la genética, úsala para explorar: localiza la zona prometedora y después optimiza esa zona con la completa y un rango más estrecho.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.s5.title">Cuánto se exploró</h2>
+    <p data-i18n="guide.genetic.s5.body">Compara el número de pasadas con el total de combinaciones de tus rangos: si la genética hizo 5.000 de 3 millones, ha visto menos del 0,2 %. Orometra lo calcula si le das también el .set con tus rangos, y con búsquedas genéticas es más prudente: no se inventa vecinas que no se probaron, y te lo avisa.</p>
+  </section>
+
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.err.title">Errores habituales</h2>
+    <ul class="lp-list">
+      <li data-i18n="guide.genetic.err.1">Usar la genética por costumbre cuando la completa tardaría poco.</li>
+      <li data-i18n="guide.genetic.err.2">Optimizar demasiados parámetros «porque la genética puede con ello». Puede calcularlo, pero eso no hace el resultado más fiable.</li>
+      <li data-i18n="guide.genetic.err.3">Tomar la primera fila de una genética como la respuesta. Es la que el algoritmo persiguió, y la que más puede deber su resultado a la suerte.</li>
+      <li data-i18n="guide.genetic.err.4">Comparar dos ejecuciones genéticas y concluir que algo cambió: como empiezan al azar, dos ejecuciones idénticas pueden dar tablas distintas.</li>
+    </ul>
+  </section>
+
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.next.title">Siguiente paso</h2>
+    <p data-i18n="guide.genetic.next.body">Suelta en Orometra los XML de tu optimización, completa o genética. Tiene en cuenta cuánto del espacio se probó, es más prudente cuando la búsqueda fue genética y te dice si detrás de la mejor pasada hay una zona estable o solo un punto afortunado.</p>
+  </section>
+
+  <section class="lp-doc-cta">
+    <a class="primary-btn" href="/app/" data-i18n="guide.genetic.cta">Analizar mis resultados</a>
+    <a class="ghost-btn" href="/es/methodology/" data-i18n="guide.genetic.more">Cómo decide Orometra →</a>
+  </section>
+
+  <nav class="guide-related" aria-labelledby="guide-related-title">
+    <h2 id="guide-related-title" data-i18n="guides.more">Más guías</h2>
+    <ul>
+      <li><a href="/es/guias/exportar-optimizacion-mt5-xml/" data-i18n="guides.export.title">Cómo exportar los resultados de la optimización de MT5 a XML</a></li>
+      <li><a href="/es/guias/sobreoptimizacion-mt5/" data-i18n="guides.overfit.title">Sobreoptimización en MT5: qué es y cómo detectarla</a></li>
+      <li><a href="/es/guias/forward-testing-mt5/" data-i18n="guides.forward.title">Forward testing en MT5: qué es y cómo configurarlo</a></li>
+      <li><a href="/es/guias/informe-probador-estrategias-mt5/" data-i18n="guides.report.title">Cómo leer el informe del probador de estrategias de MT5</a></li>
+      <li><a href="/es/guias/criterio-optimizacion-mt5/" data-i18n="guides.criterion.title">Qué criterio de optimización elegir en MT5</a></li>
+    </ul>
+  </nav>
+</main>
+
+<footer class="lp-foot">
+  <div class="lp-shell lp-foot-inner">
+    <div class="lp-foot-brand">
+      <strong>Orometra</strong>
+      <span data-i18n="lp.foot.tagline">Mesetas antes que picos. El análisis se queda en tu navegador.</span>
+    </div>
+    <nav class="lp-foot-nav" aria-label="Footer">
+      <a href="/es/">Orometra</a>
+      <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
+      <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
+      <a href="/es/privacy/" data-i18n="doc.privacy.nav">Privacidad</a>
+      <a href="/app/" data-i18n="lp.cta.footer">App</a>
+      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module" src="/js/landing.js"></script>
+<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aff9422f75d4536bfdcd4b1ea119da9"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

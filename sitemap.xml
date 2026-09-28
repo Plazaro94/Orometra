@@ -128,4 +128,36 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-genetic-vs-complete-optimization/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-optimization-criterion/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/criterio-optimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/criterio-optimizacion-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/criterio-optimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
