@@ -325,7 +325,11 @@ function ensureGlossOutsideClickListener() {
  * de una tabla que se puede deslizar. */
 function markScrollableTables() {
   $$('.table-wrap, .range-table-wrap').forEach((el) => {
-    el.classList.toggle('has-hscroll', el.scrollWidth > el.clientWidth + 1);
+    const scrolls = el.scrollWidth > el.clientWidth + 1;
+    el.classList.toggle('has-hscroll', scrolls);
+    // Si se desliza, tambien con teclado: sin foco no se puede recorrer con las flechas.
+    if (scrolls) el.setAttribute('tabindex', '0');
+    else el.removeAttribute('tabindex');
   });
 }
 
