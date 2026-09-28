@@ -32,7 +32,7 @@
   /* Tokens semánticos del producto (capa de significado, no solo color) */
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#d4b896; --evidence-weak-bg:#1c1914; --evidence-weak-line:#4a4032; --evidence-weak-text:#ead9c0;
+  --evidence-weak:#9fb0c8; --evidence-weak-bg:#141c2b; --evidence-weak-line:#34455f; --evidence-weak-text:#c8d4e4;
   --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
   --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
@@ -96,7 +96,7 @@
   --profit:#17794a;      --loss:#b3352a;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#8a6a3c; --evidence-weak-bg:#f7f1e6; --evidence-weak-line:#dcc9a4; --evidence-weak-text:#6e5328;
+  --evidence-weak:#56657a; --evidence-weak-bg:#eef1f6; --evidence-weak-line:#c7d0dc; --evidence-weak-text:#3e4b5d;
   --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
   --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
@@ -495,10 +495,14 @@ details.panel > .panel-body{padding:0 20px 20px}
   display:grid;grid-template-columns:auto minmax(0,1.2fr) minmax(220px,0.9fr);
   gap:20px 24px;align-items:stretch;border-radius:var(--radius);padding:22px 24px;margin-bottom:12px;border:1px solid;
 }
-.verdict-banner.v-no{background:var(--evidence-none-bg);border-color:var(--evidence-none-line)}
-.verdict-banner.v-weak{background:var(--evidence-weak-bg);border-color:var(--evidence-weak-line)}
-.verdict-banner.v-warn{background:var(--evidence-moderate-bg);border-color:var(--evidence-moderate-line)}
-.verdict-banner.v-go{background:var(--evidence-strong-bg);border-color:var(--evidence-strong-line)}
+/* Tarjeta neutra, como el resto del informe: el nivel se lee en el sello y en la barra
+   lateral. Rellenar la tarjeta entera con el color del nivel convertia el ambar de
+   "moderada" en un marron apagado que chocaba con la paleta azul y turquesa. */
+.verdict-banner{background:var(--surface);border-color:var(--line);border-left-width:4px}
+.verdict-banner.v-no{border-left-color:var(--evidence-none)}
+.verdict-banner.v-weak{border-left-color:var(--evidence-weak)}
+.verdict-banner.v-warn{border-left-color:var(--evidence-moderate)}
+.verdict-banner.v-go{border-left-color:var(--evidence-strong)}
 .verdict-stamp-col{display:flex;align-items:flex-start}
 .verdict-stamp{
   font-size:12px;font-weight:800;letter-spacing:.14em;padding:14px 16px;border-radius:var(--radius);
