@@ -74,6 +74,10 @@ M1. Si no propone meseta, se registra como «se abstiene».
   **arrepentimiento normalizado** = (oráculo − elegida) / (oráculo − mediana de la rejilla).
   0 es perfecto; 1 es lo mismo que elegir la configuración mediana.
 - **Coherencia de niveles:** media de `edge_unseen` de la elegida por nivel.
+- **Abstenciones:** si en un caso del grupo con ventaja Orometra no propone meseta, para la
+  comparación principal cuenta con arrepentimiento 1 (como si eligiera la mediana), que es lo
+  más exigente para Orometra. Se informa aparte de la tasa de abstención y del arrepentimiento
+  solo en los casos en que propone. *(Aclaración añadida el 2026-09-28, antes de ejecutar.)*
 
 ## 6. Criterios de aprobado (cerrados)
 
@@ -111,3 +115,9 @@ M1. Si no propone meseta, se registra como «se abstiene».
 - Es sintético: prueba el motor contra el mundo que describe este documento. La confirmación
   final es la prueba con optimizaciones reales y un periodo no usado (pendiente de datos).
 - La suerte y las operaciones son modelos simplificados del mercado.
+
+## Enmiendas
+
+- **2026-09-28, antes de ver resultados.** Fallo del generador (no del motor): en S7, con una
+  rejilla de menos de 40 configuraciones, el muestreo genético pedía más pasadas de las que
+  existían y no terminaba. Se limita al tamaño de la rejilla. La calibración se repite entera.
