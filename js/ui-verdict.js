@@ -120,9 +120,8 @@ export function renderVerdict(a) {
 
   const src = state.source;
   const stamp = src
+    // Los nombres de archivo ya estan justo encima, en la ficha plegada de carga.
     ? `<div class="run-stamp">
-        <span class="run-files">${esc(src.is)}${src.oos ? ' <b>+</b> ' + esc(src.oos) : ''}</span>
-        <span class="run-sep">·</span>
         <span>${esc(configsLabel(a))}</span>
         <span class="run-sep">·</span>
         <span>${esc(L('analizado', 'analyzed'))} ${esc(src.at.toLocaleString(localeTag(), { dateStyle: 'short', timeStyle: 'short' }))}</span>
@@ -133,11 +132,23 @@ export function renderVerdict(a) {
       </div>`
     : '';
 
+  // Lo que el usuario viene a buscar (que configuracion y su .set) va aqui, en la
+  // primera tarjeta, no cuatro bloques mas abajo. Sin forward no hay .set de despliegue
+  // (ver doExport): se ofrece el rango de refinamiento, que si tiene sentido.
+  const pickActions = best
+    ? `<div class="verdict-actions">
+        ${a.meta.hasForward
+    ? `<button class="primary-btn" data-export="set" data-plateau-index="${best.rank - 1}">${L('Descargar .set', 'Download .set')}</button>`
+    : `<button class="primary-btn" data-export="refine" data-plateau-index="${best.rank - 1}">${L('Descargar rango para reoptimizar', 'Download range to re-optimize')}</button>`}
+        <button class="ghost-btn" data-copy="${best.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
+      </div>`
+    : '';
   const pickBlock = best
     ? `<div class="verdict-fact">
         <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
         <strong class="verdict-fact-value mono">Pass ${esc(best.record.id)}</strong>
         <span class="verdict-fact-note">M${best.rank} · ${int(best.size)} ${L('configs', 'configs')} · ${num(best.robust, 0)} ${L('robustez', 'robustness')}</span>
+        ${pickActions}
       </div>`
     : `<div class="verdict-fact">
         <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
@@ -166,14 +177,15 @@ export function renderVerdict(a) {
   const shown = new Set([...highlights.pros, ...highlights.cons]);
   const restFindings = v.findings.filter((f) => !shown.has(f) && !categorizeFinding(f));
 
-  return `${demoNote}${stamp}
+  // El titular ya es el titulo de la pagina (#reportTitle): aqui no se repite.
+  return `${stamp}
   ${renderOutcomeBanner(a)}
   <section class="verdict-banner ${c.cls}">
     <div class="verdict-stamp-col">
       <div class="verdict-stamp">${c.label}</div>
     </div>
     <div class="verdict-body">
-      <h2>${esc(dv.headline)}</h2>
+      <h2 class="sr-only">${esc(dv.headline)}</h2>
       ${dv.summary ? `<p>${esc(dv.summary)}</p>` : ''}
     </div>
     <div class="verdict-aside">
@@ -185,6 +197,8 @@ export function renderVerdict(a) {
       </div>
     </div>
   </section>
+
+  ${demoNote}
 
   ${renderEvidenceSheet(a, best)}
 

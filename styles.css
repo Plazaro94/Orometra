@@ -32,7 +32,7 @@
   /* Tokens semánticos del producto (capa de significado, no solo color) */
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#d4b896; --evidence-weak-bg:#1c1914; --evidence-weak-line:#4a4032; --evidence-weak-text:#ead9c0;
+  --evidence-weak:#9fb0c8; --evidence-weak-bg:#141c2b; --evidence-weak-line:#34455f; --evidence-weak-text:#c8d4e4;
   --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
   --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
@@ -96,7 +96,7 @@
   --profit:#17794a;      --loss:#b3352a;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#8a6a3c; --evidence-weak-bg:#f7f1e6; --evidence-weak-line:#dcc9a4; --evidence-weak-text:#6e5328;
+  --evidence-weak:#56657a; --evidence-weak-bg:#eef1f6; --evidence-weak-line:#c7d0dc; --evidence-weak-text:#3e4b5d;
   --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
   --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
@@ -217,10 +217,6 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 .topbar-report h1{
   font-size:clamp(20px,2.4vw,28px);letter-spacing:-.03em;line-height:1.15;
   max-width:36ch;margin:0;
-}
-.topbar-report-meta{
-  margin:6px 0 0;font-size:12px;color:var(--muted);font-family:var(--mono);
-  max-width:56ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 
 /* Modo informe: tras analizar, la UI deja de vender y pasa a operar */
@@ -499,10 +495,14 @@ details.panel > .panel-body{padding:0 20px 20px}
   display:grid;grid-template-columns:auto minmax(0,1.2fr) minmax(220px,0.9fr);
   gap:20px 24px;align-items:stretch;border-radius:var(--radius);padding:22px 24px;margin-bottom:12px;border:1px solid;
 }
-.verdict-banner.v-no{background:var(--evidence-none-bg);border-color:var(--evidence-none-line)}
-.verdict-banner.v-weak{background:var(--evidence-weak-bg);border-color:var(--evidence-weak-line)}
-.verdict-banner.v-warn{background:var(--evidence-moderate-bg);border-color:var(--evidence-moderate-line)}
-.verdict-banner.v-go{background:var(--evidence-strong-bg);border-color:var(--evidence-strong-line)}
+/* Tarjeta neutra, como el resto del informe: el nivel se lee en el sello y en la barra
+   lateral. Rellenar la tarjeta entera con el color del nivel convertia el ambar de
+   "moderada" en un marron apagado que chocaba con la paleta azul y turquesa. */
+.verdict-banner{background:var(--surface);border-color:var(--line);border-left-width:4px}
+.verdict-banner.v-no{border-left-color:var(--evidence-none)}
+.verdict-banner.v-weak{border-left-color:var(--evidence-weak)}
+.verdict-banner.v-warn{border-left-color:var(--evidence-moderate)}
+.verdict-banner.v-go{border-left-color:var(--evidence-strong)}
 .verdict-stamp-col{display:flex;align-items:flex-start}
 .verdict-stamp{
   font-size:12px;font-weight:800;letter-spacing:.14em;padding:14px 16px;border-radius:var(--radius);
@@ -514,9 +514,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .v-weak .verdict-stamp{background:var(--evidence-weak-bg);color:var(--evidence-weak-text);border-color:var(--evidence-weak-line)}
 .v-warn .verdict-stamp{background:var(--evidence-moderate-bg);color:var(--evidence-moderate-text);border-color:var(--evidence-moderate-line)}
 .v-go .verdict-stamp{background:var(--evidence-strong-bg);color:var(--evidence-strong);border-color:var(--evidence-strong-line)}
-.verdict-body{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.verdict-body{min-width:0;display:flex;flex-direction:column;justify-content:flex-start;gap:6px;padding-top:4px}
 .verdict-body h2{font-size:22px;letter-spacing:-.025em;margin:0;line-height:1.2}
-.verdict-body p{margin:0;color:var(--text-2);font-size:13.5px;line-height:1.5}
+.verdict-body p{margin:0;color:var(--text-2);font-size:15px;line-height:1.6}
 .verdict-aside{
   display:flex;flex-direction:column;gap:10px;min-width:0;
   padding-left:20px;border-left:1px solid var(--line);
@@ -536,6 +536,11 @@ details.panel > .panel-body{padding:0 20px 20px}
 .v-weak .verdict-fact-risk .verdict-fact-value{color:var(--evidence-weak-text)}
 .verdict-fact-next .verdict-fact-value{font-weight:600;color:var(--text)}
 .verdict-fact-cta{align-self:flex-start;margin-top:2px;font-weight:600}
+.verdict-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.verdict-actions button{padding:9px 14px;font-size:13.5px}
+/* Viendo un informe, "Ver un informe de ejemplo" sobra: para volver a empezar esta
+   "Empezar de cero". */
+.has-analysis #demoBtn{display:none}
 
 .kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:12px}
 .kpi{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:15px}
@@ -955,6 +960,9 @@ tr.sel td{color:var(--text-2)}
     overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;
   }
   .sidebar-scroll::-webkit-scrollbar{display:none}
+  .sidebar-scroll[data-more="right"]{-webkit-mask-image:linear-gradient(to right,#000 82%,transparent);mask-image:linear-gradient(to right,#000 82%,transparent)}
+  .sidebar-scroll[data-more="left"]{-webkit-mask-image:linear-gradient(to left,#000 82%,transparent);mask-image:linear-gradient(to left,#000 82%,transparent)}
+  .sidebar-scroll[data-more="both"]{-webkit-mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent)}
   .sidebar-label{display:none}
   .sidebar-label-gap{display:none;margin:0;padding:0;border:0}
   .sidebar-section{flex-direction:row;padding:6px 10px;gap:6px}
@@ -1007,7 +1015,10 @@ tr.sel td{color:var(--text-2)}
   .hero-back{gap:6px}
   .topbar h1{font-size:27px}
   .verdict-banner{grid-template-columns:1fr;gap:14px}
-  .verdict-aside{padding-left:0;border-left:0;padding-top:12px;border-top:1px solid var(--line)}
+  /* En columna, la configuracion elegida y su .set van antes que la explicacion: es lo
+     que se viene a buscar. */
+  .verdict-aside{padding-left:0;border-left:0;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .verdict-body{order:3}
   .t3-podium{grid-template-columns:1fr}
   .empty-state{padding:38px 20px}
 }
@@ -1322,11 +1333,9 @@ tr.sel td{color:var(--text-2)}
   .lp-surface{cursor:pointer}
 }
 
-/* Movil: tras el analisis los minimos se pliegan con los archivos ("Cambiar archivos o
-   minimos" los abre). En pantalla estrecha empujaban el veredicto un scroll entero. */
-@media (max-width:720px){
-  .has-analysis.intake-collapsed .policy-panel{display:none}
-}
+/* Tras el analisis los minimos se pliegan con los archivos ("Cambiar archivos o minimos"
+   los abre). Abiertos ocupaban unos 350 px encima de CADA pestana, tambien en ordenador. */
+.has-analysis.intake-collapsed .policy-panel{display:none}
 
 /* Solo para lectores de pantalla (anuncio de la pestaña activa). */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
