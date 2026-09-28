@@ -58,169 +58,161 @@
 <main id="main" class="lp-main lp-doc">
   <p class="lp-eyebrow" data-i18n="doc.method.eyebrow">Methodology</p>
   <h1 data-i18n="doc.method.h1">How the engine decides</h1>
-  <p class="lp-lead" data-i18n="doc.method.lead">We do not re-rank your MT5 table. We look for stable zones — and tell you how strong the evidence is.</p>
+  <p class="lp-lead" data-i18n="doc.method.lead">We do not re-rank your MT5 table. We look for stable zones, and tell you how much evidence backs them. These are the steps, in the order the engine runs them.</p>
 
-  <ol class="lp-pipeline" aria-label="Engine pipeline">
-    <li>
-      <span class="lp-pipe-num">01</span>
-      <strong data-i18n="doc.method.pipe.1.title">Gates</strong>
-      <span data-i18n="doc.method.pipe.1.body">Your floors, not a ranking</span>
-    </li>
-    <li>
-      <span class="lp-pipe-num">02</span>
-      <strong data-i18n="doc.method.pipe.2.title">Quality</strong>
-      <span data-i18n="doc.method.pipe.2.body">Rebuilt without Result</span>
-    </li>
-    <li>
-      <span class="lp-pipe-num">03</span>
-      <strong data-i18n="doc.method.pipe.3.title">Neighborhood</strong>
-      <span data-i18n="doc.method.pipe.3.body">Do neighbors also hold?</span>
-    </li>
-    <li>
-      <span class="lp-pipe-num">04</span>
-      <strong data-i18n="doc.method.pipe.4.title">Plateau</strong>
-      <span data-i18n="doc.method.pipe.4.body">Connected good zones</span>
-    </li>
-    <li>
-      <span class="lp-pipe-num">05</span>
-      <strong data-i18n="doc.method.pipe.5.title">Pick</strong>
-      <span data-i18n="doc.method.pipe.5.body">Center of the plateau, not the peak</span>
-    </li>
-    <li>
-      <span class="lp-pipe-num">06</span>
-      <strong data-i18n="doc.method.pipe.6.title">Unseen</strong>
-      <span data-i18n="doc.method.pipe.6.body">The only clean check</span>
-    </li>
-  </ol>
+  <nav class="doc-index" data-i18n="doc.method.index" data-i18n-attr="aria-label" aria-label="Steps">
+    <ol>
+    <li><a href="#lectura"><span class="doc-index-num">01</span><span class="doc-index-text"><strong data-i18n="doc.method.s1.title">It reads your export as it is</strong><span data-i18n="doc.method.s1.short">Any language, any decimal separator</span></span></a></li>
+    <li><a href="#minimos"><span class="doc-index-num">02</span><span class="doc-index-text"><strong data-i18n="doc.method.s2.title">Your minimums before any ranking</strong><span data-i18n="doc.method.s2.short">Only what clears your floors</span></span></a></li>
+    <li><a href="#calidad"><span class="doc-index-num">03</span><span class="doc-index-text"><strong data-i18n="doc.method.s3.title">Quality without the Result column</strong><span data-i18n="doc.method.s3.short">Several objective metrics at once</span></span></a></li>
+    <li><a href="#mesetas"><span class="doc-index-num">04</span><span class="doc-index-text"><strong data-i18n="doc.method.s4.title">Plateaus, not peaks</strong><span data-i18n="doc.method.s4.short">Neighbors must work too</span></span></a></li>
+    <li><a href="#forward"><span class="doc-index-num">05</span><span class="doc-index-text"><strong data-i18n="doc.method.s5.title">The forward confirms or demotes</strong><span data-i18n="doc.method.s5.short">Tested on data it did not see</span></span></a></li>
+    <li><a href="#suerte"><span class="doc-index-num">06</span><span class="doc-index-text"><strong data-i18n="doc.method.s6.title">It measures how much could be luck</strong><span data-i18n="doc.method.s6.short">Does your best beat pure chance?</span></span></a></li>
+    <li><a href="#umbrales"><span class="doc-index-num">07</span><span class="doc-index-text"><strong data-i18n="doc.method.s7.title">It tests itself</strong><span data-i18n="doc.method.s7.short">The answer must not depend on its settings</span></span></a></li>
+    <li><a href="#niveles"><span class="doc-index-num">08</span><span class="doc-index-text"><strong data-i18n="doc.method.s8.title">What each evidence level means</strong><span data-i18n="doc.method.s8.short">How much your data back the answer</span></span></a></li>
+    <li><a href="#backtest"><span class="doc-index-num">09</span><span class="doc-index-text"><strong data-i18n="doc.method.s9.title">The final test: your backtest on unseen data</strong><span data-i18n="doc.method.s9.short">The only fully clean check</span></span></a></li>
+    </ol>
+  </nav>
 
   <div class="lp-method-steps">
-    <section class="lp-doc-block lp-method-step has-media">
+    <section class="lp-doc-block lp-method-step" id="lectura">
       <span class="lp-method-num">01</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s1.title">Minima before rankings</h2>
-        <p data-i18n="doc.method.s1.body">A setup only enters the search if it clears your floors (PF, drawdown, trades, profit) in-sample, and the forward requires them again to validate. Rankings always invent a “top 5%” — even when everything loses.</p>
-      </div>
-      <div class="lp-method-step-media" aria-hidden="true">
-        <svg viewBox="0 0 480 320" role="img">
-          <line x1="24" y1="190" x2="456" y2="190" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 5"/>
-          <text x="24" y="176" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--muted-2)" data-i18n="doc.method.s1.media.floor">YOUR MINIMUMS</text>
-
-          <circle cx="70" cy="150" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-          <circle cx="150" cy="95" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-          <circle cx="230" cy="150" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-          <circle cx="430" cy="120" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-          <circle cx="50" cy="230" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-          <circle cx="180" cy="260" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-          <circle cx="280" cy="230" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-          <circle cx="400" cy="245" r="3.5" fill="var(--muted-3)" opacity=".4"/>
-
-          <line x1="110" y1="219" x2="110" y2="232" stroke="var(--danger-line)" stroke-width="1.5"/>
-          <rect x="58" y="195" width="104" height="24" rx="12" fill="var(--danger-bg)" stroke="var(--danger-line)"/>
-          <text x="110" y="211" text-anchor="middle" font-size="11" font-weight="700" fill="var(--danger-text)" data-i18n="doc.method.s1.media.rejected">MT5: #1</text>
-          <circle cx="110" cy="240" r="8" fill="var(--danger)"/>
-          <text x="110" y="264" text-anchor="middle" font-size="10.5" fill="var(--muted-2)">PF 0.8 · DD 38%</text>
-
-          <line x1="360" y1="84" x2="360" y2="102" stroke="var(--ok-line)" stroke-width="1.5"/>
-          <rect x="305" y="60" width="110" height="24" rx="12" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
-          <text x="360" y="76" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s1.media.selected">Selected</text>
-          <circle cx="360" cy="110" r="8" fill="var(--ok)"/>
-          <text x="360" y="134" text-anchor="middle" font-size="10.5" fill="var(--muted-2)">PF 1.6 · DD 14%</text>
-        </svg>
+        <h2 data-i18n="doc.method.s1.title">It reads your export as it is</h2>
+        <p data-i18n="doc.method.s1.body">Drop the XML that MT5 exports, in any terminal language and with commas or dots as decimals. The engine does not trust column names: it tells parameters from metrics by how they behave (a parameter has the same value for the same pass in-sample and in forward; a metric does not). If it drops any row, it tells you.</p>
       </div>
     </section>
-
-    <section class="lp-doc-block lp-method-step has-media">
+    <section class="lp-doc-block lp-method-step has-media" id="minimos">
       <span class="lp-method-num">02</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s2.title">Quality without Result</h2>
-        <p data-i18n="doc.method.s2.body">MT5’s Result column is whatever you optimized for. We rebuild quality from objective exports (PF, recovery, Sharpe, drawdown, trades). The plateau is found with in-sample quality and the forward validates it: if quality drops there, the plateau drops in rank. The two periods are never averaged.</p>
+        <h2 data-i18n="doc.method.s2.title">Your minimums before any ranking</h2>
+        <p data-i18n="doc.method.s2.body">A configuration only enters the search if it clears your floors in-sample: profit factor, drawdown, number of trades and positive profit. A ranking always produces a “top 5%”, even when everything loses money; a floor does not.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
-          <line x1="90" y1="280" x2="400" y2="280" stroke="var(--line)" stroke-width="1.5"/>
-
-          <rect x="150" y="90" width="60" height="190" rx="4" fill="var(--ok)" opacity=".85"/>
-          <rect x="290" y="160" width="60" height="120" rx="4" fill="var(--ok)" opacity=".85"/>
-          <text x="180" y="300" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="var(--muted-2)">IN-SAMPLE</text>
-          <text x="320" y="300" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="var(--muted-2)">FORWARD</text>
-
-          <line x1="95" y1="125" x2="400" y2="125" stroke="var(--muted-3)" stroke-width="1.3" stroke-dasharray="3 4"/>
-          <text x="95" y="112" font-size="10.5" letter-spacing="1" fill="var(--muted-3)" data-i18n="doc.method.s2.media.avg">AVG ✕</text>
-
-          <line x1="320" y1="119" x2="320" y2="160" stroke="var(--ok-line)" stroke-width="1.5"/>
-          <rect x="248" y="88" width="144" height="24" rx="12" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
-          <text x="320" y="104" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s2.media.score">Forward validates</text>
+          <rect x="70" y="40" width="190" height="160" rx="6" fill="var(--ok)" opacity=".10"/>
+          <line x1="70" y1="200" x2="456" y2="200" stroke="var(--line-strong)" stroke-width="1.3" stroke-dasharray="4 5"/>
+          <line x1="260" y1="30" x2="260" y2="270" stroke="var(--line-strong)" stroke-width="1.3" stroke-dasharray="4 5"/>
+          <text x="80" y="60" font-size="11.5" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.min.zone">Meets your minimums</text>
+          <line x1="70" y1="270" x2="456" y2="270" stroke="var(--line)" stroke-width="1.5"/>
+          <line x1="70" y1="30" x2="70" y2="270" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="456" y="292" text-anchor="end" font-size="11" fill="var(--muted-2)"><tspan data-i18n="doc.method.min.dd">Drawdown</tspan> →</text>
+          <text x="54" y="150" text-anchor="middle" font-size="11" fill="var(--muted-2)" transform="rotate(-90 54 150)"><tspan data-i18n="doc.method.min.pf">Profit factor</tspan> →</text>
+          <circle cx="108" cy="176" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="156" cy="88" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="184" cy="224" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="232" cy="160" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="298" cy="120" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="326" cy="232" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="364" cy="184" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="127" cy="240" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="402" cy="144" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="212" cy="192" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="279" cy="248" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="431" cy="80" r="8" fill="var(--danger)"/>
+          <text x="431" y="64" text-anchor="end" font-size="11.5" font-weight="700" fill="var(--danger-text)" data-i18n="doc.method.min.mt5">MT5 #1</text>
+          <text x="431" y="104" text-anchor="end" font-size="10.5" fill="var(--muted-2)" data-i18n="doc.method.min.mt5cap">PF 1.95 · DD 38%</text>
+          <circle cx="203" cy="136" r="8" fill="var(--ok)"/>
+          <text x="217" y="132" font-size="11.5" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.min.pick">Chosen</text>
+          <text x="217" y="148" font-size="10.5" fill="var(--muted-2)" data-i18n="doc.method.min.pickcap">PF 1.6 · DD 14%</text>
         </svg>
       </div>
     </section>
-
-    <section class="lp-doc-block lp-method-step has-media">
+    <section class="lp-doc-block lp-method-step" id="calidad">
       <span class="lp-method-num">03</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s3.title">Plateaus, not peaks</h2>
-        <p data-i18n="doc.method.s3.body">Isolated spikes are rejected. A plateau is a zone where neighbors also clear your minima — we pick its center, the point whose worst neighbor is still solid, not the single tallest spike.</p>
+        <h2 data-i18n="doc.method.s3.title">Quality without the Result column</h2>
+        <p data-i18n="doc.method.s3.body">Result is whatever you asked MT5 to optimize, so it is biased in its own favor. The engine measures quality with several objective metrics at once (profit factor, recovery, Sharpe, drawdown, trades), so a configuration does not win just by standing out in one of them.</p>
+      </div>
+    </section>
+    <section class="lp-doc-block lp-method-step has-media" id="mesetas">
+      <span class="lp-method-num">04</span>
+      <div class="lp-method-step-text">
+        <h2 data-i18n="doc.method.s4.title">Plateaus, not peaks</h2>
+        <p data-i18n="doc.method.s4.body">For each configuration it checks its neighbors, measured in steps of your grid (from 30 to 50, or from 0.1 to 0.2, is one step). A plateau is a connected zone where the neighbors also clear your minimums. Isolated peaks are rejected, and it picks the center of the plateau: the point whose weakest neighbor is still solid, not the tallest one.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
           <line x1="24" y1="220" x2="456" y2="220" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 5"/>
-          <text x="24" y="206" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--muted-2)" data-i18n="doc.method.s3.media.floor">YOUR MINIMUMS</text>
-
+          <text x="24" y="206" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--muted-2)" data-i18n="doc.method.plat.floor">YOUR MINIMUMS</text>
           <polyline points="50,260 100,245 150,90 200,250 250,150 300,140 350,155 400,260" fill="none" stroke="var(--line-strong)" stroke-width="1.3" opacity=".7"/>
-
           <circle cx="50" cy="260" r="3.5" fill="var(--muted-3)" opacity=".5"/>
           <circle cx="100" cy="245" r="3.5" fill="var(--muted-3)" opacity=".5"/>
           <circle cx="200" cy="250" r="3.5" fill="var(--muted-3)" opacity=".5"/>
           <circle cx="400" cy="260" r="3.5" fill="var(--muted-3)" opacity=".5"/>
-
           <circle cx="250" cy="150" r="5" fill="var(--ok)" opacity=".6"/>
           <circle cx="350" cy="155" r="5" fill="var(--ok)" opacity=".6"/>
-
           <line x1="150" y1="72" x2="150" y2="82" stroke="var(--danger-line)" stroke-width="1.5"/>
           <rect x="102" y="48" width="96" height="24" rx="12" fill="var(--danger-bg)" stroke="var(--danger-line)"/>
-          <text x="150" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="var(--danger-text)" data-i18n="doc.method.s3.media.isolated">Isolated</text>
+          <text x="150" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="var(--danger-text)" data-i18n="doc.method.plat.isolated">Isolated</text>
           <circle cx="150" cy="90" r="8" fill="var(--danger)"/>
-
           <line x1="300" y1="119" x2="300" y2="132" stroke="var(--ok-line)" stroke-width="1.5"/>
           <rect x="245" y="95" width="110" height="24" rx="12" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
-          <text x="300" y="111" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s3.media.selected">Selected</text>
+          <text x="300" y="111" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.plat.pick">Chosen</text>
           <circle cx="300" cy="140" r="8" fill="var(--ok)"/>
         </svg>
       </div>
     </section>
-
-    <section class="lp-doc-block lp-method-step has-media">
-      <span class="lp-method-num">04</span>
+    <section class="lp-doc-block lp-method-step" id="forward">
+      <span class="lp-method-num">05</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s4.title">Evidence strength — not a trade signal</h2>
-        <p data-i18n="doc.method.s4.body">The verdict is strong / moderate / weak / insufficient. It never means “go trade”. Too little data is not the same as “no plateau”.</p>
+        <h2 data-i18n="doc.method.s5.title">The forward confirms or demotes</h2>
+        <p data-i18n="doc.method.s5.body">Plateaus are found with the in-sample only. Then the forward puts them to the test: your minimums are required again of the plateau’s configurations and their quality is compared. If many fail, the plateau drops in rank and you are warned. The two periods are never averaged, so a good forward cannot hide a weak in-sample, or the other way round.</p>
+      </div>
+    </section>
+    <section class="lp-doc-block lp-method-step" id="suerte">
+      <span class="lp-method-num">06</span>
+      <div class="lp-method-step-text">
+        <h2 data-i18n="doc.method.s6.title">It measures how much could be luck</h2>
+        <p data-i18n="doc.method.s6.body">Test thousands of combinations and some will look great by pure chance. The engine computes the best Sharpe you would expect from luck alone with that many trials and compares it with yours. If yours does not beat it, the report flags it as critical: the top result may be nothing but noise. Beating it is necessary, not sufficient: it rules out that the result comes only from trying a lot, but it does not validate the strategy.</p>
+      </div>
+    </section>
+    <section class="lp-doc-block lp-method-step has-media" id="umbrales">
+      <span class="lp-method-num">07</span>
+      <div class="lp-method-step-text">
+        <h2 data-i18n="doc.method.s7.title">It tests itself</h2>
+        <p data-i18n="doc.method.s7.body">What the engine requires to call something a plateau (minimum quality, robustness, support, size…) are our decisions, not laws. To check that the recommendation does not depend on them, the search is repeated 50 times moving them by up to ±20%, and it counts how often the same region still wins. The same is done, with fewer repetitions, moving your minimums (with very large files this second test is skipped, and you are told). If a recommendation only appears with the exact numbers, it is not a recommendation.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
-          <rect x="20" y="55" width="210" height="48" rx="24" fill="var(--evidence-strong-bg)" stroke="var(--evidence-strong-line)"/>
-          <text x="125" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="var(--evidence-strong-text)" data-i18n="verdict.strong">STRONG EVIDENCE</text>
-
-          <rect x="250" y="55" width="210" height="48" rx="24" fill="var(--evidence-moderate-bg)" stroke="var(--evidence-moderate-line)"/>
-          <text x="355" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="var(--evidence-moderate-text)" data-i18n="verdict.moderate">MODERATE EVIDENCE</text>
-
-          <rect x="20" y="125" width="210" height="48" rx="24" fill="var(--evidence-weak-bg)" stroke="var(--evidence-weak-line)"/>
-          <text x="125" y="154" text-anchor="middle" font-size="12" font-weight="700" fill="var(--evidence-weak-text)" data-i18n="verdict.weak">WEAK EVIDENCE</text>
-
-          <rect x="250" y="125" width="210" height="48" rx="24" fill="var(--evidence-none-bg)" stroke="var(--evidence-none-line)"/>
-          <text x="355" y="154" text-anchor="middle" font-size="12" font-weight="700" fill="var(--evidence-none-text)" data-i18n="verdict.insufficient">INSUFFICIENT EVIDENCE</text>
-
-          <line x1="20" y1="200" x2="460" y2="200" stroke="var(--line)" stroke-width="1"/>
-
-          <rect x="140" y="228" width="200" height="46" rx="23" fill="none" stroke="var(--muted-3)" stroke-width="1.3" stroke-dasharray="4 4"/>
-          <text x="240" y="257" text-anchor="middle" font-size="15" font-weight="700" fill="var(--muted-2)" data-i18n="doc.method.s4.media.neq">≠ trade signal</text>
+          <rect x="110" y="55" width="260" height="50" rx="25" fill="var(--evidence-strong-bg)" stroke="var(--evidence-strong-line)"/>
+          <text x="240" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="var(--evidence-strong-text)" data-i18n="doc.method.thr.pill">48 / 50 · same region wins</text>
+          <line x1="140" y1="185" x2="340" y2="185" stroke="var(--muted-3)" stroke-width="1.3" stroke-dasharray="3 4"/>
+          <line x1="140" y1="178" x2="140" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
+          <line x1="340" y1="178" x2="340" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
+          <text x="240" y="172" text-anchor="middle" font-size="10.5" fill="var(--muted-3)" data-i18n="doc.method.thr.range">±20% · 50 repetitions</text>
+          <line x1="40" y1="220" x2="440" y2="220" stroke="var(--line)" stroke-width="1.5"/>
+          <line x1="240" y1="205" x2="240" y2="235" stroke="var(--line-strong)" stroke-width="2"/>
+          <text x="240" y="255" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="var(--muted-2)" data-i18n="doc.method.thr.axis">ENGINE THRESHOLD</text>
+          <circle cx="150" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
+          <circle cx="170" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
+          <circle cx="190" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
+          <circle cx="210" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
+          <circle cx="270" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
+          <circle cx="290" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
+          <circle cx="330" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
+          <circle cx="310" cy="220" r="4" fill="var(--danger)"/>
         </svg>
       </div>
     </section>
-
-    <section class="lp-doc-block lp-method-step has-media">
-      <span class="lp-method-num">05</span>
+    <section class="lp-doc-block lp-method-step" id="niveles">
+      <span class="lp-method-num">08</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s5.title">Stress-tested on your actual trades</h2>
-        <p data-i18n="doc.method.s5.body">The grid only has aggregated metrics — not enough for a real Monte Carlo. Drop your chosen configuration's backtest report and unlock three checks the grid alone can't give you: a Monte Carlo over your real trades, a sample-size check, and a cost-stress test for worse-than-optimized spread or slippage.</p>
+        <h2 data-i18n="doc.method.s8.title">What each evidence level means</h2>
+        <p data-i18n="doc.method.s8.body">The verdict grades how much your data back the recommendation, not your EA. None of the levels means “go trade”.</p>
+        <dl class="doc-levels" data-i18n="doc.method.levels.aria" data-i18n-attr="aria-label" aria-label="Evidence levels">
+          <div class="doc-level doc-level-strong"><dt data-i18n="doc.method.level.strong.name">Strong</dt><dd data-i18n="doc.method.level.strong.body">A plateau with no warnings, confirmed by the forward and by an unseen period. The most your data can back.</dd></div>
+          <div class="doc-level doc-level-moderate"><dt data-i18n="doc.method.level.moderate.name">Moderate</dt><dd data-i18n="doc.method.level.moderate.body">A plateau with real support, but with warnings worth reading. It is also the ceiling while the unseen period is missing.</dd></div>
+          <div class="doc-level doc-level-weak"><dt data-i18n="doc.method.level.weak.name">Weak</dt><dd data-i18n="doc.method.level.weak.body">At least one serious limitation: for example, no forward, no connected zone, or a best result that does not beat chance.</dd></div>
+          <div class="doc-level doc-level-insufficient"><dt data-i18n="doc.method.level.insufficient.name">Insufficient</dt><dd data-i18n="doc.method.level.insufficient.body">So few configurations clear your minimums that nothing can be said, for or against.</dd></div>
+        </dl>
+      </div>
+    </section>
+    <section class="lp-doc-block lp-method-step has-media" id="backtest">
+      <span class="lp-method-num">09</span>
+      <div class="lp-method-step-text">
+        <h2 data-i18n="doc.method.s9.title">The final test: your backtest on unseen data</h2>
+        <p data-i18n="doc.method.s9.body">The cleanest check is to test the configuration on a period you used neither to optimize nor to validate. Drop that backtest report into the app and it tells you whether the result is normal for your EA, with a Monte Carlo over your own trades; it warns you if there are too few trades to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -232,93 +224,38 @@
           <line x1="212" y1="98" x2="240" y2="98" stroke="var(--muted-3)" stroke-width="3" stroke-linecap="round"/>
           <line x1="240" y1="125" x2="240" y2="168" stroke="var(--ok-line)" stroke-width="2"/>
           <path d="M 229 157 L 240 172 L 251 157" fill="none" stroke="var(--ok-line)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <text x="240" y="192" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="var(--muted-2)" data-i18n="doc.method.s5.media.report">REAL BACKTEST</text>
-
+          <text x="240" y="192" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="var(--muted-2)" data-i18n="doc.method.bt.report">UNSEEN BACKTEST</text>
           <rect x="15" y="215" width="140" height="85" rx="10" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
           <circle cx="85" cy="240" r="13" fill="var(--ok)" opacity=".18" stroke="var(--ok-line)" stroke-width="1.3"/>
           <path d="M 79 240 L 84 245 L 92 231" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <text x="85" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)">Monte</text>
           <text x="85" y="286" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)">Carlo</text>
-
           <rect x="170" y="215" width="140" height="85" rx="10" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
           <circle cx="240" cy="240" r="13" fill="var(--ok)" opacity=".18" stroke="var(--ok-line)" stroke-width="1.3"/>
           <path d="M 234 240 L 239 245 L 247 231" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <text x="240" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s5.media.sample1">Sample</text>
-          <text x="240" y="286" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s5.media.sample2">size</text>
-
+          <text x="240" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.bt.sample1">Sample</text>
+          <text x="240" y="286" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.bt.sample2">size</text>
           <rect x="325" y="215" width="140" height="85" rx="10" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
           <circle cx="395" cy="240" r="13" fill="var(--ok)" opacity=".18" stroke="var(--ok-line)" stroke-width="1.3"/>
           <path d="M 389 240 L 394 245 L 402 231" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <text x="395" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s5.media.cost1">Cost</text>
-          <text x="395" y="286" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s5.media.cost2">stress</text>
+          <text x="395" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.bt.cost1">Cost</text>
+          <text x="395" y="286" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.bt.cost2">stress</text>
         </svg>
-      </div>
-    </section>
-
-    <section class="lp-doc-block lp-method-step has-media">
-      <span class="lp-method-num">06</span>
-      <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s6.title">What we do not claim</h2>
-        <ul class="lp-list">
-          <li data-i18n="doc.method.s6.1">A plateau is stability in your sample — not a promise of future profit.</li>
-          <li data-i18n="doc.method.s6.2">We do not invent classic PBO / Reality Check / SPA: MT5 optimization files lack the equity curves those tests need.</li>
-          <li data-i18n="doc.method.s6.3">Forward is already used to validate and rank plateaus, so it is not a blind period; the cleanest check is a true unseen period.</li>
-          <li data-i18n="doc.method.s6.4">We do not tell you to buy, sell, or fund an EA. Evidence ≠ permission to trade.</li>
-          <li data-i18n="doc.method.s6.5">With many parameters or a genetic (non-grid) search, neighborhood and plateau size are capped conservatively — it may understate support, never invent it.</li>
-        </ul>
-      </div>
-      <div class="lp-method-step-media" aria-hidden="true">
-        <svg viewBox="0 0 480 320" role="img">
-          <text x="240" y="30" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="1" fill="var(--muted-3)" data-i18n="doc.method.s6.media.real1">REAL NEIGHBORHOOD</text>
-          <text x="240" y="45" text-anchor="middle" font-size="11" fill="var(--muted-3)" data-i18n="doc.method.s6.media.real2">(unknown)</text>
-          <circle cx="240" cy="175" r="122" fill="none" stroke="var(--muted-3)" stroke-width="1.3" stroke-dasharray="4 5"/>
-
-          <circle cx="240" cy="175" r="68" fill="var(--ok)" opacity=".18" stroke="var(--ok-line)" stroke-width="1.5"/>
-          <text x="240" y="169" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s6.media.report1">What we</text>
-          <text x="240" y="187" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.s6.media.report2">report</text>
-        </svg>
-      </div>
-    </section>
-
-    <section class="lp-doc-block lp-method-step has-media" id="self-audit">
-      <span class="lp-method-num">07</span>
-      <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s7.title">It audits its own thresholds</h2>
-        <p data-i18n="doc.method.s7.body">Every internal cutoff (minima, plateau floor, evidence bands) is a calibrated judgment, not a derived quantity. The search reruns 50 times with those thresholds moved ±20% at random, and reports how often the same region still wins. If a recommendation only survives with the exact numbers we chose, it is not a recommendation.</p>
-      </div>
-      <div class="lp-method-step-media" aria-hidden="true">
-        <svg viewBox="0 0 480 320" role="img">
-          <rect x="110" y="55" width="260" height="50" rx="25" fill="var(--evidence-strong-bg)" stroke="var(--evidence-strong-line)"/>
-          <text x="240" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="var(--evidence-strong-text)" data-i18n="doc.method.s7.media.pill">48 / 50 · same region wins</text>
-
-          <line x1="140" y1="185" x2="340" y2="185" stroke="var(--muted-3)" stroke-width="1.3" stroke-dasharray="3 4"/>
-          <line x1="140" y1="178" x2="140" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
-          <line x1="340" y1="178" x2="340" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
-          <text x="240" y="172" text-anchor="middle" font-size="10.5" fill="var(--muted-3)" data-i18n="doc.method.s7.media.label2">±20% · 50 reruns</text>
-
-          <line x1="40" y1="220" x2="440" y2="220" stroke="var(--line)" stroke-width="1.5"/>
-          <line x1="240" y1="205" x2="240" y2="235" stroke="var(--line-strong)" stroke-width="2"/>
-          <text x="240" y="255" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="var(--muted-2)" data-i18n="doc.method.s7.media.label1">YOUR THRESHOLD</text>
-
-          <circle cx="150" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
-          <circle cx="170" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
-          <circle cx="190" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
-          <circle cx="210" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
-          <circle cx="270" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
-          <circle cx="290" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
-          <circle cx="310" cy="220" r="4" fill="var(--danger)"/>
-          <circle cx="330" cy="220" r="4" fill="var(--ok)" opacity=".85"/>
-        </svg>
-      </div>
-    </section>
-    <section class="lp-doc-block lp-method-step" id="suerte">
-      <span class="lp-method-num">08</span>
-      <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s8.title">It measures how much could be luck</h2>
-        <p data-i18n="doc.method.s8.body">Test thousands of combinations and some will look great by pure chance. The engine computes the best Sharpe you would expect from luck alone with that many trials and compares it with yours. If yours does not beat it, the report flags it as critical: the top result may be nothing but noise. Beating it is necessary, not sufficient — it rules out that the result comes only from trying a lot, but it does not validate the strategy.</p>
       </div>
     </section>
   </div>
+
+  <section class="lp-doc-block doc-limits" id="limites" aria-labelledby="doc-lim-title">
+    <h2 id="doc-lim-title" data-i18n="doc.method.lim.title">What it does not do</h2>
+    <ul class="lp-list">
+      <li data-i18n="doc.method.lim.1">A plateau is stability in your sample, not a promise of future profit.</li>
+      <li data-i18n="doc.method.lim.2">It does not tell you to buy, sell or fund an EA: evidence is not permission to trade.</li>
+      <li data-i18n="doc.method.lim.3">It does not judge the EA’s logic, the quality of the price history or the spread and commission of your backtest: if the source backtest is optimistic, it stays optimistic here.</li>
+      <li data-i18n="doc.method.lim.4">The forward is already used to validate and rank plateaus, so it is not a blind period: the cleanest check is an unseen period.</li>
+      <li data-i18n="doc.method.lim.5">It does not compute classic PBO, Reality Check or SPA: MT5 exports do not include the equity curves those tests need.</li>
+      <li data-i18n="doc.method.lim.6">With many parameters or a genetic search (not a full grid), neighborhood and plateau size are capped conservatively: it may fall short, never invent support, and you are told.</li>
+    </ul>
+  </section>
 
   <section class="lp-doc-block doc-ai" id="ia" aria-labelledby="doc-ai-title">
     <h2 id="doc-ai-title" data-i18n="doc.ai.title">Why not just ask an AI?</h2>
@@ -327,7 +264,7 @@
       <div><dt data-i18n="doc.ai.1.title">Same data, same answer</dt><dd data-i18n="doc.ai.1.body">A language model writes every answer from scratch: it changes with the wording of your question, the order of the data and from one day to the next. Orometra is a calculation: same files, same result, today and a year from now. That is what lets you compare one optimization with another.</dd></div>
       <div><dt data-i18n="doc.ai.2.title">A fixed method, not an improvised one</dt><dd data-i18n="doc.ai.2.body">Ask an AI to assess robustness and it makes up a method on the spot. You cannot know whether it is the same as last time, or whether it is right. Orometra's method is written on this page, it is always the same, and automated tests check that it keeps doing what it says.</dd></div>
       <div><dt data-i18n="doc.ai.3.title">Numbers you can check</dt><dd data-i18n="doc.ai.3.body">Language models can give figures that sound right and come from no calculation. Even when they write code, you have to review that code every time. Every figure in Orometra's report comes from the columns of your export and can be traced back.</dd></div>
-      <div><dt data-i18n="doc.ai.4.title">It knows when to say no</dt><dd data-i18n="doc.ai.4.body">An AI is built to be helpful, so it tends to answer even when the data cannot support a conclusion. Orometra has an "insufficient evidence" level and uses it: if there is no plateau, if the forward does not confirm it or if the result does not beat chance, it tells you.</dd></div>
+      <div><dt data-i18n="doc.ai.4.title">It knows when to say no</dt><dd data-i18n="doc.ai.4.body">An AI is built to be helpful, so it tends to answer even when the data cannot support a conclusion. Orometra lowers the evidence level and says why: if there is no plateau, if the forward does not confirm it or if the result does not beat chance, it stays at weak; and if the data are not enough even for that, it says “insufficient”.</dd></div>
       <div><dt data-i18n="doc.ai.5.title">Your strategy stays yours</dt><dd data-i18n="doc.ai.5.body">For an AI to analyze your optimization you have to upload your parameters — the heart of your strategy — to another company's servers. Orometra runs the analysis in your browser: your files never leave your computer.</dd></div>
       <div><dt data-i18n="doc.ai.6.title">Something you can use</dt><dd data-i18n="doc.ai.6.body">An AI gives you text. Orometra gives you a specific configuration, its evidence level, the reasons, a .set to load in MT5 and the range to re-optimize around it.</dd></div>
     </dl>
@@ -336,7 +273,6 @@
 
   <section class="lp-doc-cta">
     <a class="primary-btn" href="../app/" data-i18n="doc.method.cta">Try it with my files</a>
-    <a class="ghost-btn" href="../app/#method" data-i18n="doc.method.full">Full technical detail in the app →</a>
   </section>
 </main>
 
