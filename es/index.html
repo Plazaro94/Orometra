@@ -38,6 +38,7 @@
 <link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/ibm-plex-sans-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","description":"Tu mejor resultado de MT5 puede ser suerte. Orometra analiza tu optimización de MetaTrader 5 y te dice qué configuración aguanta de verdad —la meseta estable, no el pico con suerte—, directamente en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -165,7 +166,7 @@
   <section class="hm-section" aria-labelledby="hm-faq-title">
     <h2 id="hm-faq-title" data-i18n="home.faq.title">Preguntas frecuentes</h2>
     <div class="hm-faq" aria-labelledby="hm-faq-title">
-      <details><summary data-i18n="home.faq.1.q">¿Qué archivos necesito?</summary><p data-i18n="home.faq.1.a">Los XML exportados de tu optimización de MT5: la pestaña de resultados (in-sample) y, si activaste forward, también la pestaña forward. El archivo .opt no sirve.</p></details>
+      <details><summary data-i18n="home.faq.1.q">¿Qué archivos necesito?</summary><p data-i18n-html="home.faq.1.a">Los XML exportados de tu optimización de MT5: la pestaña de resultados (in-sample) y, si activaste forward, también la pestaña forward. El archivo .opt no sirve. <a href="/es/guias/exportar-optimizacion-mt5-xml/">Guía paso a paso</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">¿Hace falta el periodo forward?</summary><p data-i18n="home.faq.2.a">No, pero es muy recomendable. Sin él, Orometra analiza solo el in-sample y la evidencia no puede pasar de débil.</p></details>
       <details><summary data-i18n="home.faq.4.q">¿Qué pasa con mis datos?</summary><p data-i18n-html="home.faq.4.a">Nada sale de tu ordenador: el análisis se hace en tu navegador. Solo contamos, de forma anónima, las visitas y cuántas veces se usa cada función. Detalles en la <a href="/es/privacy/">página de privacidad</a>.</p></details>
       <details><summary data-i18n="home.faq.6.q">¿Qué NO hace?</summary><p data-i18n="home.faq.6.a">No predice el mercado, no garantiza rentabilidad ni convierte un EA flojo en uno bueno. Con optimización genética es más prudente, y te lo avisa.</p></details>
@@ -188,6 +189,7 @@
     </div>
     <nav class="lp-foot-nav" aria-label="Footer">
       <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
+      <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
       <a href="/es/privacy/" data-i18n="doc.privacy.nav">Privacidad</a>
       <a href="/app/" data-i18n="lp.cta.footer">App</a>
       <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>

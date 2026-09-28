@@ -37,6 +37,7 @@
 <link rel="preload" href="fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/ibm-plex-sans-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
+<script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","description":"Your best MT5 result might be luck. Orometra analyzes your MetaTrader 5 optimization and tells you which configuration actually holds up — the stable plateau, not the lucky peak — right in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -164,7 +165,7 @@
   <section class="hm-section" aria-labelledby="hm-faq-title">
     <h2 id="hm-faq-title" data-i18n="home.faq.title">Frequently asked questions</h2>
     <div class="hm-faq" aria-labelledby="hm-faq-title">
-      <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n="home.faq.1.a">The XML exports of your MT5 optimization: the results tab (in-sample) and, if you enabled forward, the forward tab too. The .opt file does not work.</p></details>
+      <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n-html="home.faq.1.a">The XML exports of your MT5 optimization: the results tab (in-sample) and, if you enabled forward, the forward tab too. The .opt file does not work. <a href="/guides/export-mt5-optimization-xml/">Step-by-step guide</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">Do I need the forward period?</summary><p data-i18n="home.faq.2.a">No, but it is highly recommended. Without it, Orometra analyzes the in-sample only and the evidence cannot go beyond weak.</p></details>
       <details><summary data-i18n="home.faq.4.q">What happens to my data?</summary><p data-i18n-html="home.faq.4.a">Nothing leaves your computer: the analysis runs in your browser. We only count, anonymously, visits and how often each feature is used. Details in the <a href="privacy/">privacy page</a>.</p></details>
       <details><summary data-i18n="home.faq.6.q">What does it not do?</summary><p data-i18n="home.faq.6.a">It does not predict the market, guarantee returns or turn a weak EA into a good one. With genetic optimization it is more cautious, and tells you so.</p></details>
@@ -187,6 +188,7 @@
     </div>
     <nav class="lp-foot-nav" aria-label="Footer">
       <a href="methodology/" data-i18n="nav.method">Methodology</a>
+      <a href="guides/" data-i18n="nav.guides">Guides</a>
       <a href="privacy/" data-i18n="doc.privacy.nav">Privacy</a>
       <a href="app/" data-i18n="lp.cta.footer">App</a>
       <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
