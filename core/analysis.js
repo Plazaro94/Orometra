@@ -93,7 +93,33 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       oos: readMetrics(m.oosRow, oosRoles),
       criterionIs: isRoles.result ? toNumber(m.isRow[isRoles.result.col]) : NaN,
       criterionOos: oosRoles.forwardResult ? toNumber(m.oosRow[oosRoles.forwardResult.col]) : NaN,
+      oosKnown: true,
     }));
+    /*
+     * FWD-1 verificado: MT5 solo pasa al forward las MEJORES pasadas del in-sample (~10 %
+     * en búsqueda completa, ~25 % en genética). Si solo se analizaran las emparejadas, las
+     * mesetas se buscarían únicamente entre las mejores y nunca se verían las vecinas
+     * malas que delatan un pico: un sesgo optimista. En el modo por defecto (las mesetas
+     * se descubren en el in-sample) se usan TODAS las pasadas del in-sample; el forward
+     * valida solo las que lo tienen, y las demás cuentan como "no validadas".
+     * En modo joint el forward participa en la selección, así que se mantiene el
+     * emparejado estricto.
+     */
+    const discoverOnAllIs = policy.selectionMode !== 'joint';
+    if (discoverOnAllIs) {
+      for (const u of paired.unmatchedRows || []) {
+        records.push({
+          id: u.id,
+          params: paired.paramColumns.map((p) => canonicalValue(u.isRow[p.isCol])),
+          is: readMetrics(u.isRow, isRoles),
+          oos: {},
+          criterionIs: isRoles.result ? toNumber(u.isRow[isRoles.result.col]) : NaN,
+          criterionOos: NaN,
+          oosKnown: false,
+        });
+      }
+    }
+    integrity.unmatchedUsedForDiscovery = discoverOnAllIs;
     // Dos periodos distintos no dan las mismas cifras pasada a pasada. Si coinciden casi
     // siempre, es el mismo periodo cargado dos veces.
     {
@@ -188,7 +214,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     : policy.gates.minTrades;
 
   // El beneficio por operacion necesita una referencia: se toma del propio conjunto.
-  const payoffValues = records.flatMap((r) => (hasForward ? [r.is.expectedPayoff, r.oos.expectedPayoff] : [r.is.expectedPayoff]));
+  // ¿Tiene esta pasada datos de forward? (las que MT5 no reexportó, no: ver FWD-1)
+  const hasOos = (r) => hasForward && r.oosKnown !== false;
+  const payoffValues = records.flatMap((r) => (hasOos(r) ? [r.is.expectedPayoff, r.oos.expectedPayoff] : [r.is.expectedPayoff]));
   const payoffAnchor = payoffScale(payoffValues);
 
   let scores = new Array(records.length);
@@ -201,8 +229,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
 
   records.forEach((r, i) => {
     const qi = periodQuality(r.is, policy, payoffAnchor);
-    const qo = hasForward ? periodQuality(r.oos, policy, payoffAnchor, periodRatio) : { score: NaN, parts: {} };
-    const qoAdj = hasForward ? periodQuality(r.oos, policy, payoffAnchor, periodRatio, { adjustRisk: true }) : { score: NaN };
+    const known = hasOos(r);
+    const qo = known ? periodQuality(r.oos, policy, payoffAnchor, periodRatio) : { score: NaN, parts: {} };
+    const qoAdj = known ? periodQuality(r.oos, policy, payoffAnchor, periodRatio, { adjustRisk: true }) : { score: NaN };
     r.qualityOosLengthAdjusted = qoAdj.score;
     r.qualityIs = qi.score;
     r.qualityOos = qo.score;
@@ -210,10 +239,12 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     r.qualityCombined = hasForward ? combineScores(qi.score, qo.score) : qi.score;
     // Descubrir en IS: el forward valida después, no elige la meseta.
     r.score = selectionMode === 'isThenOos' ? qi.score : r.qualityCombined;
-    r.retention = retention(qi.score, qo.score);
+    r.retention = known ? retention(qi.score, qo.score) : NaN;
     r.failsIs = gateFailures(r.is, policy, minTradesIs);
-    r.failsOos = hasForward ? gateFailures(r.oos, policy, minTradesOos) : [];
-    r.passesJoint = !r.failsIs.length && (!hasForward || !r.failsOos.length);
+    // Sin forward no hay fallos que medir, pero tampoco aprueba el forward: no cuenta
+    // como validada (passesJoint exige datos).
+    r.failsOos = known ? gateFailures(r.oos, policy, minTradesOos) : [];
+    r.passesJoint = !r.failsIs.length && (!hasForward || (known && !r.failsOos.length));
     r.passesDiscover = !r.failsIs.length;
     r.passes = selectionMode === 'isThenOos' ? r.passesDiscover : r.passesJoint;
     passes[i] = r.passes ? 1 : 0;
@@ -314,7 +345,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const sole = Object.fromEntries(names.map((n) => [n, 0]));
     for (const r of records) {
       const inIs = test(r.is, minTradesIs);
-      const inOos = hasForward ? test(r.oos, minTradesOos) : null;
+      const inOos = hasOos(r) ? test(r.oos, minTradesOos) : null;
       const hit = names.filter((n) => inIs[n] || (inOos && inOos[n]));
       for (const n of hit) fail[n]++;
       if (hit.length === 1) sole[hit[0]]++;
@@ -322,9 +353,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const passing = records.filter((r) => r.passes);
     const medianOf = (pick) => (passing.length ? median(passing.map(pick).filter(Number.isFinite)) : NaN);
     const observed = {
-      profitFactor: medianOf((r) => (hasForward ? Math.min(r.is.profitFactor, r.oos.profitFactor) : r.is.profitFactor)),
-      drawdown: medianOf((r) => (hasForward ? Math.max(r.is.drawdown, r.oos.drawdown) : r.is.drawdown)),
-      trades: medianOf((r) => (hasForward ? Math.min(r.is.trades, r.oos.trades) : r.is.trades)),
+      profitFactor: medianOf((r) => (hasOos(r) ? Math.min(r.is.profitFactor, r.oos.profitFactor) : r.is.profitFactor)),
+      drawdown: medianOf((r) => (hasOos(r) ? Math.max(r.is.drawdown, r.oos.drawdown) : r.is.drawdown)),
+      trades: medianOf((r) => (hasOos(r) ? Math.min(r.is.trades, r.oos.trades) : r.is.trades)),
       beneficio: NaN,
     };
     const limits = {
@@ -412,8 +443,15 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const robust = robustnessScores(scores, passes, stability, opts, nb.medianSupport);
 
   progress(onProgress, 76, L('Buscando inversiones entre periodos', 'Looking for period inversions'));
+  // La inversión compara los perfiles de las pasadas CON forward, así que su escala de
+  // ruido se mide en ese mismo conjunto (las viables de las que MT5 probó en forward):
+  // con todo el in-sample la dispersión es mayor y el detector se volvería más laxo.
+  const inversionScale = (() => {
+    const v = records.filter((r) => hasOos(r) && r.passesDiscover).map((r) => r.qualityIs).filter(Number.isFinite);
+    return v.length >= 30 ? Math.max(0.02, quantile(v, 0.75) - quantile(v, 0.25)) : globalScale.iqr;
+  })();
   const inversions = hasForward
-    ? detectInversions(coords, levels, paramNames, records.map((r) => r.qualityIs), records.map((r) => r.qualityOos), globalScale.iqr)
+    ? detectInversions(coords, levels, paramNames, records.map((r) => (hasOos(r) ? r.qualityIs : NaN)), records.map((r) => r.qualityOos), inversionScale)
     : [];
 
   progress(onProgress, 78, L('Buscando mesetas', 'Finding plateaus'));
@@ -424,7 +462,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // El nucleo manda: el representante y el rango de refinamiento salen de el.
     const core = coreMembers(comp, robust, stability, opts);
     const basis = core.length >= 3 ? core : comp;
-    const rep = chooseRepresentative(basis, neighbors, scores, robust);
+    // Se recomienda una configuración que MT5 haya probado en el forward siempre que la
+    // meseta tenga alguna: recomendar una que nunca salió de la muestra sería peor.
+    const tested = basis.filter((i) => hasOos(records[i]));
+    const rep = chooseRepresentative(tested.length ? tested : basis, neighbors, scores, robust);
     const compScores = comp.map((i) => scores[i]).filter(Number.isFinite);
     const [worstMember] = extent(compScores);
     // Cuanto espacio abarca de verdad la region, con independencia de cuantas veces se
@@ -537,9 +578,16 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       p.oosValidation = null;
       return;
     }
-    const oosPass = p.indices.filter((i) => !records[i].failsOos.length).length;
+    const known = p.indices.filter((i) => hasOos(records[i]));
+    const oosPass = known.filter((i) => !records[i].failsOos.length).length;
     p.oosValidation = {
-      passFrac: p.indices.length ? oosPass / p.indices.length : 0,
+      // Entre las que tienen forward, cuántas cumplen tus mínimos.
+      passFrac: known.length ? oosPass / known.length : 0,
+      // Sobre TODA la meseta: las que no tienen forward cuentan como no validadas. Es la
+      // que ordena, para no premiar una meseta por no haber podido ponerla a prueba.
+      validatedFrac: p.indices.length ? oosPass / p.indices.length : 0,
+      withForward: known.length,
+      size: p.indices.length,
       medianOos: p.medianOos,
       mode: selectionMode,
     };
@@ -550,7 +598,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     support: p.stability.support,
     inverted: p.invertedRisk.length > 0,
     irregular: p.spansIrregular.length > 0,
-    oosPassFrac: p.oosValidation ? p.oosValidation.passFrac : NaN,
+    oosPassFrac: p.oosValidation ? p.oosValidation.validatedFrac : NaN,
   });
   plateaus.forEach((p) => { p.rankScore = rankScore(p); });
   plateaus.sort((a, b) => b.rankScore - a.rankScore);
@@ -560,7 +608,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // Se ordena por el criterio del USUARIO (lo que MT5 le pone arriba del todo), no por
   // la calidad interna. La pregunta que hay que responder es exactamente esa: "¿por que
   // no me recomiendas la que aparece primera en mi tabla?".
-  const rankingKey = (r) => (hasForward && Number.isFinite(r.criterionOos) ? r.criterionOos
+  const rankingKey = (r) => (hasForward
+    ? (hasOos(r) && Number.isFinite(r.criterionOos) ? r.criterionOos : NaN)
     : Number.isFinite(r.criterionIs) ? r.criterionIs : r.score);
   const byCriterion = records
     .map((r, i) => ({ record: r, index: i, score: scores[i], st: stability[i], robust: robust[i], key: rankingKey(r) }))
@@ -574,18 +623,20 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     .slice(0, 12);
 
   progress(onProgress, 90, L('Contrastes estadísticos', 'Statistical contrasts'));
-  const isCriterion = records.map((r) => (Number.isFinite(r.criterionIs) ? r.criterionIs : r.qualityIs));
-  const oosCriterion = records.map((r) => (Number.isFinite(r.criterionOos) ? r.criterionOos : r.qualityOos));
+  // Todo lo que compara los dos periodos se mide SOLO sobre pasadas con forward.
+  const fwdRecords = records.filter(hasOos);
+  const isCriterion = fwdRecords.map((r) => (Number.isFinite(r.criterionIs) ? r.criterionIs : r.qualityIs));
+  const oosCriterion = fwdRecords.map((r) => (Number.isFinite(r.criterionOos) ? r.criterionOos : r.qualityOos));
   const rho = hasForward ? spearman(isCriterion, oosCriterion) : NaN;
-  const rhoQuality = hasForward ? spearman(records.map((r) => r.qualityIs), records.map((r) => r.qualityOos)) : NaN;
+  const rhoQuality = hasForward ? spearman(fwdRecords.map((r) => r.qualityIs), fwdRecords.map((r) => r.qualityOos)) : NaN;
   // Contraste de seleccion en los DOS sentidos (ver `selectionFragility`): no basta con
   // entrenar en IS y validar en OOS, porque si el forward fue un tramo facil eso sale bien
   // por el motivo equivocado.
   const fragilityResult = hasForward ? selectionFragility(isCriterion, oosCriterion) : { fragility: NaN, usable: false };
   const fragilityQuality = hasForward
     ? selectionFragility(
-      records.map((r) => r.qualityIs),
-      records.map((r) => r.qualityOos),
+      fwdRecords.map((r) => r.qualityIs),
+      fwdRecords.map((r) => r.qualityOos),
     )
     : { fragility: NaN, usable: false };
   const degradation = hasForward ? degradationByDecile(isCriterion, oosCriterion) : [];
@@ -649,13 +700,13 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
 
   // ¿Fue el forward un periodo más benigno que el in-sample? Si lo fue, todo lo que
   // se mide ahi viene inflado y la validación es menos exigente de lo que parece.
-  const passIsOnly = records.filter((r) => !r.failsIs.length).length;
-  const passOosOnly = hasForward ? records.filter((r) => !r.failsOos.length).length : 0;
-  const periodComparison = hasForward ? {
-    medianQualityIs: median(records.map((r) => r.qualityIs)),
-    medianQualityOos: median(records.map((r) => r.qualityOos)),
-    passIsPct: passIsOnly / records.length,
-    passOosPct: passOosOnly / records.length,
+  const passIsOnly = fwdRecords.filter((r) => !r.failsIs.length).length;
+  const passOosOnly = hasForward ? fwdRecords.filter((r) => !r.failsOos.length).length : 0;
+  const periodComparison = hasForward && fwdRecords.length ? {
+    medianQualityIs: median(fwdRecords.map((r) => r.qualityIs)),
+    medianQualityOos: median(fwdRecords.map((r) => r.qualityOos)),
+    passIsPct: passIsOnly / fwdRecords.length,
+    passOosPct: passOosOnly / fwdRecords.length,
   } : null;
 
   /*
@@ -700,7 +751,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // orden que el analisis principal (rankKey): suelo, tamaño, evidencia, las dos
     // penalizaciones y la validacion en forward. `oosFails` permite medir la validacion
     // con las puertas perturbadas; por defecto, las del analisis.
-    const defaultOosFails = records.map((r) => r.failsOos.length > 0);
+    const defaultOosFails = records.map((r) => !hasOos(r) || r.failsOos.length > 0);
     const winner = (drawOpts, pss, stab, rb, oosFails = defaultOosFails) => {
       const comps = findPlateaus(neighbors, rb, pss, stab, drawOpts);
       if (!comps.length) return null;
@@ -807,11 +858,11 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
         const oosFails2 = new Array(records.length);
         records.forEach((r, i) => {
           const fi = gateFailures(r.is, gp, minTradesIs * g.tradeFactor);
-          const fo = hasForward ? gateFailures(r.oos, gp, minTradesOos * g.tradeFactor) : [];
-          oosFails2[i] = fo.length > 0;
+          const fo = hasOos(r) ? gateFailures(r.oos, gp, minTradesOos * g.tradeFactor) : [];
+          oosFails2[i] = !hasOos(r) || fo.length > 0;
           // Misma definicion de "pasa" que el analisis principal: en el modo por defecto
           // las mesetas se buscan con el in-sample y el forward solo valida.
-          p2[i] = !fi.length && (selectionMode === 'isThenOos' || !hasForward || !fo.length) ? 1 : 0;
+          p2[i] = !fi.length && (selectionMode === 'isThenOos' || !hasForward || (hasOos(r) && !fo.length)) ? 1 : 0;
         });
         // La escala de referencia se mantiene FIJA a proposito: se quiere aislar el efecto
         // de la puerta, no confundirlo con una vara de medir que se mueve a la vez.

@@ -88,6 +88,7 @@ function stripHeavy(a) {
       passes: r.passes,
       failsIs: r.failsIs,
       failsOos: r.failsOos,
+      oosKnown: r.oosKnown,
     })),
     plateaus: a.plateaus.map((p) => ({ ...p, indices: p.indices.slice(0, 5000), core: p.core.slice(0, 5000) })),
   };

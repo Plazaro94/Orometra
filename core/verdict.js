@@ -168,10 +168,18 @@ export function buildVerdict(ctx) {
       L('El motor busca zonas con la calidad y los mínimos del in-sample. El forward no crea ni amplía la meseta: la valida después, y si muchas de sus configuraciones fallan tus mínimos en forward, esa meseta baja de puesto. Pesa menos en la elección que si puntuara, pero no es un tramo ciego.',
         'The engine finds regions with in-sample quality and minima. The forward neither creates nor widens the plateau: it validates it afterwards, and if many of its configurations fail your minima on the forward, that plateau drops in rank. It weighs less in the choice than if it scored, but it is not a blind period.'), null);
     const v = bestPlateau && bestPlateau.oosValidation;
-    if (v && v.passFrac < 0.5) {
-      add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${fmt((100 * v.passFrac), 0)}% en forward`, `The recommended plateau only holds ${fmt((100 * v.passFrac), 0)}% on forward`),
-        L('Muchas configs de la región fallan los mínimos del forward. Trátala como provisional hasta probarla en un periodo no visto.',
-          'Many configs in the region fail forward gates. Treat it as provisional until you test it on an unseen period.'), null);
+    const partial = v && Number.isFinite(v.withForward) && v.withForward < v.size;
+    const basis = partial
+      ? L(` (de las ${v.withForward} de sus ${v.size} configuraciones que MT5 probó en el forward)`, ` (of the ${v.withForward} of its ${v.size} configurations that MT5 tested on the forward)`)
+      : '';
+    if (v && v.withForward === 0) {
+      add(SEV.WARN, L('La meseta recomendada no tiene ninguna configuración probada en el forward', 'The recommended plateau has no configuration tested on the forward'),
+        L('MT5 solo pasa al forward las mejores pasadas y ninguna de esta meseta estaba entre ellas. Trátala como provisional hasta probarla en un periodo no visto.',
+          'MT5 only passes the best passes to the forward and none of this plateau was among them. Treat it as provisional until you test it on an unseen period.'), null);
+    } else if (v && v.passFrac < 0.5) {
+      add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${fmt((100 * v.passFrac), 0)} % en forward${basis}`, `The recommended plateau only holds ${fmt((100 * v.passFrac), 0)}% on forward${basis}`),
+        L('Muchas configuraciones de la región fallan los mínimos del forward. Trátala como provisional hasta probarla en un periodo no visto.',
+          'Many configurations in the region fail forward gates. Treat it as provisional until you test it on an unseen period.'), null);
     }
   } else if (selectionMode === 'joint' && hasForward) {
     add(SEV.INFO, L('Modo joint: el forward participa en la selección', 'Joint mode: forward takes part in selection'),
@@ -510,7 +518,11 @@ export function buildVerdict(ctx) {
         L('Se ha conservado la primera aparición de cada pasada duplicada.',
           'The first appearance of each duplicate Pass was kept.'), 'integrity');
     }
-    if (integrity.unmatchedIs > 0) {
+    if (integrity.unmatchedIs > 0 && integrity.unmatchedUsedForDiscovery) {
+      add(SEV.INFO, L(`${integrity.unmatchedIs} pasadas sin forward`, `${integrity.unmatchedIs} passes without forward`),
+        L('MT5 solo prueba en el forward las mejores pasadas. Las demás se usan para buscar las mesetas en el in-sample, porque así se ven también las vecinas que fallan tus mínimos, pero no cuentan como validadas en el forward.',
+          'MT5 only tests the best passes on the forward. The rest are used to find the plateaus in-sample, because that way the neighbors that fail your minima are seen too, but they do not count as validated on the forward.'), 'integrity');
+    } else if (integrity.unmatchedIs > 0) {
       const sev = (integrity.isRows > 0 && integrity.unmatchedIs / integrity.isRows > 0.05) ? SEV.WARN : SEV.INFO;
       add(sev, L(`${integrity.unmatchedIs} pasadas sin pareja`, `${integrity.unmatchedIs} unpaired passes`),
         L('Estas filas existen en un archivo y no en el otro, y se han descartado del análisis.',

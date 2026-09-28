@@ -53,18 +53,24 @@ caché, para que al recargar nunca se quede una versión antigua. Se para con Ct
 
 ## Seguridad y dependencias
 
-**Sin dependencias externas en tiempo de ejecución, salvo una: analítica de tráfico.**
-No hay CDN de librerías ni tipografías remotas — el código propio (`js/xlsx.js`, tema,
-etc.) es toda la lógica. La única excepción es
-[Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/), que cuenta visitas
-agregadas a la página: sin cookies, sin huella de navegador, sin identificar a nadie, y sin
-ninguna visibilidad sobre los archivos que subes (esos no salen del navegador, así que no
-hay nada ahí que medir). Eso permite una política de seguridad de contenido estricta —con
-esa única excepción explícita, no un agujero abierto— que se aplica igual en desarrollo que
-en producción, para que un fallo de política aparezca al programar y no el día del despliegue:
+**Sin librerías externas en tiempo de ejecución; solo analítica de tráfico.**
+No hay CDN de librerías ni tipografías remotas: el código propio (`js/xlsx.js`, tema, etc.) es
+toda la lógica. La analítica son dos servicios:
+
+- **GoatCounter**, en todas las páginas. Su script (`js/goatcounter.js`) es una copia local sin
+  modificar del oficial y se sirve desde el propio dominio; solo los *datos* van a
+  `plazaro94.goatcounter.com` (página, procedencia, ancho de pantalla y, en la app, el nombre del
+  evento de `js/track.js`).
+- **Cloudflare Web Analytics**, en todas las páginas **menos la app** (`app/`), para que en la
+  página donde se abren los archivos no se ejecute ningún script de un tercero.
+
+Ninguno usa cookies ni ve los archivos del usuario (no salen del navegador). Eso permite una
+política de seguridad de contenido estricta, con esas excepciones explícitas, que se aplica igual
+en desarrollo que en producción, para que un fallo de política aparezca al programar y no el día
+del despliegue:
 
 - **GitHub Pages (producción) no envía cabeceras propias.** Por eso la política va también en
-  un `<meta http-equiv="Content-Security-Policy">` en cada una de las cuatro páginas, antes
+  un `<meta http-equiv="Content-Security-Policy">` en cada página, antes
   del primer script. Un `<meta>` no admite `frame-ancestors`, así que en Pages la web se
   puede incrustar en otra; `X-Frame-Options`, `nosniff`, `Referrer-Policy` (esta sí va en un
   `<meta name="referrer">`) y `Permissions-Policy` solo llegan con un host que envíe cabeceras.
@@ -74,10 +80,10 @@ en producción, para que un fallo de política aparezca al programar y no el dí
 
 ```
 default-src 'self'      · script-src 'self' + Cloudflare Analytics
-style-src 'self'        · connect-src 'self' + Cloudflare Analytics
+style-src 'self'        · connect-src 'self' + Cloudflare Analytics + GoatCounter
 object-src 'none'       · base-uri 'self'
 form-action 'none'      · frame-ancestors 'none'
-img-src 'self' data:    · worker-src 'self' blob:
+img-src 'self' data: + GoatCounter · worker-src 'self' blob:
 style-src-attr 'unsafe-inline'   (tres atributos style= generados en plantillas)
 ```
 
