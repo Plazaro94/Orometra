@@ -126,6 +126,11 @@ export function renderReportCard(a, plateau) {
         )}`).join('; ')}${cmp.different.length > 6 ? L(` y ${cmp.different.length - 6} más`, ` and ${cmp.different.length - 6} more`) : ''}.
         ${L('Lo que valides así no dice nada de la configuración que has elegido.', 'What you validate this way says nothing about the configuration you chose.')}
       </div>`
+    : !cmp.same.length && a.meta.paramNames.length
+      ? `<div class="inline-warn report-mismatch">
+        <strong>${L('No se han podido leer los parámetros de este informe.', 'The parameters of this report could not be read.')}</strong>
+        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que el resultado no sube el nivel de evidencia.', 'Without them it cannot be checked that the backtest is of the proposed configuration, so the result does not raise the evidence level.')}
+      </div>`
     : cmp.same.length
       ? `<div class="report-ok">${L(
         `Los ${int(cmp.same.length)} parámetros del informe coinciden con la configuración propuesta.`,

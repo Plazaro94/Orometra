@@ -15,6 +15,9 @@ import { buildDemoTables } from '../js/demo.js';
 import { setLocale } from '../js/i18n.js';
 import { state } from '../js/ui-state.js';
 import { holdoutFact, displayVerdictLevel } from '../js/ui-verdict.js';
+import { parseBacktestReport } from '../core/report.js';
+import { dailySeriesFromDeals } from '../core/matrix/from-deals.js';
+import { refinementRange } from '../core/engine.js';
 
 let failures = 0;
 let checks = 0;
@@ -123,6 +126,7 @@ section('C3. La prueba de sensibilidad ordena igual que el motor');
     drawdown: 6 + 55 * (1 - Math.max(0, g)) + noise * 2,
     trades: Math.round(base * (0.7 + 0.6 * Math.max(0, g))),
   });
+  const build = (oA, oB) => {
   const r = rng(41);
   const pts = [];
   const bump = (z, c, w) => Math.exp(-z.reduce((s, v, j) => s + ((v - c[j]) / w) ** 2, 0) / 2);
@@ -132,7 +136,7 @@ section('C3. La prueba de sensibilidad ordena igual que el motor');
     const gB = bump(z, [15, 3, 3], 2.8);
     const nz = (r() - 0.5) * 0.06;
     const gIs = Math.max(1.0 * gA, 0.95 * gB);
-    const gOos = Math.max(0.3 * gA, 0.9 * gB);
+    const gOos = Math.max(oA * gA, oB * gB);
     pts.push({
       x: z.map((v) => 10 + v * 5),
       is: metrics(gIs + nz * 0.2, nz, 1600),
@@ -146,7 +150,10 @@ section('C3. La prueba de sensibilidad ordena igual que el motor');
   const oosH = ['Pass', 'Forward Result', 'Back Result', 'Profit', 'Expected Payoff', 'Profit Factor', 'Recovery Factor', 'Sharpe Ratio', 'Equity DD %', 'Trades', ...names];
   const isT = { name: 'IS', sheet: 'x', format: 'sintetico', headers: isH, rows: pts.map((p, i) => [i, p.isResult, p.is.profit, p.is.profit / 800, p.is.profitFactor, p.is.recoveryFactor, p.is.sharpe, p.is.drawdown, p.is.trades, ...p.x]) };
   const oosT = { name: 'OOS', sheet: 'x', format: 'sintetico', headers: oosH, rows: pts.map((p, i) => [i, p.oosResult, p.isResult, p.oos.profit, p.oos.profit / 800, p.oos.profitFactor, p.oos.recoveryFactor, p.oos.sharpe, p.oos.drawdown, p.oos.trades, ...p.x]) };
-  const a = runAnalysis({ isTable: isT, oosTable: oosT, policy: POLICY });
+  return runAnalysis({ isTable: isT, oosTable: oosT, policy: POLICY });
+  };
+  globalThis.__buildTwoPlateaus = build;
+  const a = build(0.3, 0.9);
   const best = a.plateaus[0];
   check('hay al menos dos mesetas', a.plateaus.length >= 2, String(a.plateaus.length));
   check('el motor recomienda la meseta que aguanta en forward (B)', best && best.record.params[0] >= 60, best && String(best.record.params));
@@ -156,6 +163,65 @@ section('C3. La prueba de sensibilidad ordena igual que el motor');
   check('la prueba de umbrales internos elige la misma region casi siempre', st && st.regionRate >= 0.8, st && `${(100 * st.regionRate).toFixed(0)} %`);
   const crit = a.verdict.findings.find((f) => f.severity === 'critical' && /propios umbrales/.test(f.title));
   check('no aparece el falso critico "no sobrevive a sus propios umbrales"', !crit, crit && crit.title);
+}
+
+// ============================================================================
+section('I3. Meseta en el in-sample que no aguanta en el forward');
+{
+  const a = globalThis.__buildTwoPlateaus(-1, -1);
+  const titles = a.verdict.findings.map((f) => f.title);
+  check('ninguna pasa en forward, pero hay mesetas en el in-sample', a.meta.gatePassCount === 0 && a.plateaus.length > 0);
+  check('no es "evidencia insuficiente"', a.verdict.level !== 'insufficient', a.verdict.level);
+  check('hallazgo especifico del forward', titles.includes('Ninguna configuración cumple tus mínimos en el forward'), titles.join(' | '));
+  check('sin el juicio "es la estrategia"', !a.verdict.findings.some((f) => /es la estrategia/.test(f.detail)));
+}
+
+// ============================================================================
+section('I1. Los parametros de un informe en ingles se leen');
+{
+  const html = `<!DOCTYPE html><html><body><div>Strategy Tester Report</div><table>
+<tr><td>Expert:</td><td><b>My EA</b></td></tr>
+<tr><td>Symbol:</td><td><b>EURUSD</b></td></tr>
+<tr><td>Period:</td><td><b>H1 (2021.01.01 - 2021.12.31)</b></td></tr>
+<tr><td>Inputs:</td><td><b>InpFast=10</b></td></tr>
+<tr><td></td><td><b>InpSlow=50</b></td></tr>
+<tr><td>Results</td></tr>
+<tr><td>Total Net Profit:</td><td>1200.00</td></tr>
+</table></body></html>`;
+  const r = parseBacktestReport(html, 'en.html');
+  check('lee InpFast e InpSlow', r.params.InpFast === '10' && r.params.InpSlow === '50', JSON.stringify(r.params));
+}
+
+// ============================================================================
+section('I2. La serie diaria cuenta los dias de mercado sin operaciones');
+{
+  const deals = [];
+  const t0 = Date.UTC(2023, 0, 2); // lunes
+  for (let w = 0; w < 104; w++) {
+    const d = new Date(t0 + w * 7 * 86400000);
+    deals.push({ time: `${d.toISOString().slice(0, 10).replace(/-/g, '.')} 12:00`, net: w % 3 ? 15 : -20, volume: 0.1, swap: 0, commission: -1 });
+  }
+  const s2 = dailySeriesFromDeals(deals);
+  check('104 cierres semanales en 2 anos dan ~516 dias de mercado', s2.days > 500 && s2.days < 530, String(s2.days));
+  check('el resultado total no cambia', Math.abs(s2.dailyPnl.reduce((x, y) => x + y, 0) - s2.totalNet) < 1e-9);
+  check('se conserva cuantos dias tuvieron cierres', s2.tradingDays === 104, String(s2.tradingDays));
+}
+
+// ============================================================================
+section('I8. El contraste del Sharpe dice las pruebas que usa, con coma decimal');
+{
+  const d = buildDemoTables();
+  const a = runAnalysis({ isTable: d.isTable, oosTable: d.oosTable });
+  const f = a.verdict.findings.find((x) => /Sharpe/.test(x.title));
+  check('menciona las pruebas efectivas', f && /pruebas efectivas/.test(f.detail) && f.detail.includes(String(a.stats.sharpeTest.effectiveTrials)), f && f.detail);
+  check('decimales con coma en espanol', f && /\d,\d{2}/.test(f.detail) && !/\d\.\d{2}\b/.test(f.detail), f && f.detail);
+}
+
+// ============================================================================
+section('I9. El .set de refinamiento cuenta las combinaciones que genera MT5');
+{
+  const r = refinementRange(1, [[0], [1], [2], [3]], [[10, 13, 20, 40]], ['X'], null, ['number']);
+  check('niveles 10,13,20,40 -> 10..40 paso 3 = 11 valores', r[0].start === 10 && r[0].stop === 40 && r[0].step === 3 && r[0].levels === 11, JSON.stringify(r[0]));
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas`);

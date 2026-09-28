@@ -455,8 +455,16 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       radius: nb.radius,
       slotsComplete: slotsKnown,
     };
+    // Extensión REAL de la meseta en cada parámetro: el mínimo y el máximo de sus
+    // miembros. No confundir con `refinement`, que es el rango sugerido para volver a
+    // optimizar alrededor del centro y puede ser mucho más ancho.
+    const paramSpan = paramNames.map((_, j) => {
+      const vals = comp.map((i) => records[i].params[j]).filter((v) => typeof v === 'number' && Number.isFinite(v));
+      return vals.length === comp.length ? { min: Math.min(...vals), max: Math.max(...vals) } : null;
+    });
     return {
       extent: ext,
+      paramSpan,
       spansIrregular,
       id: ci,
       indices: comp,
@@ -623,7 +631,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     .filter((r) => Number.isFinite(r[period].sharpe) && Number.isFinite(r[period].trades) && r[period].trades > 30)
     .map((r) => r[period].sharpe);
   let sharpeTest = null;
-  if (sharpeValues.length >= 30) {
+  // Sin dispersión (todos los Sharpe iguales, p. ej. a 0 porque el export no lo trae)
+  // no hay nada que contrastar: se omite en vez de dar un "0.00 frente a 0.00".
+  if (sharpeValues.length >= 30 && stdev(sharpeValues) > 1e-12) {
     const sigma = stdev(sharpeValues);
     const chanceMax = expectedMaximum(0, sigma, effectiveTrials);
     const observedMax = Math.max(...sharpeValues);
@@ -661,7 +671,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const viableNeededForPlateau = Math.ceil(
     opts.plateauMinSize * (1 + Math.max(opts.minSupport, nb.medianSupport || 0) * opts.plateauMinFracPass),
   );
-  const underpowered = !plateaus.length && gatePassCount > 0 && gatePassCount < viableNeededForPlateau;
+  // Se cuenta con el MISMO conjunto con el que se buscan las mesetas: en el modo por
+  // defecto (isThenOos) son las que pasan en el in-sample; el forward solo valida.
+  const searchPassCount = selectionMode === 'isThenOos' ? discoverPassCount : gatePassCount;
+  const underpowered = !plateaus.length && searchPassCount > 0 && searchPassCount < viableNeededForPlateau;
 
   /*
    * ESTABILIDAD DEL VEREDICTO FRENTE A SUS PROPIAS CONSTANTES.
@@ -838,6 +851,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const verdictCtx = {
     gatePassCount,
     discoverPassCount,
+    searchPassCount,
     total: records.length,
     plateaus,
     fragility: fragilityResult.fragility,
@@ -885,6 +899,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       hasForward,
       selectionMode,
       discoverPassCount,
+      searchPassCount,
       generatedAt: new Date().toISOString(),
       elapsedMs: Date.now() - started,
       total: records.length,
