@@ -1,5 +1,6 @@
 // Validación del periodo no visto e informe de backtest.
 
+import { track } from './track.js';
 import { evaluateUnseen } from '../core/unseen.js';
 import { parseBacktestReport, compareParams } from '../core/report.js';
 import { auditUnseenTrades } from '../core/matrix/from-deals.js';
@@ -331,7 +332,7 @@ export function renderUnseen(a) {
   const v = state.unseen.values;
   const res = state.unseen.result;
 
-  const options = a.plateaus.slice(0, 5).map((pl, i) => `<option value="${i}"${i === idx ? ' selected' : ''}>M${pl.rank} - Pass ${esc(pl.record.id)}${i === 0 ? L(' (recomendada)', ' (recommended)') : ''}</option>`).join('');
+  const options = a.plateaus.slice(0, 5).map((pl, i) => `<option value="${i}"${i === idx ? ' selected' : ''}>M${pl.rank} - ${L('Pasada', 'Pass')} ${esc(pl.record.id)}${i === 0 ? L(' (recomendada)', ' (recommended)') : ''}</option>`).join('');
 
   const fields = fieldsDef.map((f) => `<label class="field">
       <span>${esc(f.label)}${f.required ? ' <em class="req-mark">*</em>' : ''}</span>
@@ -453,6 +454,7 @@ export function readUnseenForm() {
 }
 
 export function runUnseenCheck() {
+  track('periodo-no-visto');
   const a = state.analysis;
   if (!a || !a.plateaus.length) return;
   state.unseen.values = readUnseenForm();

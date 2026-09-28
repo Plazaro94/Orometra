@@ -146,7 +146,7 @@ export function renderVerdict(a) {
   const pickBlock = best
     ? `<div class="verdict-fact">
         <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
-        <strong class="verdict-fact-value mono">Pass ${esc(best.record.id)}</strong>
+        <strong class="verdict-fact-value mono">${L('Pasada', 'Pass')} ${esc(best.record.id)}</strong>
         <span class="verdict-fact-note">M${best.rank} · ${int(best.size)} ${L('configs', 'configs')} · ${num(best.robust, 0)} ${L('robustez', 'robustness')}</span>
         ${pickActions}
       </div>`
@@ -422,7 +422,7 @@ export function renderStableRanges(a, best) {
       <button class="ghost-btn" data-export="refine" data-plateau-index="${best.rank - 1}">${L('.set de refinamiento', 'Refinement .set')}</button>
     </div>
     <p class="chart-note">${L(
-      'Centro recomendado = Pass seleccionado. La zona es el rango de refinamiento alrededor de la meseta — no un intervalo de confianza.',
+      'Centro recomendado = pasada seleccionada. La zona es el rango de refinamiento alrededor de la meseta — no un intervalo de confianza.',
       'Recommended center = selected Pass. The zone is the refinement range around the plateau — not a confidence interval.',
     )}</p>
     <div class="range-table-wrap">
@@ -507,7 +507,7 @@ export function renderTop3(a) {
     <div class="t3-featured-head">
       <div>
         <div class="t3-rank">${L('Recomendada', 'Recommended')}</div>
-        <div class="t3-pass">Pass ${esc(featured.record.id)}</div>
+        <div class="t3-pass">${L('Pasada', 'Pass')} ${esc(featured.record.id)}</div>
         <div class="t3-flags">${flagBadges(featured)}</div>
       </div>
       <div class="t3-score">${num(featured.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
@@ -534,7 +534,7 @@ export function renderTop3(a) {
     ? `<div class="t3-alts">
         ${alts.map((p, i) => `<article class="t3-alt">
           <div class="t3-rank">${L(`Alternativa ${i + 1}`, `Alternative ${i + 1}`)}</div>
-          <div class="t3-pass">Pass ${esc(p.record.id)}</div>
+          <div class="t3-pass">${L('Pasada', 'Pass')} ${esc(p.record.id)}</div>
           <div class="t3-score t3-score-sm">${num(p.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
           <div class="t3-flags">${flagBadges(p)}</div>
           <p class="t3-alt-meta">M${p.rank} · ${int(p.size)} ${L('configs', 'configs')} · ${int(p.stability.support)} ${L('vecinos', 'neighbors')}</p>
@@ -548,7 +548,7 @@ export function renderTop3(a) {
 
   const header = top.map((p, i) => `<th class="t3-col ${i === 0 ? 't3-best' : ''}">
       <div class="t3-rank">${i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`)}</div>
-      <div class="t3-pass">Pass ${esc(p.record.id)}</div>
+      <div class="t3-pass">${L('Pasada', 'Pass')} ${esc(p.record.id)}</div>
     </th>`).join('');
 
   const metricRow = (label, fn, cls = '') => `<tr class="${cls}">

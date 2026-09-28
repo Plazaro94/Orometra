@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
@@ -20,8 +20,8 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://orometra.com/og-image.jpg">
 <meta property="og:image:type" content="image/jpeg">
-<meta property="og:image:width" content="1280">
-<meta property="og:image:height" content="720">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Orometra — MT5 Overfitting &amp; Robustness Audit">
 <meta name="twitter:description" content="Your best MT5 result might be luck. Orometra tells you which configuration actually holds up.">
@@ -70,7 +70,7 @@
       <p class="hm-lead" data-i18n="home.lead">Orometra tells you which configuration actually holds up — and why.</p>
       <div class="hm-actions">
         <a class="primary-btn hm-cta" href="app/" data-i18n="lp.cta">Analyze my results</a>
-        <a class="ghost-btn hm-cta" href="app/?demo=1" data-i18n="home.demo">See an example</a>
+        <a class="ghost-btn hm-cta" href="app/?demo=1" data-i18n="home.demo">See a sample report</a>
       </div>
       <p class="hm-trust" data-i18n="home.trust">No sign-up · Your files never leave your computer</p>
     </div>
@@ -160,7 +160,7 @@
     <div class="hm-faq" aria-labelledby="hm-faq-title">
       <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n="home.faq.1.a">The XML exports of your MT5 optimization: the results tab (in-sample) and, if you enabled forward, the forward tab too. The .opt file does not work.</p></details>
       <details><summary data-i18n="home.faq.2.q">Do I need the forward period?</summary><p data-i18n="home.faq.2.a">No, but it is highly recommended. Without it, Orometra analyzes the in-sample only and the evidence cannot go beyond weak.</p></details>
-      <details><summary data-i18n="home.faq.4.q">What happens to my data?</summary><p data-i18n-html="home.faq.4.a">Nothing leaves your computer: the analysis runs in your browser. We only count visits, anonymously. Details in the <a href="privacy/">privacy page</a>.</p></details>
+      <details><summary data-i18n="home.faq.4.q">What happens to my data?</summary><p data-i18n-html="home.faq.4.a">Nothing leaves your computer: the analysis runs in your browser. We only count, anonymously, visits and how often each feature is used. Details in the <a href="privacy/">privacy page</a>.</p></details>
       <details><summary data-i18n="home.faq.6.q">What does it not do?</summary><p data-i18n="home.faq.6.a">It does not predict the market, guarantee returns or turn a weak EA into a good one. With genetic optimization it is more cautious, and tells you so.</p></details>
       <details><summary data-i18n="home.faq.7.q">And after that?</summary><p data-i18n="home.faq.7.a">Test the configuration on a period you have not used. Orometra reads that backtest report and tells you whether the result is normal for your EA, with a Monte Carlo on your own trades.</p></details>
     </div>
@@ -189,6 +189,7 @@
 </footer>
 
 <script type="module" src="js/landing.js"></script>
+<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aff9422f75d4536bfdcd4b1ea119da9"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

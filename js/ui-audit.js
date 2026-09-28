@@ -1,5 +1,6 @@
 // Worker, runAudit, progreso y errores.
 
+import { track } from './track.js';
 import { parseTable } from '../core/parse.js';
 import { AnalysisError, CODE, classifyError, errorCopy } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
@@ -307,8 +308,10 @@ export async function runAudit() {
     }
     api.setTab('verdict');
     api.updatePolicyPreview();
+    track(state.isDemo ? 'analisis-ejemplo' : analysis.meta.hasForward ? 'analisis-is-forward' : 'analisis-solo-is');
   } catch (error) {
     showError(error);
+    if (!state.isDemo) track('analisis-error');
   } finally {
     setBusy(false);
   }

@@ -47,7 +47,7 @@ export function renderRepCard(a, p) {
   return `<div class="rep-card">
     <div class="rep-head">
       <div>
-        <div class="rep-pass">Pass ${esc(r.id)}</div>
+        <div class="rep-pass">${L('Pasada', 'Pass')} ${esc(r.id)}</div>
         <div class="rep-sub">${L('Meseta', 'Plateau')} ${p.rank} · ${int(p.size)} ${L('configuraciones', 'configurations')}${p.coreSize ? ` · ${L('núcleo de', 'core of')} ${int(p.coreSize)}` : ''}</div>
       </div>
       <div class="rep-score">${num(p.robust, 0)}<small>${gloss('robustness', L('robustez', 'robustness'), { align: 'right' })}</small></div>
@@ -124,7 +124,7 @@ export function renderPlateaus(a) {
     )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas combinaciones y confirma si la meseta aguanta entera.', "— it's a small number of combinations and confirms whether the whole plateau holds.")}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>${L('Pass repr.', 'Repr. pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Núcleo', 'Core')}</th><th>${L('Suelo (Q10)', 'Floor (Q10)')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Dispersión', 'Dispersion')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
+        <thead><tr><th>#</th><th>${L('Pasada repr.', 'Repr. pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Núcleo', 'Core')}</th><th>${L('Suelo (Q10)', 'Floor (Q10)')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Dispersión', 'Dispersion')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
     </section>
@@ -239,7 +239,7 @@ function renderSurfaceDetail(a, grid, hit) {
   return `<div class="evidence-list">
     <div><span>${esc(grid.names[0])}</span><strong>${paramHtml(grid.levelsA[hit.a])}</strong></div>
     <div><span>${esc(grid.names[1])}</span><strong>${paramHtml(grid.levelsB[hit.b])}</strong></div>
-    <div><span>Pass</span><strong class="mono">${esc(rec.id)}</strong></div>
+    <div><span>${L('Pasada', 'Pass')}</span><strong class="mono">${esc(rec.id)}</strong></div>
     <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(hit.quality, 3)}</strong></div>
     <div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${Number.isFinite(hit.qualityOos) ? num(hit.qualityOos, 3) : '—'}</strong></div>
     <div><span>${L('¿En esta meseta?', 'In this plateau?')}</span><strong class="big ${hit.inPlateau ? 'ok' : 'warn'}">${hit.inPlateau ? L('sí', 'yes') : L('no', 'no')}</strong></div>
@@ -306,10 +306,10 @@ export function renderRejected(a) {
     </div>
     <section class="panel">
       <div class="table-wrap"><table class="stack-table">
-        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>Pass</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinos', 'Neighbors')}</th><th>${L('Suelo entorno', 'Neighborhood floor')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
+        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinos', 'Neighbors')}</th><th>${L('Suelo entorno', 'Neighborhood floor')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
         <tbody>${a.peaks.map((p) => `<tr class="stack-row">
           <td data-label="${L('Puesto', 'Rank')}"><span class="rank-mini">#${int(p.criterionRank)}</span></td>
-          <td class="mono" data-label="Pass">${esc(p.record.id)}</td>
+          <td class="mono" data-label="${L('Pasada', 'Pass')}">${esc(p.record.id)}</td>
           <td class="strong" data-label="${esc(critName)}">${num(p.key, 2)}</td>
           <td data-label="${L('Calidad', 'Quality')}">${num(p.score, 2)}</td>
           <td data-label="${L('Vecinos', 'Neighbors')}">${int(p.st.support)}</td>
@@ -440,7 +440,7 @@ export function renderDiagnostics(a) {
         <div class="evidence-list">
           <div><span>${L('Filas in-sample', 'In-sample rows')}</span><strong>${int(integ.isRows)}</strong></div>
           <div><span>${L('Filas forward', 'Forward rows')}</span><strong>${integ.oosRows ? int(integ.oosRows) : '—'}</strong></div>
-          <div><span>${L('Emparejadas por Pass', 'Matched by Pass')}</span><strong>${int(integ.matchedRows)}</strong></div>
+          <div><span>${L('Emparejadas por pasada', 'Matched by Pass')}</span><strong>${int(integ.matchedRows)}</strong></div>
           <div><span>${L('Sin pareja (descartadas)', 'Unmatched (dropped)')}</span><strong>${int(integ.unmatchedIs)}</strong></div>
           <div><span>${L('Identificadores duplicados', 'Duplicate identifiers')}</span><strong>${int(integ.duplicateIds)}</strong></div>
           <div><span>${L('Filas con parámetros ilegibles', 'Rows with unreadable parameters')}</span><strong>${int(a.meta.droppedParams)}</strong></div>
@@ -472,7 +472,7 @@ export function renderDiagnostics(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Clasificación', 'Classification')}</div><h2>${L('Columnas detectadas', 'Detected columns')}</h2></div></div>
       <p class="panel-intro">${L(
-        'Los parámetros no se reconocen por su nombre sino por su estructura: para un mismo Pass, un parámetro vale lo mismo en los dos archivos y una métrica no, porque se midió sobre otro periodo.',
+        'Los parámetros no se reconocen por su nombre sino por su estructura: para una misma pasada, un parámetro vale lo mismo en los dos archivos y una métrica no, porque se midió sobre otro periodo.',
         'Parameters are not recognized by name but by structure: for the same Pass, a parameter has the same value in both files and a metric does not, because it was measured on another period.',
       )}</p>
       <div class="columns-grid">
