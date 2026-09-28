@@ -112,30 +112,20 @@
         <button class="text-btn" id="intakeExpandBtn" type="button" data-i18n="intake.change">Change files or minima</button>
       </div>
       <div class="upload-grid">
-        <label class="dropzone" id="isDrop" for="isFile">
-          <input id="isFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
-          <div class="file-icon">IS</div>
+        <div class="dropzone dropzone-main" id="mainDrop">
+          <input id="mainFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
+          <div class="file-icon" aria-hidden="true">&#8593;</div>
           <div class="drop-copy">
-            <strong><span data-i18n="drop.is.title">In-Sample</span></strong>
-            <span id="isStatus" data-i18n="drop.is.status">Drop both files anywhere on the page</span>
+            <strong data-i18n="drop.main.title">Drop your MT5 files here</strong>
+            <span id="mainDropStatus" data-i18n="drop.main.status">The in-sample export and, if you have it, the forward one. The app works out which is which.</span>
           </div>
-          <div class="drop-action" data-i18n="drop.choose">Choose</div>
-        </label>
-
-        <label class="dropzone" id="oosDrop" for="oosFile">
-          <input id="oosFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
-          <div class="file-icon oos">OOS</div>
-          <div class="drop-copy">
-            <strong><span data-i18n="drop.oos.title">Forward</span></strong>
-            <span id="oosStatus" data-i18n="drop.oos.status">Detected by content, not by which box you use</span>
-          </div>
-          <div class="drop-action" data-i18n="drop.choose">Choose</div>
-        </label>
+          <div class="drop-action" data-i18n="drop.chooseFiles">Choose files</div>
+        </div>
 
         <button class="analyze-card" id="analyzeBtn" type="button" disabled>
           <div class="analyze-icon" aria-hidden="true">&#8599;</div>
           <div>
-            <strong id="analyzeLabel" data-i18n="analyze.label">Audit</strong>
+            <strong id="analyzeLabel" data-i18n="analyze.label">Analyze</strong>
             <span id="analyzeSub" data-i18n="analyze.sub">Load the in-sample (and the forward, if you have it)</span>
           </div>
           <div class="analyze-arrow" aria-hidden="true">&rarr;</div>
@@ -154,6 +144,11 @@
         <div class="preflight-grid" id="preflightGrid"></div>
         <p class="preflight-note" id="preflightNote"></p>
       </div>
+
+      <button class="policy-toggle" id="policyToggle" type="button" aria-expanded="false" aria-controls="policyPanel">
+        <span data-i18n="policy.toggle">Settings (optional)</span>
+        <span class="policy-toggle-sum" id="policySummary"></span>
+      </button>
 
       <div class="policy-panel" id="policyPanel">
         <div class="policy-head">
