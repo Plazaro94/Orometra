@@ -127,13 +127,13 @@ code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding
 ::selection{background:var(--ok-bg);color:var(--ok-hi)}
 :focus-visible{outline:2px solid var(--accent2);outline-offset:2px;border-radius:6px}
 
-.shell{min-height:100vh;display:grid;grid-template-columns:248px 1fr}
+.shell{min-height:calc(100vh / var(--z));display:grid;grid-template-columns:248px 1fr}
 
 /* ---------------------------------------------------------------- sidebar */
 .sidebar{
   border-right:1px solid var(--line);
   background:var(--surface);
-  padding:26px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+  padding:26px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:calc(100vh / var(--z));
 }
 /* `.header-controls` (idioma+tema junto a la marca) y `.app-footer` (aviso legal al
    pie de la pagina) solo existen en movil: en escritorio el idioma/tema/aviso legal
@@ -1078,7 +1078,7 @@ tr.sel td{color:var(--text-2)}
 
 /* ---------------------------------------------------------------- landing */
 .landing-page{
-  min-height:100vh;display:flex;flex-direction:column;
+  min-height:calc(100vh / var(--z));display:flex;flex-direction:column;
   background:var(--bg);color:var(--text);
 }
 .lp-shell{
@@ -1503,3 +1503,14 @@ html.i18n-pending body{visibility:hidden}
 .doc-ai-list dt{font-weight:700;color:var(--text-hi);margin:0 0 6px;font-size:16px}
 .doc-ai-list dd{margin:0;color:var(--text-2);line-height:1.6;max-width:68ch;font-size:var(--fs-base)}
 #suerte{scroll-margin-top:24px}
+
+/* Pantallas grandes: a partir de ~1700 px todo crece en proporcion (como el zoom del
+   navegador), para que la portada no quede como una columna pequena en medio y la
+   aplicacion no se estire con letra diminuta. Por debajo no cambia nada. Las alturas
+   de pantalla completa dividen por --z porque 100vh tambien se amplia con el zoom. */
+:root{--z:1}
+@media screen and (min-width:1700px){:root{--z:1.125}}
+@media screen and (min-width:2100px){:root{--z:1.25}}
+@media screen and (min-width:2400px){:root{--z:1.4}}
+@media screen and (min-width:3200px){:root{--z:1.75}}
+html{zoom:var(--z)}
