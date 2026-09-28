@@ -6,7 +6,7 @@ import { mountHeroSurface } from './hero-surface.js';
 import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, pct, esc } from './ui-state.js';
-import { displayVerdictCopy, configsLabel } from './ui-verdict.js';
+import { displayVerdictCopy } from './ui-verdict.js';
 
 // ---------------------------------------------------------------- preferencias
 export const PREFS_KEY = 'orometra.gates';
@@ -45,6 +45,7 @@ export function initChrome() {
   syncLangButtons();
   $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => changeLanguage(b.dataset.langSet)));
   applyStaticI18n();
+  initTabsFade();
 
   const mark = $('#brandMark');
   if (mark) repaintMark = mountBrandMark(mark);
@@ -251,6 +252,35 @@ export function setTab(tab, fromHash) {
   const current = document.querySelector(`.nav-item[data-tab="${tab}"] span:last-child`);
   if (status) status.textContent = current ? current.textContent : '';
   $('#view').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  revealActiveTab();
+}
+
+/* Movil: las 7 pestanas no caben y 3 quedaban fuera sin ninguna pista. Un difuminado
+ * en el borde por el que queda mas (data-more) invita a deslizar, y la pestana activa
+ * se trae a la vista al cambiar. En ordenador la barra no desliza y no se marca nada. */
+function updateTabsFade() {
+  const strip = $('.sidebar-scroll');
+  if (!strip) return;
+  const max = strip.scrollWidth - strip.clientWidth;
+  const left = strip.scrollLeft > 4;
+  const right = max > 4 && strip.scrollLeft < max - 4;
+  strip.dataset.more = left && right ? 'both' : left ? 'left' : right ? 'right' : '';
+}
+function initTabsFade() {
+  const strip = $('.sidebar-scroll');
+  if (!strip) return;
+  strip.addEventListener('scroll', updateTabsFade, { passive: true });
+  window.addEventListener('resize', updateTabsFade);
+  updateTabsFade();
+}
+function revealActiveTab() {
+  const strip = $('.sidebar-scroll');
+  const active = $('.nav-item.active');
+  if (!strip || !active || strip.scrollWidth <= strip.clientWidth) return;
+  const s = strip.getBoundingClientRect();
+  const r = active.getBoundingClientRect();
+  if (r.left < s.left + 24) strip.scrollBy({ left: r.left - s.left - 24, behavior: 'smooth' });
+  else if (r.right > s.right - 24) strip.scrollBy({ left: r.right - s.right + 24, behavior: 'smooth' });
 }
 
 export function render() {
@@ -265,14 +295,7 @@ export function render() {
   if (report) report.hidden = !hayAnalisis;
   if (hayAnalisis && state.analysis) {
     const rt = $('#reportTitle');
-    const rm = $('#reportMeta');
     if (rt) rt.textContent = displayVerdictCopy(state.analysis).headline;
-    if (rm && state.source) {
-      const parts = [state.source.is];
-      if (state.source.oos) parts.push(state.source.oos);
-      parts.push(configsLabel(state.analysis, true));
-      rm.textContent = parts.join(' · ');
-    }
   }
 
   const view = $('#view');
