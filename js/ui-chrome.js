@@ -343,7 +343,10 @@ function positionGlossCards() {
     let shift = 0;
     if (rect.left < margin) shift = margin - rect.left;
     else if (rect.right > window.innerWidth - margin) shift = (window.innerWidth - margin) - rect.right;
-    if (shift) el.style.setProperty('--gloss-shift-x', `${Math.round(shift)}px`);
+    // En pantallas grandes la pagina lleva zoom (ver --z en styles.css): el rect viene en
+    // pixeles de pantalla y el desplazamiento se aplica en pixeles de CSS, ya ampliados.
+    const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+    if (shift) el.style.setProperty('--gloss-shift-x', `${Math.round(shift / zoom)}px`);
   });
 }
 
