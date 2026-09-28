@@ -101,7 +101,8 @@ const P = {
   expert: [/^experto$/i, /^expert$/i, /^asesor$/i],
   symbol: [/^s[ií]mbolo$/i, /^symbol$/i],
   period: [/^per[ií]odo$/i, /^period$/i],
-  inputs: [/par[aá]metros\s*de\s*entrada/i, /^inputs$/i, /eingabeparameter/i],
+  // La celda llega tal cual ("Inputs:"), no pasa por labelledValues, que quita los dos puntos.
+  inputs: [/par[aá]metros\s*de\s*entrada/i, /^inputs\s*:?$/i, /eingabeparameter/i],
 };
 
 /**

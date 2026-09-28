@@ -8,18 +8,27 @@
 import { L } from '../js/i18n.js';
 import { toNumber } from './parse.js';
 
-/** Roles canonicos. Cada patron cubre terminal en ingles y en espanol. */
+/**
+ * Roles canonicos. Cada patron cubre terminal en ingles y en espanol.
+ *
+ * Todos van anclados al PRINCIPIO del nombre: un nombre de columna reconocido como
+ * métrica nunca se trata como parámetro, así que un patrón suelto se come parámetros
+ * legítimos ("AddLots", "HiddenSL" o "InpMaxDD" contienen "dd"; "UseSharpeFilter"
+ * contiene "sharpe"). Las cabeceras de MT5 empiezan siempre por el nombre de la métrica.
+ */
 const METRIC_PATTERNS = [
   ['forwardResult', /^(forward\s*result|resultado\s*(del\s*)?forward|resultado\s*adelante)$/i],
   ['backResult', /^(back\s*result|resultado\s*(del\s*)?back(test)?|resultado\s*atras)$/i],
   ['result', /^(result|resultado)$/i],
   ['profit', /^(net\s*)?(profit|beneficio|ganancia|benefici[oa]\s*neto)$/i],
-  ['expectedPayoff', /^(expected\s*payoff|beneficio\s*esperado|esperanza\s*matem)/i],
+  ['expectedPayoff', /^(expected\s*payoff|beneficio\s*esperado|esperanza\s*matem[aá]tica)$/i],
   ['profitFactor', /^(profit\s*factor|factor\s*de\s*(beneficio|ganancia|rentabilidad|lucro))$/i],
-  ['recoveryFactor', /^(recovery\s*factor|factor\s*de\s*recuperaci)/i],
-  ['sharpe', /sharpe/i],
+  ['recoveryFactor', /^(recovery\s*factor|factor\s*de\s*recuperaci[oó]n)$/i],
+  ['sharpe', /^(sharpe(\s*ratio)?|(ratio|coeficiente|[ií]ndice)\s*de\s*sharpe)$/i],
   ['custom', /^(custom|personalizado|criterio\s*personalizado)$/i],
-  ['drawdown', /(equity|balance)?\s*(dd\s*%?|drawdown|draw\s*down)|ca[ií]da\s*(de\s*)?(capital|balance)|reducci[oó]n/i],
+  // "Equity DD %", "Balance DD %", "Drawdown %", "Max Drawdown", "Reducción de la equidad %"…
+  // Tras la palabra clave solo se admite espacio, "%" o fin: "DD_Limit" o "Drawdowns" no.
+  ['drawdown', /^(max(imal|imum)?\s+)?((equity|balance)\s+)?(dd|drawdown|draw\s*down)(\s|%|$)|^(reducci[oó]n|ca[ií]da)(\s|%|$)/i],
   ['trades', /^(total\s*)?(trades|deals|operaciones|transacciones|negociaciones|# ?deals)$/i],
 ];
 

@@ -3,7 +3,7 @@
 
 import { AnalysisError, CODE } from './errors.js';
 import { toNumber, canonicalValue } from './parse.js';
-import { pairTables, metricColumns, inferParamsSingle, estimatePeriodRatio, roleFromTable } from './schema.js';
+import { pairTables, metricColumns, metricRole, inferParamsSingle, estimatePeriodRatio, roleFromTable } from './schema.js';
 import { DEFAULT_POLICY, resolvePolicy, periodQuality, payoffScale, gateFailures, combineScores, retention } from './metrics.js';
 import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
@@ -126,6 +126,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       isRows: isTable.rows.length, oosRows: 0, matchedRows: isTable.rows.length,
       unmatchedIs: 0, duplicateIds: 0, provenance: { checked: false, mismatches: 0 },
       inferredParams: inferred,
+      vetoed: inferred.rejected.filter((r) => r.reason === 'métrica reconocida').map((r) => ({ name: r.name, role: metricRole(r.name) })),
     };
     records = isTable.rows.map((row, i) => ({
       id: String(i),
@@ -154,7 +155,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   records.forEach((r) => { r.params = r.params.map((v, j) => normalizeByType(v, paramTypes[j])); });
 
   // Varias filas con el mismo vector de parámetros no son evidencia independiente
-  // (típico en GA). Se conserva la mejor por score provisional de puertas/calidad IS.
+  // (típico en GA). Se conserva la PRIMERA aparición: quedarse con la mejor sería
+  // elegir el máximo entre filas que deberían ser idénticas, y si no lo son (porque
+  // alguna columna que distingue las pasadas no se ha leído como parámetro) sería
+  // justo la selección optimista que este análisis intenta evitar.
   {
     const keyOf = (r) => r.params.map((v) => (v === null || v === undefined ? '' : String(v))).join('\0');
     const best = new Map();
@@ -167,9 +171,6 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
         continue;
       }
       duplicateParamVectors++;
-      // Preferir la que pasa más puertas / mejor profit factor IS como desempate.
-      const score = (x) => (Number.isFinite(x.is.profitFactor) ? x.is.profitFactor : -Infinity);
-      if (score(r) > score(prev)) best.set(k, r);
     }
     if (duplicateParamVectors) {
       records = [...best.values()];
@@ -454,8 +455,16 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       radius: nb.radius,
       slotsComplete: slotsKnown,
     };
+    // Extensión REAL de la meseta en cada parámetro: el mínimo y el máximo de sus
+    // miembros. No confundir con `refinement`, que es el rango sugerido para volver a
+    // optimizar alrededor del centro y puede ser mucho más ancho.
+    const paramSpan = paramNames.map((_, j) => {
+      const vals = comp.map((i) => records[i].params[j]).filter((v) => typeof v === 'number' && Number.isFinite(v));
+      return vals.length === comp.length ? { min: Math.min(...vals), max: Math.max(...vals) } : null;
+    });
     return {
       extent: ext,
+      paramSpan,
       spansIrregular,
       id: ci,
       indices: comp,
@@ -510,6 +519,18 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   };
   const INVERTED_RISK_PENALTY = 0.75;
   const IRREGULAR_PENALTY = 0.85;
+  // Clave de orden ÚNICA. La usan el orden principal y la prueba de sensibilidad
+  // (assessStability): si cada una ordenara a su manera, la prueba podría decir que la
+  // recomendación "no sobrevive a sus propios umbrales" solo por medir otra cosa.
+  const rankKey = ({ q10, effectiveSize, support, inverted, irregular, oosPassFrac }) => {
+    let s = Math.max(0, q10)
+      * Math.log1p(effectiveSize)
+      * evidenceFactor(support)
+      * (inverted ? INVERTED_RISK_PENALTY : 1)
+      * (irregular ? IRREGULAR_PENALTY : 1);
+    if (Number.isFinite(oosPassFrac)) s *= 0.35 + 0.65 * oosPassFrac;
+    return s;
+  };
   // Validación OOS tras descubrir en IS: una meseta que no aguanta el forward baja de rango.
   plateaus.forEach((p) => {
     if (!hasForward) {
@@ -523,15 +544,14 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       mode: selectionMode,
     };
   });
-  const rankScore = (p) => {
-    let s = Math.max(0, p.q10Score)
-      * Math.log1p(p.extent.effectiveSize)
-      * evidenceFactor(p.stability.support)
-      * (p.invertedRisk.length ? INVERTED_RISK_PENALTY : 1)
-      * (p.spansIrregular.length ? IRREGULAR_PENALTY : 1);
-    if (p.oosValidation) s *= 0.35 + 0.65 * p.oosValidation.passFrac;
-    return s;
-  };
+  const rankScore = (p) => rankKey({
+    q10: p.q10Score,
+    effectiveSize: p.extent.effectiveSize,
+    support: p.stability.support,
+    inverted: p.invertedRisk.length > 0,
+    irregular: p.spansIrregular.length > 0,
+    oosPassFrac: p.oosValidation ? p.oosValidation.passFrac : NaN,
+  });
   plateaus.forEach((p) => { p.rankScore = rankScore(p); });
   plateaus.sort((a, b) => b.rankScore - a.rankScore);
   plateaus.forEach((p, i) => { p.rank = i + 1; });
@@ -611,7 +631,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     .filter((r) => Number.isFinite(r[period].sharpe) && Number.isFinite(r[period].trades) && r[period].trades > 30)
     .map((r) => r[period].sharpe);
   let sharpeTest = null;
-  if (sharpeValues.length >= 30) {
+  // Sin dispersión (todos los Sharpe iguales, p. ej. a 0 porque el export no lo trae)
+  // no hay nada que contrastar: se omite en vez de dar un "0.00 frente a 0.00".
+  if (sharpeValues.length >= 30 && stdev(sharpeValues) > 1e-12) {
     const sigma = stdev(sharpeValues);
     const chanceMax = expectedMaximum(0, sigma, effectiveTrials);
     const observedMax = Math.max(...sharpeValues);
@@ -649,7 +671,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const viableNeededForPlateau = Math.ceil(
     opts.plateauMinSize * (1 + Math.max(opts.minSupport, nb.medianSupport || 0) * opts.plateauMinFracPass),
   );
-  const underpowered = !plateaus.length && gatePassCount > 0 && gatePassCount < viableNeededForPlateau;
+  // Se cuenta con el MISMO conjunto con el que se buscan las mesetas: en el modo por
+  // defecto (isThenOos) son las que pasan en el in-sample; el forward solo valida.
+  const searchPassCount = selectionMode === 'isThenOos' ? discoverPassCount : gatePassCount;
+  const underpowered = !plateaus.length && searchPassCount > 0 && searchPassCount < viableNeededForPlateau;
 
   /*
    * ESTABILIDAD DEL VEREDICTO FRENTE A SUS PROPIAS CONSTANTES.
@@ -671,9 +696,12 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     if (!baseline) return null;
     const baseMembers = new Set(baseline.indices);
 
-    // Dado un conjunto de umbrales y de pases, ¿que region gana? Reproduce el mismo
-    // criterio de orden que el analisis principal.
-    const winner = (drawOpts, pss, stab, rb) => {
+    // Dado un conjunto de umbrales y de pases, ¿que region gana? Usa la MISMA clave de
+    // orden que el analisis principal (rankKey): suelo, tamaño, evidencia, las dos
+    // penalizaciones y la validacion en forward. `oosFails` permite medir la validacion
+    // con las puertas perturbadas; por defecto, las del analisis.
+    const defaultOosFails = records.map((r) => r.failsOos.length > 0);
+    const winner = (drawOpts, pss, stab, rb, oosFails = defaultOosFails) => {
       const comps = findPlateaus(neighbors, rb, pss, stab, drawOpts);
       if (!comps.length) return null;
       let best = null;
@@ -683,8 +711,18 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
         const ex = componentExtent(comp, coords, activeDims.length ? activeDims : blocking, levels);
         const core = coreMembers(comp, rb, stab, drawOpts);
         const repIdx = chooseRepresentative(core.length >= 3 ? core : comp, neighbors, scores, rb);
-        const key = Math.max(0, quantile(cs, 0.1)) * Math.log1p(ex.effectiveSize)
-          * evidenceFactor(stab[repIdx].support);
+        const irregular = irregularGrids.some((g) => {
+          const occupied = new Set(comp.map((i) => coords[i][g.index]));
+          return g.jumps.some((jp) => occupied.has(jp.fromIndex) && occupied.has(jp.toIndex));
+        });
+        const key = rankKey({
+          q10: quantile(cs, 0.1),
+          effectiveSize: ex.effectiveSize,
+          support: stab[repIdx].support,
+          inverted: inversions.some((inv) => records[repIdx].params[inv.index] === inv.bestIs),
+          irregular,
+          oosPassFrac: hasForward && comp.length ? comp.filter((i) => !oosFails[i]).length / comp.length : NaN,
+        });
         if (key > bestKey) { bestKey = key; best = repIdx; }
       }
       return best;
@@ -766,16 +804,20 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       const winners = gateDraws.slice(0, maxGateDraws).map((g) => {
         const gp = { ...policy, gates: { ...g0, minProfitFactor: g.minProfitFactor, maxDrawdownPct: g.maxDrawdownPct } };
         const p2 = new Uint8Array(records.length);
+        const oosFails2 = new Array(records.length);
         records.forEach((r, i) => {
           const fi = gateFailures(r.is, gp, minTradesIs * g.tradeFactor);
           const fo = hasForward ? gateFailures(r.oos, gp, minTradesOos * g.tradeFactor) : [];
-          p2[i] = !fi.length && (!hasForward || !fo.length) ? 1 : 0;
+          oosFails2[i] = fo.length > 0;
+          // Misma definicion de "pasa" que el analisis principal: en el modo por defecto
+          // las mesetas se buscan con el in-sample y el forward solo valida.
+          p2[i] = !fi.length && (selectionMode === 'isThenOos' || !hasForward || !fo.length) ? 1 : 0;
         });
         // La escala de referencia se mantiene FIJA a proposito: se quiere aislar el efecto
         // de la puerta, no confundirlo con una vara de medir que se mueve a la vez.
         const st2 = localStability(neighbors, scores, p2, globalScale);
         const rb2 = robustnessScores(scores, p2, st2, opts, nb.medianSupport);
-        return winner(opts, p2, st2, rb2);
+        return winner(opts, p2, st2, rb2, oosFails2);
       });
       gates = { ...tally(winners), perturbation: 0.2 };
     }
@@ -809,6 +851,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const verdictCtx = {
     gatePassCount,
     discoverPassCount,
+    searchPassCount,
     total: records.length,
     plateaus,
     fragility: fragilityResult.fragility,
@@ -856,6 +899,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       hasForward,
       selectionMode,
       discoverPassCount,
+      searchPassCount,
       generatedAt: new Date().toISOString(),
       elapsedMs: Date.now() - started,
       total: records.length,

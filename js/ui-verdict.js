@@ -1,6 +1,7 @@
 // Veredicto, evidencia, why-grade, outcome y top3.
 
 import { qualityLabel } from '../core/metrics.js';
+import { compareParams } from '../core/report.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag } from './i18n.js';
@@ -60,12 +61,33 @@ export function holdoutFact(a) {
     : res.level === 'tail'
       ? L('En la cola', 'In the tail')
       : L('Fuera de rango', 'Out of range');
+  /*
+   * Un resultado "normal" solo confirma la recomendación si el backtest es de ESA
+   * configuración: la meseta recomendada (M1) y, si hay informe, con sus mismos
+   * parámetros y al menos uno leído. Si no, el contraste es aritméticamente correcto
+   * pero no valida nada, y no puede subir el nivel de evidencia. "En la cola" tampoco:
+   * es un resultado raro para esa configuración, no una confirmación.
+   */
+  const plateaus = (a && a.plateaus) || [];
+  const idx = plateaus.length ? Math.min(state.unseen.plateauIndex || 0, plateaus.length - 1) : -1;
+  const plateau = idx >= 0 ? plateaus[idx] : null;
+  const cmp = state.report && plateau
+    ? compareParams(state.report.params, a.meta.paramNames, plateau.record.params)
+    : null;
+  let problem = '';
+  if (cmp && cmp.different.length) {
+    problem = L('El informe es de otra configuración: no valida la propuesta.', 'The report is from another configuration: it does not validate the proposal.');
+  } else if (cmp && !cmp.same.length) {
+    problem = L('No se han podido leer los parámetros del informe, así que no consta que sea de la configuración propuesta.', 'The report parameters could not be read, so it is not confirmed that it comes from the proposed configuration.');
+  } else if (idx > 0) {
+    problem = L(`Se evaluó la meseta M${idx + 1}, no la recomendada (M1).`, `Plateau M${idx + 1} was evaluated, not the recommended one (M1).`);
+  }
   return {
-    value,
-    note: res.headline || '',
+    value: problem ? L(`${value} · no valida`, `${value} · does not validate`) : value,
+    note: problem || res.headline || '',
     short: L(`Periodo no visto: ${value}`, `Unseen period: ${value}`),
     done: true,
-    ok: res.level === 'normal' || res.level === 'tail',
+    ok: !problem && res.level === 'normal',
   };
 }
 
@@ -400,6 +422,12 @@ export function renderWhyGrade(a, highlights) {
 export function renderStableRanges(a, best) {
   const sens = a.sensitivity || [];
   const rows = (best.refinement || []).filter((r) => !r.constant && !r.fixed && !r.categorical && r.levels > 1);
+  const spanOf = (name) => {
+    const j = a.meta.paramNames.indexOf(name);
+    const sp = j >= 0 && best.paramSpan ? best.paramSpan[j] : null;
+    if (!sp) return '—';
+    return sp.min === sp.max ? paramHtml(sp.min) : `${paramHtml(sp.min)} – ${paramHtml(sp.max)}`;
+  };
   if (!rows.length) return '';
   // Posicion RELATIVA, no "Alta/Media/Baja" absolutos: la medida combinada sale alta
   // tambien con ruido puro (en un dataset aleatorio daba 0,78-0,94 a todos), asi que un
@@ -416,14 +444,14 @@ export function renderStableRanges(a, best) {
   return `<section class="panel panel-ranges">
     <div class="panel-head compact">
       <div>
-        <div class="panel-kicker">${L('Rangos estables', 'Stable ranges')}</div>
-        <h2>${L('Cuánto puedes mover cada parámetro', 'How far you can move each parameter')}</h2>
+        <div class="panel-kicker">${L('Rangos', 'Ranges')}</div>
+        <h2>${L('Dónde está la meseta y dónde volver a optimizar', 'Where the plateau is and where to re-optimize')}</h2>
       </div>
       <button class="ghost-btn" data-export="refine" data-plateau-index="${best.rank - 1}">${L('.set de refinamiento', 'Refinement .set')}</button>
     </div>
     <p class="chart-note">${L(
-      'Centro recomendado = pasada seleccionada. La zona es el rango de refinamiento alrededor de la meseta — no un intervalo de confianza.',
-      'Recommended center = selected Pass. The zone is the refinement range around the plateau — not a confidence interval.',
+      'Centro = configuración recomendada. «Meseta» es lo que ocupan de verdad sus configuraciones; «Refinamiento», el rango sugerido para volver a optimizar alrededor del centro (el del .set de refinamiento). Ninguno de los dos es un intervalo de confianza.',
+      'Center = recommended configuration. "Plateau" is what its configurations actually cover; "Refinement" is the suggested range to re-optimize around the center (the one in the refinement .set). Neither is a confidence interval.',
     )}</p>
     <div class="range-table-wrap">
       <table class="range-table">
@@ -431,7 +459,8 @@ export function renderStableRanges(a, best) {
           <tr>
             <th>${L('Parámetro', 'Parameter')}</th>
             <th>${L('Centro', 'Center')}</th>
-            <th>${L('Zona estable', 'Stable zone')}</th>
+            <th>${L('Meseta', 'Plateau')}</th>
+            <th>${L('Refinamiento', 'Refinement')}</th>
             <th>${L('Influencia (puesto)', 'Influence (rank)')}</th>
           </tr>
         </thead>
@@ -439,6 +468,7 @@ export function renderStableRanges(a, best) {
           ${rows.map((r) => `<tr>
             <td>${esc(r.name)}</td>
             <td class="mono">${paramHtml(r.center)}</td>
+            <td class="mono">${spanOf(r.name)}</td>
             <td class="mono">${paramHtml(r.start)} – ${paramHtml(r.stop)}</td>
             <td>${sensLabel(r.name)}</td>
           </tr>`).join('')}

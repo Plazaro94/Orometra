@@ -7,8 +7,8 @@
 // lista de transacciones una a una, y es justo lo único que MT5 exporta que permite un
 // Monte Carlo serio: reordenar operaciones reales, no simular una distribución
 // inventada. Se agrupa por día (no por operación) porque los horizontes de "3/6/12
-// meses" del bootstrap (core/matrix/bootstrap.js) están calibrados en días de
-// calendario: mezclar granularidades les haría decir una cosa por otra.
+// meses" del bootstrap (core/matrix/bootstrap.js) están calibrados en días de mercado
+// (63/126/252): mezclar granularidades les haría decir una cosa por otra.
 
 import { applyCostStress, costScenarios, breakEvenExtraCostPerTrade } from './costs.js';
 import { stationaryBootstrap } from './bootstrap.js';
@@ -47,10 +47,32 @@ export function dailySeriesFromDeals(deals) {
     totalCommission += Number.isFinite(d.commission) ? d.commission : 0;
     totalNet += Number.isFinite(d.net) ? d.net : 0;
   }
-  const keys = Array.from(byDay.keys()).sort();
+  // Los días de mercado SIN cierres también cuentan: sin ellos, un EA que cierra una
+  // operación por semana tendría "63 días" de serie en 63 semanas, y los horizontes de
+  // 3/6/12 meses del bootstrap medirían otra cosa. Se rellenan con 0 los días laborables
+  // (lunes a viernes) entre el primer y el último cierre; un cierre en fin de semana se
+  // conserva como su propio día.
+  const traded = Array.from(byDay.keys()).sort();
+  const toUtc = (k) => Date.UTC(Number(k.slice(0, 4)), Number(k.slice(5, 7)) - 1, Number(k.slice(8, 10)));
+  const pad = (n) => String(n).padStart(2, '0');
+  const DAY = 86400000;
+  const first = toUtc(traded[0]);
+  const last = toUtc(traded[traded.length - 1]);
+  const keys = [];
+  for (let t = first; t <= last; t += DAY) {
+    const d = new Date(t);
+    const k = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+    const wd = d.getUTCDay();
+    if (byDay.has(k)) keys.push(k);
+    else if (wd !== 0 && wd !== 6) {
+      byDay.set(k, { pnl: 0, volume: 0, trades: 0 });
+      keys.push(k);
+    }
+  }
   return {
     usable: true,
     days: keys.length,
+    tradingDays: traded.length,
     dailyPnl: keys.map((k) => byDay.get(k).pnl),
     dailyVolume: keys.map((k) => byDay.get(k).volume),
     dailyTrades: keys.map((k) => byDay.get(k).trades),

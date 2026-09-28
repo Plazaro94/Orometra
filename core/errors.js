@@ -47,7 +47,10 @@ export function classifyError(err) {
 /** Estado del análisis cuando el motor sí termina (no es un throw). */
 export function outcomeFromAnalysis(a) {
   if (!a || !a.meta) return { code: CODE.DATA_ERROR };
-  if (!a.meta.gatePassCount) {
+  // Sin candidatas para BUSCAR mesetas. Si hay meseta en el in-sample y ninguna pasa en
+  // el forward, no es "nada que analizar": el veredicto lo explica como hallazgo.
+  const searchCount = Number.isFinite(a.meta.searchPassCount) ? a.meta.searchPassCount : a.meta.gatePassCount;
+  if (!searchCount) {
     return {
       code: CODE.NO_QUALIFYING_CONFIGS,
       gatePassCount: 0,
@@ -115,8 +118,8 @@ export function errorCopy(code, L) {
     [CODE.NO_QUALIFYING_CONFIGS]: {
       title: L('Ninguna configuración pasa los mínimos', 'No configuration clears the minima'),
       hint: L(
-        'Eso no es un fallo técnico: con estos mínimos no hay candidatos. Relaja PF/DD/ops o revisa la estrategia.',
-        'This is not a technical failure: with these minima there are no candidates. Relax PF/DD/trades or revisit the strategy.',
+        'Eso no es un fallo técnico: con estos mínimos no hay candidatos. Relaja los mínimos (factor de beneficio, drawdown, operaciones) o revisa el rango que optimizaste.',
+        'This is not a technical failure: with these minima there are no candidates. Relax the minima (profit factor, drawdown, trades) or review the range you optimized.',
       ),
     },
     [CODE.NO_PLATEAU]: {

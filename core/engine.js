@@ -995,11 +995,26 @@ export function refinementRange(repIndex, coords, levels, paramNames, sensitivit
     const s = sensitivity && sensitivity[j];
     return s && Number.isFinite(s.sensitivity) ? s.sensitivity : 0;
   };
+  // Cuántos valores GENERARÁ MT5 con el .set (inicio, paso, fin), no cuántos niveles
+  // vistos caen dentro. Con niveles irregulares (típico del genético: 10, 13, 20, 40)
+  // el paso es el menor salto y MT5 rellena todo el tramo: 10→40 con paso 3 son 11.
+  const mtCount = (j, lo, hi) => {
+    const inner = levels[j].slice(lo, hi + 1);
+    if (inner.length < 2) return inner.length;
+    const steps = inner.slice(1).map((v, k) => v - inner[k]).filter((d) => Number.isFinite(d) && d > 0);
+    if (!steps.length) return inner.length;
+    const step = Math.min(...steps);
+    return Math.max(inner.length, Math.floor((inner[inner.length - 1] - inner[0]) / step + 1e-9) + 1);
+  };
   const spanOf = (j) => {
     if (levels[j].length < 2) return 1;
     const lo = Math.max(0, z0[j] - radius[j]);
     const hi = Math.min(levels[j].length - 1, z0[j] + radius[j]);
-    return hi - lo + 1;
+    return mtCount(j, lo, hi);
+  };
+  const seenSpan = (j) => {
+    if (levels[j].length < 2) return 1;
+    return Math.min(levels[j].length - 1, z0[j] + radius[j]) - Math.max(0, z0[j] - radius[j]) + 1;
   };
   const total = () => optimised.reduce((acc, j) => acc * spanOf(j), 1);
 
@@ -1014,13 +1029,13 @@ export function refinementRange(repIndex, coords, levels, paramNames, sensitivit
   guard = 0;
   while (guard++ < 500) {
     const candidates = optimised
-      .filter((j) => spanOf(j) < levels[j].length)
+      .filter((j) => seenSpan(j) < levels[j].length)
       .sort((a, b) => sensOf(b) - sensOf(a));
     let grew = false;
     for (const j of candidates) {
-      const before = spanOf(j);
+      const before = seenSpan(j);
       radius[j] += 1;
-      if (spanOf(j) === before) continue; // ya tocaba los dos extremos
+      if (seenSpan(j) === before) continue; // ya tocaba los dos extremos
       if (total() <= budget) {
         grew = true;
         break;
@@ -1048,7 +1063,9 @@ export function refinementRange(repIndex, coords, levels, paramNames, sensitivit
       start: inner[0],
       stop: inner[inner.length - 1],
       step: steps.length ? Math.min(...steps) : 0,
-      levels: inner.length,
+      // Valores que generará MT5 con este inicio/paso/fin (ver mtCount).
+      levels: mtCount(j, lo, hi),
+      seenLevels: inner.length,
       fixed: inner.length === 1,
     };
   });

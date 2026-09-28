@@ -29,7 +29,7 @@ function leerZip(buffer) {
   for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) {
     if (dv.getUint32(i, true) === 0x06054b50) { fin = i; break; }
   }
-  if (fin < 0) throw new Error(L('El archivo no es un ZIP valido.', 'The file is not a valid ZIP.'));
+  if (fin < 0) throw new Error(L('El archivo no es un ZIP válido.', 'The file is not a valid ZIP.'));
 
   const total = dv.getUint16(fin + 10, true);
   let p = dv.getUint32(fin + 16, true);
@@ -115,7 +115,7 @@ async function extraer(zip, nombre) {
   }
   if (e.metodo !== 8) throw new Error(L(`Compresión ZIP no soportada (método ${e.metodo}).`, `Unsupported ZIP compression (method ${e.metodo}).`));
   if (typeof DecompressionStream === 'undefined') {
-    throw new Error(L('Tu navegador no puede descomprimir este archivo. Exporta desde MT5 en XML, o guardalo como CSV.', 'Your browser cannot decompress this file. Export from MT5 as XML, or save it as CSV.'));
+    throw new Error(L('Tu navegador no puede descomprimir este archivo. Exporta desde MT5 en XML, o guárdalo como CSV.', 'Your browser cannot decompress this file. Export from MT5 as XML, or save it as CSV.'));
   }
   const flujo = new Blob([datos]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
   const plain = await leerLimitado(flujo, cap);
