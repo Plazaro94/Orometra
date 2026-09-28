@@ -130,6 +130,22 @@ node tools/serve.js
 
 Después abre `http://localhost:3000`. Acepta otro puerto como argumento: `node tools/serve.js 8080`.
 
+## Páginas en español
+
+La portada, la metodología y la privacidad tienen una versión por idioma: `/`, `/methodology/`
+y `/privacy/` en inglés, y `/es/…` en español, enlazadas con `hreflang` para que Google indexe
+las dos. Las de `es/` **se generan**, no se editan a mano: cambia la página inglesa o
+`js/i18n.js` y ejecuta
+
+```bash
+node tools/build-es.js
+```
+
+`npm test` falla (`build-es.js --check`) si `es/` no está al día. El idioma de estas páginas lo
+decide su dirección; `js/theme-init.js` lleva a `/es/` a quien tiene el navegador en español
+(o lo eligió antes) y los botones EN/ES cambian de dirección. La aplicación (`/app/`) sigue
+siendo una sola página que se traduce en el navegador.
+
 ## Pruebas
 
 ```bash

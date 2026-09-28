@@ -99,7 +99,7 @@ section('AUD-07: CSP en <meta> en todas las paginas, igual que en vercel.json');
   const vercel = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
   const header = vercel.headers[0].headers.find((h) => h.key === 'Content-Security-Policy').value;
   const expected = header.replace(" frame-ancestors 'none';", '');
-  for (const page of ['index.html', '404.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html']) {
+  for (const page of ['index.html', '404.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'es/index.html', 'es/methodology/index.html', 'es/privacy/index.html']) {
     const html = fs.readFileSync(path.join(ROOT, page), 'utf8');
     const m = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/);
     check(`${page} lleva CSP en meta`, Boolean(m));

@@ -1,17 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://orometra.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/"/>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://orometra.com/methodology/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/methodology/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/methodology/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/methodology/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/methodology/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/methodology/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/methodology/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/methodology/"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://orometra.com/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/privacy/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/privacy/"/>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

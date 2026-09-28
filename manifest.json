@@ -1,7 +1,7 @@
 {
   "name": "Orometra",
   "short_name": "Orometra",
-  "description": "MT5 optimization overfitting & robustness audit",
+  "description": "MT5 optimization overfitting & robustness analysis",
   "start_url": "/app/",
   "scope": "/",
   "display": "standalone",

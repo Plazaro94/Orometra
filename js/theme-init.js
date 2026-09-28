@@ -25,17 +25,33 @@
   syncThemeColor();
 
   try {
-    var lang = localStorage.getItem('orometra.lang');
+    var root = document.documentElement;
+    var stored = null;
+    try { stored = localStorage.getItem('orometra.lang'); } catch (eRead) { /* privado */ }
+    var lang = stored;
     if (lang !== 'en' && lang !== 'es') {
       var nav = (navigator.language || '').toLowerCase();
       lang = nav.indexOf('es') === 0 ? 'es' : 'en';
     }
-    document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('data-lang', lang);
+    // Paginas publicas (portada, metodologia, privacidad): cada idioma tiene su propia
+    // direccion (/ y /es/) para que Google indexe las dos. El idioma lo decide la
+    // direccion; si el visitante prefiere el otro (lo eligio antes, o su navegador esta
+    // en ese idioma y aun no eligio), se le lleva a su version antes de pintar nada.
+    // Solo se redirige desde / hacia /es/ por el navegador: quien llega a /es/ desde un
+    // buscador lo ha pedido asi.
+    var fixed = root.getAttribute('data-lang-fixed');
+    var alt = root.getAttribute('data-alt-href');
+    if (fixed && alt && lang !== fixed && (stored === lang || fixed === 'en')) {
+      location.replace(alt + location.search + location.hash);
+      return;
+    }
+    if (fixed) lang = fixed;
+    root.setAttribute('lang', lang);
+    root.setAttribute('data-lang', lang);
     // El HTML estatico esta en ingles. Si el visitante lo ve en español, pintarlo antes
     // de traducir hace que los textos cambien de longitud y todo salte (CLS 0,24 en la
     // app en movil). Se oculta hasta que i18n.js traduce; por seguridad, 1,5 s como mucho.
-    if (lang !== 'en') {
+    if (lang !== (fixed || 'en')) {
       document.documentElement.classList.add('i18n-pending');
       setTimeout(function () { document.documentElement.classList.remove('i18n-pending'); }, 1500);
     }
