@@ -88,7 +88,7 @@
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.overfit.s3.title">Sign 2: the forward collapses</h2>
-    <p data-i18n="guide.overfit.s3.body">With Forward enabled, MT5 tests every pass on a stretch it did not use to optimize. Some decline is normal; what gives overfitting away is the top in-sample passes sinking in the forward, or the ranking changing completely. One caution: do not simply pick the pass with the best forward. Then the forward stops being a clean test and becomes just another optimization.</p>
+    <p data-i18n="guide.overfit.s3.body">With Forward enabled, MT5 tests the best passes on a stretch it did not use to optimize. Some decline is normal; what gives overfitting away is the top in-sample passes sinking in the forward, or the ranking changing completely. One caution: do not simply pick the pass with the best forward. Then the forward stops being a clean test and becomes just another optimization.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.overfit.s4.title">Sign 3: too many trials for too little data</h2>
@@ -119,6 +119,15 @@
     <a class="primary-btn" href="/app/" data-i18n="guide.overfit.cta">Analyze my results</a>
     <a class="ghost-btn" href="/methodology/" data-i18n="guide.overfit.more">How Orometra decides →</a>
   </section>
+
+  <nav class="guide-related" aria-labelledby="guide-related-title">
+    <h2 id="guide-related-title" data-i18n="guides.more">More guides</h2>
+    <ul>
+      <li><a href="/guides/export-mt5-optimization-xml/" data-i18n="guides.export.title">How to export your MT5 optimization results to XML</a></li>
+      <li><a href="/guides/mt5-forward-testing/" data-i18n="guides.forward.title">Forward testing in MT5: what it is and how to set it up</a></li>
+      <li><a href="/guides/mt5-strategy-tester-report/" data-i18n="guides.report.title">How to read the MT5 Strategy Tester report</a></li>
+    </ul>
+  </nav>
 </main>
 
 <footer class="lp-foot">

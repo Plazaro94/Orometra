@@ -1342,6 +1342,11 @@ tr.sel td{color:var(--text-2)}
 .guide .lp-eyebrow a:hover{text-decoration:underline}
 .guide-step .lp-list{max-width:62ch}
 .guide-step h2+.lp-list{margin-top:4px}
+.guide-related{margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
+.guide-related h2{margin:0 0 12px;font-size:var(--fs-base);text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
+.guide-related ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.guide-related a{color:var(--text);line-height:1.45}
+.guide-related a:hover{color:var(--accent)}
 
 .lp-foot{
   margin-top:auto;border-top:1px solid var(--line);

@@ -29,11 +29,13 @@ const PAGES = [
   ['guides/index.html', '/guides/', '/es/guias/', 'guides'],
   ['guides/export-mt5-optimization-xml/index.html', '/guides/export-mt5-optimization-xml/', '/es/guias/exportar-optimizacion-mt5-xml/', 'guide-export'],
   ['guides/mt5-overfitting/index.html', '/guides/mt5-overfitting/', '/es/guias/sobreoptimizacion-mt5/', 'guide-overfit'],
+  ['guides/mt5-forward-testing/index.html', '/guides/mt5-forward-testing/', '/es/guias/forward-testing-mt5/', 'guide-forward'],
+  ['guides/mt5-strategy-tester-report/index.html', '/guides/mt5-strategy-tester-report/', '/es/guias/informe-probador-estrategias-mt5/', 'guide-report'],
 ];
 // Fecha de publicacion de cada guia (datos estructurados).
 // Guias: fecha de publicacion y prefijo de sus claves i18n.
-const PUBLISHED = { 'guide-export': '2026-09-28', 'guide-overfit': '2026-09-28' };
-const GUIDE_KEYS = { 'guide-export': 'guide.export', 'guide-overfit': 'guide.overfit' };
+const PUBLISHED = { 'guide-export': '2026-09-28', 'guide-overfit': '2026-09-28', 'guide-forward': '2026-09-28', 'guide-report': '2026-09-28' };
+const GUIDE_KEYS = { 'guide-export': 'guide.export', 'guide-overfit': 'guide.overfit', 'guide-forward': 'guide.forward', 'guide-report': 'guide.report' };
 const LOCALIZED = new Map(PAGES.map(([, en, es]) => [en, es]));
 
 const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
