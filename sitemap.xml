@@ -80,4 +80,20 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-overfitting/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/sobreoptimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/sobreoptimizacion-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/sobreoptimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

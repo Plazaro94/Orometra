@@ -28,9 +28,12 @@ const PAGES = [
   ['privacy/index.html', '/privacy/', '/es/privacy/', 'privacy'],
   ['guides/index.html', '/guides/', '/es/guias/', 'guides'],
   ['guides/export-mt5-optimization-xml/index.html', '/guides/export-mt5-optimization-xml/', '/es/guias/exportar-optimizacion-mt5-xml/', 'guide-export'],
+  ['guides/mt5-overfitting/index.html', '/guides/mt5-overfitting/', '/es/guias/sobreoptimizacion-mt5/', 'guide-overfit'],
 ];
 // Fecha de publicacion de cada guia (datos estructurados).
-const PUBLISHED = { 'guide-export': '2026-09-28' };
+// Guias: fecha de publicacion y prefijo de sus claves i18n.
+const PUBLISHED = { 'guide-export': '2026-09-28', 'guide-overfit': '2026-09-28' };
+const GUIDE_KEYS = { 'guide-export': 'guide.export', 'guide-overfit': 'guide.overfit' };
 const LOCALIZED = new Map(PAGES.map(([, en, es]) => [en, es]));
 
 const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -117,16 +120,17 @@ function jsonLd(page, locale, pagePath) {
   if (page === 'guides') {
     return { '@context': 'https://schema.org', '@type': 'CollectionPage', url, name: strip(t('guides.h1')), description: strip(t('meta.description.guides')), inLanguage: lang, publisher: org };
   }
-  if (page === 'guide-export') {
+  if (GUIDE_KEYS[page]) {
+    const k = GUIDE_KEYS[page];
     const guidesUrl = locale === 'es' ? `${ORIGIN}/es/guias/` : `${ORIGIN}/guides/`;
     return { '@context': 'https://schema.org', '@graph': [
-      { '@type': 'Article', headline: strip(t('guide.export.h1')), description: strip(t('meta.description.guide-export')), inLanguage: lang,
+      { '@type': 'Article', headline: strip(t(`${k}.h1`)), description: strip(t(`meta.description.${page}`)), inLanguage: lang,
         mainEntityOfPage: url, url, datePublished: PUBLISHED[page], dateModified: PUBLISHED[page],
         image: `${ORIGIN}/${locale === 'es' ? 'og-image-es.jpg' : 'og-image.jpg'}`, author: org, publisher: org },
       { '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Orometra', item: home },
         { '@type': 'ListItem', position: 2, name: strip(t('nav.guides')), item: guidesUrl },
-        { '@type': 'ListItem', position: 3, name: strip(t('guide.export.h1')), item: url },
+        { '@type': 'ListItem', position: 3, name: strip(t(`${k}.h1`)), item: url },
       ] },
     ] };
   }
