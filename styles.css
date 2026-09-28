@@ -1412,7 +1412,6 @@ html.i18n-pending body{visibility:hidden}
 .hm-steps h3{margin:0 0 6px;font-size:17px;color:var(--text-hi)}
 .hm-steps p{margin:0;color:var(--text-2);line-height:1.6}
 
-.hm-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 
 .hm-faq{border-top:1px solid var(--line);max-width:780px}
 .hm-faq details{border-bottom:1px solid var(--line)}
@@ -1442,11 +1441,10 @@ html.i18n-pending body{visibility:hidden}
   .hm-hero h1{max-width:none}
   .hm-section{margin-bottom:72px}
   .hm-steps{gap:24px}
-  .hm-grid{gap:16px}
   .hm-card{padding:20px}
 }
 @media (max-width:720px){
-  .hm-compare,.hm-steps,.hm-grid{grid-template-columns:1fr}
+  .hm-compare,.hm-steps{grid-template-columns:1fr}
 }
 @media (max-width:480px){
   .hm-actions .hm-cta{flex:1 1 100%;justify-content:center}
@@ -1510,3 +1508,16 @@ html.i18n-pending body{visibility:hidden}
   .hm-vs td{font-size:14.5px}
   .hm-vs tbody th{font-size:15px}
 }
+
+.hm-ai-close a{color:var(--ok-text);font-weight:600;text-underline-offset:3px;white-space:nowrap}
+.hm-ai-close a:hover{color:var(--ok-hi)}
+
+/* Metodologia: por que no una IA (el detalle de la tabla de la portada). */
+.doc-ai{margin-top:40px;max-width:760px;scroll-margin-top:24px}
+.doc-ai h2{font-size:clamp(22px,2.4vw,28px);margin:0 0 12px;color:var(--text-hi);letter-spacing:-.02em}
+.doc-ai > p{max-width:68ch;font-size:var(--fs-base);line-height:1.6;color:var(--text-2)}
+.doc-ai-lead{font-size:17px !important;color:var(--text-2)}
+.doc-ai-list{margin:28px 0;display:grid;gap:24px}
+.doc-ai-list dt{font-weight:700;color:var(--text-hi);margin:0 0 6px;font-size:16px}
+.doc-ai-list dd{margin:0;color:var(--text-2);line-height:1.6;max-width:68ch;font-size:var(--fs-base)}
+#suerte{scroll-margin-top:24px}
