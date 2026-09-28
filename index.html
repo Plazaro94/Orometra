@@ -116,21 +116,20 @@
     <h2 id="hm-engine-title" data-i18n="home.engine.title">What the engine does for you</h2>
     <p class="hm-sub" data-i18n="home.engine.sub">What would take you hours in a spreadsheet and a lot of judgment — done in seconds, the same way every time.</p>
     <ol class="hm-engine">
-      <li><span class="hm-engine-num" aria-hidden="true">01</span><h3 data-i18n="home.engine.1.title">Drops what doesn't qualify</h3><p data-i18n="home.engine.1.body">Out go the passes that miss your minimums for profit, drawdown and number of trades — in-sample and forward.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">02</span><h3 data-i18n="home.engine.2.title">Doesn't trust the Result column</h3><p data-i18n="home.engine.2.body">It rebuilds quality from objective metrics (profit factor, recovery, Sharpe, drawdown), not from the criterion you optimized for.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">03</span><h3 data-i18n="home.engine.3.title">Checks the neighbors</h3><p data-i18n="home.engine.3.body">For every configuration it checks whether the surrounding values also work, and picks the center of the plateau: the point whose weakest neighbor is still solid.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">04</span><h3 data-i18n="home.engine.4.title">Confirms it on the forward</h3><p data-i18n="home.engine.4.body">Plateaus that also hold up in the forward period move up; those that fall apart move down.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">05</span><h3 data-i18n="home.engine.5.title">Measures how much could be luck</h3><p data-i18n="home.engine.5.body">It estimates the best result pure chance would produce when testing that many combinations, and warns you if yours doesn't beat it.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">06</span><h3 data-i18n="home.engine.6.title">Tests itself</h3><p data-i18n="home.engine.6.body">It repeats the search moving its own thresholds by ±20%. If the recommendation only appears with the exact numbers, it tells you.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">01</span><h3 data-i18n="home.engine.1.title">Drops what doesn't qualify</h3><p data-i18n="home.engine.1.body">Out go the passes that miss your minimums for profit, drawdown and trades.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">02</span><h3 data-i18n="home.engine.2.title">Doesn't trust the Result column</h3><p data-i18n="home.engine.2.body">It measures quality with objective metrics, not with what you optimized for.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">03</span><h3 data-i18n="home.engine.3.title">Checks the neighbors</h3><p data-i18n="home.engine.3.body">It picks the center of the plateau, not the peak.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">04</span><h3 data-i18n="home.engine.4.title">Confirms it on the forward</h3><p data-i18n="home.engine.4.body">What holds up in the forward moves up; what falls apart moves down.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">05</span><h3 data-i18n="home.engine.5.title">Measures how much could be luck</h3><p data-i18n="home.engine.5.body">It warns you if your result doesn't beat what pure chance would produce.</p></li>
+      <li><span class="hm-engine-num" aria-hidden="true">06</span><h3 data-i18n="home.engine.6.title">Tests itself</h3><p data-i18n="home.engine.6.body">It checks that the recommendation doesn't depend on its own settings.</p></li>
     </ol>
-    <p class="hm-more"><a href="methodology/" data-i18n="home.engine.more">See the method step by step →</a></p>
+    <p class="hm-more"><a href="methodology/" data-i18n="home.engine.more">Read more: the method step by step →</a></p>
   </section>
 
   <!-- 2c. Por que no una IA -->
   <section class="hm-section hm-ai" aria-labelledby="hm-ai-title">
     <h2 id="hm-ai-title" data-i18n="home.ai.title">Why not just ask an AI?</h2>
     <p class="hm-ai-lead" data-i18n="home.ai.lead">An AI always has an answer. Orometra only gives you the one your data can defend.</p>
-    <p class="hm-sub" data-i18n="home.ai.sub">Paste your table into a chat and you'll get a convincing explanation of why the top row is good. With thousands of combinations tested, there is always one. That isn't analysis — it's a story.</p>
     <table class="hm-vs">
       <thead><tr><td></td><th scope="col" class="hm-vs-ai" data-i18n="home.ai.col.ai">An AI chat</th><th scope="col" class="hm-vs-oro" data-i18n="home.ai.col.oro">Orometra</th></tr></thead>
       <tbody>
@@ -142,30 +141,20 @@
         <tr><th scope="row" data-i18n="home.ai.6.k">What you get</th><td class="hm-vs-ai" data-i18n="home.ai.6.ai">Text</td><td class="hm-vs-oro" data-i18n="home.ai.6.oro">A configuration, its evidence level and a .set for MT5</td></tr>
       </tbody>
     </table>
-    <p class="hm-ai-close" data-i18n="home.ai.close">Use AI to understand the report and ask it anything about it. But the configuration you risk your money on deserves a criterion that doesn't change from one conversation to the next.</p>
+    <p class="hm-ai-close"><span data-i18n="home.ai.close">Use AI to understand the report. To decide which configuration you risk your money on, use a criterion that doesn't change.</span> <a href="methodology/#ia" data-i18n="home.ai.more">Read the full explanation →</a></p>
   </section>
 
   <!-- 3. Como funciona -->
   <section class="hm-section" aria-labelledby="hm-how-title">
     <h2 id="hm-how-title" data-i18n="lp.how.title">How it works</h2>
     <ol class="hm-steps">
-      <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Export</h3><p data-i18n="home.how.1.body">In MT5, right-click the optimization results and export to XML. If you used forward, export that tab too.</p></li>
-      <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Drop the files</h3><p data-i18n="home.how.2.body">Drag them into the app. They are analyzed in your browser, in seconds.</p></li>
-      <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Read the result</h3><p data-i18n="home.how.3.body">Which configuration to use, how much to trust it, and a .set file ready for MT5.</p></li>
+      <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Export</h3><p data-i18n="home.how.1.body">Export your MT5 optimization results to XML — and the forward tab, if you used it.</p></li>
+      <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Drop them here</h3><p data-i18n="home.how.2.body">They are analyzed in your browser, in seconds.</p></li>
+      <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Take away your configuration</h3><p data-i18n="home.how.3.body">The recommended one with its reasons, how much to trust it, a .set ready for MT5 and the range to re-optimize around it.</p></li>
     </ol>
   </section>
 
-  <!-- 4. Que te llevas -->
-  <section class="hm-section" aria-labelledby="hm-get-title">
-    <h2 id="hm-get-title" data-i18n="home.get.title">What you get</h2>
-    <ul class="hm-grid">
-      <li class="hm-card"><h3 data-i18n="home.get.1.title">A recommended configuration</h3><p data-i18n="home.get.1.body">With the reasons: why this one, and not the top row of your table.</p></li>
-      <li class="hm-card"><h3 data-i18n="home.get.2.title">How much to trust it</h3><p data-i18n="home.get.2.body">Strong, moderate, weak or insufficient evidence. No promises of profit.</p></li>
-      <li class="hm-card"><h3 data-i18n="home.get.3.title">Ready for MT5</h3><p data-i18n="home.get.3.body">Download the .set to load in the tester, or the range to optimize again around it.</p></li>
-    </ul>
-  </section>
-
-  <!-- 5. Preguntas frecuentes -->
+  <!-- 4. Preguntas frecuentes -->
   <section class="hm-section" aria-labelledby="hm-faq-title">
     <h2 id="hm-faq-title" data-i18n="home.faq.title">Frequently asked questions</h2>
     <div class="hm-faq" aria-labelledby="hm-faq-title">
