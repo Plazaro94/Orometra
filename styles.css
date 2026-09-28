@@ -879,11 +879,16 @@ tr.sel td{color:var(--text-2)}
 .limits{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
 .limits li{margin-bottom:9px}
 
-.method-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
-.method-grid>div{border:1px solid var(--line-soft);background:var(--surface);border-radius:var(--radius);padding:16px}
-.method-grid span{font-size:11px;color:var(--accent);font-weight:800;letter-spacing:.1em}
-.method-grid h3{font-size:14px;margin:8px 0 6px}
-.method-grid p{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0}
+.method-list{list-style:none;margin:0;padding:0}
+.method-list li{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.method-list li:last-child{border-bottom:0}
+.method-num{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ok-text);width:24px}
+.method-list li>div{flex:1;min-width:0}
+.method-list h3{font-size:14.5px;margin:0 0 2px}
+.method-list p{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+.method-more{flex:none;font-weight:600}
+.method-full{margin:14px 0 0;font-size:14px}
+.method-full a{color:var(--ok-text);font-weight:600;text-underline-offset:3px}
 
 /* ---------------------------------------------------------------- graficos */
 .chart{width:100%;height:auto;display:block;overflow:visible}
@@ -1200,26 +1205,31 @@ tr.sel td{color:var(--text-2)}
   margin:0 0 16px;max-width:18ch;color:var(--text-hi);
 }
 .lp-doc .lp-lead{margin-bottom:28px}
-.lp-pipeline{
-  list-style:none;margin:0 0 36px;padding:0;
-  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;
+/* Indice de la Metodologia: los mismos pasos que las secciones de abajo, enlazados. */
+.doc-index{margin:0 0 20px}
+.doc-index ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.doc-index a{
+  display:flex;gap:12px;align-items:flex-start;height:100%;padding:12px 14px;text-decoration:none;
+  border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);color:inherit;
 }
-.lp-pipeline li{
-  border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
-  padding:12px 10px;display:flex;flex-direction:column;gap:4px;min-width:0;
-  position:relative;
-}
-.lp-pipeline li + li::before{
-  content:"→";position:absolute;left:-10px;top:50%;transform:translateY(-50%);
-  color:var(--muted-2);font-size:var(--fs-sm);font-weight:700;z-index:1;
-  background:var(--bg);padding:0 2px;
-}
-.lp-pipe-num{
-  font-family:var(--mono);font-size:var(--fs-xs);font-weight:700;letter-spacing:.08em;
-  color:var(--ok-text);
-}
-.lp-pipeline strong{font-size:var(--fs-md);color:var(--text-hi);letter-spacing:-.02em}
-.lp-pipeline span{font-size:var(--fs-sm);color:var(--muted);line-height:1.35}
+.doc-index a:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.doc-index-num{font-family:var(--mono);font-size:var(--fs-sm);font-weight:700;color:var(--ok-text);padding-top:1px}
+.doc-index-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+.doc-index-text strong{font-size:var(--fs-md);color:var(--text-hi);line-height:1.3}
+.doc-index-text span{font-size:var(--fs-sm);color:var(--muted);line-height:1.35}
+.lp-method-step{scroll-margin-top:16px}
+
+/* Niveles de evidencia: el color de cada uno, igual que en el informe. */
+.doc-levels{margin:18px 0 0;display:grid;gap:10px}
+.doc-level{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--radius-sm);padding:10px 14px;background:var(--surface)}
+.doc-level dt{font-weight:700;color:var(--text-hi);margin:0 0 3px}
+.doc-level dd{margin:0;color:var(--text-2);font-size:var(--fs-base);line-height:1.55}
+.doc-level-strong{border-left-color:var(--evidence-strong)}
+.doc-level-moderate{border-left-color:var(--evidence-moderate)}
+.doc-level-weak{border-left-color:var(--evidence-weak)}
+.doc-level-insufficient{border-left-color:var(--evidence-none)}
+.doc-limits{margin-top:40px;max-width:760px;scroll-margin-top:16px}
+.doc-limits h2{font-size:clamp(22px,2.4vw,28px);margin:0 0 14px;color:var(--text-hi);letter-spacing:-.02em}
 
 .lp-claims{
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
@@ -1258,7 +1268,9 @@ tr.sel td{color:var(--text-2)}
   display:flex;gap:20px;align-items:flex-start;max-width:640px;
   padding-top:48px;margin-bottom:24px;
 }
-.lp-method-step:nth-child(even){align-self:flex-end}
+/* Los pasos sin imagen quedan siempre a la izquierda: alternar texto suelto a derecha e
+   izquierda obligaba a buscar donde empieza cada uno. */
+.lp-method-step.has-media:nth-child(even){align-self:flex-end}
 /* Cuando el paso lleva imagen necesita mas ancho para que num+texto+imagen quepan en
    una fila comoda -- los pasos sin imagen se quedan en los 640px de siempre, pensados
    solo para num+texto. El texto, aqui, se acota a un ancho fijo (en vez de dejarlo
@@ -1290,7 +1302,7 @@ tr.sel td{color:var(--text-2)}
   overflow:hidden;
 }
 .lp-method-step-media svg{width:100%;height:100%;display:block}
-.lp-method-step:nth-child(even) .lp-method-step-media{order:0;margin-left:0;margin-right:52px}
+.lp-method-step.has-media:nth-child(even) .lp-method-step-media{order:0;margin-left:0;margin-right:52px}
 @media (max-width:720px){
   .lp-method-step,.lp-method-step:nth-child(even){flex-direction:row;align-self:stretch;max-width:none;flex-wrap:wrap}
   /* En escritorio el espacio extra antes de la imagen es un margin-left/right en
@@ -1298,9 +1310,18 @@ tr.sel td{color:var(--text-2)}
      linea, apilada debajo del texto a ancho completo, y ese margen la desplazaria
      hacia un lado o le dejaria un hueco muerto en vez de ocupar todo el ancho. Se
      resetea a 0 en los dos casos (impar y par). */
-  .lp-method-step-media,.lp-method-step:nth-child(even) .lp-method-step-media{
+  .lp-method-step-media,.lp-method-step.has-media:nth-child(even) .lp-method-step-media{
     order:4;flex-basis:100%;margin:0;aspect-ratio:16/10;
   }
+  /* Numero pequeno junto al titulo, no en una linea propia. */
+  .lp-method-step,.lp-method-step.has-media{gap:12px;padding-top:32px}
+  .doc-index li:last-child a{border-bottom:0}
+  .lp-method-num{font-size:20px;min-width:32px;padding-top:3px}
+  .lp-method-step.has-media .lp-method-step-text,.lp-method-step-text{flex:1 1 0;max-width:none}
+  /* Indice compacto: solo los titulos, sin tarjetas. */
+  .doc-index ol{gap:0;border-top:1px solid var(--line)}
+  .doc-index a{border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;padding:9px 2px}
+  .doc-index-text span{display:none}
 }
 
 .lp-list{margin:0;padding-left:20px;color:var(--text-2);font-size:var(--fs-base);line-height:1.55}
@@ -1330,8 +1351,7 @@ tr.sel td{color:var(--text-2)}
 @media (max-width:980px){
   .lp-lead{max-width:52ch}
 
-  .lp-pipeline{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .lp-pipeline li + li::before{display:none}
+  .doc-index ol{grid-template-columns:repeat(2,minmax(0,1fr))}
   .lp-claims{grid-template-columns:1fr}
 }
 @media (max-width:720px){
@@ -1352,7 +1372,8 @@ tr.sel td{color:var(--text-2)}
     order:3;flex:1 1 100%;text-align:left;display:block;
     opacity:1;font-weight:600;
   }
-  .lp-pipeline{grid-template-columns:1fr 1fr}
+  .doc-index ol{grid-template-columns:1fr}
+  .doc-index a{padding:10px 12px}
   .lp-foot-inner{flex-direction:column;gap:16px}
 }
 @media (max-height:700px) and (min-width:981px){

@@ -636,69 +636,32 @@ export function renderLegal() {
     </section>`;
 }
 
+// Mismos pasos, numeracion y limites que la pagina publica /methodology/, leidos de las
+// mismas claves de i18n: antes la app tenia su propia lista de 8 pasos y la pagina otra,
+// y dos versiones del metodo acaban contradiciendose.
+const METHOD_STEPS = ['lectura', 'minimos', 'calidad', 'mesetas', 'forward', 'suerte', 'umbrales', 'niveles', 'backtest'];
+const METHOD_LIMITS = 6;
+
 export function renderMethod() {
-  const steps = [
-    ['01', L('Lectura del export', 'Reading the export'),
-      L('Lee el XML Spreadsheet de MT5 (.xml/.xls), con formatos numéricos regionales, y avisa de cada fila descartada.',
-        'Reads MT5’s XML Spreadsheet (.xml/.xls), with regional number formats, and reports every dropped row.')],
-    ['02', L('Parámetro vs métrica', 'Parameter vs metric'),
-      L('No se fía del nombre de columna. Misma Pass → un parámetro coincide en IS y forward; una métrica no.',
-        'It does not trust column names. Same Pass → a parameter matches in IS and forward; a metric does not.')],
-    ['03', L('Calidad sin Result', 'Quality without Result'),
-      L('Result es tu criterio de optimización y está sesgado. La calidad se reconstruye con PF, recuperación, Sharpe, drawdown y operaciones. La meseta se busca con la calidad in-sample y el forward la valida: si allí cae, baja de puesto. Nunca se promedian.',
-        'Result is your optimization criterion and is biased. Quality is rebuilt from PF, recovery, Sharpe, drawdown and trades. The plateau is found with in-sample quality and the forward validates it: if quality drops there, it drops in rank. They are never averaged.')],
-    ['04', L('Mínimos antes que rankings', 'Minima before rankings'),
-      L('Para buscar mesetas solo cuentan las configs que superan tus suelos en el in-sample; el forward vuelve a exigirlos para validar. Un percentil siempre inventa un “top 5 %”, aunque todo pierda.',
-        'Only setups that clear your floors in-sample enter the plateau search; the forward requires them again to validate. A percentile always invents a “top 5%”, even if everything loses.')],
-    ['05', L('Vecinos en pasos', 'Neighbors in steps'),
-      L('La distancia es en pasos de tu rejilla (30→50 y 0,1→0,2 = un paso). Si la rejilla es irregular, se avisa.',
-        'Distance is in steps of your grid (30→50 and 0.1→0.2 = one step). Uneven grids get a warning.')],
-    ['06', L('Meseta y centro', 'Plateau and center'),
-      L('Meseta = zona donde los vecinos también pasan mínimos. Se elige el centro (maximin: el peor vecino, lo mejor posible), no el pico de beneficio.',
-        'Plateau = a zone where neighbors also clear minima. We pick the center (maximin: best worst-neighbor), not the profit peak.')],
-    ['07', L('Descartes y ranking', 'Rejects and ranking'),
-      L('Picos aislados y caídas bruscas se listan como descartes. Se mide cuánto vale tu ranking IS↔forward en los dos sentidos.',
-        'Isolated peaks and sharp drops are listed as rejects. Your IS↔forward ranking is tested both ways.')],
-    ['08', L('Azar, umbrales y no visto', 'Chance, thresholds and unseen'),
-      L('Se compara tu Sharpe con lo esperable por azar al probar mucho. Se mueven umbrales ±20 % para ver si la misma zona aguanta. El periodo no visto se juzga por normalidad para este EA, no por “números bonitos”.',
-        'Your Sharpe is compared with what chance alone can produce after many trials. Thresholds are nudged ±20% to see if the same zone holds. The unseen period is judged by normality for this EA — not by “pretty numbers”.')],
-  ];
   return `<div class="detail-head">
       <div class="detail-kicker">${L('07 / Metodología', '07 / Methodology')}</div>
-      <h2>${L('Cómo decide el motor', 'How the engine decides')}</h2>
-      <p>${L(
-        'Misma idea que la página pública, con el detalle operativo. Determinista: mismos archivos y mínimos → mismo veredicto (semilla fija en los remuestreos).',
-        'Same idea as the public page, with operational detail. Deterministic: same files and minima → same verdict (fixed seed on resamples).',
-      )}</p>
+      <h2>${esc(t('doc.method.h1'))}</h2>
+      <p>${esc(t('doc.method.app.lead'))}</p>
     </div>
     <section class="panel">
-      <div class="method-grid">
-        ${steps.map(([n, title, d]) => `<div><span>${n}</span><h3>${esc(title)}</h3><p>${esc(d)}</p></div>`).join('')}
-      </div>
+      <ol class="method-list">
+        ${METHOD_STEPS.map((id, i) => `<li>
+          <span class="method-num">${String(i + 1).padStart(2, '0')}</span>
+          <div><h3>${esc(t(`doc.method.s${i + 1}.title`))}</h3><p>${esc(t(`doc.method.s${i + 1}.short`))}</p></div>
+          <a class="text-btn method-more" href="../methodology/#${id}">${L('Leer', 'Read')} &rarr;<span class="sr-only"> ${esc(t(`doc.method.s${i + 1}.title`))}</span></a>
+        </li>`).join('')}
+      </ol>
+      <p class="method-full"><a href="../methodology/">${esc(t('doc.method.app.full'))}</a></p>
     </section>
     <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${L('Lo que no hace', 'What it does not do')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${esc(t('doc.method.lim.title'))}</h2></div></div>
       <ul class="limits">
-        <li>${L(
-          'No sustituye un periodo verdaderamente no visto. Si eliges mirando el forward, ese forward deja de ser ciego.',
-          'It does not replace a truly unseen period. If you choose while looking at forward, that forward is no longer blind.',
-        )}</li>
-        <li>${L(
-          'No calcula PBO / Reality Check / SPA clásicos: el export de MT5 no trae curvas de equity por config. Mide fragilidad de la regla de selección — y por eso no se llama PBO.',
-          'It does not compute classic PBO / Reality Check / SPA: MT5 exports lack per-config equity curves. It measures selection-rule fragility — which is why it is not called PBO.',
-        )}</li>
-        <li>${L(
-          'El forward ya se usa para validar y ordenar las mesetas, así que sus cifras están algo favorecidas (igual que el IS). El número más limpio es el del periodo no visto.',
-          'Forward is already used to validate and rank plateaus, so its figures are somewhat favored (like IS). The cleanest number is the unseen period.',
-        )}</li>
-        <li>${L(
-          'No juzga la lógica del EA, la calidad del histórico ni el spread/comisión. Un backtest optimista de origen sigue siendo optimista aquí.',
-          'It does not judge EA logic, history quality, or spread/commission. An optimistic source backtest stays optimistic here.',
-        )}</li>
-        <li>${L(
-          'Con muchos parámetros o genética, la vecindad y el tamaño de meseta se acotan de forma conservadora (puede subestimar soporte; no lo inventa) y se avisa cuando ocurre.',
-          'With many parameters or genetic search, neighborhood and plateau size are capped conservatively (may underestimate support; never invents it) and that is reported.',
-        )}</li>
+        ${Array.from({ length: METHOD_LIMITS }, (_, i) => `<li>${esc(t(`doc.method.lim.${i + 1}`))}</li>`).join('')}
       </ul>
     </section>`;
 }
