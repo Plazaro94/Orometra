@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en" data-page="guide-report" data-lang-fixed="en" data-alt-href="/es/guias/informe-probador-estrategias-mt5/">
+<head>
+<meta charset="utf-8">
+<!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<meta name="description" content="What profit factor, drawdown, recovery factor, number of trades, expected payoff and Sharpe ratio mean in the MetaTrader 5 backtest report, and which values should make you suspicious.">
+<title>How to read the MT5 Strategy Tester report — Orometra</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="canonical" href="https://orometra.com/guides/mt5-strategy-tester-report/">
+<link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-strategy-tester-report/">
+<link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/informe-probador-estrategias-mt5/">
+<link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-strategy-tester-report/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to read the MT5 Strategy Tester report — Orometra">
+<meta property="og:description" content="What profit factor, drawdown, recovery factor, number of trades, expected payoff and Sharpe ratio mean in the MetaTrader 5 backtest report, and which values should make you suspicious.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://orometra.com/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://orometra.com/og-image.jpg">
+<meta name="color-scheme" content="dark">
+<link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json" data-ld="guide-report">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"How to read the MT5 Strategy Tester report","description":"What profit factor, drawdown, recovery factor, number of trades, expected payoff and Sharpe ratio mean in the MetaTrader 5 backtest report, and which values should make you suspicious.","inLanguage":"en","mainEntityOfPage":"https://orometra.com/guides/mt5-strategy-tester-report/","url":"https://orometra.com/guides/mt5-strategy-tester-report/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image.jpg","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://orometra.com/guides/"},{"@type":"ListItem","position":3,"name":"How to read the MT5 Strategy Tester report","item":"https://orometra.com/guides/mt5-strategy-tester-report/"}]}]}</script>
+<script src="/js/theme-init.js"></script>
+</head>
+<body class="landing-page">
+<a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+
+<header class="lp-top">
+  <div class="lp-shell">
+  <a class="lp-brand" href="/">
+    <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
+    <span class="brand-name">Orometra</span>
+  </a>
+  <div class="lp-top-actions">
+    <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
+      <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
+      <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
+    </div>
+    <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
+      <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" type="button" title="Dark" data-i18n="theme.dark" data-i18n-attr="title">
+        <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Dark</span>
+      </button>
+      <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" type="button" title="Light" data-i18n="theme.light" data-i18n-attr="title">
+        <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
+      </button>
+    </div>
+    <a class="ghost-btn lp-cta-top" href="/app/" data-i18n="lp.cta">Analyze my results</a>
+  </div>
+  </div>
+</header>
+
+<main id="main" class="lp-main lp-doc guide">
+  <p class="lp-eyebrow"><a href="/guides/" data-i18n="guide.report.eyebrow">Guide</a></p>
+  <h1 data-i18n="guide.report.h1">How to read the MT5 Strategy Tester report</h1>
+  <p class="lp-lead" data-i18n="guide.report.lead">An MT5 backtest report has dozens of figures. Almost everything important is in a handful of them. What each one means, what values are reasonable and which ones should make you suspicious.</p>
+
+  <aside class="guide-summary" aria-labelledby="guide-sum-title">
+    <h2 id="guide-sum-title" data-i18n="guide.report.sum.title">The figures that matter</h2>
+    <ol>
+      <li data-i18n="guide.report.sum.1">Net profit and profit factor: whether it makes money, and by what margin.</li>
+      <li data-i18n="guide.report.sum.2">Drawdown: how much it lost from a peak.</li>
+      <li data-i18n="guide.report.sum.3">Recovery factor: how much it earns per unit of drawdown.</li>
+      <li data-i18n="guide.report.sum.4">Number of trades: whether there are enough to conclude anything.</li>
+      <li data-i18n="guide.report.sum.5">Expected payoff and Sharpe ratio: what each trade leaves and how steady it is.</li>
+    </ol>
+  </aside>
+
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s1.title">Net profit and profit factor</h2>
+    <p data-i18n="guide.report.s1.body">Net profit is everything won minus everything lost. Profit factor divides gross profit by gross loss: 1 means it makes nothing, 1.5 means it wins 1.5 for every unit it loses. Around 1.3–1.5 is often considered reasonable; values of 3 or more over many trades are rare and deserve suspicion, especially when they come out of an optimization.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s2.title">Drawdown: absolute, maximal and relative</h2>
+    <p data-i18n="guide.report.s2.body">MT5 gives several versions. Absolute is how far it fell below the initial deposit. Maximal is the largest drop from a peak to the next low, in money; relative is that drop as a percentage. Each one appears for balance (closed trades) and for equity (including open ones). Look at equity: balance can hide trades that went deep against you before closing. Ask yourself whether you would sit through that drop with real money.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s3.title">Recovery factor</h2>
+    <p data-i18n="guide.report.s3.body">Net profit divided by maximal drawdown. It sums up in one figure whether the profit made up for the risk you had to sit through: at 1, you earned as much as you lost at the worst moment. Higher is better; compare it between configurations tested over the same period, because it grows with the length of the test.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s4.title">Number of trades</h2>
+    <p data-i18n="guide.report.s4.body">It is the most ignored figure and the one that decides whether the others mean anything. With 30 trades, a couple of lucky wins change the profit factor completely; with 300, much less. There is no universal minimum, but below about 100 over the whole period it pays to be very cautious, even more so if the optimization tried thousands of combinations.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s5.title">Expected payoff and Sharpe ratio</h2>
+    <p data-i18n="guide.report.s5.body">Expected payoff is the average profit per trade. Compare it with your cost per trade (spread, commission, slippage): if it is only a few points, a slightly worse broker eats it. The Sharpe ratio measures return relative to how irregular it is; in the tester, below 0 means it loses and above 1 means the risk pays off. Use it to compare configurations with each other rather than as an absolute grade.</p>
+  </section>
+
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.err.title">Traps when reading the report</h2>
+    <ul class="lp-list">
+      <li data-i18n="guide.report.err.1">Looking only at net profit. Without drawdown and number of trades, it says nothing about risk or about whether it is chance.</li>
+      <li data-i18n="guide.report.err.2">Comparing reports with different periods or deposits: profit and drawdown in money depend on both.</li>
+      <li data-i18n="guide.report.err.3">Trusting a backtest with unrealistic modelling. &quot;Every tick based on real ticks&quot; is the most faithful; &quot;Open prices only&quot; only makes sense if the EA acts at the open of the bar.</li>
+      <li data-i18n="guide.report.err.4">Reading the report of the best pass of an optimization as if it were a clean test: that pass was chosen precisely because it did well in that period.</li>
+    </ul>
+  </section>
+
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.next.title">Next step</h2>
+    <p data-i18n="guide.report.next.body">A single report cannot tell you whether a configuration is robust or the lucky one among thousands; for that, Orometra analyzes the whole optimization. And when you test the chosen one on a new period, drop that report into Orometra: it tells you whether the result is normal for your EA, with a Monte Carlo over your own trades.</p>
+  </section>
+
+  <section class="lp-doc-cta">
+    <a class="primary-btn" href="/app/" data-i18n="guide.report.cta">Analyze my results</a>
+    <a class="ghost-btn" href="/methodology/" data-i18n="guide.report.more">How Orometra decides →</a>
+  </section>
+
+  <nav class="guide-related" aria-labelledby="guide-related-title">
+    <h2 id="guide-related-title" data-i18n="guides.more">More guides</h2>
+    <ul>
+      <li><a href="/guides/export-mt5-optimization-xml/" data-i18n="guides.export.title">How to export your MT5 optimization results to XML</a></li>
+      <li><a href="/guides/mt5-overfitting/" data-i18n="guides.overfit.title">MT5 overfitting: what it is and how to spot it</a></li>
+      <li><a href="/guides/mt5-forward-testing/" data-i18n="guides.forward.title">Forward testing in MT5: what it is and how to set it up</a></li>
+      <li><a href="/guides/mt5-genetic-vs-complete-optimization/" data-i18n="guides.genetic.title">Genetic or complete optimization in MT5: which one to use</a></li>
+      <li><a href="/guides/mt5-optimization-criterion/" data-i18n="guides.criterion.title">Which optimization criterion to choose in MT5</a></li>
+    </ul>
+  </nav>
+</main>
+
+<footer class="lp-foot">
+  <div class="lp-shell lp-foot-inner">
+    <div class="lp-foot-brand">
+      <strong>Orometra</strong>
+      <span data-i18n="lp.foot.tagline">Plateaus over peaks. Analysis stays in your browser.</span>
+    </div>
+    <nav class="lp-foot-nav" aria-label="Footer">
+      <a href="/">Orometra</a>
+      <a href="/methodology/" data-i18n="nav.method">Methodology</a>
+      <a href="/guides/" data-i18n="nav.guides">Guides</a>
+      <a href="/privacy/" data-i18n="doc.privacy.nav">Privacy</a>
+      <a href="/app/" data-i18n="lp.cta.footer">App</a>
+      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module" src="/js/landing.js"></script>
+<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aff9422f75d4536bfdcd4b1ea119da9"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

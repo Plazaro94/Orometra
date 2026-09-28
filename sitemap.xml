@@ -48,4 +48,116 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://orometra.com/guides/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/guides/export-mt5-optimization-xml/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/export-mt5-optimization-xml/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/export-mt5-optimization-xml/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/export-mt5-optimization-xml/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/export-mt5-optimization-xml/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-overfitting/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/sobreoptimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/sobreoptimizacion-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/sobreoptimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-overfitting/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-forward-testing/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-forward-testing/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/forward-testing-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-forward-testing/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/forward-testing-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-forward-testing/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/forward-testing-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-forward-testing/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-strategy-tester-report/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-strategy-tester-report/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/informe-probador-estrategias-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-strategy-tester-report/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/informe-probador-estrategias-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-strategy-tester-report/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/informe-probador-estrategias-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-strategy-tester-report/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-genetic-vs-complete-optimization/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-genetic-vs-complete-optimization/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/guides/mt5-optimization-criterion/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/criterio-optimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://orometra.com/es/guias/criterio-optimizacion-mt5/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/criterio-optimizacion-mt5/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/mt5-optimization-criterion/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

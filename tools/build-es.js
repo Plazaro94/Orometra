@@ -26,7 +26,18 @@ const PAGES = [
   ['index.html', '/', '/es/', 'landing'],
   ['methodology/index.html', '/methodology/', '/es/methodology/', 'methodology'],
   ['privacy/index.html', '/privacy/', '/es/privacy/', 'privacy'],
+  ['guides/index.html', '/guides/', '/es/guias/', 'guides'],
+  ['guides/export-mt5-optimization-xml/index.html', '/guides/export-mt5-optimization-xml/', '/es/guias/exportar-optimizacion-mt5-xml/', 'guide-export'],
+  ['guides/mt5-overfitting/index.html', '/guides/mt5-overfitting/', '/es/guias/sobreoptimizacion-mt5/', 'guide-overfit'],
+  ['guides/mt5-forward-testing/index.html', '/guides/mt5-forward-testing/', '/es/guias/forward-testing-mt5/', 'guide-forward'],
+  ['guides/mt5-strategy-tester-report/index.html', '/guides/mt5-strategy-tester-report/', '/es/guias/informe-probador-estrategias-mt5/', 'guide-report'],
+  ['guides/mt5-genetic-vs-complete-optimization/index.html', '/guides/mt5-genetic-vs-complete-optimization/', '/es/guias/optimizacion-genetica-o-completa-mt5/', 'guide-genetic'],
+  ['guides/mt5-optimization-criterion/index.html', '/guides/mt5-optimization-criterion/', '/es/guias/criterio-optimizacion-mt5/', 'guide-criterion'],
 ];
+// Fecha de publicacion de cada guia (datos estructurados).
+// Guias: fecha de publicacion y prefijo de sus claves i18n.
+const PUBLISHED = { 'guide-export': '2026-09-28', 'guide-overfit': '2026-09-28', 'guide-forward': '2026-09-28', 'guide-report': '2026-09-28', 'guide-genetic': '2026-09-28', 'guide-criterion': '2026-09-28' };
+const GUIDE_KEYS = { 'guide-export': 'guide.export', 'guide-overfit': 'guide.overfit', 'guide-forward': 'guide.forward', 'guide-report': 'guide.report', 'guide-genetic': 'guide.genetic', 'guide-criterion': 'guide.criterion' };
 const LOCALIZED = new Map(PAGES.map(([, en, es]) => [en, es]));
 
 const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -91,6 +102,51 @@ function rewriteUrls(html, enPath) {
   });
 }
 
+/**
+ * Datos estructurados (JSON-LD) de cada pagina, en su idioma. Van en un
+ * <script type="application/ld+json" data-ld="..."> que este script rellena tanto en la
+ * pagina inglesa como en la espanola, para que no se desincronicen de los textos.
+ */
+function jsonLd(page, locale, pagePath) {
+  const url = ORIGIN + pagePath;
+  const lang = locale === 'es' ? 'es' : 'en';
+  const org = { '@type': 'Organization', '@id': `${ORIGIN}/#org`, name: 'Orometra', url: `${ORIGIN}/`, logo: `${ORIGIN}/icon-512.png`, email: 'hello@orometra.com' };
+  const strip = (s) => String(s).replace(/<[^>]+>/g, '');
+  const home = locale === 'es' ? `${ORIGIN}/es/` : `${ORIGIN}/`;
+  if (page === 'landing') {
+    return { '@context': 'https://schema.org', '@graph': [
+      org,
+      { '@type': 'WebSite', '@id': `${home}#website`, url: home, name: 'Orometra', inLanguage: lang, publisher: { '@id': `${ORIGIN}/#org` } },
+      { '@type': 'SoftwareApplication', name: 'Orometra', url: `${ORIGIN}/app/`, applicationCategory: 'FinanceApplication', operatingSystem: 'Web browser',
+        description: strip(t('meta.description.landing')), inLanguage: lang, publisher: { '@id': `${ORIGIN}/#org` } },
+    ] };
+  }
+  if (page === 'guides') {
+    return { '@context': 'https://schema.org', '@type': 'CollectionPage', url, name: strip(t('guides.h1')), description: strip(t('meta.description.guides')), inLanguage: lang, publisher: org };
+  }
+  if (GUIDE_KEYS[page]) {
+    const k = GUIDE_KEYS[page];
+    const guidesUrl = locale === 'es' ? `${ORIGIN}/es/guias/` : `${ORIGIN}/guides/`;
+    return { '@context': 'https://schema.org', '@graph': [
+      { '@type': 'Article', headline: strip(t(`${k}.h1`)), description: strip(t(`meta.description.${page}`)), inLanguage: lang,
+        mainEntityOfPage: url, url, datePublished: PUBLISHED[page], dateModified: PUBLISHED[page],
+        image: `${ORIGIN}/${locale === 'es' ? 'og-image-es.jpg' : 'og-image.jpg'}`, author: org, publisher: org },
+      { '@type': 'BreadcrumbList', itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Orometra', item: home },
+        { '@type': 'ListItem', position: 2, name: strip(t('nav.guides')), item: guidesUrl },
+        { '@type': 'ListItem', position: 3, name: strip(t(`${k}.h1`)), item: url },
+      ] },
+    ] };
+  }
+  return null;
+}
+function fillJsonLd(html, page, locale, pagePath) {
+  const data = jsonLd(page, locale, pagePath);
+  if (!data) return html;
+  return html.replace(/<script type="application\/ld\+json" data-ld="[^"]*">[\s\S]*?<\/script>/,
+    `<script type="application/ld+json" data-ld="${page}">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`);
+}
+
 function setMeta(html, selectorRe, value) {
   return html.replace(selectorRe, (tag) => setAttr(tag, 'content', value));
 }
@@ -102,7 +158,9 @@ function build(file, enPath, esPath, page) {
   html = rewriteUrls(html, enPath);
   const title = t(`meta.title.${page}`);
   const desc = t(`meta.description.${page}`);
-  html = html.replace(/<html\b[^>]*>/, `<html lang="es" data-lang-fixed="es" data-alt-href="${enPath}">`);
+  const dataPage = attrOf(html.match(/<html\b[^>]*>/)[0], 'data-page');
+  html = html.replace(/<html\b[^>]*>/, `<html lang="es"${dataPage ? ` data-page="${dataPage}"` : ''} data-lang-fixed="es" data-alt-href="${enPath}">`);
+  html = fillJsonLd(html, page, 'es', esPath);
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${escText(title)}</title>`);
   html = setMeta(html, /<meta name="description"[^>]*>/, desc);
   html = setMeta(html, /<meta property="og:title"[^>]*>/, title);
@@ -120,6 +178,17 @@ function build(file, enPath, esPath, page) {
 
 const check = process.argv.includes('--check');
 let stale = 0;
+// Primero, los datos estructurados de la pagina inglesa (fuente) al dia.
+for (const [file, en, , page] of PAGES) {
+  const src = path.join(ROOT, file);
+  const current = fs.readFileSync(src, 'utf8');
+  setLocale('en');
+  const next = fillJsonLd(current, page, 'en', en);
+  if (next !== current) {
+    if (check) { stale++; console.log(`  FAIL ${file}: datos estructurados desactualizados (node tools/build-es.js)`); }
+    else { fs.writeFileSync(src, next); console.log(`actualizado JSON-LD de ${file}`); }
+  }
+}
 for (const [file, en, es, page] of PAGES) {
   const { out, html } = build(file, en, es, page);
   const current = fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : null;

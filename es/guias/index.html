@@ -1,0 +1,139 @@
+<!doctype html>
+<!-- GENERADO por tools/build-es.js a partir de guides/index.html. No editar a mano: cambia la pagina inglesa o js/i18n.js y vuelve a ejecutarlo. -->
+<html lang="es" data-page="guides" data-lang-fixed="es" data-alt-href="/guides/">
+<head>
+<meta charset="utf-8">
+<!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+<meta name="description" content="Guías prácticas sobre optimizaciones de MetaTrader 5: exportar resultados, forward, sobreoptimización y cómo elegir parámetros robustos.">
+<title>Guías de optimización en MT5 — Orometra</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="canonical" href="https://orometra.com/es/guias/">
+<link rel="alternate" hreflang="en" href="https://orometra.com/guides/">
+<link rel="alternate" hreflang="es" href="https://orometra.com/es/guias/">
+<link rel="alternate" hreflang="x-default" href="https://orometra.com/guides/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Guías de optimización en MT5 — Orometra">
+<meta property="og:description" content="Guías prácticas sobre optimizaciones de MetaTrader 5: exportar resultados, forward, sobreoptimización y cómo elegir parámetros robustos.">
+<meta property="og:locale" content="es_ES">
+<meta property="og:image" content="https://orometra.com/og-image-es.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://orometra.com/og-image-es.jpg">
+<meta name="color-scheme" content="dark">
+<link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/ibm-plex-sans-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json" data-ld="guides">{"@context":"https://schema.org","@type":"CollectionPage","url":"https://orometra.com/es/guias/","name":"Guías para tus optimizaciones de MT5","description":"Guías prácticas sobre optimizaciones de MetaTrader 5: exportar resultados, forward, sobreoptimización y cómo elegir parámetros robustos.","inLanguage":"es","publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}}</script>
+<script src="/js/theme-init.js"></script>
+</head>
+<body class="landing-page">
+<a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
+
+<header class="lp-top">
+  <div class="lp-shell">
+  <a class="lp-brand" href="/es/">
+    <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
+    <span class="brand-name">Orometra</span>
+  </a>
+  <div class="lp-top-actions">
+    <div class="lang-row" role="radiogroup" aria-label="Idioma" data-i18n="lang.label" data-i18n-attr="aria-label">
+      <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
+      <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
+    </div>
+    <div class="theme-row" role="radiogroup" aria-label="Tema de color" data-i18n="theme.label" data-i18n-attr="aria-label">
+      <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" type="button" title="Oscuro" data-i18n="theme.dark" data-i18n-attr="title">
+        <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Oscuro</span>
+      </button>
+      <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" type="button" title="Claro" data-i18n="theme.light" data-i18n-attr="title">
+        <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Claro</span>
+      </button>
+    </div>
+    <a class="ghost-btn lp-cta-top" href="/app/" data-i18n="lp.cta">Analizar mis resultados</a>
+  </div>
+  </div>
+</header>
+
+<main id="main" class="lp-main lp-doc">
+  <p class="lp-eyebrow" data-i18n="guides.eyebrow">Guías</p>
+  <h1 data-i18n="guides.h1">Guías para tus optimizaciones de MT5</h1>
+  <p class="lp-lead" data-i18n="guides.lead">Respuestas cortas y prácticas a las dudas que surgen al optimizar un EA en MetaTrader 5.</p>
+
+  <ul class="guide-list">
+    <li>
+      <a class="guide-card" href="/es/guias/exportar-optimizacion-mt5-xml/">
+        <strong data-i18n="guides.export.title">Cómo exportar los resultados de la optimización de MT5 a XML</strong>
+        <span data-i18n="guides.export.desc">Los cuatro pasos, y los tres errores que estropean el análisis.</span>
+        <span class="guide-card-more" data-i18n="guides.read">Leer la guía →</span>
+      </a>
+    </li>
+    <li>
+      <a class="guide-card" href="/es/guias/sobreoptimizacion-mt5/">
+        <strong data-i18n="guides.overfit.title">Sobreoptimización en MT5: qué es y cómo detectarla</strong>
+        <span data-i18n="guides.overfit.desc">Las señales en tus resultados de que la mejor pasada es sobre todo suerte, y qué hacer al respecto.</span>
+        <span class="guide-card-more" data-i18n="guides.read">Leer la guía →</span>
+      </a>
+    </li>
+    <li>
+      <a class="guide-card" href="/es/guias/forward-testing-mt5/">
+        <strong data-i18n="guides.forward.title">Forward testing en MT5: qué es y cómo configurarlo</strong>
+        <span data-i18n="guides.forward.desc">Cómo activarlo, cuánto periodo reservar y cómo leerlo sin engañarte.</span>
+        <span class="guide-card-more" data-i18n="guides.read">Leer la guía →</span>
+      </a>
+    </li>
+    <li>
+      <a class="guide-card" href="/es/guias/informe-probador-estrategias-mt5/">
+        <strong data-i18n="guides.report.title">Cómo leer el informe del probador de estrategias de MT5</strong>
+        <span data-i18n="guides.report.desc">Las cifras que importan, qué valores son razonables y las trampas al leerlas.</span>
+        <span class="guide-card-more" data-i18n="guides.read">Leer la guía →</span>
+      </a>
+    </li>
+    <li>
+      <a class="guide-card" href="/es/guias/optimizacion-genetica-o-completa-mt5/">
+        <strong data-i18n="guides.genetic.title">Optimización genética o completa en MT5: cuál usar</strong>
+        <span data-i18n="guides.genetic.desc">Qué cambia además de la velocidad, y cómo usar la genética sin engañarte.</span>
+        <span class="guide-card-more" data-i18n="guides.read">Leer la guía →</span>
+      </a>
+    </li>
+    <li>
+      <a class="guide-card" href="/es/guias/criterio-optimizacion-mt5/">
+        <strong data-i18n="guides.criterion.title">Qué criterio de optimización elegir en MT5</strong>
+        <span data-i18n="guides.criterion.desc">Qué premia cada criterio, qué esconde y por qué ninguno evita la sobreoptimización.</span>
+        <span class="guide-card-more" data-i18n="guides.read">Leer la guía →</span>
+      </a>
+    </li>
+  </ul>
+</main>
+
+<footer class="lp-foot">
+  <div class="lp-shell lp-foot-inner">
+    <div class="lp-foot-brand">
+      <strong>Orometra</strong>
+      <span data-i18n="lp.foot.tagline">Mesetas antes que picos. El análisis se queda en tu navegador.</span>
+    </div>
+    <nav class="lp-foot-nav" aria-label="Footer">
+      <a href="/es/">Orometra</a>
+      <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
+      <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
+      <a href="/es/privacy/" data-i18n="doc.privacy.nav">Privacidad</a>
+      <a href="/app/" data-i18n="lp.cta.footer">App</a>
+      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module" src="/js/landing.js"></script>
+<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aff9422f75d4536bfdcd4b1ea119da9"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
