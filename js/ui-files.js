@@ -148,45 +148,66 @@ export async function acceptFiles(fileList, preferred) {
   }
 }
 
+/**
+ * Una sola zona de carga: la app decide que archivo es cada cual (detectRole), asi que
+ * dos cajas "In-Sample" y "Forward" solo invitaban a pensar que habia que acertar la
+ * caja. El estado de cada archivo se resume aqui y se detalla en la ficha de
+ * comprobacion (#preflight).
+ */
+export function updateDropStatus() {
+  const statusEl = $('#mainDropStatus');
+  const boxEl = $('#mainDrop');
+  if (!statusEl || !boxEl) return;
+  const isName = state.isFile && state.isFile.name;
+  const oosName = state.oosFile && state.oosFile.name;
+  boxEl.classList.remove('error');
+  boxEl.classList.toggle('ready', Boolean(isName));
+  // Con archivos cargados, la ayuda de "como conseguir los archivos" ya no hace falta.
+  document.body.classList.toggle('has-files', Boolean(isName || oosName));
+  if (state.isDemo) { statusEl.textContent = t('demo.loaded'); return; }
+  if (!isName && !oosName) { statusEl.textContent = t('drop.main.status'); return; }
+  statusEl.textContent = [
+    `${L('In-sample', 'In-sample')}: ${isName || L('falta', 'missing')}`,
+    `${L('Forward', 'Forward')}: ${oosName || L('no cargado (opcional)', 'not loaded (optional)')}`,
+  ].join(' · ');
+}
+
+function dropError(message) {
+  const statusEl = $('#mainDropStatus');
+  const boxEl = $('#mainDrop');
+  if (statusEl) statusEl.textContent = message;
+  if (boxEl) { boxEl.classList.add('error'); boxEl.classList.remove('ready'); }
+}
+
 export function setFile(which, file) {
-  const statusEl = which === 'is' ? $('#isStatus') : $('#oosStatus');
-  const boxEl = which === 'is' ? $('#isDrop') : $('#oosDrop');
   if (!file) return;
   const MAX_BYTES = 80 * 1024 * 1024;
   if (file.size > MAX_BYTES) {
-    statusEl.textContent = L(
-      `Archivo demasiado grande (>${Math.round(MAX_BYTES / 1048576)} MB). Exporta un XML más reducido o recorta la optimización.`,
-      `File too large (>${Math.round(MAX_BYTES / 1048576)} MB). Export a smaller XML or trim the optimization.`,
-    );
-    boxEl.classList.add('error');
-    boxEl.classList.remove('ready');
+    dropError(L(
+      `${file.name}: archivo demasiado grande (>${Math.round(MAX_BYTES / 1048576)} MB). Exporta un XML más reducido o recorta la optimización.`,
+      `${file.name}: file too large (>${Math.round(MAX_BYTES / 1048576)} MB). Export a smaller XML or trim the optimization.`,
+    ));
     return;
   }
   if (/\.opt$/i.test(file.name)) {
-    statusEl.textContent = L(
+    dropError(L(
       'El .opt es la caché interna del probador y no se puede leer. Exporta con clic derecho → Informe → XML.',
       'The .opt is the tester\'s internal cache and cannot be read. Export with right-click → Report → XML.',
-    );
-    boxEl.classList.add('error');
-    boxEl.classList.remove('ready');
+    ));
     return;
   }
   if (!/\.(xls|xlsx|xlsm|xml|csv|tsv|txt)$/i.test(file.name)) {
-    statusEl.textContent = L(
-      'Formato no compatible. Usa el XML que exporta MT5 (o .xls, o CSV).',
-      'Unsupported format. Use the XML that MT5 exports (or .xls, or CSV).',
-    );
-    boxEl.classList.add('error');
-    boxEl.classList.remove('ready');
+    dropError(L(
+      `${file.name}: formato no compatible. Usa el XML que exporta MT5 (o .xls, o CSV).`,
+      `${file.name}: unsupported format. Use the XML that MT5 exports (or .xls, or CSV).`,
+    ));
     return;
   }
   state[which === 'is' ? 'isFile' : 'oosFile'] = file;
   state.isDemo = false;
   document.body.classList.remove('intake-collapsed'); // cambiar de archivo reabre el detalle
   api.clearError(); // el fallo anterior ya no describe lo que hay cargado
-  statusEl.textContent = `${file.name} · ${(file.size / 1048576).toFixed(1)} MB`;
-  boxEl.classList.remove('error');
-  boxEl.classList.add('ready');
+  updateDropStatus();
   refreshAnalyzeButton();
   queuePreflight(which);
 }
@@ -226,11 +247,8 @@ export async function queuePreflight(which) {
       name: file.name,
       error: classified,
     };
-    const boxEl = key === 'is' ? $('#isDrop') : $('#oosDrop');
-    const statusEl = key === 'is' ? $('#isStatus') : $('#oosStatus');
     // Sin quitar 'ready' la caja seguia en verde junto al error.
-    if (boxEl) { boxEl.classList.add('error'); boxEl.classList.remove('ready'); }
-    if (statusEl) statusEl.textContent = `${file.name} · ${t('preflight.error')}`;
+    dropError(`${file.name} · ${t('preflight.error')}`);
   }
   renderPreflight();
   refreshAnalyzeButton();
@@ -348,6 +366,10 @@ export function bindDropzone(zoneSel, inputSel, which) {
       input.click();
     }
   });
+  // Es un <div role="button"> (una <label> no admite ese rol): el clic abre el selector.
+  zone.addEventListener('click', (e) => {
+    if (e.target !== input) input.click();
+  });
   input.addEventListener('change', async (e) => {
     // Copiar ANTES de limpiar: input.files es una referencia viva y vaciar el input
     // la deja vacia tambien. Limpiarlo hace falta para poder reelegir el mismo archivo.
@@ -401,10 +423,7 @@ export async function loadDemo() {
     };
   };
   state.preflight = { is: summarizeTable(demo.isTable), oos: summarizeTable(demo.oosTable) };
-  $('#isStatus').textContent = t('demo.loaded');
-  $('#oosStatus').textContent = t('demo.loaded');
-  $('#isDrop').classList.add('ready');
-  $('#oosDrop').classList.add('ready');
+  updateDropStatus();
   renderPreflight();
   refreshAnalyzeButton();
   api.runAudit();

@@ -2,10 +2,9 @@
 
 import { DEFAULT_POLICY, gateFailures } from '../core/metrics.js';
 import { mountBrandMark } from './brandmark.js';
-import { mountHeroSurface } from './hero-surface.js';
 import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
-import { state, api, $, $$, int, pct, esc } from './ui-state.js';
+import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
 import { displayVerdictCopy } from './ui-verdict.js';
 
 // ---------------------------------------------------------------- preferencias
@@ -15,7 +14,6 @@ export const PREFS_KEY = 'orometra.gates';
 export const THEME_KEY = 'orometra.theme';
 export const TEMAS = ['dark', 'light'];
 export let repaintMark = () => {};
-export let emptySurface = null;
 
 /**
  * Tema de color. Se aplica en `documentElement` porque el `<head>` ya lo lee antes de
@@ -77,13 +75,11 @@ export function resetSession() {
   };
   state.preflight = { is: null, oos: null };
   state.tab = 'verdict';
-  for (const [sel, key] of [['#isStatus', 'drop.is.status'], ['#oosStatus', 'drop.oos.status']]) {
-    const el = $(sel); if (el) el.textContent = t(key);
-  }
+  api.updateDropStatus();
   const setStatus = $('#setStatus');
   if (setStatus) setStatus.textContent = '';
   $$('.dropzone').forEach((d) => d.classList.remove('ready', 'error'));
-  ['#isFile', '#oosFile'].forEach((sel) => { const el = $(sel); if (el) el.value = ''; });
+  { const el = $('#mainFile'); if (el) el.value = ''; }
   api.clearError();
   api.renderPreflight();
   api.refreshAnalyzeButton();
@@ -100,6 +96,8 @@ export function changeLanguage(lang) {
   setLocale(lang);
   syncLangButtons();
   applyStaticI18n();
+  api.updateDropStatus();
+  updatePolicySummary();
   api.refreshAnalyzeButton();
   api.renderPreflight();
   // El veredicto se generó en el idioma del análisis: regenerar copy sin recalcular.
@@ -121,6 +119,27 @@ export function loadPrefs() {
   } catch {
     // Modo privado o almacenamiento lleno: se sigue con los valores por defecto.
   }
+}
+
+/** Resumen de una linea de los minimos, para el boton plegado "Ajustes (opcional)". */
+export function updatePolicySummary() {
+  const el = $('#policySummary');
+  if (!el) return;
+  const pf = parseFloat($('#gPf').value);
+  const dd = parseFloat($('#gDd').value);
+  const tr = parseFloat($('#gTrades').value);
+  const parts = [];
+  if (Number.isFinite(pf)) parts.push(`PF ≥ ${num(pf, 2)}`);
+  if (Number.isFinite(dd)) parts.push(`DD ≤ ${num(dd, 0)} %`);
+  if (Number.isFinite(tr)) parts.push(`${int(tr)} ${L('ops', 'trades')}`);
+  el.textContent = parts.join(' · ');
+}
+
+export function togglePolicy(open) {
+  const next = typeof open === 'boolean' ? open : !document.body.classList.contains('policy-open');
+  document.body.classList.toggle('policy-open', next);
+  const btn = $('#policyToggle');
+  if (btn) btn.setAttribute('aria-expanded', String(next));
 }
 
 export function savePrefs() {
@@ -301,7 +320,6 @@ export function render() {
   const view = $('#view');
   // Metodologia y legal no necesitan analisis cargado: se pueden leer siempre.
   if (state.tab === 'method' || state.tab === 'legal') {
-    disposeEmptySurface();
     api.disposePlateauSurface();
     view.innerHTML = state.tab === 'legal' ? renderLegal() : renderMethod();
     bindViewEvents();
@@ -311,10 +329,8 @@ export function render() {
     api.disposePlateauSurface();
     view.innerHTML = renderEmpty();
     bindViewEvents();
-    mountEmptySurface();
     return;
   }
-  disposeEmptySurface();
   const a = state.analysis;
   const map = {
     verdict: () => api.renderVerdict(a),
@@ -375,6 +391,7 @@ function positionGlossCards() {
 
 export function bindViewEvents() {
   $$('[data-goto]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.goto)));
+  $$('[data-demo]').forEach((b) => b.addEventListener('click', () => { const d = $('#demoBtn'); if (d && !d.disabled) d.click(); }));
   $$('[data-scroll]').forEach((b) => b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -441,41 +458,21 @@ export function bindViewEvents() {
   }));
 }
 
-export function disposeEmptySurface() {
-  if (emptySurface && typeof emptySurface.dispose === 'function') emptySurface.dispose();
-  emptySurface = null;
-}
-
-export function mountEmptySurface() {
-  disposeEmptySurface();
-  const canvas = $('#emptySurface');
-  if (!canvas) return;
-  emptySurface = mountHeroSurface(canvas);
-}
-
 // ---------------------------------------------------------------- vistas
+/**
+ * Pantalla antes de subir nada. Antes repetia la portada (superficie 3D, titular y
+ * tres pasos); quien llega aqui ya se ha convencido y solo necesita saber de donde
+ * sacar los archivos, o ver un ejemplo si aun no los tiene.
+ */
 export function renderEmpty() {
   return `<div class="empty-state">
-    <div class="lp-surface empty-surface" tabindex="0" role="img" aria-label="${esc(L('Superficie de parámetros: los picos caen y queda la meseta', 'Parameter surface: peaks collapse into the plateau'))}">
-      <canvas class="lp-surface-canvas" id="emptySurface" width="720" height="360" aria-hidden="true"></canvas>
-      <div class="lp-surface-caption">
-        <span class="lp-surface-peak">${esc(L('Pico aislado', 'Isolated peak'))}</span>
-        <span class="lp-surface-hint">${esc(
-          (typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches)
-            ? L('Pasa el ratón — los picos caen y queda la meseta', 'Hover — peaks collapse into the plateau')
-            : L('Mira — los picos caen y queda la meseta', 'Watch — peaks fall and the plateau remains')
-        )}</span>
-        <span class="lp-surface-ok">${esc(L('Meseta estable', 'Stable plateau'))}</span>
-      </div>
-    </div>
     <h2>${esc(t('empty.h2'))}</h2>
-    <p>${esc(t('empty.p'))}</p>
-    <div class="empty-steps">
-      <div><span>01</span><p>${t('empty.s1')}</p></div>
-      <div><span>02</span><p>${t('empty.s2')}</p></div>
-      <div><span>03</span><p>${esc(t('empty.s3'))}</p></div>
-    </div>
-    <button class="text-btn" data-goto="method">${esc(t('empty.method'))}</button>
+    <ol class="empty-steps">
+      <li><span aria-hidden="true">1</span><p>${t('empty.s1')}</p></li>
+      <li><span aria-hidden="true">2</span><p>${t('empty.s2')}</p></li>
+      <li><span aria-hidden="true">3</span><p>${t('empty.s3')}</p></li>
+    </ol>
+    <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo>${esc(t('empty.demoBtn'))}</button></p>
   </div>`;
 }
 

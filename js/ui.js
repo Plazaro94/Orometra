@@ -10,6 +10,7 @@ import {
   hideDropOverlay,
   bindGlobalDrop,
   loadDemo,
+  updateDropStatus,
 } from './ui-files.js';
 
 import {
@@ -29,6 +30,8 @@ import {
   loadPrefs,
   savePrefs,
   updatePolicyPreview,
+  updatePolicySummary,
+  togglePolicy,
   policyInputProblem,
   readPolicy,
   setTab,
@@ -71,6 +74,7 @@ Object.assign(api, {
   readPolicy,
   refreshAnalyzeButton,
   renderPreflight,
+  updateDropStatus,
   hideDropOverlay,
   setTab,
   render,
@@ -95,8 +99,9 @@ Object.assign(api, {
 
 initChrome();
 loadPrefs();
-bindDropzone('#isDrop', '#isFile', 'is');
-bindDropzone('#oosDrop', '#oosFile', 'oos');
+updatePolicySummary();
+$('#policyToggle').addEventListener('click', () => togglePolicy());
+bindDropzone('#mainDrop', '#mainFile', null);
 bindGlobalDrop();
 $('#analyzeBtn').addEventListener('click', runAudit);
 $('#demoBtn').addEventListener('click', loadDemo);
@@ -107,6 +112,7 @@ $('#intakeExpandBtn').addEventListener('click', () => {
 ['#gPf', '#gDd', '#gTrades', '#gProfit'].forEach((sel) => {
   $(sel).addEventListener('input', () => {
     savePrefs();
+    updatePolicySummary();
     updatePolicyPreview();
   });
 });
