@@ -444,6 +444,7 @@ export function renderDiagnostics(a) {
           <div><span>${L('Sin pareja (descartadas)', 'Unmatched (dropped)')}</span><strong>${int(integ.unmatchedIs)}</strong></div>
           <div><span>${L('Identificadores duplicados', 'Duplicate identifiers')}</span><strong>${int(integ.duplicateIds)}</strong></div>
           <div><span>${L('Filas con parámetros ilegibles', 'Rows with unreadable parameters')}</span><strong>${int(a.meta.droppedParams)}</strong></div>
+          <div><span>${L('Pasadas con parámetros repetidos', 'Passes with repeated parameters')}</span><strong>${int(integ.duplicateParamVectors || 0)}</strong></div>
           <div><span>${L('Misma optimización', 'Same optimization')}</span><strong>${sameOpt}</strong></div>
         </div>
         <p class="chart-note">${L(
@@ -493,6 +494,10 @@ export function renderDiagnostics(a) {
             by the selection itself. It is used only to order the rejection table.`,
             )}
           </p>
+          ${integ && integ.vetoed && integ.vetoed.length ? `<p class="chart-note">${L(
+            'Columnas tomadas como métrica por su nombre (nunca como parámetro):',
+            'Columns taken as metrics by their name (never as parameters):',
+          )} ${integ.vetoed.map((v) => `<code>${esc(v.name)}</code>`).join(', ')}.</p>` : ''}
         </div>
       </div>
     </section>

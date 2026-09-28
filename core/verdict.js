@@ -500,6 +500,13 @@ export function buildVerdict(ctx) {
         L('Estas filas existen en un archivo y no en el otro, y se han descartado del análisis.',
           'These rows exist in one file and not the other, and were discarded from the analysis.'), 'integrity');
     }
+    if (integrity.duplicateParamVectors > 0) {
+      const base = integrity.matchedRows || integrity.isRows || 0;
+      const sev = base > 0 && integrity.duplicateParamVectors / base > 0.05 ? SEV.WARN : SEV.INFO;
+      add(sev, L(`${integrity.duplicateParamVectors} pasadas con parámetros repetidos`, `${integrity.duplicateParamVectors} passes with repeated parameters`),
+        L('Varias pasadas tienen exactamente los mismos valores de parámetros, algo habitual en la optimización genética. Se analiza una sola por combinación. Si son muchas, revisa en «Columnas detectadas» que ningún parámetro se haya tomado por una métrica.',
+          'Several passes have exactly the same parameter values, which is common in genetic optimization. Only one per combination is analyzed. If there are many, check in "Detected columns" that no parameter was taken for a metric.'), 'integrity');
+    }
   }
 
   /*

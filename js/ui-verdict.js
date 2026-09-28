@@ -1,6 +1,7 @@
 // Veredicto, evidencia, why-grade, outcome y top3.
 
 import { qualityLabel } from '../core/metrics.js';
+import { compareParams } from '../core/report.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag } from './i18n.js';
@@ -60,12 +61,33 @@ export function holdoutFact(a) {
     : res.level === 'tail'
       ? L('En la cola', 'In the tail')
       : L('Fuera de rango', 'Out of range');
+  /*
+   * Un resultado "normal" solo confirma la recomendación si el backtest es de ESA
+   * configuración: la meseta recomendada (M1) y, si hay informe, con sus mismos
+   * parámetros y al menos uno leído. Si no, el contraste es aritméticamente correcto
+   * pero no valida nada, y no puede subir el nivel de evidencia. "En la cola" tampoco:
+   * es un resultado raro para esa configuración, no una confirmación.
+   */
+  const plateaus = (a && a.plateaus) || [];
+  const idx = plateaus.length ? Math.min(state.unseen.plateauIndex || 0, plateaus.length - 1) : -1;
+  const plateau = idx >= 0 ? plateaus[idx] : null;
+  const cmp = state.report && plateau
+    ? compareParams(state.report.params, a.meta.paramNames, plateau.record.params)
+    : null;
+  let problem = '';
+  if (cmp && cmp.different.length) {
+    problem = L('El informe es de otra configuración: no valida la propuesta.', 'The report is from another configuration: it does not validate the proposal.');
+  } else if (cmp && !cmp.same.length) {
+    problem = L('No se han podido leer los parámetros del informe, así que no consta que sea de la configuración propuesta.', 'The report parameters could not be read, so it is not confirmed that it comes from the proposed configuration.');
+  } else if (idx > 0) {
+    problem = L(`Se evaluó la meseta M${idx + 1}, no la recomendada (M1).`, `Plateau M${idx + 1} was evaluated, not the recommended one (M1).`);
+  }
   return {
-    value,
-    note: res.headline || '',
+    value: problem ? L(`${value} · no valida`, `${value} · does not validate`) : value,
+    note: problem || res.headline || '',
     short: L(`Periodo no visto: ${value}`, `Unseen period: ${value}`),
     done: true,
-    ok: res.level === 'normal' || res.level === 'tail',
+    ok: !problem && res.level === 'normal',
   };
 }
 
