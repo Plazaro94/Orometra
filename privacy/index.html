@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
@@ -74,7 +74,7 @@
     <article class="lp-claim">
       <span class="lp-claim-kicker" data-i18n="doc.privacy.claim3.kicker">Product</span>
       <h2 data-i18n="doc.privacy.claim3.title">Privacy-friendly analytics</h2>
-      <p data-i18n="doc.privacy.claim3.body">No accounts, no cookies, nothing tied to your EA, parameters or results. We only see anonymous, aggregate page visits.</p>
+      <p data-i18n="doc.privacy.claim3.body">No accounts, no cookies, nothing tied to your EA, parameters or results. We only see anonymous visits and how often each feature is used.</p>
     </article>
   </div>
 
@@ -93,8 +93,8 @@
   </section>
 
   <section class="lp-doc-block">
-    <h2 data-i18n="doc.privacy.sAn.title">What we measure: anonymous, aggregate visits</h2>
-    <p data-i18n="doc.privacy.sAn.body">We use Cloudflare Web Analytics to count how many people visit the page. It does not use cookies, does not fingerprint your browser, and does not track you across sites. It cannot see your uploaded files, your EA parameters or your results — those never leave your browser, so there is nothing for it to measure.</p>
+    <h2 data-i18n="doc.privacy.sAn.title">What we measure: anonymous visits and feature use</h2>
+    <p data-i18n="doc.privacy.sAn.body">We use Cloudflare Web Analytics and GoatCounter to count how many people visit the site and how often each feature is used: for example, “an analysis was run”, “it failed” or “a .set was downloaded”. Only the name of that event is sent. Neither uses cookies or follows you across sites, and neither can see your files, EA parameters or results — those never leave your browser.</p>
   </section>
 
   <section class="lp-doc-block">
@@ -135,6 +135,7 @@
 </footer>
 
 <script type="module" src="../js/landing.js"></script>
+<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aff9422f75d4536bfdcd4b1ea119da9"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

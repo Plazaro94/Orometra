@@ -1,5 +1,6 @@
 // Exportación .set/json/csv y portapapeles.
 
+import { track } from './track.js';
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { t, L, localeTag } from './i18n.js';
 import { state, api, $, esc, paramValue } from './ui-state.js';
@@ -40,7 +41,7 @@ export function buildPlainSummary(a) {
     top.forEach((p, i) => {
       const role = i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`);
       lines.push('');
-      lines.push(`${role} — Pass ${p.record.id} (M${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
+      lines.push(`${role} — ${L('Pasada', 'Pass')} ${p.record.id} (M${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
       lines.push(`  ${L('Operaciones in-sample / forward', 'In-sample / forward trades')}: ${p.record.is.trades}${hasF ? ` / ${p.record.oos.trades}` : ` / ${L('sin forward', 'no forward')}`}`);
       a.meta.paramNames.forEach((n, j) => lines.push(`  ${n} = ${paramValue(p.record.params[j])}`));
     });
@@ -75,6 +76,7 @@ export function buildPlainSummary(a) {
 }
 
 export async function copyParams(index, button) {
+  track('copiar-parametros');
   const a = state.analysis;
   if (!a || !a.plateaus.length) return;
   const p = a.plateaus[Math.min(index, a.plateaus.length - 1)];
@@ -96,6 +98,7 @@ export async function copyParams(index, button) {
 export function doExport(kind, plateauIndex) {
   const a = state.analysis;
   if (!a) return;
+  track(`descarga-${kind}`);
   const stamp = new Date().toISOString().slice(0, 10);
   const idx = Number.isFinite(plateauIndex) ? plateauIndex : state.selectedPlateau;
   const best = a.plateaus[Math.min(idx, Math.max(0, a.plateaus.length - 1))];

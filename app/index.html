@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
-<meta name="description" content="Audit MetaTrader 5 optimization results in your browser. Find parameter plateaus, Top 3 with reasons, evidence strength.">
-<title>Orometra App — MT5 Optimization Audit</title>
+<meta name="description" content="Analyze MetaTrader 5 optimization results in your browser: parameter plateaus, a recommended configuration with its reasons, and how much evidence backs it.">
+<title>Orometra App — MT5 optimization analysis</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -31,7 +31,7 @@
           <canvas class="brand-mark" id="brandMark" width="96" height="96" aria-hidden="true"></canvas>
           <span class="brand-name">Orometra</span>
         </span>
-        <span class="brand-sub" data-i18n="brand.sub">MT5 optimization audit</span>
+        <span class="brand-sub" data-i18n="brand.sub">MT5 optimization analysis</span>
       </a>
       <div class="header-controls">
         <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
@@ -85,7 +85,7 @@
         <button class="text-btn" data-tab="legal" type="button" data-i18n="legal.link">Legal notice &amp; privacy</button>
         <a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" data-i18n="contact.feedback">Send feedback</a>
       </div>
-      <div class="version" data-i18n="version">v2 · absolute plateau engine</div>
+      <div class="version" data-i18n="version">Engine version 2</div>
     </div>
   </aside>
 
@@ -96,7 +96,7 @@
         <h1 data-i18n="top.h1">See which configuration holds up before you trust it with real money.</h1>
       </div>
       <div class="topbar-title topbar-report" hidden>
-        <div class="eyebrow" data-i18n="top.report.eyebrow">Audit report</div>
+        <div class="eyebrow" data-i18n="top.report.eyebrow">Report</div>
         <h1 id="reportTitle">—</h1>
       </div>
       <div class="top-actions">
@@ -219,6 +219,7 @@
 </div>
 
 <script type="module" src="../js/ui.js"></script>
+<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aff9422f75d4536bfdcd4b1ea119da9"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

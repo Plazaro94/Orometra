@@ -565,12 +565,14 @@ export function renderLegal() {
         HTML backtest report are read in memory and discarded when you close the tab.`,
         )}</li>
         <li>${L(
-          `<strong>No hay cuentas ni registro.</strong> Usamos Cloudflare Web Analytics para contar visitas
-        agregadas a la página — sin cookies, sin identificarte, sin relacionarlo con tus archivos. No sabemos
-        quién eres ni qué subes; solo que alguien visitó la página.`,
-          `<strong>There are no accounts, no signup.</strong> We use Cloudflare Web Analytics to count
-        aggregate page visits — no cookies, no identifying you, nothing tied to your files. We do not know
-        who you are or what you upload; only that someone visited the page.`,
+          `<strong>No hay cuentas ni registro.</strong> Usamos Cloudflare Web Analytics y GoatCounter para contar
+        visitas y cuántas veces se usa cada función (por ejemplo, «se hizo un análisis» o «se descargó un .set»)
+        — sin cookies, sin identificarte y sin nada de tus archivos: solo el nombre del evento. No sabemos quién
+        eres ni qué subes.`,
+          `<strong>There are no accounts, no signup.</strong> We use Cloudflare Web Analytics and GoatCounter to
+        count visits and how often each feature is used (for example, “an analysis was run” or “a .set was
+        downloaded”) — no cookies, no identifying you and nothing from your files: only the event name. We do
+        not know who you are or what you upload.`,
         )}</li>
         <li>${L(
           `<strong>Se guardan tres cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a

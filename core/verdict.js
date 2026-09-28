@@ -491,7 +491,7 @@ export function buildVerdict(ctx) {
     }
     if (integrity.duplicateIds > 0) {
       add(SEV.WARN, L(`${integrity.duplicateIds} identificadores duplicados`, `${integrity.duplicateIds} duplicate identifiers`),
-        L('Se ha conservado la primera aparicion de cada Pass duplicado.',
+        L('Se ha conservado la primera aparición de cada pasada duplicada.',
           'The first appearance of each duplicate Pass was kept.'), 'integrity');
     }
     if (integrity.unmatchedIs > 0) {
