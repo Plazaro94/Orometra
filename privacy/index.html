@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://gc.zgo.at; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
@@ -80,7 +80,7 @@
     <article class="lp-claim">
       <span class="lp-claim-kicker" data-i18n="doc.privacy.claim3.kicker">Product</span>
       <h2 data-i18n="doc.privacy.claim3.title">Privacy-friendly analytics</h2>
-      <p data-i18n="doc.privacy.claim3.body">No accounts, no cookies, nothing tied to your EA, parameters or results. We only see anonymous visits and how often each feature is used.</p>
+      <p data-i18n="doc.privacy.claim3.body">No accounts, no cookies, nothing tied to your EA, parameters or results. We only count visits and how often each feature is used, and the statistics we see do not identify anyone.</p>
     </article>
   </div>
 
@@ -88,7 +88,7 @@
     <h2 data-i18n="doc.privacy.s1.title">What we do not collect</h2>
     <ul class="lp-list">
       <li data-i18n="doc.privacy.s1.1">No file uploads. Your MT5 XML/CSV/HTML reports are read in memory and discarded when you close the tab.</li>
-      <li data-i18n="doc.privacy.s1.2">No accounts, no registration, no tracking cookies, and nothing that identifies you or ties back to your files.</li>
+      <li data-i18n="doc.privacy.s1.2">No accounts, no registration and no tracking cookies. Nothing we measure can be tied back to your files.</li>
       <li data-i18n="doc.privacy.s1.3">We do not see your EA parameters, optimization results or strategy logic.</li>
     </ul>
   </section>
@@ -100,12 +100,12 @@
 
   <section class="lp-doc-block">
     <h2 data-i18n="doc.privacy.sAn.title">What we measure: anonymous visits and feature use</h2>
-    <p data-i18n="doc.privacy.sAn.body">We use Cloudflare Web Analytics and GoatCounter to count how many people visit the site and how often each feature is used: for example, “an analysis was run”, “it failed” or “a .set was downloaded”. Only the name of that event is sent. Neither uses cookies or follows you across sites, and neither can see your files, EA parameters or results — those never leave your browser.</p>
+    <p data-i18n="doc.privacy.sAn.body">We use GoatCounter on every page, and Cloudflare Web Analytics on every page except the app, to count how many people visit the site and how often each feature is used: for example, “an analysis was run”, “it failed” or “a .set was downloaded”. What is sent is the page visited, the page you came from, the screen width and, in the app, the name of that event. Neither uses cookies or follows you across websites, and neither can see your files, EA parameters or results. As with any web request, these services receive your IP address; according to their policies, they do not use it to identify you. The GoatCounter script is served from orometra.com itself, so no page runs code loaded from its servers.</p>
   </section>
 
   <section class="lp-doc-block">
     <h2 data-i18n="doc.privacy.s3.title">What we cannot avoid</h2>
-    <p data-i18n="doc.privacy.s3.body">Any host that serves the website (for example GitHub Pages) logs basic HTTP requests: IP address, time, browser. That is normal for every website and is unrelated to the contents of your optimization files.</p>
+    <p data-i18n="doc.privacy.s3.body">The host that serves the website (GitHub Pages) logs, like any web server, basic data about each request: IP address, time and browser. It is unavoidable when serving a page and unrelated to the content of your optimization files.</p>
   </section>
 
   <section class="lp-doc-block">
@@ -114,8 +114,20 @@
   </section>
 
   <section class="lp-doc-block">
+    <h2 data-i18n="doc.privacy.sR.title">Who is responsible and your rights</h2>
+    <ul class="lp-list">
+      <li data-i18n-html="doc.privacy.sR.1"><strong>Controller:</strong> Pol Lázaro. Contact: <a href="mailto:hello@orometra.com">hello@orometra.com</a>.</li>
+      <li data-i18n-html="doc.privacy.sR.2"><strong>Personal data processed:</strong> the IP address and basic browser data received by the host and the analytics services when you visit the site, and your email address if you write to us. Your MT5 files are never received.</li>
+      <li data-i18n-html="doc.privacy.sR.3"><strong>Purpose and legal basis:</strong> measuring how the site is used in order to improve it, and replying to your messages. The basis is our legitimate interest (Art. 6.1.f GDPR); in the case of emails, also the fact that you chose to write.</li>
+      <li data-i18n-html="doc.privacy.sR.4"><strong>Recipients:</strong> GitHub (hosting), Cloudflare and GoatCounter (analytics). GitHub and Cloudflare are US companies and may process data outside the EU under the safeguards they offer.</li>
+      <li data-i18n-html="doc.privacy.sR.5"><strong>Retention:</strong> emails are kept for as long as needed to answer them and follow up; analytics are kept as aggregate statistics.</li>
+      <li data-i18n-html="doc.privacy.sR.6"><strong>Your rights:</strong> you can request access, rectification, erasure, objection, restriction or portability by writing to hello@orometra.com, and lodge a complaint with the Spanish Data Protection Agency (<a href="https://www.aepd.es" target="_blank" rel="noopener">aepd.es</a>).</li>
+    </ul>
+  </section>
+
+  <section class="lp-doc-block">
     <h2 data-i18n="doc.privacy.s4.title">Disclaimer</h2>
-    <p data-i18n="doc.privacy.s4.body">Orometra is a statistical analysis tool, not financial advice. A favorable evidence grade is not a recommendation to buy, sell or fund an EA. Past results do not guarantee future performance.</p>
+    <p data-i18n="doc.privacy.s4.body">Orometra is a statistical analysis tool, not financial advice. A favorable evidence grade is not a recommendation to buy, sell or fund an EA. Past results do not guarantee future performance. Orometra is not affiliated with MetaQuotes; MetaTrader and MQL5 are trademarks of MetaQuotes Ltd.</p>
   </section>
 
   <section class="lp-doc-cta">
@@ -142,7 +154,7 @@
 </footer>
 
 <script type="module" src="../js/landing.js"></script>
-<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<!-- GoatCounter: visitas y eventos anonimos, sin cookies (ver privacidad) --><script data-goatcounter="https://plazaro94.goatcounter.com/count" async src="/js/goatcounter.js"></script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "1aff9422f75d4536bfdcd4b1ea119da9"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>

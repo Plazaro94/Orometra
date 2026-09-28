@@ -544,6 +544,10 @@ export function renderLegal() {
           `The tool is offered <strong>as is</strong>, with no warranty of availability, accuracy
         or fitness for any particular purpose.`,
         )}</li>
+              <li>${L(
+          'Orometra no está afiliado a MetaQuotes. MetaTrader y MQL5 son marcas de MetaQuotes Ltd.',
+          'Orometra is not affiliated with MetaQuotes. MetaTrader and MQL5 are trademarks of MetaQuotes Ltd.',
+        )}</li>
       </ul>
     </section>
 
@@ -565,14 +569,14 @@ export function renderLegal() {
         HTML backtest report are read in memory and discarded when you close the tab.`,
         )}</li>
         <li>${L(
-          `<strong>No hay cuentas ni registro.</strong> Usamos Cloudflare Web Analytics y GoatCounter para contar
-        visitas y cuántas veces se usa cada función (por ejemplo, «se hizo un análisis» o «se descargó un .set»)
-        — sin cookies, sin identificarte y sin nada de tus archivos: solo el nombre del evento. No sabemos quién
-        eres ni qué subes.`,
-          `<strong>There are no accounts, no signup.</strong> We use Cloudflare Web Analytics and GoatCounter to
-        count visits and how often each feature is used (for example, “an analysis was run” or “a .set was
-        downloaded”) — no cookies, no identifying you and nothing from your files: only the event name. We do
-        not know who you are or what you upload.`,
+          `<strong>No hay cuentas ni registro.</strong> En esta app usamos solo GoatCounter, servido desde el propio
+        orometra.com, para contar visitas y cuántas veces se usa cada función (por ejemplo, «se hizo un análisis» o
+        «se descargó un .set»): sin cookies y sin nada de tus archivos, solo el nombre del evento. Nada de lo que
+        medimos se puede relacionar con lo que analizas.`,
+          `<strong>There are no accounts, no signup.</strong> In this app we only use GoatCounter, served from
+        orometra.com itself, to count visits and how often each feature is used (for example, “an analysis was
+        run” or “a .set was downloaded”): no cookies and nothing from your files, only the event name. Nothing we
+        measure can be tied to what you analyze.`,
         )}</li>
         <li>${L(
           `<strong>Se guardan tres cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
@@ -583,12 +587,15 @@ export function renderLegal() {
         clear them by wiping the site data.`,
         )}</li>
         <li>${L(
-          `<strong>Lo único que no controlamos:</strong> el proveedor que aloja la página registra, como
-        cualquier servidor web, las peticiones que recibe (dirección IP, fecha, navegador). Es inevitable al
-        servir una página y no está relacionado con el contenido de tus archivos.`,
-          `<strong>The only thing we do not control:</strong> the provider that hosts the page logs, like
-        any web server, the requests it receives (IP address, date, browser). That is inevitable when
-        serving a page and is unrelated to the content of your files.`,
+          `<strong>Lo que no podemos evitar:</strong> el proveedor que aloja la página y el servicio de
+        analítica reciben, como en cualquier web, tu dirección IP y los datos básicos del navegador. No está
+        relacionado con el contenido de tus archivos. Responsable: Pol Lázaro
+        (<a href="mailto:hello@orometra.com">hello@orometra.com</a>). Tus derechos y el detalle, en la
+        <a href="../privacy/">página de privacidad</a>.`,
+          `<strong>What we cannot avoid:</strong> the provider that hosts the page and the analytics service
+        receive, as on any website, your IP address and basic browser data. That is unrelated to the content of
+        your files. Controller: Pol Lázaro (<a href="mailto:hello@orometra.com">hello@orometra.com</a>). Your
+        rights and the details are on the <a href="../privacy/">privacy page</a>.`,
         )}</li>
       </ul>
     </section>

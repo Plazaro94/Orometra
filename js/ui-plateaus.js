@@ -441,7 +441,7 @@ export function renderDiagnostics(a) {
           <div><span>${L('Filas in-sample', 'In-sample rows')}</span><strong>${int(integ.isRows)}</strong></div>
           <div><span>${L('Filas forward', 'Forward rows')}</span><strong>${integ.oosRows ? int(integ.oosRows) : '—'}</strong></div>
           <div><span>${L('Emparejadas por pasada', 'Matched by Pass')}</span><strong>${int(integ.matchedRows)}</strong></div>
-          <div><span>${L('Sin pareja (descartadas)', 'Unmatched (dropped)')}</span><strong>${int(integ.unmatchedIs)}</strong></div>
+          <div><span>${integ.unmatchedUsedForDiscovery ? L('Sin forward (solo in-sample)', 'No forward (in-sample only)') : L('Sin pareja (descartadas)', 'Unmatched (dropped)')}</span><strong>${int(integ.unmatchedIs)}</strong></div>
           <div><span>${L('Identificadores duplicados', 'Duplicate identifiers')}</span><strong>${int(integ.duplicateIds)}</strong></div>
           <div><span>${L('Filas con parámetros ilegibles', 'Rows with unreadable parameters')}</span><strong>${int(a.meta.droppedParams)}</strong></div>
           <div><span>${L('Pasadas con parámetros repetidos', 'Passes with repeated parameters')}</span><strong>${int(integ.duplicateParamVectors || 0)}</strong></div>

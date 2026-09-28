@@ -215,6 +215,7 @@ for (const rel of sources.filter((f) => f.endsWith('.js'))) {
   if (!fs.existsSync(file)) continue;
   const s = fs.readFileSync(file, 'utf8');
   if (rel === 'tools/audit.js') continue; // su salida ES por consola
+  if (rel === 'js/goatcounter.js') continue; // copia sin modificar del contador oficial (ver cabecera)
   if (/\bdebugger\b/.test(s)) debugLeftovers.push(rel + ': debugger');
   if (/console\.(log|warn|error)\(/.test(s) && rel !== 'js/worker.js') debugLeftovers.push(rel + ': console');
 }

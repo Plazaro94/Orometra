@@ -367,8 +367,12 @@ export function collapseToTopology(records, coords, scores, passes, activeDims, 
       continue;
     }
     collapsed++;
+    // A igualdad de "pasa", se prefiere la que tiene datos de forward: si no, agrupar
+    // podría tirar la única pasada del grupo que MT5 llegó a probar fuera de la muestra.
+    const fwd = (k) => (records[k].oosKnown === false ? 0 : 1);
     const prefer = (passes[i] && !passes[prev])
-      || (passes[i] === passes[prev] && (scores[i] || 0) > (scores[prev] || 0));
+      || (passes[i] === passes[prev] && fwd(i) > fwd(prev))
+      || (passes[i] === passes[prev] && fwd(i) === fwd(prev) && (scores[i] || 0) > (scores[prev] || 0));
     if (prefer) best.set(key, i);
   }
   if (!collapsed) return { records, coords, scores, passes, collapsed: 0 };

@@ -224,5 +224,46 @@ section('I9. El .set de refinamiento cuenta las combinaciones que genera MT5');
   check('niveles 10,13,20,40 -> 10..40 paso 3 = 11 valores', r[0].start === 10 && r[0].stop === 40 && r[0].step === 3 && r[0].levels === 11, JSON.stringify(r[0]));
 }
 
+// ============================================================================
+section('FWD-1. La meseta no depende de cuantas pasadas reexporte MT5 al forward');
+{
+  // MT5 solo pasa al forward las mejores pasadas. Antes se buscaban las mesetas solo entre
+  // ellas: sin ver las vecinas que fallan, la meseta salia inflada (13 en vez de 5).
+  const POLICY = { ...DEFAULT_POLICY, gates: { ...DEFAULT_POLICY.gates, minProfitFactor: 1.05, maxDrawdownPct: 35, minTrades: 100 } };
+  const metrics = (g, noise, base) => ({
+    profit: 200000 * Math.max(0, g) - 20000 + noise * 8000,
+    profitFactor: 1.0 + 0.32 * Math.max(0, g) + noise * 0.02,
+    recoveryFactor: 4.2 * Math.max(0, g) + noise * 0.2,
+    sharpe: 3.2 * Math.max(0, g) + noise * 0.2,
+    drawdown: 6 + 55 * (1 - Math.max(0, g)) + noise * 2,
+    trades: Math.round(base * (0.7 + 0.6 * Math.max(0, g))),
+  });
+  const r = rng(7);
+  const pts = [];
+  const bump = (z, c, w) => Math.exp(-z.reduce((acc, v, j) => acc + ((v - c[j]) / w) ** 2, 0) / 2);
+  for (let a = 0; a < 22; a++) for (let b = 0; b < 22; b++) {
+    const z = [a, b];
+    const nz = (r() - 0.5) * 0.06;
+    const g = Math.max(bump(z, [5, 5], 0.8), 0.8 * bump(z, [15, 15], 3));
+    pts.push({ x: z.map((v) => 10 + v * 5), is: metrics(g + nz * 0.2, nz, 1600), oos: metrics(0.9 * g + nz * 0.2, nz, 900), isResult: 40 + 45 * g + nz, oosResult: 35 + 40.5 * g + nz });
+  }
+  const names = ['p1', 'p2'];
+  const isH = ['Pass', 'Result', 'Profit', 'Expected Payoff', 'Profit Factor', 'Recovery Factor', 'Sharpe Ratio', 'Equity DD %', 'Trades', ...names];
+  const oosH = ['Pass', 'Forward Result', 'Back Result', 'Profit', 'Expected Payoff', 'Profit Factor', 'Recovery Factor', 'Sharpe Ratio', 'Equity DD %', 'Trades', ...names];
+  const isRows = pts.map((p, i) => [i, p.isResult, p.is.profit, p.is.profit / 800, p.is.profitFactor, p.is.recoveryFactor, p.is.sharpe, p.is.drawdown, p.is.trades, ...p.x]);
+  const run = (frac) => {
+    const top = pts.map((_, i) => i).sort((a, b) => pts[b].isResult - pts[a].isResult).slice(0, Math.round(frac * pts.length));
+    const oosRows = top.map((i) => { const p = pts[i]; return [i, p.oosResult, p.isResult, p.oos.profit, p.oos.profit / 800, p.oos.profitFactor, p.oos.recoveryFactor, p.oos.sharpe, p.oos.drawdown, p.oos.trades, ...p.x]; });
+    return runAnalysis({ isTable: { name: 'IS', sheet: 'x', format: 's', headers: isH, rows: isRows }, oosTable: { name: 'OOS', sheet: 'x', format: 's', headers: oosH, rows: oosRows }, policy: POLICY });
+  };
+  const full = run(1.0);
+  const top25 = run(0.25);
+  check('con forward del 25 % se analizan todas las pasadas del in-sample', top25.records.length === full.records.length, `${top25.records.length} vs ${full.records.length}`);
+  check('misma meseta recomendada', full.plateaus[0] && top25.plateaus[0] && full.plateaus[0].record.params.join() === top25.plateaus[0].record.params.join());
+  check('mismo tamano de meseta (no se infla)', full.plateaus[0].size === top25.plateaus[0].size, `${top25.plateaus[0].size} vs ${full.plateaus[0].size}`);
+  check('la recomendada tiene forward', top25.plateaus[0].record.oosKnown !== false);
+  check('las pasadas sin forward se informan, no se descartan', top25.verdict.findings.some((f) => /pasadas sin forward/.test(f.title)));
+}
+
 console.log(`\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas`);
 if (failures) process.exit(1);

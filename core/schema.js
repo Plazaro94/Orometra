@@ -100,11 +100,15 @@ export function pairTables(isTable, oosTable) {
 
   const matched = [];
   const unmatchedIs = [];
+  const unmatchedRows = [];
   for (const row of isTable.rows) {
     const key = String(row[isId]).trim();
     const other = oosIdx.map.get(key);
     if (other) matched.push({ id: key, isRow: row, oosRow: other });
-    else unmatchedIs.push(key);
+    else {
+      unmatchedIs.push(key);
+      unmatchedRows.push({ id: key, isRow: row });
+    }
   }
   if (!matched.length) {
     throw new Error(L('Ninguna pasada coincide entre los dos archivos: parecen de optimizaciones distintas. Deben ser el in-sample y el forward de la MISMA ejecución.', 'No pass matches between the two files: they look like different optimizations. They must be the in-sample and forward of the SAME run.'));
@@ -160,6 +164,7 @@ export function pairTables(isTable, oosTable) {
 
   return {
     matched,
+    unmatchedRows,
     paramColumns,
     metricLikeCommon,
     vetoed,
