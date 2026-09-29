@@ -77,6 +77,7 @@ export const unseenFields = () => [
 
 export const unseenStatus = () => ({
   normal: ['ok', L('normal', 'normal')],
+  mejor: ['ok', L('mejor que todo lo visto', 'better than anything seen')],
   cola: ['warn', L('en la cola', 'in the tail')],
   fuera: ['bad', L('fuera de lo visto', 'outside what was seen')],
 });

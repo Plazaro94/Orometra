@@ -146,6 +146,24 @@ export function fallbackNote(a) {
   );
 }
 
+/**
+ * El siguiente paso depende también del periodo no visto: el motor recomienda hacerlo,
+ * pero una vez hecho, repetir "pruébala en un periodo no visto" es un consejo caducado.
+ */
+export function nextStepText(a, hold) {
+  if (!hold || !hold.done || !a.plateaus.length) return a.verdict.nextStep;
+  if (hold.ok) {
+    return L(
+      'Ya ha superado el periodo no visto. Siguiente paso: pruébala en demo o en real con riesgo reducido, y compara sus resultados en vivo con el rango habitual de la meseta, no con las mejores cifras.',
+      'It has already passed the unseen period. Next step: run it on demo or live with reduced risk, and compare its live results with the plateau\'s usual range, not with the best figures.',
+    );
+  }
+  return L(
+    'El periodo no visto no la confirma. Revisa en esa pestaña qué métrica falla (o si el informe es de otra configuración) antes de dar ningún paso más.',
+    'The unseen period does not confirm it. Check in that tab which metric fails (or whether the report is from another configuration) before taking any further step.',
+  );
+}
+
 export function renderVerdict(a) {
   const v = a.verdict;
   const dv = displayVerdictCopy(a);
@@ -240,7 +258,7 @@ export function renderVerdict(a) {
       ${holdBlock}
       <div class="verdict-fact verdict-fact-next">
         <span class="verdict-fact-label">${esc(t('verdict.next'))}</span>
-        <strong class="verdict-fact-value">${esc(v.nextStep)}</strong>
+        <strong class="verdict-fact-value">${esc(nextStepText(a, hold))}</strong>
       </div>
     </div>
   </section>

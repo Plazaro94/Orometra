@@ -915,10 +915,14 @@ export function chooseRepresentativeByMean(component, neighbors, scores, robust)
  * Solo tiene sentido para parámetros numericos: en un booleano o una enumeracion no
  * hay un "más alla" que no se haya probado.
  */
-export function boundaryParams(component, coords, levels, paramNames, types) {
+export function boundaryParams(component, coords, levels, paramNames, types, ignore = []) {
   const touched = [];
+  const skip = new Set(ignore);
   for (let j = 0; j < levels.length; j++) {
     if (levels[j].length < 2) continue; // constante: no se optimizo, no es frontera
+    // Un parámetro demostrablemente plano no influye: estar en su borde no dice que la
+    // meseta pueda seguir fuera del rango.
+    if (skip.has(j)) continue;
     if (types && types[j] !== 'number') continue;
     let atMin = false;
     let atMax = false;
@@ -1031,13 +1035,17 @@ export function detectInversions(coords, levels, paramNames, isQuality, oosQuali
  * Aquí se parte del representante, se abre un paso en cada eje y después se reparte
  * el presupuesto dando más amplitud a los parámetros más influyentes.
  */
-export function refinementRange(repIndex, coords, levels, paramNames, sensitivity, types, budget = 20000) {
+export function refinementRange(repIndex, coords, levels, paramNames, sensitivity, types, budget = 20000, flat = []) {
   const z0 = coords[repIndex];
   const optimised = [];
   const isNumeric = (j) => !types || types[j] === 'number';
+  const flatSet = new Set(flat);
   const radius = levels.map((lv, j) => {
     // Un booleano o una enumeracion no se barre por rango: se deja en su valor.
     if (lv.length < 2 || !isNumeric(j)) return 0;
+    // Un parámetro demostrablemente plano tampoco: barrerlo multiplica las combinaciones
+    // sin aportar nada.
+    if (flatSet.has(j)) return 0;
     optimised.push(j);
     return 1;
   });
@@ -1117,6 +1125,7 @@ export function refinementRange(repIndex, coords, levels, paramNames, sensitivit
       levels: mtCount(j, lo, hi),
       seenLevels: inner.length,
       fixed: inner.length === 1,
+      flat: flatSet.has(j),
     };
   });
 }

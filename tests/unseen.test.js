@@ -45,6 +45,24 @@ section('2. Un tramo NORMAL debe aprobar aunque los numeros no deslumbren');
   check('lo reconoce como normal', r.level === 'normal', `${r.level}: ${r.headline}`);
 }
 
+section('2b. Un tramo MEJOR que todo lo visto no se llama «normal» a secas');
+{
+  const trades = Math.round(rep.oos.trades);
+  const r = evaluateUnseen(analysis, plateau, {
+    trades,
+    profit: (rep.oos.profit / rep.oos.trades) * trades * 3,
+    profitFactor: rep.oos.profitFactor * 3,
+    drawdown: rep.oos.drawdown,
+    recoveryFactor: rep.oos.recoveryFactor,
+    sharpe: rep.oos.sharpe * 3,
+  });
+  const pf = r.results.find((x) => x.key === 'profitFactor');
+  check('el PF por encima de todo lo visto se marca como «mejor»', pf.status === 'mejor', pf.status);
+  check('no cuenta como fallo', r.level === 'normal', r.level);
+  check('el titular lo dice', /mejor/.test(r.headline), r.headline);
+  check('y la lectura avisa de posible solape o tramo favorable', r.notes.some((n) => /solapa/.test(n)), r.notes[0]);
+}
+
 section('3. LA TRAMPA: el mismo drawdown en dos periodos de distinta duracion');
 {
   // El drawdown tipico del EA, medido a la duracion habitual de la referencia.
