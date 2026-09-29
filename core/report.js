@@ -67,8 +67,10 @@ function tableRows(html) {
  * Se recorre todo aplanado para no depender de cuantas columnas use cada build.
  */
 function labelledValues(rows) {
+  // Las celdas vacías se saltan: en el Open XML de MT5 la etiqueta va en la columna A y el
+  // valor en la D, con dos celdas vacías en medio.
   const flat = [];
-  for (const cells of rows) for (const c of cells) flat.push(c);
+  for (const cells of rows) for (const c of cells) if (c !== null && c !== undefined && String(c).trim() !== '') flat.push(c);
   const pairs = [];
   for (let i = 0; i < flat.length - 1; i++) {
     if (/:$/.test(flat[i])) pairs.push([flat[i].slice(0, -1).trim(), flat[i + 1]]);

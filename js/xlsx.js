@@ -15,6 +15,18 @@
 import { L } from './i18n.js';
 const td = new TextDecoder('utf-8');
 
+/**
+ * Texto de una entrada del libro. Excel escribe UTF-8, pero MT5 escribe sus .xlsx en
+ * UTF-16 con BOM (FF FE): leídos como UTF-8, cada letra lleva un nulo detrás y ninguna
+ * etiqueta casa, así que el libro parecía vacío.
+ */
+function decodificar(bytes) {
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) return new TextDecoder('utf-16le').decode(bytes.subarray(2));
+  if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) return new TextDecoder('utf-16be').decode(bytes.subarray(2));
+  if (bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) return td.decode(bytes.subarray(3));
+  return td.decode(bytes);
+}
+
 /** Tope por entrada y acumulado: evita bombas ZIP (poco comprimido → mucho XML). */
 export const MAX_XLSX_ENTRY_BYTES = 80 * 1024 * 1024;
 export const MAX_XLSX_TOTAL_BYTES = 160 * 1024 * 1024;
@@ -111,7 +123,7 @@ async function extraer(zip, nombre) {
       throw new Error(L('Entrada ZIP demasiado grande. Exporta un XML más reducido.', 'ZIP entry too large. Export a smaller XML.'));
     }
     zip.bytesLeidos += datos.length;
-    return td.decode(datos);
+    return decodificar(datos);
   }
   if (e.metodo !== 8) throw new Error(L(`Compresión ZIP no soportada (método ${e.metodo}).`, `Unsupported ZIP compression (method ${e.metodo}).`));
   if (typeof DecompressionStream === 'undefined') {
@@ -120,7 +132,7 @@ async function extraer(zip, nombre) {
   const flujo = new Blob([datos]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
   const plain = await leerLimitado(flujo, cap);
   zip.bytesLeidos += plain.byteLength;
-  return td.decode(plain);
+  return decodificar(plain);
 }
 
 /** Columna en letras -> indice. "A"=0, "Z"=25, "AA"=26. */
