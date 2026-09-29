@@ -23,6 +23,10 @@ export const BINARY_HINT = /\.(xlsx|xlsm)$/i;
 export async function detectRole(file) {
   try {
     if (/\.set$/i.test(file.name)) return 'set';
+    // Los exports de optimización nunca son HTML; el informe de un backtest sí. Un informe
+    // que no se reconociera por su cabecera (otro idioma del terminal) acababa como
+    // in-sample: mejor mandarlo al lector de informes, que explica qué le falta.
+    if (/\.html?$/i.test(file.name)) return 'report';
     // .xlsx es ZIP: hay que parsear para ver cabeceras (Forward Result / Back Result).
     if (BINARY_HINT.test(file.name) || /\.xlsx?$/i.test(file.name)) {
       const prepared = await api.prepareTable(file);
@@ -89,6 +93,12 @@ export async function acceptFiles(fileList, preferred) {
   state.dropNote = '';
   if (files.length === 1) {
     const role = await detectRole(files[0]);
+    // En la pestaña del periodo no visto, lo que se suelta es el informe del backtest
+    // (salvo que sea claramente otra cosa: un forward o un .set).
+    if (state.tab === 'unseen' && state.analysis && role !== 'oos' && role !== 'set') {
+      await api.setReport(files[0]);
+      return;
+    }
     // Un segundo in-sample soltado solo sustituye al primero. Puede ser a propósito
     // (cambiar de archivo), pero si se quería añadir el forward, hay que decirlo.
     const target = role || preferred || 'is';
@@ -461,7 +471,16 @@ export let dropDepth = 0;
 
 export function showDropOverlay() {
   const el = $('#dropOverlay');
-  if (el) el.hidden = false;
+  if (!el) return;
+  // En el periodo no visto se espera el informe del backtest, no los exports.
+  const unseen = state.tab === 'unseen' && Boolean(state.analysis);
+  const title = el.querySelector('[data-i18n="drop.overlay.title"]');
+  const body = el.querySelector('[data-i18n="drop.overlay.body"]');
+  if (title) title.textContent = unseen ? L('Suelta aquí el informe del backtest', 'Drop the backtest report here') : t('drop.overlay.title');
+  if (body) body.textContent = unseen
+    ? L('Se usará para el periodo no visto.', 'It will be used for the unseen period.')
+    : t('drop.overlay.body');
+  el.hidden = false;
 }
 
 export function hideDropOverlay() {

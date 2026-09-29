@@ -1,8 +1,9 @@
 // Validación del periodo no visto e informe de backtest.
 
 import { track } from './track.js';
+import { CODE } from '../core/errors.js';
 import { evaluateUnseen } from '../core/unseen.js';
-import { parseBacktestReport, compareParams } from '../core/report.js';
+import { parseBacktestReport, compareParams, looksLikeReport } from '../core/report.js';
 import { auditUnseenTrades } from '../core/matrix/from-deals.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
@@ -10,7 +11,16 @@ import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } fr
 export async function setReport(file) {
   try {
     const buffer = await file.arrayBuffer();
-    const report = parseBacktestReport(decodeHead(buffer), file.name);
+    const text = decodeHead(buffer);
+    // MT5 también guarda el informe como Excel (Open XML), pero ese formato no trae la
+    // lista de operaciones igual: se pide el HTML con un mensaje concreto.
+    if (/\.(xlsx|xls|xml)$/i.test(file.name) && !looksLikeReport(text)) {
+      throw new Error(L(
+        `${file.name} no es un informe HTML. Para el periodo no visto, guarda el informe del backtest como HTML: en el probador, pestaña Backtest, clic derecho → Informe → HTML.`,
+        `${file.name} is not an HTML report. For the unseen period, save the backtest report as HTML: in the tester, Backtest tab, right-click → Report → HTML.`,
+      ));
+    }
+    const report = parseBacktestReport(text, file.name);
     state.report = report;
     state.unseen.values = {
       trades: report.metrics.trades,
@@ -22,6 +32,7 @@ export async function setReport(file) {
     };
     state.unseen.result = null;
     state.unseen.error = null;
+    state.unseen.reportError = null;
     // A partir de la lista de operaciones (no de los seis campos agregados), y solo si
     // el informe trae suficientes: Monte Carlo, tamaño de muestra y stress de costes.
     // Ver core/matrix/from-deals.js.
@@ -34,7 +45,12 @@ export async function setReport(file) {
       runUnseenCheck();
     }
   } catch (err) {
-    api.showError(err && err.message ? err.message : String(err));
+    const message = err && err.message ? err.message : String(err);
+    api.showError(message, CODE.REPORT_ERROR);
+    // El aviso general queda arriba de la página; quien está en el periodo no visto no lo
+    // ve. Se repite en la propia ficha del informe.
+    state.unseen.reportError = message;
+    if (state.analysis && state.tab === 'unseen') api.setTab('unseen');
   }
 }
 
@@ -88,6 +104,7 @@ export function renderReportCard(a, plateau) {
   if (!rep) {
     return `<section class="panel report-drop" id="reportDrop">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Atajo', 'Shortcut')}</div><h2>${L('Suelta aquí el informe del backtest', 'Drop the backtest report here')}</h2></div></div>
+      ${state.unseen.reportError ? `<div class="inline-warn">${esc(state.unseen.reportError)}</div>` : ''}
       <p class="panel-intro">
         ${L(
           `En el probador, clic derecho sobre los resultados → <em>Informe</em> → <em>HTML</em>. Si lo
