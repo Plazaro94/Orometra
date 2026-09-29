@@ -37,7 +37,11 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
 5. **Se elige dentro de la meseta por puesto conjunto, no por su cima**: la configuración con
    mejor puesto en in-sample más su puesto en forward, ambos promediados con sus vecinas. Se
    midió en el banco de pruebas (`bench/`) frente a la regla maximin anterior y a métodos
-   habituales. Sin meseta, se da una sugerencia **orientativa** con la misma regla.
+   habituales. Sin meseta y con forward, se da una sugerencia **orientativa** con la misma
+   regla. Resultado honesto del examen ciego: gana a elegir la primera fila, la mejor del
+   forward, la suma de puestos y el azar; **pierde por poco contra «media con vecinas»** si
+   se cuenta como fallo cada caso en que Orometra no propone meseta (con la sugerencia
+   orientativa gana). Detalle en `bench/PREREGISTRO.md`.
 6. **Solo se ignora lo demostrablemente plano, medido de dos formas.** La influencia de un
    parámetro se mide *aislada* (agrupando por su valor y promediando el resto) y *combinada*
    (dejando fijo todo lo demás), y manda la mayor de las dos. Un parámetro cuyo efecto se

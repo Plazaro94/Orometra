@@ -209,6 +209,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   progress(onProgress, 18, L('Evaluando calidad y puertas', 'Evaluating quality and gates'));
   const periodRatio = hasForward ? estimatePeriodRatio(records) : NaN;
   const minTradesIs = policy.gates.minTrades;
+  // Mínimo de operaciones del forward: el del usuario escalado por la duración del forward,
+  // con un suelo de 30 (por debajo, PF y drawdown de un periodo son casi puro ruido).
+  // Decisión de diseño documentada en docs/MT5_ASSUMPTIONS.md (FWD-2).
   const minTradesOos = hasForward && Number.isFinite(periodRatio)
     ? Math.max(30, policy.gates.minTrades * periodRatio)
     : policy.gates.minTrades;
@@ -462,7 +465,15 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const frac = (vals) => {
       const idx = vals.map((v, i) => i).filter((i) => Number.isFinite(vals[i])).sort((a, b) => vals[a] - vals[b]);
       const out = new Array(vals.length).fill(0);
-      idx.forEach((i, k) => { out[i] = idx.length > 1 ? k / (idx.length - 1) : 1; });
+      // Los empates reciben el puesto medio de su grupo: si no, el orden de las filas del
+      // archivo decidiría la elección.
+      for (let k = 0; k < idx.length;) {
+        let e = k;
+        while (e + 1 < idx.length && vals[idx[e + 1]] === vals[idx[k]]) e++;
+        const r = idx.length > 1 ? (k + e) / 2 / (idx.length - 1) : 1;
+        for (let t = k; t <= e; t++) out[idx[t]] = r;
+        k = e + 1;
+      }
       return out;
     };
     const rIs = frac(records.map((r) => r.qualityIs));
@@ -982,6 +993,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       selectionMode,
       discoverPassCount,
       searchPassCount,
+      // Lo que el veredicto necesita para rehacerse igual al cambiar de idioma
+      // (rebuildLocalizedCopy): sin esto, el nivel cambiaba con el idioma.
+      forwardCount: verdictCtx.forwardCount,
+      plateauForwardCritical: verdictCtx.plateauForwardCritical,
       generatedAt: new Date().toISOString(),
       elapsedMs: Date.now() - started,
       total: records.length,
@@ -1048,9 +1063,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // Sin meseta no hay región que recomendar, pero sí una configuración orientativa:
     // la de mejor puesto conjunto (in-sample + forward, promediado con sus vecinas) entre
     // las que cumplen los mínimos en los dos periodos. Se presenta como tal, nunca como
-    // meseta.
+    // meseta. Sin forward no se da: sería elegir solo por el in-sample, justo lo que
+    // Orometra desaconseja.
     fallback: (() => {
-      if (plateaus.length) return null;
+      if (plateaus.length || !hasForward) return null;
       const pick = (idx) => (idx.length ? idx.reduce((b, i) => (jointScore[i] > jointScore[b] ? i : b), idx[0]) : null);
       const all = records.map((_, i) => i);
       let i = pick(all.filter((k) => records[k].passesJoint));

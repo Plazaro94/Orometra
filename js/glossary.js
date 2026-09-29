@@ -18,8 +18,8 @@ const DEFS = {
     en: 'The largest drop in equity from a prior peak to the following low, within the analyzed period.',
   },
   jointpick: {
-    es: 'Regla de elección dentro de la meseta: el puesto de cada configuración en el in-sample más su puesto en el forward, ambos promediados con sus vecinas. Usa los dos periodos sin que uno solo decida, y el promedio con las vecinas quita la suerte de un punto concreto.',
-    en: 'Selection rule inside the plateau: each configuration\'s in-sample rank plus its forward rank, both averaged with its neighbors. It uses both periods without letting one decide alone, and averaging with neighbors removes single-point luck.',
+    es: 'Regla de elección dentro de la meseta: el puesto de cada configuración en el in-sample más su puesto en el forward, ambos promediados con sus vecinas. Usa los dos periodos sin que uno solo decida, y el promedio con las vecinas quita la suerte de un punto concreto. Una configuración que MT5 no pasó al forward cuenta como el último puesto del forward: no hay prueba fuera de la muestra a su favor.',
+    en: 'Selection rule inside the plateau: each configuration\'s in-sample rank plus its forward rank, both averaged with its neighbors. It uses both periods without letting one decide alone, and averaging with neighbors removes single-point luck. A configuration MT5 did not pass to the forward counts as last on the forward: there is no out-of-sample evidence in its favor.',
   },
   maximin: {
     es: 'Criterio de selección que elige el punto cuyo peor vecino es el mejor posible — en vez del punto con el valor más alto (el pico).',

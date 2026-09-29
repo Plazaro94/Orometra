@@ -85,7 +85,9 @@ export function holdoutFact(a) {
   return {
     value: problem ? L(`${value} · no valida`, `${value} · does not validate`) : value,
     note: problem || res.headline || '',
-    short: L(`Periodo no visto: ${value}`, `Unseen period: ${value}`),
+    short: problem
+      ? L(`Periodo no visto: ${value} · no valida`, `Unseen period: ${value} · does not validate`)
+      : L(`Periodo no visto: ${value}`, `Unseen period: ${value}`),
     done: true,
     ok: !problem && res.level === 'normal',
   };
@@ -134,9 +136,13 @@ export function displayVerdictCopy(a) {
  */
 export function fallbackNote(a) {
   const params = a.meta.paramNames.map((n, j) => `${esc(n)}=${paramHtml(a.fallback.record.params[j])}`).join(', ');
+  const gates = a.fallback.passesBoth
+    ? ''
+    : L(' Ninguna configuración cumple tus mínimos en los dos periodos: esta solo los cumple en el in-sample.',
+      ' No configuration meets your minima in both periods: this one only meets them in-sample.');
   return L(
-    `Sin zona estable. Es la que mejor combina in-sample y forward junto con sus vecinas (${params}). No la uses sin probarla antes en un periodo no visto.`,
-    `No stable region. It is the one that best combines in-sample and forward together with its neighbors (${params}). Do not use it without first testing it on an unseen period.`,
+    `Sin zona estable. Es la que mejor combina in-sample y forward junto con sus vecinas (${params}).${gates} No la uses sin probarla antes en un periodo no visto.`,
+    `No stable region. It is the one that best combines in-sample and forward together with its neighbors (${params}).${gates} Do not use it without first testing it on an unseen period.`,
   );
 }
 

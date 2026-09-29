@@ -135,7 +135,7 @@
       <span class="lp-method-num">04</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s4.title">Plateaus, not peaks</h2>
-        <p data-i18n="doc.method.s4.body">For each configuration it checks its neighbors, measured in steps of your grid (from 30 to 50, or from 0.1 to 0.2, is one step). A plateau is a connected zone where the neighbors also clear your minimums. Isolated peaks are rejected. Inside the plateau it picks the configuration with the best combined rank in-sample and forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau, it gives a tentative suggestion by the same rule and says so.</p>
+        <p data-i18n="doc.method.s4.body">For each configuration it checks its neighbors, measured in steps of your grid (from 30 to 50, or from 0.1 to 0.2, is one step). A plateau is a connected zone where the neighbors also clear your minimums. Isolated peaks are rejected. Inside the plateau it picks the configuration with the best combined rank in-sample and forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau and there is a forward, it gives a tentative suggestion by the same rule and says so. In our blind benchmark it beats picking the top row, the best forward row, the rank sum and random choice; it narrowly loses to “average with neighbors” when every case without a plateau counts as a miss (with the tentative suggestion, it wins).</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">

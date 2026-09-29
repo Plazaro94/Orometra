@@ -104,8 +104,8 @@ export function buildVerdict(ctx) {
           `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. Everything that follows should be read as provisional.${extraEn}`), null);
     } else if (per >= 100) {
       add(SEV.OK, L(`~${fmt(per, 0)} operaciones por parámetro ajustado`, `~${fmt(per, 0)} trades per fitted parameter`),
-        L(`${d.params} parámetros frente a ${tradesN} operaciones en ${periodoEs}. Hay operaciones de sobra por parámetro para que las conclusiones se sostengan.`,
-          `${d.params} parameters versus ${tradesN} trades in ${periodoEn}. There are enough trades per parameter for the conclusions to hold.`), null);
+        L(`${d.params} parámetros frente a ${tradesN} operaciones en ${periodoEs}. Hay bastantes operaciones por parámetro: la muestra no es el punto débil.`,
+          `${d.params} parameters versus ${tradesN} trades in ${periodoEn}. There are plenty of trades per parameter: sample size is not the weak point.`), null);
     }
   }
 
@@ -116,8 +116,8 @@ export function buildVerdict(ctx) {
         `Only ${gatePassCount} configurations clear the minima, and for a plateau to exist you would need at least ${viableNeededForPlateau}: a stable region needs configurations whose neighbors also pass, that is, it needs interior. This does NOT say your EA is bad; it says that with these data nothing can be asserted in either direction. Widen the parameter ranges, add intermediate values or relax the minima, and optimize again.`), null);
   } else if (!plateaus.length) {
     add(SEV.CRITICAL, L('No se ha encontrado ninguna meseta', 'No plateau was found'),
-      L('No existe ninguna región conexa de configuraciones que superen el umbral de robustez con soporte suficiente. Habiendo datos de sobra para detectarla, lo que hay son puntos sueltos, y un punto suelto no es un sistema: es una coincidencia.',
-        'There is no connected region of configurations that clear the robustness threshold with enough support. With ample data to detect one, what remains are isolated points, and an isolated point is not a system: it is a coincidence.'), null);
+      L('No existe ninguna región conexa de configuraciones que superen el umbral de robustez con soporte suficiente. Con datos suficientes para detectarla, lo que hay son puntos sueltos, y un punto suelto no es un sistema: es una coincidencia.',
+        'There is no connected region of configurations that clear the robustness threshold with enough support. With enough data to detect one, what remains are isolated points, and an isolated point is not a system: it is a coincidence.'), null);
   }
 
   /*
@@ -137,7 +137,7 @@ export function buildVerdict(ctx) {
   const hasRefuge = viableShare >= VIABLE_REFUGE && hasRegion;
   if (Number.isFinite(fragility)) {
     if (fragility >= 0.5 && hasRefuge) {
-      add(SEV.WARN, L(`Tu ranking MT5 (Result) está invertido: falla el ${fmt((100 * fragility), 0)}%`, `Your MT5 ranking (Result) is inverted: fails ${fmt((100 * fragility), 0)}%`),
+      add(SEV.WARN, L(`Tu ranking MT5 (Result) no se sostiene: falla el ${fmt((100 * fragility), 0)}%`, `Your MT5 ranking (Result) does not hold: fails ${fmt((100 * fragility), 0)}%`),
         L(`Al quedarte con la mejor fila según la columna Result de un periodo, cae por debajo de la mediana del otro el ${fmt((100 * fragility), 0)}% de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quédate con la meseta de abajo.`,
           `When you keep the best row by the Result column of one period, it falls below the median of the other ${fmt((100 * fragility), 0)}% of the time. That condemns your table order, not the quality region Orometra proposes. Ignore the ranking and keep the plateau below.`), 'stats');
     } else if (fragility >= 0.5) {
@@ -182,12 +182,12 @@ export function buildVerdict(ctx) {
           'MT5 only passes the best passes to the forward and none of this plateau was among them. Treat it as provisional until you test it on an unseen period.'), null);
     } else if (v && Number.isFinite(ctx.plateauForwardCritical) && v.passFrac < ctx.plateauForwardCritical) {
       add(SEV.CRITICAL, L(`La meseta recomendada no se sostiene en el forward: solo aguanta el ${fmt((100 * v.passFrac), 0)} %${basis}`, `The recommended plateau does not hold on the forward: only ${fmt((100 * v.passFrac), 0)}%${basis}`),
-        L('La mayoría de las configuraciones de la región falla tus mínimos en el forward. Es la firma de una zona que solo brillaba en el in-sample: no la uses sin probarla antes en un periodo no visto.',
-          'Most configurations in the region fail your minima on the forward. That is the signature of a zone that only shone in-sample: do not use it without first testing it on an unseen period.'), null);
-    } else if (v && v.passFrac < 0.5) {
+        L(`Menos de ${fmt(100 * ctx.plateauForwardCritical, 0)} de cada 100 configuraciones de la región cumplen tus mínimos en el forward. Una zona con ventaja real suele aprobarlo en casi todas; sin ventaja, una región entera puede aprobarlo a medias por pura suerte del periodo. No la uses sin probarla antes en un periodo no visto.`,
+          `Fewer than ${fmt(100 * ctx.plateauForwardCritical, 0)} in 100 configurations in the region meet your minima on the forward. A zone with a real edge usually passes it in nearly all of them; without an edge, a whole region can half-pass it by pure luck of the period. Do not use it without first testing it on an unseen period.`), null);
+    } else if (v && v.passFrac < 0.8) {
       add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${fmt((100 * v.passFrac), 0)} % en forward${basis}`, `The recommended plateau only holds ${fmt((100 * v.passFrac), 0)}% on forward${basis}`),
-        L('Muchas configuraciones de la región fallan los mínimos del forward. Trátala como provisional hasta probarla en un periodo no visto.',
-          'Many configurations in the region fail forward gates. Treat it as provisional until you test it on an unseen period.'), null);
+        L('Una parte de la región falla los mínimos del forward. Trátala como provisional hasta probarla en un periodo no visto.',
+          'Part of the region fails forward gates. Treat it as provisional until you test it on an unseen period.'), null);
     }
   } else if (selectionMode === 'joint' && hasForward) {
     add(SEV.INFO, L('Modo joint: el forward participa en la selección', 'Joint mode: forward takes part in selection'),
@@ -423,12 +423,12 @@ export function buildVerdict(ctx) {
   if (Number.isFinite(spearman)) {
     if (spearman < 0.1 && hasRefuge) {
       add(SEV.WARN, L(`El ranking no transfiere de un periodo al otro (rho = ${fmt(spearman, 2)})`, `The ranking does not transfer from one period to the other (rho = ${fmt(spearman, 2)})`),
-        L(`Ojo con la lectura: el ${fmt((100 * gatePassCount / fwdBase), 0)} % de las configuraciones con forward cumple los mínimos en los dos periodos, así que la estrategia sí tiene ventaja. Lo que no tiene valor es el ORDEN: cuál queda primera en el in-sample no predice cuál quedará primera en el forward. Elige por región estable en ambos periodos, nunca por puesto en la tabla.`,
-          `Read carefully: ${fmt((100 * gatePassCount / fwdBase), 0)}% of configurations with forward meet the minima in both periods, so the strategy does have an edge. What has no value is the ORDER: which one ranks first in-sample does not predict which will rank first on the forward. Choose by a region stable in both periods, never by table rank.`), 'stats');
+        L(`Ojo con la lectura: de las ${fwdBase.toLocaleString(localeTag())} configuraciones que MT5 pasó al forward, el ${fmt((100 * gatePassCount / fwdBase), 0)} % cumple los mínimos en los dos periodos, así que hay configuraciones que aguantan. Lo que no tiene valor es el ORDEN: cuál queda primera en el in-sample no predice cuál quedará primera en el forward. Elige por región estable en ambos periodos, nunca por puesto en la tabla.`,
+          `Read carefully: of the ${fwdBase.toLocaleString(localeTag())} configurations MT5 passed to the forward, ${fmt((100 * gatePassCount / fwdBase), 0)}% meet the minima in both periods, so some configurations do hold. What has no value is the ORDER: which one ranks first in-sample does not predict which will rank first on the forward. Choose by a region stable in both periods, never by table rank.`), 'stats');
     } else if (spearman < 0.1) {
       add(SEV.CRITICAL, L(`Correlación IS -> OOS prácticamente nula (rho = ${fmt(spearman, 2)})`, `IS -> OOS correlation practically null (rho = ${fmt(spearman, 2)})`),
-        L(`Solo el ${fmt((100 * gatePassCount / fwdBase), 0)} % de las configuraciones con forward cumple los mínimos y además el comportamiento en entrenamiento no dice nada sobre el de validación. Es la firma de un sistema sin ventaja real.`,
-          `Only ${fmt((100 * gatePassCount / fwdBase), 0)}% of configurations with forward meet the minima and training behavior says nothing about validation. That is the signature of a system with no real edge.`), 'stats');
+        L(`Solo el ${fmt((100 * gatePassCount / fwdBase), 0)} % de las configuraciones con forward cumple los mínimos y además el comportamiento en entrenamiento no dice nada sobre el de validación. Es compatible con un sistema sin ventaja real.`,
+          `Only ${fmt((100 * gatePassCount / fwdBase), 0)}% of configurations with forward meet the minima and training behavior says nothing about validation. That is consistent with a system with no real edge.`), 'stats');
     } else if (spearman < 0.3) {
       add(SEV.WARN, L(`Correlación IS -> OOS débil (rho = ${fmt(spearman, 2)})`, `Weak IS -> OOS correlation (rho = ${fmt(spearman, 2)})`),
         L('Hay algo de señal, pero poca. Conviene ampliar el periodo de datos antes de tomar decisiones.',
@@ -441,13 +441,13 @@ export function buildVerdict(ctx) {
   }
 
   if (hasForward && viableShare >= 0.6) {
-    add(SEV.OK, L('La estrategia aguanta en casi todo el espacio de parámetros', 'The strategy holds across nearly the whole parameter space'),
-      L(`El ${fmt((100 * viableShare), 0)} % de las configuraciones cumple los mínimos en los dos periodos. Sea cual sea el resto del diagnóstico, el resultado no depende de haber acertado con unos valores concretos, que es la forma más útil de robustez.`,
-        `${fmt((100 * viableShare), 0)}% of configurations meet the minima in both periods. Whatever the rest of the diagnosis, the result does not depend on having hit particular values, which is the most useful form of robustness.`), null);
+    add(SEV.OK, L(hasForward && fwdBase < total ? 'Casi todas las configuraciones que MT5 pasó al forward cumplen los mínimos' : 'La estrategia aguanta en casi todo el espacio de parámetros', hasForward && fwdBase < total ? 'Nearly all configurations MT5 passed to the forward meet the minima' : 'The strategy holds across nearly the whole parameter space'),
+      L(`${gatePassCount.toLocaleString(localeTag())} de ${fwdBase.toLocaleString(localeTag())} configuraciones${fwdBase < total ? ' con forward' : ''} (${fmt((100 * viableShare), 0)} %) cumplen los mínimos en los dos periodos. El resultado no depende de haber acertado con unos valores concretos.${fwdBase < total ? ' Ojo: MT5 solo pasa al forward las mejores del in-sample, así que es una proporción sobre esas, no sobre todo lo que probaste.' : ''}`,
+        `${gatePassCount.toLocaleString(localeTag())} of ${fwdBase.toLocaleString(localeTag())} configurations${fwdBase < total ? ' with forward' : ''} (${fmt((100 * viableShare), 0)}%) meet the minima in both periods. The result does not depend on having hit particular values.${fwdBase < total ? ' Note: MT5 only passes the best in-sample configurations to the forward, so this is a share of those, not of everything you tested.' : ''}`), null);
   } else if (hasForward && hasRefuge) {
     add(SEV.OK, L('Hay una parte amplia del espacio que supera los mínimos', 'A broad part of the space clears the minima'),
-      L(`El ${fmt((100 * viableShare), 0)} % de las configuraciones los cumple en los dos periodos, y se agrupan en ${plateaus.length} región(es) estable(s). No dependes de haber acertado un valor concreto: hay de dónde elegir.`,
-        `${fmt((100 * viableShare), 0)}% of configurations meet them in both periods, and they cluster into ${plateaus.length} stable region(s). You do not depend on having hit a particular value: there is room to choose.`), null);
+      L(`${gatePassCount.toLocaleString(localeTag())} de ${fwdBase.toLocaleString(localeTag())} configuraciones${fwdBase < total ? ' con forward' : ''} (${fmt((100 * viableShare), 0)} %) los cumplen en los dos periodos, y se agrupan en ${plateaus.length} región(es) estable(s). No dependes de haber acertado un valor concreto: hay de dónde elegir.`,
+        `${gatePassCount.toLocaleString(localeTag())} of ${fwdBase.toLocaleString(localeTag())} configurations${fwdBase < total ? ' with forward' : ''} (${fmt((100 * viableShare), 0)}%) meet them in both periods, and they cluster into ${plateaus.length} stable region(s). You do not depend on having hit a particular value: there is room to choose.`), null);
   }
 
   if (inversions && inversions.length) {
@@ -683,6 +683,9 @@ export function rebuildLocalizedCopy(analysis) {
   const verdict = buildVerdict({
     gatePassCount: m.gatePassCount,
     discoverPassCount: m.discoverPassCount,
+    searchPassCount: m.searchPassCount,
+    forwardCount: m.forwardCount,
+    plateauForwardCritical: m.plateauForwardCritical,
     total: m.total,
     plateaus,
     fragility: s.fragility,

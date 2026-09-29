@@ -103,7 +103,11 @@ section('AUD-07: CSP en <meta> en todas las paginas, igual que en vercel.json');
     const html = fs.readFileSync(path.join(ROOT, page), 'utf8');
     const m = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/);
     check(`${page} lleva CSP en meta`, Boolean(m));
-    if (m) check(`${page} CSP = vercel.json (sin frame-ancestors)`, m[1] === expected, m[1]);
+    // La app no carga Cloudflare Web Analytics: su CSP es la misma sin esos dos orígenes.
+    const want = page === 'app/index.html'
+      ? expected.replace(' https://static.cloudflareinsights.com', '').replace(' https://cloudflareinsights.com', '')
+      : expected;
+    if (m) check(`${page} CSP = vercel.json (sin frame-ancestors${page === 'app/index.html' ? ' ni Cloudflare' : ''})`, m[1] === want, m[1]);
     const cspPos = html.indexOf('http-equiv="Content-Security-Policy"');
     const firstScript = html.indexOf('<script');
     check(`${page} CSP antes del primer script`, cspPos > 0 && cspPos < firstScript);

@@ -136,3 +136,19 @@ M1. Si no propone meseta, se registra como «se abstiene».
   cambian: la abstención sigue contando 1. El arrepentimiento con la sugerencia orientativa
   se informa aparte y no cuenta para aprobar. El motor queda congelado para el examen
   (semillas 1001-1100), que se compara con el motor publicado (`c948971`).
+- **2026-09-29, tras la segunda auditoría y antes del segundo examen.** La auditoría encontró
+  que (a) el primer examen no era ciego: las semillas 1001-1040 se habían mirado con el motor
+  anterior; (b) el criterio agregado de falsos positivos escondía un 14 % en S5 detrás del
+  0 % de S1; (c) el examen suspendió «Orometra ≤ B4» (0,234 frente a 0,216), y eso debe
+  constar. Se declara: **el primer examen suspendió el criterio B4**. Cambios, elegidos solo
+  con la calibración: el crítico de forward pasa de 0,5 a 0,65 (en calibración, S5 baja del
+  10 % al 3 % y la potencia queda en 93 %); empates con puesto medio en la elección; sin
+  forward no hay sugerencia orientativa; el veredicto no cambia al cambiar de idioma.
+  **Criterio añadido** (más exigente, no más laxo): falsos positivos ≤ 5 % en **cada**
+  escenario sin ventaja. **Segundo examen:** semillas 2001-2100, nunca generadas ni vistas
+  antes; se ejecuta una sola vez con el motor congelado y se publica tal como salga.
+  **Análisis por piezas del criterio B4 (§8), sobre la calibración:** cuando Orometra
+  propone meseta (371 de 500 casos con ventaja), su arrepentimiento mediano es 0,146 frente
+  a 0,180 de B4 en esos mismos casos; cuando se abstiene (129), la sugerencia orientativa da
+  0,317 frente a 0,405 de B4. La derrota agregada viene solo de contar la abstención como 1.
+  No se cambia ese criterio.

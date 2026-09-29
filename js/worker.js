@@ -90,6 +90,8 @@ function stripHeavy(a) {
       failsOos: r.failsOos,
       oosKnown: r.oosKnown,
     })),
-    plateaus: a.plateaus.map((p) => ({ ...p, indices: p.indices.slice(0, 5000), core: p.core.slice(0, 5000) })),
+    // Los miembros de cada meseta se pasan enteros: el periodo no visto construye su
+    // referencia con ellos (core/unseen.js) y recortarlos la sesgaba en mesetas grandes.
+    plateaus: a.plateaus,
   };
 }
