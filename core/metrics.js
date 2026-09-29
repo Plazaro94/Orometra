@@ -5,6 +5,8 @@
 // significa algo distinto en cada optimizacion, así que no puntua. Se puntua con las
 // columnas objetivas que MT5 exporta siempre.
 
+import { L } from '../js/i18n.js';
+
 export const DEFAULT_POLICY = {
   gates: {
     requireProfit: true,
@@ -306,10 +308,10 @@ export function payoffScale(values) {
 
 /** Etiqueta legible para una puntuacion 0..1. */
 export function qualityLabel(score) {
-  if (!Number.isFinite(score)) return 'sin datos';
-  if (score >= 0.7) return 'excelente';
-  if (score >= 0.55) return 'buena';
-  if (score >= 0.4) return 'aceptable';
-  if (score >= 0.25) return 'debil';
-  return 'mala';
+  if (!Number.isFinite(score)) return L('sin datos', 'no data');
+  if (score >= 0.7) return L('excelente', 'excellent');
+  if (score >= 0.55) return L('buena', 'good');
+  if (score >= 0.4) return L('aceptable', 'acceptable');
+  if (score >= 0.25) return L('débil', 'weak');
+  return L('mala', 'poor');
 }

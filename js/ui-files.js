@@ -99,11 +99,19 @@ function sameFile(a, b) {
 }
 
 /** Reparte una tanda de archivos entre las dos cajas según lo que sean. */
-export async function acceptFiles(fileList, preferred) {
+export async function acceptFiles(fileList, preferred, nested = false) {
   // Hasta cuatro: IS, forward, informe unseen y .set de rangos.
-  const files = Array.from(fileList || []).slice(0, 4);
+  const all = Array.from(fileList || []);
+  const files = all.slice(0, 4);
   if (!files.length) return;
-  state.dropNote = '';
+  if (!nested) {
+    state.dropNote = all.length > files.length
+      ? L(
+        `Has soltado ${all.length} archivos y solo se leen 4 (in-sample, forward, informe del backtest y .set). Los demás se han ignorado.`,
+        `You dropped ${all.length} files and only 4 are read (in-sample, forward, backtest report and .set). The rest were ignored.`,
+      )
+      : '';
+  }
   if (files.length === 1) {
     const role = await detectRole(files[0]);
     // En la pestaña del periodo no visto, lo que se suelta es el informe del backtest
@@ -137,14 +145,14 @@ export async function acceptFiles(fileList, preferred) {
   if (setIdx >= 0) {
     await setSearchSet(files[setIdx]);
     const rest = files.filter((_, i) => i !== setIdx);
-    if (rest.length) await acceptFiles(rest, preferred);
+    if (rest.length) await acceptFiles(rest, preferred, true);
     return;
   }
   const reportIdx = roles.indexOf('report');
   if (reportIdx >= 0) {
     await api.setReport(files[reportIdx]);
     const rest = files.filter((_, i) => i !== reportIdx);
-    if (rest.length) await acceptFiles(rest, preferred);
+    if (rest.length) await acceptFiles(rest, preferred, true);
     return;
   }
   const pair = files.slice(0, 2);
@@ -304,6 +312,7 @@ export function renderPreflight() {
   if (!hasAny) return;
 
   let hasError = false;
+  let hasMissing = false;
   let reading = false;
   grid.innerHTML = slots.map((s) => {
     const p = state.preflight[s.key];
@@ -330,10 +339,23 @@ export function renderPreflight() {
         <em>${esc(p.error && p.error.message ? p.error.message : t('preflight.error'))}</em>
       </div>`;
     }
-    return `<div class="preflight-card preflight-ok">
+    const MISSING = {
+      profit: L('beneficio', 'profit'), profitFactor: L('factor de beneficio', 'profit factor'),
+      drawdown: L('drawdown', 'drawdown'), trades: L('operaciones', 'trades'),
+    };
+    const miss = Array.isArray(p.missing) ? p.missing : [];
+    if (miss.length) hasMissing = true;
+    const paramsText = p.params
+      ? int(p.params)
+      : L('se detectan al emparejar con el forward', 'detected when paired with the forward');
+    return `<div class="preflight-card preflight-ok${miss.length ? ' preflight-warnmiss' : ''}">
       <span class="preflight-role">${esc(s.label)}</span>
       <strong>${esc(p.name)}</strong>
-      <em>${esc(t('preflight.rows'))} ${int(p.rows)} · ${esc(t('preflight.params'))} ${int(p.params)} · ${esc(t('preflight.metrics'))} ${int(p.metrics)}</em>
+      <em>${esc(t('preflight.rows'))} ${int(p.rows)} · ${esc(t('preflight.params'))} ${esc(paramsText)} · ${esc(t('preflight.metrics'))} ${int(p.metrics)}</em>
+      ${miss.length ? `<em class="preflight-warn">${esc(L(
+    `No se reconocen las columnas de: ${miss.map((m) => MISSING[m]).join(', ')}. Orometra lee cabeceras de MT5 en inglés y en español; sin estas columnas, sus mínimos no se pueden aplicar.`,
+    `Columns not recognized for: ${miss.map((m) => MISSING[m]).join(', ')}. Orometra reads MT5 headers in English and Spanish; without these columns, their minima cannot be applied.`,
+  ))}</em>` : ''}
     </div>`;
   }).join('');
 
@@ -362,7 +384,13 @@ export function renderPreflight() {
     } else {
       note.textContent = t('preflight.note.ok');
     }
-    note.classList.toggle('is-warn', hasError);
+    if (!hasError && !reading && hasMissing) {
+      note.textContent = L(
+        'Faltan columnas clave: los mínimos correspondientes no se aplicarán y el veredicto no será fiable. Mira el aviso de la ficha.',
+        'Key columns are missing: the corresponding minima will not be applied and the verdict will not be reliable. See the notice on the card.',
+      );
+    }
+    note.classList.toggle('is-warn', hasError || hasMissing);
   }
 }
 

@@ -189,7 +189,7 @@ export function evaluateUnseen(analysis, plateau, observed) {
     headline = above.length
       ? L(`Nada por debajo de lo normal del EA, y ${above.length === 1 ? 'una métrica mejor' : `${above.length} métricas mejores`} que todo lo visto`,
         `Nothing below what is normal for this EA, and ${above.length === 1 ? 'one metric better' : `${above.length} metrics better`} than anything seen`)
-      : L('El periodo no visto entra dentro de la normalidad del EA', 'The unseen period is within what is normal for this EA');
+      : L('El periodo no visto no contradice lo que el EA ya había mostrado', 'The unseen period does not contradict what the EA had already shown');
   }
 
   const listEs = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}` : xs.join(''));
@@ -199,13 +199,17 @@ export function evaluateUnseen(analysis, plateau, observed) {
     ? L(`Ninguna métrica queda por debajo de lo que la meseta ya había demostrado, y ${listEs(above.map((r) => r.label.toLowerCase()))} ${above.length === 1 ? 'supera' : 'superan'} todo lo visto en el in-sample y en el forward. Eso no es un fallo, pero tampoco demuestra más ventaja: lo habitual es que el tramo haya sido especialmente favorable. Espera en vivo algo más cercano al rango habitual, no a estas cifras. Y comprueba que este periodo no se solapa con el in-sample ni con el forward: un periodo «no visto» que en realidad sí se usó da justo esto.`,
       `No metric falls below what the plateau had already shown, and ${listEn(above.map((r) => r.label.toLowerCase()))} ${above.length === 1 ? 'exceeds' : 'exceed'} anything seen in the in-sample and the forward. That is not a failure, but it does not show more edge either: usually the period was especially favorable. Expect live results closer to the usual range, not these figures. And check that this period does not overlap the in-sample or the forward: an "unseen" period that was actually used produces exactly this.`)
     : level === 'normal'
-    ? L('Ninguna métrica se sale del recorrido que la meseta ya había demostrado. No hacía falta que los números fuesen espectaculares: hacía falta que fuesen normales, y lo son.',
-      'No metric leaves the range the plateau had already shown. The numbers did not need to be spectacular: they needed to be normal, and they are.')
+    ? L('Ninguna métrica se sale del recorrido que la meseta ya había demostrado. No hacía falta que los números fuesen espectaculares: hacía falta que no contradijeran lo visto, y no lo contradicen.',
+      'No metric leaves the range the plateau had already shown. The numbers did not need to be spectacular: they needed not to contradict what was seen, and they do not.')
     : level === 'tail'
       ? L(`Todo sigue dentro de lo que el EA ya había atravesado alguna vez, pero rozando su peor cara en: ${tail.map((r) => r.label.toLowerCase()).join(', ')}. Un tramo corto puede dar esto por pura varianza; dos seguidos ya no.`,
         `Everything is still within what the EA had gone through at some point, but close to its worst side in: ${tail.map((r) => r.label.toLowerCase()).join(', ')}. A short period can do this by pure variance; two in a row cannot.`)
       : L(`Hay métricas peores que cualquier cosa vista en el in-sample y en el forward: ${outside.map((r) => r.label.toLowerCase()).join(', ')}. Eso ya no se explica por mala suerte dentro de lo conocido.`,
         `Some metrics are worse than anything seen in the in-sample and the forward: ${outside.map((r) => r.label.toLowerCase()).join(', ')}. That is no longer explained by bad luck within what is known.`));
+
+  // Alcance del contraste, medido con datos simulados de verdad conocida (bench/unseen.js).
+  notes.push(L('Alcance de este contraste: es una prueba de sentido común, no una confirmación. En simulaciones con verdad conocida avisó en 4 de cada 10 casos en que la ventaja había caído (49 % si desapareció del todo, 38 % si se redujo a la mitad) y dio falsa alarma en algo más de 1 de cada 5 cuando la ventaja se mantenía. Que salga «no contradice» significa que no hay evidencia en contra, no que la estrategia esté confirmada; que avise sí merece atención.',
+    'Scope of this check: it is a common-sense test, not a confirmation. In simulations with known truth it flagged 4 in 10 cases where the edge had dropped (49% if it vanished entirely, 38% if it was halved) and gave a false alarm in a bit over 1 in 5 when the edge held. A “does not contradict” result means there is no evidence against, not that the strategy is confirmed; a warning does deserve attention.'));
 
   const scaledOnes = results.filter((r) => r.scaled);
   if (scaledOnes.length) {

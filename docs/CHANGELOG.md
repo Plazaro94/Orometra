@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-09-29 — Banco de pruebas, auditorías 2 y 3, verificación con datos reales
+
+- **Motor** (medido en `bench/`, criterios en `bench/PREREGISTRO.md`): los porcentajes que
+  exigen los dos periodos se miden sobre las configuraciones con forward; la elección
+  dentro de la meseta es por puesto conjunto in-sample + forward promediado con vecinas
+  (empates con puesto medio); una meseta que aguanta menos del 65 % en el forward es
+  crítico; sin meseta y con forward hay una sugerencia orientativa. Segundo examen ciego:
+  9 de 11 criterios frente a 5 del motor anterior.
+- **Periodo no visto:** el informe del backtest se lee en HTML, Open XML (.xlsx, también en
+  UTF-16 como lo guarda MT5) y XML; una métrica mejor que todo lo visto se marca como tal;
+  «normal» pasa a «no contradice» y se explica el alcance con cifras medidas
+  (`bench/unseen.js`: avisa en 4 de cada 10 casos en que la ventaja había caído).
+- **Carga:** avisos claros con archivos que no son de MT5, con un segundo in-sample y con
+  más de 4 archivos; columnas clave sin reconocer (otro idioma) son un aviso crítico y no
+  se bloquea por no reconocer parámetros en un solo archivo.
+- **Impresión** siempre en paleta clara; etiquetas de calidad e identificadores de métricas
+  en el idioma de la interfaz; `.set` en el idioma activo y sin formato regional; «Empezar
+  de cero» restablece menú y título; textos de metodología corregidos (los mínimos se
+  exigen por periodo; no existe un modo «Todos los parámetros» en MT5).
+
 ## 2026-09-26 — SR-1 resuelto: fuera el contraste de Sharpe basado en operaciones
 
 `core/analysis.js`'s `sharpeTest` calculaba el error típico de cada Sharpe (Lo,

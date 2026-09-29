@@ -423,6 +423,8 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 }
 .preflight-head strong{font-size:14px;color:var(--text-hi);letter-spacing:-.015em}
 .preflight-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.noscript-note{margin:24px;padding:14px 16px;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn-text);border-radius:8px}
+.preflight-warn{display:block;margin-top:4px;color:var(--warn-text)}
 .preflight-card{
   border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-2);
   padding:11px 12px;display:flex;flex-direction:column;gap:4px;min-width:0;
@@ -1059,26 +1061,41 @@ tr.sel td{color:var(--text-2)}
 }
 
 @media print{
-  /* El informe impreso tiene que ser legible en papel, no una captura en negativo. */
+  /* Papel: siempre con la paleta clara, sea cual sea el tema de la pantalla. Los colores
+     de las reglas de abajo salen de estos tokens o son literales; nunca de "--text-hi"
+     ni "--surface" con la esperanza de que valgan lo mismo en los dos temas (en el claro
+     son negro y blanco: la página salía en negativo). */
+  :root,[data-theme="dark"],[data-theme="light"]{
+  --bg:#f6f7f9;          --surface:#ffffff;     --surface-2:#eef1f5;   --surface-3:#e3e8ee;
+  --line-soft:#e8ecf1;   --line:#d5dbe3;        --line-strong:#b4bdc9;
+  --muted-3:#51565d;     --muted-2:#464c54;     --muted:#3d444c;
+  --text-2:#384049;      --text:#14181d;        --text-hi:#000000;
+  --ok-bg:#e4f4f5;       --ok-line:#a8d8db;     --ok:#0b6a73;     --ok-text:#0a5e66;     --ok-hi:#064047;
+  --warn-bg:#fbf1dd;     --warn-line:#e6cfa0;   --warn:#8a5b0a;   --warn-text:#7a5009;   --warn-hi:#5c3c06;
+  --danger-bg:#fbe9ef;   --danger-line:#efc2d2; --danger:#9b2f52; --danger-text:#8a2948; --danger-hi:#6b1f37;
+  --info-bg:#eaf0fc;     --info-line:#c0d2f2;   --info:#1f4fb0;   --info-text:#1c479e;   --info-hi:#133272;
+  --profit:#17794a;      --loss:#b3352a;
+  --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
+  --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
+  --evidence-weak:#56657a; --evidence-weak-bg:#eef1f6; --evidence-weak-line:#c7d0dc; --evidence-weak-text:#3e4b5d;
+  --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
+  --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
+  --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
+  color-scheme:light;
+}
   @page{margin:10mm}
-  html,body{background:var(--text-hi) !important;color:var(--surface) !important;font-size:10pt}
+  html,body{background:#fff !important;color:#111 !important;font-size:10pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .shell{display:block}
   .sidebar,.intake,.top-actions,.export-menu,.drop-overlay,.text-btn,.ghost-btn,.primary-btn,.link-btn{display:none !important}
   .main{padding:0}
-  .topbar{margin-bottom:5mm;border-bottom:1px solid var(--text-2);padding-bottom:3mm}
-  .topbar h1{font-size:17pt;color:var(--surface)}
+  .topbar{margin-bottom:5mm;border-bottom:1px solid var(--line-strong);padding-bottom:3mm}
+  .topbar h1{font-size:17pt;color:#000}
   .eyebrow{color:var(--muted-3)}
-  .panel,.kpi{border:1px solid var(--text-2);background:var(--text-hi);box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:3mm;padding:12px 14px !important}
-  .panel h2,.detail-head h2,.kpi-value,.rep-pass,.strong,.t3-pass{color:var(--surface)}
+  .panel,.kpi{border:1px solid var(--line-strong);background:#fff;box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:3mm;padding:12px 14px !important}
+  .panel h2,.detail-head h2,.kpi-value,.rep-pass,.strong,.t3-pass{color:#000}
   .panel-kicker,.detail-kicker,.kpi-label,.kpi-note,.chart-note,.panel-intro,.muted,.t3-rank{color:var(--muted-3)}
-  /* Las tarjetas de Top3 (recomendada/alternativas) mantienen su propio fondo oscuro en
-     la impresion (no son .panel), asi que su "Pass NNNN" necesita seguir en claro; la
-     regla generica de arriba lo oscurecia pensando en fondo blanco. */
-  .t3-featured .t3-pass,.t3-alt .t3-pass{color:var(--text-hi)}
-  /* Mismo problema que verdict-fact-value: --text-2/--text-hi puestos para fondo oscuro
-     quedaban ilegibles sobre el papel blanco en estas dos tablas. */
-  .range-table td,.range-table td.mono{color:var(--surface)}
-  .evidence-sheet-row strong{color:var(--surface)}
+  .range-table td,.range-table td.mono{color:#111}
+  .evidence-sheet-row strong{color:#111}
   /* El informe impreso es un resumen, no una copia de toda la pestana: la hoja de
      evidencia, los rangos estables, los graficos y "mas hallazgos" ya se pueden
      consultar en la app. En papel sobran paginas sin anadir nada que el veredicto,
@@ -1086,36 +1103,33 @@ tr.sel td{color:var(--text-2)}
   .panel-evidence-sheet,.panel-ranges,.grid-secondary,.panel-evidence{display:none !important}
   .grid-secondary,.columns-grid{grid-template-columns:1fr}
   table{font-size:9pt}
-  th{color:var(--line)}
-  td{color:var(--surface)}
-  th,td{border-bottom:1px solid var(--text)}
-  .verdict-banner{border:2px solid var(--surface);background:var(--text-hi) !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
+  th{color:var(--muted-3)}
+  td{color:#111}
+  th,td{border-bottom:1px solid var(--line)}
+  .verdict-banner{border:2px solid #111;background:#fff !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
   .panel-head{margin-bottom:8px}
   .panel-intro{margin-bottom:8px}
-  .run-stamp{margin-bottom:3mm}
-  .verdict-banner h2,.verdict-stamp{color:var(--surface) !important;background:var(--text-hi) !important;border-color:var(--surface) !important}
-  /* .verdict-fact-value usaba --text-hi (blanco en tema oscuro): sobre el fondo blanco
-     forzado del papel quedaba texto blanco sobre blanco, ilegible. */
-  .verdict-aside{border-color:var(--text-2)}
+  .run-stamp{margin-bottom:3mm;color:var(--muted-3)}
+  .run-sep{color:var(--muted-3)}
+  .verdict-banner h2,.verdict-stamp{color:#000 !important;background:#fff !important;border-color:#111 !important}
+  .verdict-aside{border-color:var(--line-strong)}
   .verdict-fact-label{color:var(--muted-3)}
-  .verdict-fact-value,.verdict-fact-next .verdict-fact-value{color:var(--surface)}
-  .verdict-fact-note{color:var(--line-strong);-webkit-line-clamp:unset;overflow:visible}
-  .finding p,.limits li{color:var(--line)}
-  .finding strong{color:var(--surface)}
-  .badge,.status-pill,.chip,.reason{border-color:var(--muted);background:var(--text-hi);color:var(--surface)}
-  .param{background:var(--text-hi);border-bottom:1px solid var(--text)}
+  .verdict-fact-value,.verdict-fact-next .verdict-fact-value{color:#000}
+  .verdict-fact-note{color:var(--muted-2);-webkit-line-clamp:unset;overflow:visible}
+  .finding p,.limits li{color:var(--text-2)}
+  .finding strong{color:#000}
+  .badge,.status-pill,.chip,.reason{border-color:var(--line-strong);background:#fff;color:#111}
+  .param{background:#fff;border-bottom:1px solid var(--line)}
   .param span{color:var(--muted-3)}
-  .param strong{color:var(--surface)}
-  .t3-best,.t3-agree,.u-bad,.u-warn{background:var(--text-hi) !important}
-  .t3-label,.u-label{background:var(--text-hi)}
+  .param strong{color:#000}
   .chart{max-width:100%}
-  .ch-tick,.ch-axis-label,.ch-count,.ch-row-label{fill:var(--line-strong)}
-  .ch-grid{stroke:var(--text)}
+  .ch-tick,.ch-axis-label,.ch-count,.ch-row-label{fill:var(--muted-2)}
+  .ch-grid{stroke:var(--line)}
   .ch-axis{stroke:var(--muted)}
-  .pt-fail{fill:var(--text-2)}
+  .pt-fail{fill:var(--line-strong)}
   .pt-pass{fill:var(--muted)}
-  .pt-plateau{fill:var(--line)}
-  .hm-cell{fill:var(--line)}
+  .pt-plateau{fill:var(--ok)}
+  .hm-cell{fill:var(--line-strong)}
   .table-wrap{overflow:visible}
   /* Cada seccion del informe empieza en su pagina. */
   .detail-head{page-break-before:always}

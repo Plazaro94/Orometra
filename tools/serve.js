@@ -32,7 +32,14 @@ const TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let rel = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  let rel;
+  try {
+    rel = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  } catch {
+    res.writeHead(400);
+    res.end('Bad request');
+    return;
+  }
   // Quitar query/hash ya lo hace pathname; normalizar separadores.
   rel = rel.replace(/\\/g, '/');
   if (rel === '/' || rel === '') rel = '/index.html';

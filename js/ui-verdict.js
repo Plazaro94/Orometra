@@ -57,7 +57,7 @@ export function holdoutFact(a) {
     };
   }
   const value = res.level === 'normal'
-    ? L('Normal', 'Normal')
+    ? L('No contradice', 'Not contradicted')
     : res.level === 'tail'
       ? L('En la cola', 'In the tail')
       : L('Fuera de rango', 'Out of range');
@@ -154,8 +154,8 @@ export function nextStepText(a, hold) {
   if (!hold || !hold.done || !a.plateaus.length) return a.verdict.nextStep;
   if (hold.ok) {
     return L(
-      'Ya ha superado el periodo no visto. Siguiente paso: pruébala en demo o en real con riesgo reducido, y compara sus resultados en vivo con el rango habitual de la meseta, no con las mejores cifras.',
-      'It has already passed the unseen period. Next step: run it on demo or live with reduced risk, and compare its live results with the plateau\'s usual range, not with the best figures.',
+      'El periodo no visto no la contradice (esta prueba detecta poco: aprobarla no la confirma). Siguiente paso: pruébala en demo o en real con riesgo reducido, y compara sus resultados en vivo con el rango habitual de la meseta, no con las mejores cifras.',
+      'The unseen period does not contradict it (this check detects little: passing it does not confirm it). Next step: run it on demo or live with reduced risk, and compare its live results with the plateau\'s usual range, not with the best figures.',
     );
   }
   return L(

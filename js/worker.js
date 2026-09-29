@@ -2,7 +2,7 @@
 // pasadas bloquearia la pestana durante segundos si se ejecutase en la interfaz.
 
 import { parseTable } from '../core/parse.js';
-import { metricColumns, inferParamsSingle } from '../core/schema.js';
+import { preflightSummary } from '../core/schema.js';
 import { runAnalysis } from '../core/analysis.js';
 import { setLocale } from './i18n.js';
 
@@ -34,15 +34,7 @@ self.onmessage = (event) => {
     if (locale === 'en' || locale === 'es') setLocale(locale);
     if (event.data.kind === 'preflight') {
       const table = tableFor(null, event.data.key, event.data.buffer, event.data.name);
-      post('done', {
-        summary: {
-          rows: table.rows.length,
-          cols: table.headers.length,
-          params: inferParamsSingle(table).params.length,
-          metrics: Object.keys(metricColumns(table)).length,
-          format: table.format || 'table',
-        },
-      });
+      post('done', { summary: preflightSummary(table) });
       return;
     }
     post('progress', { pct: 2, label: locale === 'en' ? 'Reading files' : 'Leyendo archivos' });

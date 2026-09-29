@@ -87,6 +87,17 @@ export function renderRepCard(a, p) {
   </div>`;
 }
 
+/** Nombre legible de cada métrica (en el archivo van como identificadores internos). */
+const METRIC_LABEL = () => ({
+  profit: L('beneficio', 'profit'),
+  profitFactor: L('factor de beneficio', 'profit factor'),
+  recoveryFactor: L('factor de recuperación', 'recovery factor'),
+  sharpe: 'Sharpe',
+  drawdown: 'drawdown',
+  trades: L('operaciones', 'trades'),
+  expectedPayoff: L('beneficio esperado', 'expected payoff'),
+});
+
 export function renderPlateaus(a) {
   if (!a.plateaus.length) {
     return `<div class="detail-head"><div class="detail-kicker">${L('02 / Mesetas', '02 / Plateaus')}</div><h2>${L('No se ha encontrado ninguna meseta', 'No plateau was found')}</h2>
@@ -143,8 +154,8 @@ export function renderPlateaus(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div>
         ${sparseSampling ? `<span class="status-pill warn-pill">${L('Recomendado', 'Recommended')}</span>` : ''}</div>
       <p class="panel-intro">${L(
-        `Vuelve a MT5 y lanza una optimización <em>Todos los parámetros</em> acotada a este rango, centrado en la configuración recomendada. Sobre una rejilla completa la geometría de la meseta se mide sin los huecos que deja el genético. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinaciones</strong>, un tamaño que se puede ejecutar de verdad.`,
-        `Go back to MT5 and run an <em>All parameters</em> optimization bounded to this range, centered on the recommended configuration. On a full grid the plateau geometry is measured without the gaps the genetic leaves. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinations</strong> — a size you can actually run.`,
+        `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Sobre una rejilla completa la geometría de la meseta se mide sin los huecos que deja el genético. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinaciones</strong>, un tamaño que se puede ejecutar de verdad.`,
+        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. On a full grid the plateau geometry is measured without the gaps the genetic leaves. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinations</strong> — a size you can actually run.`,
       )}</p>
       <div class="table-wrap"><table>
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Centro', 'Center')}</th><th>${L('Inicio', 'Start')}</th><th>${L('Paso', 'Step')}</th><th>${L('Fin', 'Stop')}</th><th>${L('Niveles', 'Levels')}</th></tr></thead>
@@ -487,7 +498,7 @@ export function renderDiagnostics(a) {
         </div>
         <div>
           <h3>${L('Métricas usadas para juzgar', 'Metrics used for judgment')}</h3>
-          <div class="chips">${a.meta.availableMetrics.map((n) => `<span class="chip">${esc(n)}</span>`).join('')}</div>
+          <div class="chips">${a.meta.availableMetrics.map((n) => `<span class="chip">${esc(METRIC_LABEL()[n] || n)}</span>`).join('')}</div>
           <p class="chart-note">
             ${L(
               `Tu criterio de optimización${a.meta.criterionIsName ? ` (<code>${esc(a.meta.criterionIsName)}</code>)` : ''}

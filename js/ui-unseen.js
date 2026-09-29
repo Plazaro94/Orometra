@@ -225,7 +225,7 @@ export function renderTradesAudit() {
     ? `<div class="evidence-list">
         <div><span>${L('Resultado si repites un tramo así (mediana de 10.000 simulaciones)', 'Result if you repeat a segment like this (median of 10,000 simulations)')}</span><strong>${num(bs.returnCi.p50, 2)}</strong></div>
         <div><span>${L('Rango habitual (P05–P95)', 'Typical range (P05–P95)')}</span><strong>${num(bs.returnCi.p05, 2)} &ndash; ${num(bs.returnCi.p95, 2)}</strong></div>
-        <div><span>${L('Drawdown máximo esperado (mediana)', 'Expected maximum drawdown (median)')}</span><strong>${num(bs.maxDdCi.p50, 2)}</strong></div>
+        <div><span>${L('Caída máxima esperada, en dinero (mediana)', 'Expected maximum drop, in money (median)')}</span><strong title="${esc(L('En la moneda de la cuenta y sobre el resultado de las operaciones cerradas: es menor que el «Equity DD» de MT5, que también cuenta las pérdidas abiertas.', 'In account currency and based on closed-trade results: it is lower than MT5\'s “Equity DD”, which also counts open losses.'))}">${num(bs.maxDdCi.p50, 2)}</strong></div>
         <div><span>${L('Probabilidad de pérdida a 3 meses (~63 días)', 'Probability of a loss at 3 months (~63 days)')}</span><strong>${horizon(aud.days, 63, bs.probLoss.m3)}</strong></div>
         <div><span>${L('a 6 meses (~126 días)', 'at 6 months (~126 days)')}</span><strong>${horizon(aud.days, 126, bs.probLoss.m6)}</strong></div>
         <div><span>${L('a 12 meses (~252 días)', 'at 12 months (~252 days)')}</span><strong>${horizon(aud.days, 252, bs.probLoss.m12)}</strong></div>
@@ -284,7 +284,7 @@ export function renderTradesAudit() {
   }).join('');
 
   const costs2 = `<div class="table-wrap"><table>
-      <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Drawdown máx.', 'Max drawdown')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
+      <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Caída máx. (dinero)', 'Max drop (money)')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
       <tbody>${costRows}</tbody>
     </table></div>
     <p class="chart-note">${L(
@@ -427,7 +427,7 @@ export function renderUnseen(a) {
   const cls = !paramsOk ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
   const stamp = !paramsOk ? L('NO VALIDA', 'DOES NOT VALIDATE')
     : res.level === 'outside' ? L('FUERA DE RANGO', 'OUT OF RANGE')
-      : res.level === 'tail' ? L('EN EL LÍMITE', 'AT THE EDGE') : L('DENTRO DE LO NORMAL', 'WITHIN NORMAL');
+      : res.level === 'tail' ? L('EN EL LÍMITE', 'AT THE EDGE') : L('NO CONTRADICE LO VISTO', 'NOT CONTRADICTED');
   const headline = paramsOk ? res.headline : L('Estas cifras son de otra configuración', 'These figures are from another configuration');
   const subline = paramsOk
     ? L(

@@ -1,6 +1,6 @@
 // Exportacion: ficheros .set para MT5, rango de refinamiento e informe JSON.
 
-import { getLocale } from './i18n.js';
+import { getLocale, L } from './i18n.js';
 
 /** Formato MT5 (.set / pegar en Inputs): punto decimal, sin locale. */
 export function formatSetValue(value) {
@@ -23,11 +23,11 @@ export function buildSetFile(analysis, plateau) {
   const { paramNames } = analysis.meta;
   const lines = [
     '; ================================================================',
-    '; Orometra - configuración representativa',
-    `; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pass original ${plateau.record.id}`,
-    `; Robustez ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configuraciones en la región`,
-    `; Elegida por puesto conjunto in-sample + forward, promediado con sus vecinas.`,
-    `; Generado ${new Date().toISOString()}`,
+    L('; Orometra - configuración representativa', '; Orometra - representative configuration'),
+    L(`; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pass original ${plateau.record.id}`, `; Plateau ${plateau.rank} of ${analysis.plateaus.length} | Original pass ${plateau.record.id}`),
+    L(`; Robustez ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configuraciones en la región`, `; Robustness ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configurations in the region`),
+    L('; Elegida por puesto conjunto in-sample + forward, promediado con sus vecinas.', '; Chosen by combined in-sample + forward rank, averaged with its neighbors.'),
+    L(`; Generado ${new Date().toISOString()}`, `; Generated ${new Date().toISOString()}`),
     '; ================================================================',
   ];
   paramNames.forEach((name, j) => {
@@ -44,22 +44,33 @@ export function buildSetFile(analysis, plateau) {
 export function buildRefinementSetFile(analysis, plateau) {
   const lines = [
     '; ================================================================',
-    '; Orometra - rango de refinamiento',
+    L('; Orometra - rango de refinamiento', '; Orometra - refinement range'),
     ';',
-    '; Cárgalo en el probador y lanza una optimización "Todos los parámetros"',
-    '; (rejilla completa) sobre este rango reducido. Con la rejilla completa la',
-    '; geometría de mesetas se mide de verdad, sin los huecos que deja el genético.',
-    '; Después vuelve a subir los dos archivos a la aplicación.',
+    ...L(
+      [
+        '; Cárgalo en el probador y lanza una optimización con el algoritmo lento',
+        '; (búsqueda completa) sobre este rango reducido. Con la búsqueda completa la',
+        '; geometría de mesetas se mide de verdad, sin los huecos que deja el genético.',
+        '; Después vuelve a subir los dos archivos a la aplicación.',
+      ],
+      [
+        '; Load it in the tester and run an optimization with the slow complete',
+        '; algorithm over this reduced range. With the complete search the plateau',
+        '; geometry is measured for real, without the gaps the genetic algorithm leaves.',
+        '; Then upload the two files to the application again.',
+      ],
+    ),
     ';',
-    `; Combinaciones del rango: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1).toLocaleString('es-ES')}`,
-    `; Generado ${new Date().toISOString()}`,
+    // Sin separador de miles ni formato regional: es un archivo para una máquina.
+    L(`; Combinaciones del rango: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1)}`, `; Combinations in the range: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1)}`),
+    L(`; Generado ${new Date().toISOString()}`, `; Generated ${new Date().toISOString()}`),
     '; ================================================================',
   ];
   const categorical = plateau.refinement.filter((p) => p.categorical);
   if (categorical.length) {
     lines.push(';');
-    lines.push('; Parámetros booleanos o de enumeración: se dejan fijos en el valor');
-    lines.push('; recomendado. Si quieres barrerlos, actívalos a mano en el probador.');
+    lines.push(L('; Parámetros booleanos o de enumeración: se dejan fijos en el valor', '; Boolean or enumeration parameters: kept fixed at the'));
+    lines.push(L('; recomendado. Si quieres barrerlos, actívalos a mano en el probador.', '; recommended value. If you want to sweep them, enable them by hand in the tester.'));
     lines.push(`; ${categorical.map((p) => p.name).join(', ')}`);
   }
   lines.push('; ================================================================');

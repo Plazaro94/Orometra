@@ -3,7 +3,7 @@
 
 import { AnalysisError, CODE } from './errors.js';
 import { toNumber, canonicalValue } from './parse.js';
-import { pairTables, metricColumns, metricRole, inferParamsSingle, estimatePeriodRatio, roleFromTable } from './schema.js';
+import { pairTables, metricColumns, metricRole, inferParamsSingle, estimatePeriodRatio, roleFromTable, KEY_METRICS } from './schema.js';
 import { DEFAULT_POLICY, resolvePolicy, periodQuality, payoffScale, gateFailures, combineScores, retention } from './metrics.js';
 import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
@@ -143,8 +143,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const inferred = inferParamsSingle(isTable);
     if (!inferred.params.length) {
       throw new AnalysisError(CODE.SCHEMA_ERROR, L(
-        'No se ha podido identificar ningún parámetro en el archivo.',
-        'No parameter could be identified in the file.',
+        'No se ha podido identificar ningún parámetro en el archivo. Con un solo archivo se descartan las columnas con más de 80 valores distintos (o demasiado pocos datos por valor); si tus parámetros tienen rangos muy finos, sube también el archivo forward: con los dos, los parámetros se reconocen por estructura.',
+        'No parameter could be identified in the file. With a single file, columns with more than 80 distinct values (or too little data per value) are discarded; if your parameters have very fine ranges, upload the forward file too: with both, parameters are recognized by structure.',
       ));
     }
     paramNames = inferred.params.map((p) => p.name);
@@ -170,8 +170,12 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const droppedParams = before - records.length;
   if (records.length < 10) {
     throw new AnalysisError(CODE.DATA_ERROR, L(
-      'Quedan muy pocas configuraciones utilizables tras la limpieza.',
-      'Too few usable configurations remain after cleaning.',
+      droppedParams > 0
+        ? 'Quedan muy pocas configuraciones utilizables tras descartar las que tienen parámetros ilegibles.'
+        : 'Hay muy pocas configuraciones en el archivo para analizarlo (hacen falta al menos 10).',
+      droppedParams > 0
+        ? 'Too few usable configurations remain after discarding those with unreadable parameters.'
+        : 'There are too few configurations in the file to analyze it (at least 10 are needed).',
     ), { records: records.length });
   }
 
@@ -944,7 +948,16 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const stabilityCheck = assessStability(bestPlateau);
 
   progress(onProgress, 96, L('Emitiendo veredicto', 'Issuing verdict'));
+  // Columnas clave que no se han reconocido por su nombre (cabeceras en otro idioma, o con
+  // otro nombre): sin ellas los mínimos correspondientes no se aplican, y el veredicto se
+  // apoyaría en menos de lo que parece. Se avisa como crítico, no en silencio.
+  const missingMetrics = KEY_METRICS.filter((k) => !isRoles[k] || (hasForward && !oosRoles[k]));
+  const recognizedNames = new Set([...Object.values(isRoles), ...Object.values(oosRoles)].map((r) => r.name));
+  const unrecognizedColumns = [...new Set([...isTable.headers, ...(hasForward && oosTable ? oosTable.headers : [])])]
+    .filter((h) => !recognizedNames.has(h) && !paramNames.includes(h) && !metricRole(h) && !/^(pass|pasada|prueba|#|id)$/i.test(String(h)));
   const verdictCtx = {
+    missingMetrics,
+    unrecognizedColumns,
     // Configuraciones con datos de forward: la base para cualquier porcentaje que exija
     // los dos periodos (MT5 solo reexporta las mejores; ver FWD-1).
     forwardCount: hasForward ? records.filter(hasOos).length : records.length,
@@ -1003,6 +1016,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       // Lo que el veredicto necesita para rehacerse igual al cambiar de idioma
       // (rebuildLocalizedCopy): sin esto, el nivel cambiaba con el idioma.
       forwardCount: verdictCtx.forwardCount,
+      missingMetrics,
+      unrecognizedColumns,
       plateauForwardCritical: verdictCtx.plateauForwardCritical,
       generatedAt: new Date().toISOString(),
       elapsedMs: Date.now() - started,

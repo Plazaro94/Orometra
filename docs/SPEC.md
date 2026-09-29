@@ -24,7 +24,9 @@ es esa evidencia? La app no dice «opera esto»: mide lo que los datos sostienen
 2. **No se juzga con la vara con la que se optimizó.** La columna `Result` de MT5 no se
    usa como medida de calidad.
 3. **Umbrales absolutos, no percentiles.** La app debe poder decir «aquí no hay nada».
-4. **Una configuración vale lo que su peor periodo** (maximin), no la media.
+4. **Los mínimos se exigen en cada periodo por separado**: una configuración pasa solo si
+   pasa en los dos; un buen forward no tapa un in-sample flojo. No se promedian las cifras
+   de los dos periodos.
 5. **Dentro de la meseta se elige por puesto conjunto in-sample + forward promediado con
    las vecinas, no por su cima.** Las configuraciones sin forward cuentan como el último
    puesto del forward. Sin meseta y con forward, se da una sugerencia orientativa.
