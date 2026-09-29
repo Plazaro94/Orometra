@@ -454,6 +454,31 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     ? detectInversions(coords, levels, paramNames, records.map((r) => (hasOos(r) ? r.qualityIs : NaN)), records.map((r) => r.qualityOos), inversionScale)
     : [];
 
+  // Puntuación conjunta para elegir DENTRO de una región: puesto (0..1) de cada
+  // configuración en el in-sample más su puesto en el forward, ambos promediados con sus
+  // vecinas. Promediar con las vecinas quita la suerte de un punto concreto; sumar los
+  // dos periodos usa toda la información sin dejar que uno solo decida.
+  const jointScore = (() => {
+    const frac = (vals) => {
+      const idx = vals.map((v, i) => i).filter((i) => Number.isFinite(vals[i])).sort((a, b) => vals[a] - vals[b]);
+      const out = new Array(vals.length).fill(0);
+      idx.forEach((i, k) => { out[i] = idx.length > 1 ? k / (idx.length - 1) : 1; });
+      return out;
+    };
+    const rIs = frac(records.map((r) => r.qualityIs));
+    const rOos = hasForward ? frac(records.map((r) => (hasOos(r) ? r.qualityOos : NaN))) : null;
+    return records.map((_, i) => {
+      const grp = [i, ...neighbors[i]];
+      let s = 0;
+      for (const k of grp) s += rIs[k] + (rOos ? rOos[k] : 0);
+      return s / grp.length;
+    });
+  })();
+
+  const pickRepresentative = (pool, rb, method) => (method === 'joint'
+    ? pool.reduce((b, i) => (jointScore[i] > jointScore[b] ? i : b), pool[0])
+    : chooseRepresentative(pool, neighbors, scores, rb, method));
+
   progress(onProgress, 78, L('Buscando mesetas', 'Finding plateaus'));
   const components = findPlateaus(neighbors, robust, passes, stability, opts);
   const inPlateau = new Int32Array(records.length).fill(-1);
@@ -465,7 +490,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // Se recomienda una configuración que MT5 haya probado en el forward siempre que la
     // meseta tenga alguna: recomendar una que nunca salió de la muestra sería peor.
     const tested = basis.filter((i) => hasOos(records[i]));
-    const rep = chooseRepresentative(tested.length ? tested : basis, neighbors, scores, robust);
+    const rep = pickRepresentative(tested.length ? tested : basis, robust, opts.repMethod);
     const compScores = comp.map((i) => scores[i]).filter(Number.isFinite);
     const [worstMember] = extent(compScores);
     // Cuanto espacio abarca de verdad la region, con independencia de cuantas veces se
@@ -761,7 +786,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
         const cs = comp.map((i) => scores[i]).filter(Number.isFinite);
         const ex = componentExtent(comp, coords, activeDims.length ? activeDims : blocking, levels);
         const core = coreMembers(comp, rb, stab, drawOpts);
-        const repIdx = chooseRepresentative(core.length >= 3 ? core : comp, neighbors, scores, rb);
+        const basis = core.length >= 3 ? core : comp;
+        const tested = basis.filter((i) => hasOos(records[i]));
+        const repIdx = pickRepresentative(tested.length ? tested : basis, rb, drawOpts.repMethod);
         const irregular = irregularGrids.some((g) => {
           const occupied = new Set(comp.map((i) => coords[i][g.index]));
           return g.jumps.some((jp) => occupied.has(jp.fromIndex) && occupied.has(jp.toIndex));
@@ -900,6 +927,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
 
   progress(onProgress, 96, L('Emitiendo veredicto', 'Issuing verdict'));
   const verdictCtx = {
+    // Configuraciones con datos de forward: la base para cualquier porcentaje que exija
+    // los dos periodos (MT5 solo reexporta las mejores; ver FWD-1).
+    forwardCount: hasForward ? records.filter(hasOos).length : records.length,
+    plateauForwardCritical: opts.plateauForwardCritical,
     gatePassCount,
     discoverPassCount,
     searchPassCount,
@@ -1014,6 +1045,19 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     inversions,
     periodComparison,
     plateaus,
+    // Sin meseta no hay región que recomendar, pero sí una configuración orientativa:
+    // la de mejor puesto conjunto (in-sample + forward, promediado con sus vecinas) entre
+    // las que cumplen los mínimos en los dos periodos. Se presenta como tal, nunca como
+    // meseta.
+    fallback: (() => {
+      if (plateaus.length) return null;
+      const pick = (idx) => (idx.length ? idx.reduce((b, i) => (jointScore[i] > jointScore[b] ? i : b), idx[0]) : null);
+      const all = records.map((_, i) => i);
+      let i = pick(all.filter((k) => records[k].passesJoint));
+      if (i === null) i = pick(all.filter((k) => hasOos(records[k]) && passes[k]));
+      if (i === null) return null;
+      return { index: i, record: records[i], passesBoth: !!records[i].passesJoint };
+    })(),
     peaks,
     inPlateau: Array.from(inPlateau),
     stats: {

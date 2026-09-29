@@ -34,8 +34,10 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
    para validarla: si muchas de sus configuraciones fallan allí, esa meseta baja de puesto.
    (Existe un modo `joint`, no activado por defecto, en el que cada configuración vale lo que
    vale su peor periodo.)
-5. **Se elige el centro de la meseta, no su cima**, por criterio maximin: la configuración
-   cuyo *peor* vecino es el mejor posible.
+5. **Se elige dentro de la meseta por puesto conjunto, no por su cima**: la configuración con
+   mejor puesto en in-sample más su puesto en forward, ambos promediados con sus vecinas. Se
+   midió en el banco de pruebas (`bench/`) frente a la regla maximin anterior y a métodos
+   habituales. Sin meseta, se da una sugerencia **orientativa** con la misma regla.
 6. **Solo se ignora lo demostrablemente plano, medido de dos formas.** La influencia de un
    parámetro se mide *aislada* (agrupando por su valor y promediando el resto) y *combinada*
    (dejando fijo todo lo demás), y manda la mayor de las dos. Un parámetro cuyo efecto se

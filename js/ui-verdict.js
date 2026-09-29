@@ -127,6 +127,19 @@ export function displayVerdictCopy(a) {
   };
 }
 
+/**
+ * Texto de la sugerencia orientativa (sin meseta), ya escapado para HTML. Tiene que dejar
+ * claro que NO es una región estable: es la configuración que mejor combina los dos
+ * periodos con sus vecinas.
+ */
+export function fallbackNote(a) {
+  const params = a.meta.paramNames.map((n, j) => `${esc(n)}=${paramHtml(a.fallback.record.params[j])}`).join(', ');
+  return L(
+    `Sin zona estable. Es la que mejor combina in-sample y forward junto con sus vecinas (${params}). No la uses sin probarla antes en un periodo no visto.`,
+    `No stable region. It is the one that best combines in-sample and forward together with its neighbors (${params}). Do not use it without first testing it on an unseen period.`,
+  );
+}
+
 export function renderVerdict(a) {
   const v = a.verdict;
   const dv = displayVerdictCopy(a);
@@ -172,7 +185,13 @@ export function renderVerdict(a) {
         <span class="verdict-fact-note">M${best.rank} · ${int(best.size)} ${L('configs', 'configs')} · ${num(best.robust, 0)} ${L('robustez', 'robustness')}</span>
         ${pickActions}
       </div>`
-    : `<div class="verdict-fact">
+    : a.fallback
+      ? `<div class="verdict-fact verdict-fact-risk">
+        <span class="verdict-fact-label">${L('Sugerencia orientativa', 'Tentative suggestion')}</span>
+        <strong class="verdict-fact-value mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</strong>
+        <span class="verdict-fact-note verdict-fact-note-full">${fallbackNote(a)}</span>
+      </div>`
+      : `<div class="verdict-fact">
         <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
         <strong class="verdict-fact-value">${esc(t('verdict.nopick'))}</strong>
       </div>`;
@@ -607,18 +626,18 @@ export function renderTop3(a) {
     <p class="panel-intro">
       ${top.length === 1
         ? L(
-          `Es la única región estable que ha superado los mínimos con soporte suficiente. Se elige por
-           criterio maximin: es la configuración cuyo <em>peor</em> vecino es el mejor posible, no la que
-           más rinde. Al haber una sola meseta no hay consenso entre regiones que contrastar.`,
-          `It is the only stable region that cleared the minima with enough support. It is chosen by
-           maximin: the configuration whose <em>worst</em> neighbor is the best possible, not the one
-           that performs most. With a single plateau there is no cross-region consensus to contrast.`,
+          `Es la única región estable que ha superado los mínimos con soporte suficiente. Dentro de ella se
+           elige la configuración con mejor puesto conjunto en in-sample y forward, promediado con sus
+           vecinas: no la que más rinde en un solo periodo. Al haber una sola meseta no hay consenso entre regiones que contrastar.`,
+          `It is the only stable region that cleared the minima with enough support. Inside it, the
+           pick is the configuration with the best combined in-sample and forward rank, averaged with
+           its neighbors: not the one that performs most in a single period. With a single plateau there is no cross-region consensus to contrast.`,
         )
         : L(
-          `La recomendada es la meseta más sólida por criterio maximin. Las alternativas son otras
+          `La recomendada es la meseta más sólida por su suelo de calidad y su validación en el forward. Las alternativas son otras
            regiones estables independientes: útiles si la recomendada choca con un criterio operativo.
            Las filas con <span class="t3-tick">✓</span> son el consenso más sólido del análisis.`,
-          `The recommended pick is the strongest plateau by maximin. Alternatives are other
+          `The recommended pick is the strongest plateau by its quality floor and forward validation. Alternatives are other
            independent stable regions — useful if the recommended one conflicts with an operational constraint.
            Rows with <span class="t3-tick">✓</span> are the most solid consensus in the analysis.`,
         )}

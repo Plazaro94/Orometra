@@ -26,7 +26,7 @@ export function buildSetFile(analysis, plateau) {
     '; Orometra - configuración representativa',
     `; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pass original ${plateau.record.id}`,
     `; Robustez ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configuraciones en la región`,
-    `; Elegida por criterio maximin: es la configuración cuyo PEOR vecino es el mejor.`,
+    `; Elegida por puesto conjunto in-sample + forward, promediado con sus vecinas.`,
     `; Generado ${new Date().toISOString()}`,
     '; ================================================================',
   ];
