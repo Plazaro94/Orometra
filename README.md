@@ -19,8 +19,9 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
 
 1. **Los parámetros no se reconocen por su nombre, sino por su estructura.** Para un mismo
    `Pass`, un parámetro vale lo mismo en el archivo in-sample y en el forward; una métrica no,
-   porque se midió sobre otro periodo. Así funciona con cualquier EA y en cualquier idioma del
-   terminal.
+   porque se midió sobre otro periodo. Así funciona con cualquier EA. Las columnas de métricas
+   sí se reconocen por nombre (cabeceras en inglés y en español); si faltan las clave, la
+   aplicación lo avisa como crítico.
 2. **Nunca se juzga con la vara con la que se optimizó.** La columna `Result` es el criterio
    que eligió el usuario (Balance, Recovery, Complex Criterion…): significa algo distinto en
    cada optimización y está contaminada por la selección. La calidad se reconstruye con las
@@ -29,7 +30,7 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
 3. **Umbrales absolutos, no percentiles.** Un percentil siempre encuentra un «mejor 5 %»,
    incluso donde todo pierde dinero. Con mínimos absolutos la aplicación puede decir que no
    hay nada.
-4. **Se descubre en el in-sample y se valida en el forward; nunca se promedian.** La meseta
+4. **Se descubre en el in-sample y se valida en el forward; los mínimos se exigen en cada periodo por separado.** La meseta
    se busca con la calidad y los mínimos del in-sample. El forward vuelve a exigir los mínimos
    para validarla: si muchas de sus configuraciones fallan allí, esa meseta baja de puesto.
    (Existe un modo `joint`, no activado por defecto, en el que cada configuración vale lo que

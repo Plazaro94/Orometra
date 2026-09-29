@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
 <meta name="description" content="How Orometra decides, step by step: your minimums, quality without Result, plateaus instead of peaks, forward validation, chance, self-checks and what each evidence level means.">
-<title>Methodology — Orometra</title>
+<title>Methodology: how Orometra analyzes MT5 optimizations</title>
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="../favicon-48.png">
@@ -68,7 +68,7 @@
 
   <nav class="doc-index" data-i18n="doc.method.index" data-i18n-attr="aria-label" aria-label="Steps">
     <ol>
-    <li><a href="#lectura"><span class="doc-index-num">01</span><span class="doc-index-text"><strong data-i18n="doc.method.s1.title">It reads your export as it is</strong><span data-i18n="doc.method.s1.short">Any language, any decimal separator</span></span></a></li>
+    <li><a href="#lectura"><span class="doc-index-num">01</span><span class="doc-index-text"><strong data-i18n="doc.method.s1.title">It reads your export as it is</strong><span data-i18n="doc.method.s1.short">English or Spanish headers, any decimal separator</span></span></a></li>
     <li><a href="#minimos"><span class="doc-index-num">02</span><span class="doc-index-text"><strong data-i18n="doc.method.s2.title">Your minimums before any ranking</strong><span data-i18n="doc.method.s2.short">Only what clears your floors</span></span></a></li>
     <li><a href="#calidad"><span class="doc-index-num">03</span><span class="doc-index-text"><strong data-i18n="doc.method.s3.title">Quality without the Result column</strong><span data-i18n="doc.method.s3.short">Several objective metrics at once</span></span></a></li>
     <li><a href="#mesetas"><span class="doc-index-num">04</span><span class="doc-index-text"><strong data-i18n="doc.method.s4.title">Plateaus, not peaks</strong><span data-i18n="doc.method.s4.short">Neighbors must work too</span></span></a></li>
@@ -85,7 +85,7 @@
       <span class="lp-method-num">01</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s1.title">It reads your export as it is</h2>
-        <p data-i18n="doc.method.s1.body">Drop the XML that MT5 exports, in any terminal language and with commas or dots as decimals. The engine does not trust column names: it tells parameters from metrics by how they behave (a parameter has the same value for the same pass in-sample and in forward; a metric does not). If it drops any row, it tells you.</p>
+        <p data-i18n="doc.method.s1.body">Drop the XML that MT5 exports, with commas or dots as decimals. The engine does not trust column names to tell parameters from metrics: it uses how they behave (a parameter has the same value for the same pass in-sample and in forward; a metric does not). It does need to recognize the metric columns (profit, profit factor, drawdown, trades) by name, and it reads English and Spanish headers: if key columns are not recognized, it tells you instead of judging with less than it seems. If it drops any row, it tells you.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="minimos">

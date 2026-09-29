@@ -176,15 +176,9 @@ export async function preflightFile(file) {
       kind: 'preflight', buffer: prepared.buffer, name: prepared.name || file.name, key: fileKey(file), locale: getLocale(),
     });
   } else {
-    const { metricColumns, inferParamsSingle } = await import('../core/schema.js');
+    const { preflightSummary } = await import('../core/schema.js');
     const table = prepared.table || parseTable(prepared.buffer, prepared.name || file.name);
-    summary = {
-      rows: table.rows.length,
-      cols: table.headers.length,
-      params: inferParamsSingle(table).params.length,
-      metrics: Object.keys(metricColumns(table)).length,
-      format: table.format || 'table',
-    };
+    summary = preflightSummary(table);
   }
   if (!summary.metrics) {
     throw new AnalysisError(CODE.FILE_ERROR, L(
@@ -192,12 +186,9 @@ export async function preflightFile(file) {
       'No MT5 metric is recognized (Profit, Profit Factor, Drawdown…): this does not look like an optimization export.',
     ));
   }
-  if (!summary.params) {
-    throw new AnalysisError(CODE.FILE_ERROR, L(
-      'No se reconoce ningún parámetro del EA en este archivo.',
-      'No EA parameter is recognized in this file.',
-    ));
-  }
+  // Sin parámetros reconocidos NO se bloquea: con los dos archivos, los parámetros se
+  // reconocen por estructura (valen lo mismo en los dos periodos) y no por su número de
+  // valores distintos. Si al final no hay ninguno, el análisis lo dice con su propio error.
   return { ok: true, name: file.name, ...summary };
 }
 

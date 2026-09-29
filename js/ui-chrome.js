@@ -83,7 +83,13 @@ export function resetSession() {
   api.clearError();
   api.renderPreflight();
   api.refreshAnalyzeButton();
+  // Sin análisis, el menú vuelve a como estaba al abrir la página.
+  $$('.nav-item').forEach((b) => { b.disabled = !['verdict', 'method'].includes(b.dataset.tab); });
+  { const ex = $('#exportBtn'); if (ex) ex.disabled = true; }
+  document.body.classList.remove('intake-collapsed');
   render();
+  // El título de la pestaña llevaba el nombre del archivo analizado.
+  applyStaticI18n();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

@@ -10,8 +10,8 @@
 
 export const DEPOSIT = 10000;
 export const TRADE_SD = 100; // desviación típica de una operación, en moneda
-const IS_YEARS = 3;
-const OOS_YEARS = 1;
+export const IS_YEARS = 3;
+export const OOS_YEARS = 1;
 
 // ---------------------------------------------------------------- aleatoriedad
 export function makeRng(seed) {
@@ -80,7 +80,7 @@ function randomCenter(rng, levels, margin = 1) {
   return levels.map((lv) => uni(rng, Math.min(margin, (lv.length - 1) / 2), Math.max(lv.length - 1 - margin, (lv.length - 1) / 2)));
 }
 // Suerte de un periodo: suma de bultos de signo aleatorio. Correlacionada en el espacio.
-function luckField(rng, levels, amp) {
+export function luckField(rng, levels, amp) {
   if (!amp) return () => 0;
   const k = Math.floor(uni(rng, 3, 8.999));
   const bumps = Array.from({ length: k }, () => ({
@@ -92,7 +92,7 @@ function luckField(rng, levels, amp) {
 }
 
 // ---------------------------------------------------------------- operaciones -> métricas MT5
-function simulatePeriod(rng, mu, trades, years) {
+export function simulatePeriod(rng, mu, trades, years) {
   let eq = DEPOSIT;
   let peak = DEPOSIT;
   let maxDdAbs = 0;

@@ -190,6 +190,27 @@ export function metricColumns(table) {
   return roles;
 }
 
+/** Métricas sin las cuales los mínimos no se pueden aplicar. */
+export const KEY_METRICS = ['profit', 'profitFactor', 'drawdown', 'trades'];
+
+/** Qué métricas clave no se han reconocido en las cabeceras de una tabla. */
+export function missingKeyMetrics(table) {
+  const roles = metricColumns(table);
+  return KEY_METRICS.filter((k) => !roles[k]);
+}
+
+/** Resumen de una tabla para la comprobación previa (mismo cálculo en el hilo y en el worker). */
+export function preflightSummary(table) {
+  return {
+    rows: table.rows.length,
+    cols: table.headers.length,
+    params: inferParamsSingle(table).params.length,
+    metrics: Object.keys(metricColumns(table)).length,
+    missing: missingKeyMetrics(table),
+    format: table.format || 'table',
+  };
+}
+
 /**
  * Rol del archivo por cabeceras: forward trae Forward Result / Back Result.
  * Usar DESPUES de parsear (también .xlsx); no basta con mirar bytes de un ZIP.

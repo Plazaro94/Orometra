@@ -78,6 +78,17 @@ export function buildVerdict(ctx) {
         `Barely ${gatePassCount} of ${fwdBase.toLocaleString(localeTag())} configurations${hasForward ? ' with forward' : ''} (${fmt((100 * gatePassCount / fwdBase), 1)}%) pass the gates. A strategy that only works at one specific point in parameter space is almost always an optimizer artifact.`), null);
   }
 
+  if (Array.isArray(ctx.missingMetrics) && ctx.missingMetrics.length) {
+    const NAME_ES = { profit: 'beneficio', profitFactor: 'factor de beneficio', drawdown: 'drawdown', trades: 'número de operaciones' };
+    const NAME_EN = { profit: 'profit', profitFactor: 'profit factor', drawdown: 'drawdown', trades: 'number of trades' };
+    const listEs = ctx.missingMetrics.map((k) => NAME_ES[k]).join(', ');
+    const listEn = ctx.missingMetrics.map((k) => NAME_EN[k]).join(', ');
+    const others = (ctx.unrecognizedColumns || []).slice(0, 12).join(', ');
+    add(SEV.CRITICAL, L('No se han reconocido columnas clave del archivo', 'Key columns of the file were not recognized'),
+      L(`No se encuentran las columnas de: ${listEs}. Sin ellas, esos mínimos no se pueden aplicar (todas las configuraciones los cumplirían) y este veredicto se apoya en menos de lo que parece. Orometra lee cabeceras de MT5 en inglés y en español${others ? `; las columnas que no ha reconocido son: ${others}` : ''}. Si tu terminal exporta en otro idioma, renombra esas cabeceras a Profit, Profit Factor, Equity DD % y Trades, o cambia el idioma del terminal y vuelve a exportar.`,
+        `The columns for: ${listEn} were not found. Without them, those minima cannot be applied (every configuration would meet them) and this verdict rests on less than it seems. Orometra reads MT5 headers in English and Spanish${others ? `; the columns it did not recognize are: ${others}` : ''}. If your terminal exports in another language, rename those headers to Profit, Profit Factor, Equity DD % and Trades, or switch the terminal language and export again.`), null);
+  }
+
   /*
    * Densidad de evidencia (ops / parámetros ajustados). No son "grados de libertad"
    * formales: condicionan la lectura de todo lo demas.
@@ -691,6 +702,8 @@ export function rebuildLocalizedCopy(analysis) {
     discoverPassCount: m.discoverPassCount,
     searchPassCount: m.searchPassCount,
     forwardCount: m.forwardCount,
+    missingMetrics: m.missingMetrics,
+    unrecognizedColumns: m.unrecognizedColumns,
     plateauForwardCritical: m.plateauForwardCritical,
     total: m.total,
     plateaus,
