@@ -353,14 +353,18 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       for (const n of hit) fail[n]++;
       if (hit.length === 1) sole[hit[0]]++;
     }
-    const passing = records.filter((r) => r.passes);
+    // "Lo que pasa" son las configuraciones que cumplen en TODOS los periodos exigidos. Y
+    // cada cifra se compara con el límite de su periodo: las operaciones del forward no se
+    // pueden poner junto al mínimo del in-sample, que es otro número.
+    const passing = hasForward ? records.filter((r) => r.passesJoint) : records.filter((r) => r.passes);
     const medianOf = (pick) => (passing.length ? median(passing.map(pick).filter(Number.isFinite)) : NaN);
     const observed = {
       profitFactor: medianOf((r) => (hasOos(r) ? Math.min(r.is.profitFactor, r.oos.profitFactor) : r.is.profitFactor)),
       drawdown: medianOf((r) => (hasOos(r) ? Math.max(r.is.drawdown, r.oos.drawdown) : r.is.drawdown)),
-      trades: medianOf((r) => (hasOos(r) ? Math.min(r.is.trades, r.oos.trades) : r.is.trades)),
+      trades: medianOf((r) => r.is.trades),
       beneficio: NaN,
     };
+    const observedOos = hasForward ? { trades: medianOf((r) => r.oos.trades) } : {};
     const limits = {
       profitFactor: policy.gates.minProfitFactor,
       drawdown: policy.gates.maxDrawdownPct,
@@ -376,6 +380,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       inert: sole[n] === 0,
       observed: observed[n],
       limit: limits[n],
+      observedOos: observedOos[n],
+      limitOos: n === 'trades' && hasForward ? minTradesOos : undefined,
     }));
   })();
 
@@ -515,7 +521,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       const crossed = g.jumps.filter((jp) => occupied.has(jp.fromIndex) && occupied.has(jp.toIndex));
       if (crossed.length) spansIrregular.push({ name: g.name, jumps: crossed });
     }
-    const refinement = refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes);
+    const refinement = refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes, undefined, dims.flatDims);
     const st = stability[rep];
     const passing = Number.isFinite(st.passCount)
       ? st.passCount
@@ -564,8 +570,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       // Riesgo accionable: la configuración RECOMENDADA esta pegada a un extremo del
       // rango probado. Listar los límites de toda la región no informa cuando la
       // región es amplia, porque entonces los toca todos.
-      boundary: boundaryParams([rep], coords, levels, paramNames, paramTypes),
-      boundaryRegion: boundaryParams(basis, coords, levels, paramNames, paramTypes),
+      boundary: boundaryParams([rep], coords, levels, paramNames, paramTypes, dims.flatDims),
+      boundaryRegion: boundaryParams(basis, coords, levels, paramNames, paramTypes, dims.flatDims),
       refinement,
       // Coherencia interna: si se apoya justo en el valor que gana en el in-sample de un
       // parámetro invertido, su buen resultado forward va a contracorriente de su propio
@@ -725,6 +731,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const chanceMax = expectedMaximum(0, sigma, effectiveTrials);
     const observedMax = Math.max(...sharpeValues);
     sharpeTest = {
+      period,
       observedMax,
       mean: mean(sharpeValues),
       sigma,

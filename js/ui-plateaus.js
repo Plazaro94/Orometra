@@ -155,7 +155,9 @@ export function renderPlateaus(a) {
             : x.fixed
               ? `<td class="strong">${paramHtml(x.center)}</td><td colspan="4" class="muted">${x.categorical
                 ? L('booleano o enumeración: se fija, actívalo a mano si quieres barrerlo', 'boolean or enum: fixed; enable manually if you want to sweep it')
-                : L('se fija: el presupuesto de la rejilla se gasta en parámetros más influyentes', 'fixed: the grid budget is spent on more influential parameters')}</td>`
+                : x.flat
+                  ? L('se fija: no tiene efecto medible en tus datos', 'fixed: it has no measurable effect in your data')
+                  : L('se fija: el presupuesto de la rejilla se gasta en parámetros más influyentes', 'fixed: the grid budget is spent on more influential parameters')}</td>`
               : `<td class="strong">${paramHtml(x.center)}</td><td>${paramHtml(x.start)}</td><td>${paramHtml(x.step)}</td><td>${paramHtml(x.stop)}</td><td>${int(x.levels)}</td>`}
         </tr>`).join('')}</tbody>
       </table></div>
@@ -349,7 +351,7 @@ export function renderParams(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Aviso', 'Warning')}</div><h2>${L('Parámetros invertidos entre periodos', 'Parameters inverted across periods')}</h2></div>
         <span class="status-pill warn-pill">${int(a.inversions.length)} ${L('detectados', 'detected')}</span></div>
       <p class="panel-intro">${L(
-        'En estos parámetros, el valor que gana en el in-sample <strong>es de los que pierden en el forward</strong>. Es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al reves. Afinarlos sobre el in-sample es tiempo perdido; dejalos en un valor central y decide con los que si son coherentes entre periodos.',
+        'En estos parámetros, el valor que gana en el in-sample <strong>es de los que pierden en el forward</strong>. Es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al revés. Afinarlos sobre el in-sample es tiempo perdido; déjalos en un valor central y decide con los que sí son coherentes entre periodos.',
         'On these parameters, the value that wins in-sample <strong>is among those that lose on forward</strong>. That is the mechanical reason the ranking fails to transfer: the signal is not missing — it points the wrong way. Fine-tuning them on in-sample is wasted time; leave them at a central value and decide with the ones that are coherent across periods.',
       )}</p>
       <div class="table-wrap"><table>

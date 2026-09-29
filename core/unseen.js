@@ -134,12 +134,17 @@ export function evaluateUnseen(analysis, plateau, observed) {
     const value = obs[spec.key];
 
     let status;
+    // 'mejor': mejor que todo lo que el EA había mostrado. No es un fallo, pero tampoco es
+    // "normal": hay que decirlo, porque un tramo muy superior al historial suele ser un
+    // periodo favorable (o un periodo que no es tan «no visto» como se cree).
     if (spec.better === 'high') {
-      if (value >= band.q10) status = 'normal';
+      if (value > band.max) status = 'mejor';
+      else if (value >= band.q10) status = 'normal';
       else if (value >= band.min) status = 'cola';
       else status = 'fuera';
     } else {
-      if (value <= band.q90) status = 'normal';
+      if (value < band.min) status = 'mejor';
+      else if (value <= band.q90) status = 'normal';
       else if (value <= band.max) status = 'cola';
       else status = 'fuera';
     }
@@ -166,6 +171,7 @@ export function evaluateUnseen(analysis, plateau, observed) {
   const lowPower = trades < 30 || (Number.isFinite(tradeShare) && tradeShare < 0.15);
 
   const outside = results.filter((r) => r.status === 'fuera');
+  const above = results.filter((r) => r.status === 'mejor');
   const tail = results.filter((r) => r.status === 'cola');
 
   let level;
@@ -180,11 +186,19 @@ export function evaluateUnseen(analysis, plateau, observed) {
     headline = L('Dentro de lo visto, pero en la parte baja de su historial', 'Within what was seen, but at the low end of its history');
   } else {
     level = 'normal';
-    headline = L('El periodo no visto entra dentro de la normalidad del EA', 'The unseen period is within what is normal for this EA');
+    headline = above.length
+      ? L(`Nada por debajo de lo normal del EA, y ${above.length === 1 ? 'una métrica mejor' : `${above.length} métricas mejores`} que todo lo visto`,
+        `Nothing below what is normal for this EA, and ${above.length === 1 ? 'one metric better' : `${above.length} metrics better`} than anything seen`)
+      : L('El periodo no visto entra dentro de la normalidad del EA', 'The unseen period is within what is normal for this EA');
   }
 
+  const listEs = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}` : xs.join(''));
+  const listEn = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : xs.join(''));
   const notes = [];
-  notes.push(level === 'normal'
+  notes.push(level === 'normal' && above.length
+    ? L(`Ninguna métrica queda por debajo de lo que la meseta ya había demostrado, y ${listEs(above.map((r) => r.label.toLowerCase()))} ${above.length === 1 ? 'supera' : 'superan'} todo lo visto en el in-sample y en el forward. Eso no es un fallo, pero tampoco demuestra más ventaja: lo habitual es que el tramo haya sido especialmente favorable. Espera en vivo algo más cercano al rango habitual, no a estas cifras. Y comprueba que este periodo no se solapa con el in-sample ni con el forward: un periodo «no visto» que en realidad sí se usó da justo esto.`,
+      `No metric falls below what the plateau had already shown, and ${listEn(above.map((r) => r.label.toLowerCase()))} ${above.length === 1 ? 'exceeds' : 'exceed'} anything seen in the in-sample and the forward. That is not a failure, but it does not show more edge either: usually the period was especially favorable. Expect live results closer to the usual range, not these figures. And check that this period does not overlap the in-sample or the forward: an "unseen" period that was actually used produces exactly this.`)
+    : level === 'normal'
     ? L('Ninguna métrica se sale del recorrido que la meseta ya había demostrado. No hacía falta que los números fuesen espectaculares: hacía falta que fuesen normales, y lo son.',
       'No metric leaves the range the plateau had already shown. The numbers did not need to be spectacular: they needed to be normal, and they are.')
     : level === 'tail'

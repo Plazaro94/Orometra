@@ -221,15 +221,19 @@ export function buildVerdict(ctx) {
     const dominante = [...gateInfluence].sort((a, b) => b.sole - a.sole)[0];
     if (inertes.length) {
       const listEs = inertes.map((g) => {
-        const obs = Number.isFinite(g.observed)
-          ? ` (tu límite es ${gateValue(g.name, g.limit)}, y la mediana de lo que pasa está en ${gateValue(g.name, g.observed)})`
-          : '';
+        const obs = Number.isFinite(g.observed) && Number.isFinite(g.observedOos) && Number.isFinite(g.limitOos)
+          ? ` (tus límites son ${gateValue(g.name, g.limit)} en el in-sample y ${gateValue(g.name, g.limitOos)} en el forward; la mediana de lo que pasa está en ${gateValue(g.name, g.observed)} y ${gateValue(g.name, g.observedOos)})`
+          : Number.isFinite(g.observed)
+            ? ` (tu límite es ${gateValue(g.name, g.limit)}, y la mediana de lo que pasa está en ${gateValue(g.name, g.observed)}${g.name === 'drawdown' && hasForward ? ' en su peor periodo' : ''})`
+            : '';
         return `<strong>${ETIQUETA_ES[g.name]}</strong>${obs}`;
       }).join('; ');
       const listEn = inertes.map((g) => {
-        const obs = Number.isFinite(g.observed)
-          ? ` (your limit is ${gateValue(g.name, g.limit)}, and the median of what passes sits at ${gateValue(g.name, g.observed)})`
-          : '';
+        const obs = Number.isFinite(g.observed) && Number.isFinite(g.observedOos) && Number.isFinite(g.limitOos)
+          ? ` (your limits are ${gateValue(g.name, g.limit)} in-sample and ${gateValue(g.name, g.limitOos)} on the forward; the median of what passes sits at ${gateValue(g.name, g.observed)} and ${gateValue(g.name, g.observedOos)})`
+          : Number.isFinite(g.observed)
+            ? ` (your limit is ${gateValue(g.name, g.limit)}, and the median of what passes sits at ${gateValue(g.name, g.observed)}${g.name === 'drawdown' && hasForward ? ' in its worst period' : ''})`
+            : '';
         return `<strong>${ETIQUETA_EN[g.name]}</strong>${obs}`;
       }).join('; ');
       const domEs = dominante && dominante.sole > 0
@@ -307,12 +311,12 @@ export function buildVerdict(ctx) {
       : L(`${n(eff)} pruebas`, `${n(eff)} trials`);
     if (observedMax <= chanceMax) {
       add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar', 'Best Sharpe does not beat the chance threshold'),
-        L(`Con ${howMany}, el Sharpe máximo esperable sin ninguna ventaja real es ${fmt(chanceMax, 2)}. El mejor observado es ${fmt(observedMax, 2)}. Probar muchas combinaciones produce buenos resultados por sí solo, y este no destaca sobre ese ruido.`,
-          `With ${howMany}, the maximum Sharpe expected with no real edge is ${fmt(chanceMax, 2)}. The best observed is ${fmt(observedMax, 2)}. Trying many combinations produces good results on its own, and this one does not stand out above that noise.`), 'stats');
+        L(`Con ${howMany}, el Sharpe máximo esperable sin ninguna ventaja real es ${fmt(chanceMax, 2)}. El mejor observado${sharpeTest.period === 'oos' ? ' en el forward' : ''} es ${fmt(observedMax, 2)}. Probar muchas combinaciones produce buenos resultados por sí solo, y este no destaca sobre ese ruido.`,
+          `With ${howMany}, the maximum Sharpe expected with no real edge is ${fmt(chanceMax, 2)}. The best observed${sharpeTest.period === 'oos' ? ' on the forward' : ''} is ${fmt(observedMax, 2)}. Trying many combinations produces good results on its own, and this one does not stand out above that noise.`), 'stats');
     } else {
       add(SEV.OK, L('El mejor Sharpe supera el umbral del azar', 'Best Sharpe beats the chance threshold'),
-        L(`Sharpe máximo ${fmt(observedMax, 2)} frente a ${fmt(chanceMax, 2)} esperable sin ventaja real con ${howMany}. Superar este contraste es condición necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
-          `Maximum Sharpe ${fmt(observedMax, 2)} versus ${fmt(chanceMax, 2)} expected with no real edge with ${howMany}. Passing this contrast is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`), 'stats');
+        L(`Sharpe máximo${sharpeTest.period === 'oos' ? ' en el forward' : ''} ${fmt(observedMax, 2)} frente a ${fmt(chanceMax, 2)} esperable sin ventaja real con ${howMany}. Superar este contraste es condición necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
+          `Maximum Sharpe${sharpeTest.period === 'oos' ? ' on the forward' : ''} ${fmt(observedMax, 2)} versus ${fmt(chanceMax, 2)} expected with no real edge with ${howMany}. Passing this contrast is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`), 'stats');
     }
   }
 
@@ -629,7 +633,9 @@ export function peakRejectReasons(p, opts = {}) {
   const plateauFloorQuality = opts.plateauFloorQuality ?? 0.42;
   const reasons = [];
   if (p.st.support < minSupport) {
-    reasons.push(L(`solo ${p.st.support} vecinos observados`, `only ${p.st.support} neighbors observed`));
+    reasons.push(p.st.support === 1
+      ? L('solo 1 vecino observado', 'only 1 neighbor observed')
+      : L(`solo ${p.st.support} vecinos observados`, `only ${p.st.support} neighbors observed`));
   }
   if (Number.isFinite(p.st.peakZ) && p.st.peakZ > 2) {
     reasons.push(L(`sobresale ${fmt(p.st.peakZ, 1)}σ sobre su vecindad`, `stands out ${fmt(p.st.peakZ, 1)}σ above its neighborhood`));
