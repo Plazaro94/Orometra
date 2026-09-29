@@ -86,8 +86,18 @@ export async function acceptFiles(fileList, preferred) {
   // Hasta cuatro: IS, forward, informe unseen y .set de rangos.
   const files = Array.from(fileList || []).slice(0, 4);
   if (!files.length) return;
+  state.dropNote = '';
   if (files.length === 1) {
     const role = await detectRole(files[0]);
+    // Un segundo in-sample soltado solo sustituye al primero. Puede ser a propósito
+    // (cambiar de archivo), pero si se quería añadir el forward, hay que decirlo.
+    const target = role || preferred || 'is';
+    if (target === 'is' && state.isFile && !state.oosFile && !sameFile(state.isFile, files[0])) {
+      state.dropNote = L(
+        `${state.isFile.name} se ha sustituido por ${files[0].name}: los dos son exportaciones in-sample (ninguno trae Forward Result / Back Result). Si querías añadir el forward, exporta la tabla de la pestaña de resultados del forward.`,
+        `${state.isFile.name} was replaced by ${files[0].name}: both are in-sample exports (neither has Forward Result / Back Result). If you meant to add the forward, export the table from the forward results tab.`,
+      );
+    }
     if (role === 'report') {
       await api.setReport(files[0]);
       return;
@@ -169,7 +179,7 @@ export function updateDropStatus() {
   statusEl.textContent = [
     `${L('In-sample', 'In-sample')}: ${isName || L('falta', 'missing')}`,
     `${L('Forward', 'Forward')}: ${oosName || L('no cargado (opcional)', 'not loaded (optional)')}`,
-  ].join(' · ');
+  ].join(' · ') + (state.dropNote ? ` · ${state.dropNote}` : '');
 }
 
 function dropError(message) {
@@ -248,7 +258,10 @@ export async function queuePreflight(which) {
       error: classified,
     };
     // Sin quitar 'ready' la caja seguia en verde junto al error.
-    dropError(`${file.name} · ${t('preflight.error')}`);
+    dropError(L(
+      `${file.name}: no se puede leer como exportación de optimización de MT5 (detalle abajo). En el probador, pestaña Optimización, clic derecho sobre la tabla → Exportar a XML.`,
+      `${file.name}: it cannot be read as an MT5 optimization export (details below). In the tester, Optimization tab, right-click the table → Export to XML.`,
+    ));
   }
   renderPreflight();
   refreshAnalyzeButton();
