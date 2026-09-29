@@ -87,6 +87,13 @@ const cond = WITH_EDGE.map((s) => `${s} ${f2(median(withEdge.filter((r) => r.sce
 out.push('');
 out.push(`Arrepentimiento de Orometra solo cuando propone: ${cond.join(' · ')}`);
 out.push('');
+const withFb = (r) => (r.orometra && Number.isFinite(r.orometra.regret) ? r.orometra.regret
+  : r.orometraFallback && Number.isFinite(r.orometraFallback.regret) ? r.orometraFallback.regret : reg(r, 'orometra'));
+if (withEdge.some((r) => r.orometraFallback)) {
+  const fbCells = WITH_EDGE.map((s) => f2(median(withEdge.filter((r) => r.scenario === s).map(withFb))));
+  out.push(`Con sugerencia orientativa cuando no hay meseta (informativo, fuera de los criterios): ${WITH_EDGE.map((s, i) => `${s} ${fbCells[i]}`).join(' · ')} · **Todos ${f2(median(withEdge.map(withFb)))}**`);
+  out.push('');
+}
 for (const m of METHODS.filter((x) => x !== 'orometra')) {
   verdict(`Elección: mediana de Orometra ≤ ${NAMES[m]}`, medBy.orometra.all <= medBy[m].all + 1e-12, `${f2(medBy.orometra.all)} frente a ${f2(medBy[m].all)}`);
 }

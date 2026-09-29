@@ -126,3 +126,13 @@ M1. Si no propone meseta, se registra como «se abstiene».
   para decidir. Se amplía a **100 semillas por escenario** (calibración 1-100, examen
   1001-1100) y se vuelve a medir el motor actual con esa muestra antes de cualquier cambio.
   Los criterios no cambian. Las mediciones con 40 semillas se conservan en `bench/results/`.
+- **2026-09-29, tras la calibración y antes del examen.** Cambios del motor elegidos solo con
+  la calibración (semillas 1-100): (1) los porcentajes que exigen los dos periodos se miden
+  sobre las configuraciones con forward (error de la tanda 3); (2) si la meseta recomendada
+  cumple los mínimos del forward en menos del 50 % de sus configuraciones con forward, es
+  crítico; (3) la configuración a desplegar se elige dentro de la meseta por puesto conjunto
+  in-sample + forward promediado con sus vecinas; (4) sin meseta, el motor da una sugerencia
+  **orientativa** con esa misma regla, presentada como tal. Los criterios del apartado 6 no
+  cambian: la abstención sigue contando 1. El arrepentimiento con la sugerencia orientativa
+  se informa aparte y no cuenta para aprobar. El motor queda congelado para el examen
+  (semillas 1001-1100), que se compara con el motor publicado (`c948971`).

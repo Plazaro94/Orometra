@@ -55,6 +55,14 @@ export const ENGINE_DEFAULTS = {
   plateauMinRobust: 50,
   plateauMinFracPass: 0.9,
   plateauMinSize: 3,
+  // Cómo se elige la configuración a desplegar dentro de la meseta. 'joint': mejor puesto
+  // conjunto in-sample + forward, promediado con las vecinas (medido en bench/, ver
+  // PREREGISTRO.md). 'maximin' y 'mean' se conservan para comparar.
+  repMethod: 'joint',
+  // Si la meseta recomendada cumple los mínimos del forward en menos de esta fracción de
+  // sus configuraciones con forward, es un hallazgo crítico: es la firma de una zona que
+  // solo brillaba en el in-sample. Fijado con la calibración del banco.
+  plateauForwardCritical: 0.5,
   // El nucleo es la parte de la meseta donde hasta el entorno es "excelente".
   // Es de donde se elige la configuración a desplegar.
   coreFloorQuality: 0.58,

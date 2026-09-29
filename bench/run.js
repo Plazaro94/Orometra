@@ -80,6 +80,11 @@ async function evaluateCase(scenario, seed) {
     const k = c.key(a.plateaus[0].record.params);
     pickIdx = byKey.has(k) ? byKey.get(k) : null;
   }
+  let fbIdx = null;
+  if (a && a.fallback) {
+    const k = c.key(a.fallback.record.params);
+    fbIdx = byKey.has(k) ? byKey.get(k) : null;
+  }
   const pickInfo = (i) => (i === null || i === undefined ? null : { edge: edges[i], regret: regret(edges[i]), fwd: fwdSet.has(i) });
   return {
     scenario, seed,
@@ -99,6 +104,7 @@ async function evaluateCase(scenario, seed) {
     plateaus: a ? a.plateaus.length : 0,
     error, ms,
     orometra: pickInfo(pickIdx),
+    orometraFallback: pickInfo(fbIdx),
     B1: pickInfo(B1), B2: pickInfo(B2), B3: pickInfo(B3), B4: pickInfo(B4), B5: pickInfo(B5),
   };
 }
