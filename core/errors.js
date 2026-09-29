@@ -133,8 +133,8 @@ export function errorCopy(code, L) {
     [CODE.REPORT_ERROR]: {
       title: L('No se ha podido leer el informe del backtest', 'The backtest report could not be read'),
       hint: L(
-        'Para el periodo no visto hace falta el informe HTML de un backtest individual: en el probador, pestaña Backtest, clic derecho → Informe → HTML.',
-        'The unseen period needs the HTML report of a single backtest: in the tester, Backtest tab, right-click → Report → HTML.',
+        'Para el periodo no visto hace falta el informe de un backtest individual (HTML u Open XML): en el probador, pestaña Backtest, clic derecho → Informe.',
+        'The unseen period needs the report of a single backtest (HTML or Open XML): in the tester, Backtest tab, right-click → Report.',
       ),
     },
     [CODE.ANALYSIS_SUCCESS]: {

@@ -3,24 +3,35 @@
 import { track } from './track.js';
 import { CODE } from '../core/errors.js';
 import { evaluateUnseen } from '../core/unseen.js';
-import { parseBacktestReport, compareParams, looksLikeReport } from '../core/report.js';
+import { parseBacktestReport, parseBacktestReportGrid, compareParams } from '../core/report.js';
+import { parseXmlSpreadsheet } from '../core/parse.js';
 import { auditUnseenTrades } from '../core/matrix/from-deals.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
 
+/**
+ * El informe del backtest se acepta en los dos formatos que ofrece MT5 (Informe → HTML u
+ * Open XML) y también como XML Spreadsheet: todos traen las mismas etiquetas y la misma
+ * tabla de transacciones, solo cambia el envoltorio.
+ */
+export async function readBacktestReport(file) {
+  const buffer = await file.arrayBuffer();
+  const head = new Uint8Array(buffer.slice(0, 2));
+  if (head[0] === 0x50 && head[1] === 0x4b) {
+    const { parseXlsx } = await import('./xlsx.js');
+    const sheet = await parseXlsx(buffer);
+    return parseBacktestReportGrid(sheet.rows, file.name);
+  }
+  const text = decodeHead(buffer);
+  if (/<Workbook\b|urn:schemas-microsoft-com:office:spreadsheet/i.test(text.slice(0, 4000))) {
+    return parseBacktestReportGrid(parseXmlSpreadsheet(text).rows, file.name);
+  }
+  return parseBacktestReport(text, file.name);
+}
+
 export async function setReport(file) {
   try {
-    const buffer = await file.arrayBuffer();
-    const text = decodeHead(buffer);
-    // MT5 también guarda el informe como Excel (Open XML), pero ese formato no trae la
-    // lista de operaciones igual: se pide el HTML con un mensaje concreto.
-    if (/\.(xlsx|xls|xml)$/i.test(file.name) && !looksLikeReport(text)) {
-      throw new Error(L(
-        `${file.name} no es un informe HTML. Para el periodo no visto, guarda el informe del backtest como HTML: en el probador, pestaña Backtest, clic derecho → Informe → HTML.`,
-        `${file.name} is not an HTML report. For the unseen period, save the backtest report as HTML: in the tester, Backtest tab, right-click → Report → HTML.`,
-      ));
-    }
-    const report = parseBacktestReport(text, file.name);
+    const report = await readBacktestReport(file);
     state.report = report;
     state.unseen.values = {
       trades: report.metrics.trades,
@@ -107,11 +118,11 @@ export function renderReportCard(a, plateau) {
       ${state.unseen.reportError ? `<div class="inline-warn">${esc(state.unseen.reportError)}</div>` : ''}
       <p class="panel-intro">
         ${L(
-          `En el probador, clic derecho sobre los resultados → <em>Informe</em> → <em>HTML</em>. Si lo
+          `En el probador, clic derecho sobre los resultados → <em>Informe</em> → <em>HTML</em> u <em>Open XML</em> (vale cualquiera de los dos). Si lo
         sueltas aquí (o en cualquier parte de la página) se rellenan solas las seis cifras, se
         usan las fechas reales del periodo y se comprueba que el backtest se lanzó con la
         configuración correcta.`,
-          `In the tester, right-click the results → <em>Report</em> → <em>HTML</em>. If you
+          `In the tester, right-click the results → <em>Report</em> → <em>HTML</em> or <em>Open XML</em> (either works). If you
         drop it here (or anywhere on the page) the six figures fill in automatically,
         the real period dates are used, and it checks that the backtest was run with the
         correct configuration.`,
