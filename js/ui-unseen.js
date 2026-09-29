@@ -216,12 +216,19 @@ export function renderTradesAudit() {
     : `<p class="muted">${L('Muy pocos días para simular con garantías.', 'Too few days to simulate reliably.')}</p>`;
 
   const sufficient = sa.verdictHint === 'sample_ok';
+  // "Se distingue de cero" también vale para una serie que pierde: entonces no es verde.
+  const losing = sufficient && Number.isFinite(sa.sharpe) && sa.sharpe < 0;
   const sampleRow = `<div class="evidence-list">
       <div><span>${L('Días de datos', 'Days of data')}</span><strong>${int(sa.n)}</strong></div>
-      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${sufficient ? 'ok' : 'warn'}">${sa.power.usable ? pct(sa.power.power) : '—'}</strong></div>
+      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable ? pct(sa.power.power) : '—'}</strong></div>
       <div><span>${L('Intervalo de confianza del resultado diario medio', 'Confidence interval of the average daily result')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 2)} &ndash; ${num(sa.meanCi.ci.p95, 2)}` : '—'}</strong></div>
     </div>
-    <p class="chart-note">${sufficient
+    <p class="chart-note">${losing
+      ? L(
+        'Con estos días, el resultado medio diario se distingue de cero con razonable seguridad, <strong>pero por debajo</strong>: en este periodo la estrategia pierde dinero.',
+        'With this many days, the average daily result is distinguishable from zero with reasonable confidence, <strong>but below it</strong>: in this period the strategy loses money.',
+      )
+      : sufficient
       ? L(
         'Con estos días, el resultado medio diario se distingue de cero con razonable seguridad.',
         "With this many days, the average daily result is distinguishable from zero with reasonable confidence.",

@@ -29,7 +29,7 @@ const isPos = (l) => l === 'moderate' || l === 'strong';
 const out = [];
 const verdicts = [];
 const verdict = (name, ok, detail) => { verdicts.push({ name, ok, detail }); };
-out.push(`# Resultados del banco de pruebas: ${split.startsWith('test') ? 'examen' : 'calibración'} (${split})`);
+out.push(`# Resultados del banco de pruebas: ${split.startsWith('exam2') ? 'segundo examen (ciego)' : split.startsWith('test') ? 'primer examen' : 'calibración'} (${split})`);
 out.push('');
 out.push(`Casos: ${rows.length} · errores del motor: ${errors.length} · fallos del banco: ${fatal.length}`);
 out.push('');
@@ -51,6 +51,10 @@ for (const s of ['S1', 'S2', 'S5']) {
 out.push(`| **Total** | ${noEdge.length} | **${pct(fp)}** | **${pct(fpStrong)}** | |`);
 out.push('');
 verdict('Falsos positivos ≤ 5 % (moderada o sólida)', fp <= 0.05, pct(fp));
+// Añadido en la enmienda del 2026-09-29 (auditoría 2), antes del segundo examen: el total
+// puede esconder un escenario malo detrás de otro que da 0 % por construcción.
+const fpBy = ['S1', 'S2', 'S5'].map((s) => { const g = noEdge.filter((r) => r.scenario === s); return { s, v: g.filter((r) => isPos(r.level)).length / g.length }; });
+verdict('Falsos positivos ≤ 5 % en cada escenario sin ventaja', fpBy.every((x) => x.v <= 0.05), fpBy.map((x) => `${x.s} ${pct(x.v)}`).join(', '));
 verdict('Falsos positivos ≤ 1 % (sólida)', fpStrong <= 0.01, pct(fpStrong));
 
 // ---- 2. Potencia

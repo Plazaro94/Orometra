@@ -1,10 +1,11 @@
 // Ejecuta el banco de pruebas (ver bench/PREREGISTRO.md).
 //
-//   node bench/run.js calib            semillas 1-40 de cada escenario
-//   node bench/run.js test             semillas 1001-1040 (examen)
+//   node bench/run.js calib            semillas 1-100 de cada escenario (calibración)
+//   node bench/run.js test             semillas 1001-1100 (primer examen, ya visto)
+//   node bench/run.js exam2            semillas 2001-2100 (segundo examen, ciego)
 //   node bench/run.js calib S3 5       un escenario y N semillas (pruebas rápidas)
 //
-// Escribe una línea JSON por caso en bench/results/<split>.jsonl.
+// Escribe una línea JSON por caso en bench/results/<split>[-BENCH_TAG].jsonl.
 
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import fs from 'node:fs';
@@ -112,7 +113,7 @@ async function evaluateCase(scenario, seed) {
 if (isMainThread) {
   const [split = 'calib', only, nArg] = process.argv.slice(2);
   const { SCENARIOS } = await import('./sim.js');
-  const base = split === 'test' ? 1001 : 1;
+  const base = split === 'exam2' ? 2001 : split === 'test' ? 1001 : 1;
   const n = nArg ? Number(nArg) : 100;
   const scen = only ? only.split(',') : SCENARIOS;
   const tasks = [];

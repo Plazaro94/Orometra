@@ -136,7 +136,7 @@
       <span class="lp-method-num">04</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s4.title">Mesetas, no picos</h2>
-        <p data-i18n="doc.method.s4.body">Para cada configuración mira a sus vecinos, medidos en pasos de tu rejilla (de 30 a 50, o de 0,1 a 0,2, es un paso). Una meseta es una zona conectada donde los vecinos también superan tus mínimos. Los picos aislados se descartan. Dentro de la meseta se elige la configuración con mejor puesto conjunto en in-sample y forward, promediado con sus vecinas: ni el punto más alto ni la suerte de un punto concreto. Si no hay meseta, da una sugerencia orientativa con la misma regla y lo dice.</p>
+        <p data-i18n="doc.method.s4.body">Para cada configuración mira a sus vecinos, medidos en pasos de tu rejilla (de 30 a 50, o de 0,1 a 0,2, es un paso). Una meseta es una zona conectada donde los vecinos también superan tus mínimos. Los picos aislados se descartan. Dentro de la meseta se elige la configuración con mejor puesto conjunto en in-sample y forward, promediado con sus vecinas: ni el punto más alto ni la suerte de un punto concreto. Si no hay meseta y hay forward, da una sugerencia orientativa con la misma regla y lo dice. En nuestro banco de pruebas ciego gana a elegir la primera fila, la mejor del forward, la suma de puestos y el azar; pierde por poco contra «media con vecinas» si cada caso sin meseta cuenta como fallo (con la sugerencia orientativa, gana).</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">

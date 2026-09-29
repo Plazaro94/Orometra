@@ -191,8 +191,8 @@ export function setFile(which, file) {
   }
   if (/\.opt$/i.test(file.name)) {
     dropError(L(
-      'El .opt es la caché interna del probador y no se puede leer. Exporta con clic derecho → Informe → XML.',
-      'The .opt is the tester\'s internal cache and cannot be read. Export with right-click → Report → XML.',
+      'El .opt es la caché interna del probador y no se puede leer. En la pestaña Optimización del probador, haz clic derecho sobre la tabla → Exportar a XML.',
+      'The .opt is the tester\'s internal cache and cannot be read. In the tester\'s Optimization tab, right-click the table → Export to XML.',
     ));
     return;
   }

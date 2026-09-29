@@ -45,7 +45,7 @@ export function parseXmlSpreadsheet(text) {
     const nameMatch = ws[1].match(/ss:Name="([^"]*)"/);
     sheets.push({ name: nameMatch ? unescapeXml(nameMatch[1]) : 'Sheet', body: ws[2] });
   }
-  if (!sheets.length) throw new Error(L('Este XML no tiene hojas de cálculo. Comprueba que sea el informe que exporta el probador de MT5 y no otro fichero.', 'This XML has no spreadsheets. Check that it is the report exported by the MT5 tester and not another file.'));
+  if (!sheets.length) throw new Error(L('No se encuentra ninguna tabla en este XML: puede estar incompleto (cortado al copiarlo o descargarlo) o no ser el que exporta el probador de MT5. Vuelve a exportarlo desde la pestaña Optimización.', 'No table found in this XML: it may be incomplete (cut off while copying or downloading) or not the one the MT5 tester exports. Export it again from the Optimization tab.'));
 
   const rowRe = /<Row\b([^>]*)(?:\/>|>([\s\S]*?)<\/Row>)/g;
   const cellRe = /<Cell\b([^>]*?)(?:\/>|>([\s\S]*?)<\/Cell>)/g;

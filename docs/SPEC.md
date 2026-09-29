@@ -25,7 +25,9 @@ es esa evidencia? La app no dice «opera esto»: mide lo que los datos sostienen
    usa como medida de calidad.
 3. **Umbrales absolutos, no percentiles.** La app debe poder decir «aquí no hay nada».
 4. **Una configuración vale lo que su peor periodo** (maximin), no la media.
-5. **Se elige el centro de la meseta, no su cima.**
+5. **Dentro de la meseta se elige por puesto conjunto in-sample + forward promediado con
+   las vecinas, no por su cima.** Las configuraciones sin forward cuentan como el último
+   puesto del forward. Sin meseta y con forward, se da una sugerencia orientativa.
 6. **Lo que no se puede calcular no se calcula, y se dice por qué.** Ninguna métrica se
    presenta con el nombre de un método publicado (PBO, DSR, CSCV…) si no se ha
    calculado como en el método publicado. Las adaptaciones se nombran como

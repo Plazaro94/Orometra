@@ -60,9 +60,12 @@ export const ENGINE_DEFAULTS = {
   // PREREGISTRO.md). 'maximin' y 'mean' se conservan para comparar.
   repMethod: 'joint',
   // Si la meseta recomendada cumple los mínimos del forward en menos de esta fracción de
-  // sus configuraciones con forward, es un hallazgo crítico: es la firma de una zona que
-  // solo brillaba en el in-sample. Fijado con la calibración del banco.
-  plateauForwardCritical: 0.5,
+  // sus configuraciones con forward, es un hallazgo crítico. Un forward es UN periodo, y su
+  // suerte está correlacionada entre vecinas: sin ventaja real, una región entera puede
+  // aprobar el forward por casualidad a tasas del 50-60 %. Con ventaja real la mediana
+  // está en torno al 85-90 %. 0,65 se fijó con la calibración del banco (bench/): en el
+  // escenario de sobreajuste puro baja los falsos positivos del 10 % al 3 %.
+  plateauForwardCritical: 0.65,
   // El nucleo es la parte de la meseta donde hasta el entorno es "excelente".
   // Es de donde se elige la configuración a desplegar.
   coreFloorQuality: 0.58,
