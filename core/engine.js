@@ -834,7 +834,8 @@ export function findPlateaus(neighbors, robust, passes, stability, opts = ENGINE
  * PEOR vecino (en toda la vecindad observada) es el mejor posible. Empates: más
  * interior en la componente, luego robustez. Deliberadamente NO se elige el máximo.
  */
-export function chooseRepresentative(component, neighbors, scores, robust) {
+export function chooseRepresentative(component, neighbors, scores, robust, method = 'maximin') {
+  if (method === 'mean') return chooseRepresentativeByMean(component, neighbors, scores, robust);
   let best = component[0];
   let bestWorst = -Infinity;
   let bestInterior = -Infinity;
@@ -856,6 +857,40 @@ export function chooseRepresentative(component, neighbors, scores, robust) {
       || (worst === bestWorst && interior === bestInterior && rob > bestRobust)
     ) {
       bestWorst = worst;
+      bestInterior = interior;
+      bestRobust = rob;
+      best = i;
+    }
+  }
+  return best;
+}
+
+/**
+ * Variante: la configuración cuya vecindad (ella y sus vecinas observadas) tiene la mejor
+ * calidad MEDIA. Con datos ruidosos, la media estima el nivel real de la zona con mucha
+ * menos varianza que el mínimo del criterio maximin. Una vecina sin puntuación cuenta
+ * como 0, igual que en maximin. Empates: más interior, luego robustez.
+ */
+export function chooseRepresentativeByMean(component, neighbors, scores, robust) {
+  let best = component[0];
+  let bestMean = -Infinity;
+  let bestInterior = -Infinity;
+  let bestRobust = -Infinity;
+  const inComp = new Set(component);
+  for (const i of component) {
+    const nb = neighbors[i];
+    let sum = Number.isFinite(scores[i]) ? scores[i] : 0;
+    let inside = 0;
+    for (const k of nb) {
+      if (inComp.has(k)) inside++;
+      sum += Number.isFinite(scores[k]) ? scores[k] : 0;
+    }
+    const m = sum / (nb.length + 1);
+    const interior = nb.length ? inside / nb.length : 0;
+    const rob = Number.isFinite(robust[i]) ? robust[i] : 0;
+    if (m > bestMean || (m === bestMean && interior > bestInterior)
+      || (m === bestMean && interior === bestInterior && rob > bestRobust)) {
+      bestMean = m;
       bestInterior = interior;
       bestRobust = rob;
       best = i;

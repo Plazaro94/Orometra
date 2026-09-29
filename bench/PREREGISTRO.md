@@ -121,3 +121,8 @@ M1. Si no propone meseta, se registra como «se abstiene».
 - **2026-09-28, antes de ver resultados.** Fallo del generador (no del motor): en S7, con una
   rejilla de menos de 40 configuraciones, el muestreo genético pedía más pasadas de las que
   existían y no terminaba. Se limita al tamaño de la rejilla. La calibración se repite entera.
+- **2026-09-28, tras la primera medición y antes de cambiar el motor.** La potencia se medía
+  con muy pocos casos (12-17) y salió 88 % en calibración y 42 % en examen: demasiado ruido
+  para decidir. Se amplía a **100 semillas por escenario** (calibración 1-100, examen
+  1001-1100) y se vuelve a medir el motor actual con esa muestra antes de cualquier cambio.
+  Los criterios no cambian. Las mediciones con 40 semillas se conservan en `bench/results/`.

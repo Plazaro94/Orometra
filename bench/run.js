@@ -67,7 +67,10 @@ async function evaluateCase(scenario, seed) {
   let a = null;
   let error = null;
   try {
-    a = runAnalysis({ isTable: c.isTable, oosTable: c.oosTable });
+    const { ENGINE_DEFAULTS } = await import('../core/engine.js');
+    const variant = process.env.BENCH_OPTS ? JSON.parse(process.env.BENCH_OPTS) : null;
+    a = variant ? runAnalysis({ isTable: c.isTable, oosTable: c.oosTable, opts: { ...ENGINE_DEFAULTS, ...variant } })
+      : runAnalysis({ isTable: c.isTable, oosTable: c.oosTable });
   } catch (e) {
     error = String(e && e.message ? e.message : e).slice(0, 200);
   }
@@ -83,6 +86,16 @@ async function evaluateCase(scenario, seed) {
     meta: { dims: c.meta.dims, configs: c.meta.configs, tradesIs: c.meta.tradesIs, A: c.meta.A, luckAmp: c.meta.luckAmp, oosRatio: c.meta.oosRatio },
     truth: { oracle, median, plateauSharpe: c.meta.A },
     level: a ? a.verdict.level : null,
+    diag: a ? {
+      searchPass: a.meta.searchPassCount, gatePass: a.meta.gatePassCount, total: a.meta.total,
+      underpowered: a.meta.underpowered, needed: a.meta.viableNeededForPlateau,
+      sampling: a.meta.sampling, radius: a.meta.radius, medianSupport: a.meta.medianSupport,
+      crit: a.verdict.findings.filter((f) => f.severity === 'critical').map((f) => f.title),
+      region: a.stats.stabilityCheck ? a.stats.stabilityCheck.regionRate : null,
+      plateauSize: a.plateaus[0] ? a.plateaus[0].size : 0,
+      fwdPass: a.plateaus[0] && a.plateaus[0].oosValidation ? a.plateaus[0].oosValidation.passFrac : null,
+      fwdWith: a.plateaus[0] && a.plateaus[0].oosValidation ? a.plateaus[0].oosValidation.withForward : null,
+    } : null,
     plateaus: a ? a.plateaus.length : 0,
     error, ms,
     orometra: pickInfo(pickIdx),
@@ -94,12 +107,13 @@ if (isMainThread) {
   const [split = 'calib', only, nArg] = process.argv.slice(2);
   const { SCENARIOS } = await import('./sim.js');
   const base = split === 'test' ? 1001 : 1;
-  const n = nArg ? Number(nArg) : 40;
+  const n = nArg ? Number(nArg) : 100;
   const scen = only ? only.split(',') : SCENARIOS;
   const tasks = [];
   for (const s of scen) for (let k = 0; k < n; k++) tasks.push({ scenario: s, seed: base + k });
   fs.mkdirSync(path.join(HERE, 'results'), { recursive: true });
-  const out = path.join(HERE, 'results', `${split}${only ? '-' + only.replace(/,/g, '_') : ''}.jsonl`);
+  const tag = process.env.BENCH_TAG ? '-' + process.env.BENCH_TAG : '';
+  const out = path.join(HERE, 'results', `${split}${only ? '-' + only.replace(/,/g, '_') : ''}${tag}.jsonl`);
   fs.writeFileSync(out, '');
   let done = 0;
   const t0 = Date.now();

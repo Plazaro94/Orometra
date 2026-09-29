@@ -55,6 +55,10 @@ export function buildVerdict(ctx) {
     tiedCount, tiedRanks, stabilityCheck, irregularGrids, rescuedDims, offsetsComplete,
     spansIrregular, degreesOfFreedom, gateInfluence, selectionMode } = ctx;
 
+  // Los porcentajes que exigen los DOS periodos se miden sobre las configuraciones que
+  // tienen forward: MT5 solo reexporta las mejores, así que sobre el total nunca pasarían
+  // de ~25 % aunque todas las del forward cumplieran.
+  const fwdBase = hasForward && Number.isFinite(ctx.forwardCount) && ctx.forwardCount > 0 ? ctx.forwardCount : total;
   // ---- Bloqueantes
   const searchPassCount = Number.isFinite(ctx.searchPassCount) ? ctx.searchPassCount : gatePassCount;
   if (!gatePassCount && hasForward && searchPassCount > 0) {
@@ -68,10 +72,10 @@ export function buildVerdict(ctx) {
           `Of ${total.toLocaleString(localeTag())} configurations, none meet your minima in both in-sample and forward. With these minima there is nothing to select.`)
         : L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple tus mínimos. Con estos mínimos no hay nada que seleccionar.`,
           `Of ${total.toLocaleString(localeTag())} configurations, none meet your minima. With these minima there is nothing to select.`), null);
-  } else if (gatePassCount / total < 0.02) {
+  } else if (gatePassCount / fwdBase < 0.02) {
     add(SEV.CRITICAL, L('Solo un resquicio del espacio sobrevive', 'Only a sliver of the space survives'),
-      L(`Apenas ${gatePassCount} de ${total.toLocaleString(localeTag())} configuraciones (${fmt((100 * gatePassCount / total), 1)}%) pasan los mínimos. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
-        `Barely ${gatePassCount} of ${total.toLocaleString(localeTag())} configurations (${fmt((100 * gatePassCount / total), 1)}%) pass the gates. A strategy that only works at one specific point in parameter space is almost always an optimizer artifact.`), null);
+      L(`Apenas ${gatePassCount} de ${fwdBase.toLocaleString(localeTag())} configuraciones${hasForward ? ' con forward' : ''} (${fmt((100 * gatePassCount / fwdBase), 1)}%) pasan los mínimos. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
+        `Barely ${gatePassCount} of ${fwdBase.toLocaleString(localeTag())} configurations${hasForward ? ' with forward' : ''} (${fmt((100 * gatePassCount / fwdBase), 1)}%) pass the gates. A strategy that only works at one specific point in parameter space is almost always an optimizer artifact.`), null);
   }
 
   /*
@@ -128,7 +132,7 @@ export function buildVerdict(ctx) {
    * por construccion, así que exigir más convertia avisos en bloqueos por partida doble.
    */
   const VIABLE_REFUGE = 0.25;
-  const viableShare = total > 0 ? gatePassCount / total : 0;
+  const viableShare = fwdBase > 0 ? gatePassCount / fwdBase : 0;
   const hasRegion = plateaus.length > 0;
   const hasRefuge = viableShare >= VIABLE_REFUGE && hasRegion;
   if (Number.isFinite(fragility)) {
@@ -176,6 +180,10 @@ export function buildVerdict(ctx) {
       add(SEV.WARN, L('La meseta recomendada no tiene ninguna configuración probada en el forward', 'The recommended plateau has no configuration tested on the forward'),
         L('MT5 solo pasa al forward las mejores pasadas y ninguna de esta meseta estaba entre ellas. Trátala como provisional hasta probarla en un periodo no visto.',
           'MT5 only passes the best passes to the forward and none of this plateau was among them. Treat it as provisional until you test it on an unseen period.'), null);
+    } else if (v && Number.isFinite(ctx.plateauForwardCritical) && v.passFrac < ctx.plateauForwardCritical) {
+      add(SEV.CRITICAL, L(`La meseta recomendada no se sostiene en el forward: solo aguanta el ${fmt((100 * v.passFrac), 0)} %${basis}`, `The recommended plateau does not hold on the forward: only ${fmt((100 * v.passFrac), 0)}%${basis}`),
+        L('La mayoría de las configuraciones de la región falla tus mínimos en el forward. Es la firma de una zona que solo brillaba en el in-sample: no la uses sin probarla antes en un periodo no visto.',
+          'Most configurations in the region fail your minima on the forward. That is the signature of a zone that only shone in-sample: do not use it without first testing it on an unseen period.'), null);
     } else if (v && v.passFrac < 0.5) {
       add(SEV.WARN, L(`La meseta recomendada solo aguanta el ${fmt((100 * v.passFrac), 0)} % en forward${basis}`, `The recommended plateau only holds ${fmt((100 * v.passFrac), 0)}% on forward${basis}`),
         L('Muchas configuraciones de la región fallan los mínimos del forward. Trátala como provisional hasta probarla en un periodo no visto.',
@@ -415,12 +423,12 @@ export function buildVerdict(ctx) {
   if (Number.isFinite(spearman)) {
     if (spearman < 0.1 && hasRefuge) {
       add(SEV.WARN, L(`El ranking no transfiere de un periodo al otro (rho = ${fmt(spearman, 2)})`, `The ranking does not transfer from one period to the other (rho = ${fmt(spearman, 2)})`),
-        L(`Ojo con la lectura: el ${fmt((100 * gatePassCount / total), 0)} % de las configuraciones cumple los mínimos en los dos periodos, así que la estrategia sí tiene ventaja. Lo que no tiene valor es el ORDEN: cuál queda primera en el in-sample no predice cuál quedará primera en el forward. Elige por región estable en ambos periodos, nunca por puesto en la tabla.`,
-          `Read carefully: ${fmt((100 * gatePassCount / total), 0)}% of configurations meet the minima in both periods, so the strategy does have an edge. What has no value is the ORDER: which one ranks first in-sample does not predict which will rank first on the forward. Choose by a region stable in both periods, never by table rank.`), 'stats');
+        L(`Ojo con la lectura: el ${fmt((100 * gatePassCount / fwdBase), 0)} % de las configuraciones con forward cumple los mínimos en los dos periodos, así que la estrategia sí tiene ventaja. Lo que no tiene valor es el ORDEN: cuál queda primera en el in-sample no predice cuál quedará primera en el forward. Elige por región estable en ambos periodos, nunca por puesto en la tabla.`,
+          `Read carefully: ${fmt((100 * gatePassCount / fwdBase), 0)}% of configurations with forward meet the minima in both periods, so the strategy does have an edge. What has no value is the ORDER: which one ranks first in-sample does not predict which will rank first on the forward. Choose by a region stable in both periods, never by table rank.`), 'stats');
     } else if (spearman < 0.1) {
       add(SEV.CRITICAL, L(`Correlación IS -> OOS prácticamente nula (rho = ${fmt(spearman, 2)})`, `IS -> OOS correlation practically null (rho = ${fmt(spearman, 2)})`),
-        L(`Solo el ${fmt((100 * gatePassCount / total), 0)} % de las configuraciones cumple los mínimos y además el comportamiento en entrenamiento no dice nada sobre el de validación. Es la firma de un sistema sin ventaja real.`,
-          `Only ${fmt((100 * gatePassCount / total), 0)}% of configurations meet the minima and training behavior says nothing about validation. That is the signature of a system with no real edge.`), 'stats');
+        L(`Solo el ${fmt((100 * gatePassCount / fwdBase), 0)} % de las configuraciones con forward cumple los mínimos y además el comportamiento en entrenamiento no dice nada sobre el de validación. Es la firma de un sistema sin ventaja real.`,
+          `Only ${fmt((100 * gatePassCount / fwdBase), 0)}% of configurations with forward meet the minima and training behavior says nothing about validation. That is the signature of a system with no real edge.`), 'stats');
     } else if (spearman < 0.3) {
       add(SEV.WARN, L(`Correlación IS -> OOS débil (rho = ${fmt(spearman, 2)})`, `Weak IS -> OOS correlation (rho = ${fmt(spearman, 2)})`),
         L('Hay algo de señal, pero poca. Conviene ampliar el periodo de datos antes de tomar decisiones.',

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const split = process.argv[2] || 'calib';
 const file = path.join(HERE, 'results', `${split}.jsonl`);
+const REPORT_NAME = process.argv[3] || split;
 const rows = fs.readFileSync(file, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
 
 const NO_EDGE = new Set(['S1', 'S2', 'S5']);
@@ -28,7 +29,7 @@ const isPos = (l) => l === 'moderate' || l === 'strong';
 const out = [];
 const verdicts = [];
 const verdict = (name, ok, detail) => { verdicts.push({ name, ok, detail }); };
-out.push(`# Resultados del banco de pruebas: ${split === 'test' ? 'examen (semillas 1001-1040)' : 'calibración (semillas 1-40)'}`);
+out.push(`# Resultados del banco de pruebas: ${split.startsWith('test') ? 'examen' : 'calibración'} (${split})`);
 out.push('');
 out.push(`Casos: ${rows.length} · errores del motor: ${errors.length} · fallos del banco: ${fatal.length}`);
 out.push('');
@@ -124,5 +125,5 @@ if (errors.length) { out.push('## Errores del motor'); errors.slice(0, 20).forEa
 if (fatal.length) { out.push('## Fallos del banco'); fatal.slice(0, 20).forEach((r) => out.push(`- ${r.scenario} #${r.seed}: ${r.fatal}`)); }
 
 const md = out.join('\n');
-fs.writeFileSync(path.join(HERE, 'results', `REPORT-${split}.md`), md);
+fs.writeFileSync(path.join(HERE, 'results', `REPORT-${REPORT_NAME}.md`), md);
 console.log(md);

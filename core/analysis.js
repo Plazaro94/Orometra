@@ -465,7 +465,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // Se recomienda una configuración que MT5 haya probado en el forward siempre que la
     // meseta tenga alguna: recomendar una que nunca salió de la muestra sería peor.
     const tested = basis.filter((i) => hasOos(records[i]));
-    const rep = chooseRepresentative(tested.length ? tested : basis, neighbors, scores, robust);
+    const rep = chooseRepresentative(tested.length ? tested : basis, neighbors, scores, robust, opts.repMethod);
     const compScores = comp.map((i) => scores[i]).filter(Number.isFinite);
     const [worstMember] = extent(compScores);
     // Cuanto espacio abarca de verdad la region, con independencia de cuantas veces se
@@ -761,7 +761,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
         const cs = comp.map((i) => scores[i]).filter(Number.isFinite);
         const ex = componentExtent(comp, coords, activeDims.length ? activeDims : blocking, levels);
         const core = coreMembers(comp, rb, stab, drawOpts);
-        const repIdx = chooseRepresentative(core.length >= 3 ? core : comp, neighbors, scores, rb);
+        const repIdx = chooseRepresentative(core.length >= 3 ? core : comp, neighbors, scores, rb, drawOpts.repMethod);
         const irregular = irregularGrids.some((g) => {
           const occupied = new Set(comp.map((i) => coords[i][g.index]));
           return g.jumps.some((jp) => occupied.has(jp.fromIndex) && occupied.has(jp.toIndex));
@@ -900,6 +900,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
 
   progress(onProgress, 96, L('Emitiendo veredicto', 'Issuing verdict'));
   const verdictCtx = {
+    // Configuraciones con datos de forward: la base para cualquier porcentaje que exija
+    // los dos periodos (MT5 solo reexporta las mejores; ver FWD-1).
+    forwardCount: hasForward ? records.filter(hasOos).length : records.length,
+    plateauForwardCritical: opts.plateauForwardCritical,
     gatePassCount,
     discoverPassCount,
     searchPassCount,
