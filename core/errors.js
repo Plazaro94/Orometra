@@ -9,6 +9,7 @@ export const CODE = {
   NO_QUALIFYING_CONFIGS: 'NO_QUALIFYING_CONFIGS',
   NO_PLATEAU: 'NO_PLATEAU',
   WORKER_ERROR: 'WORKER_ERROR',
+  REPORT_ERROR: 'REPORT_ERROR',
   ANALYSIS_SUCCESS: 'ANALYSIS_SUCCESS',
 };
 
@@ -127,6 +128,13 @@ export function errorCopy(code, L) {
       hint: L(
         'Hay candidatos, pero no una región conexa con soporte local suficiente. Revisa descartes y cobertura.',
         'There are candidates, but no connected region with enough local support. Check rejected peaks and coverage.',
+      ),
+    },
+    [CODE.REPORT_ERROR]: {
+      title: L('No se ha podido leer el informe del backtest', 'The backtest report could not be read'),
+      hint: L(
+        'Para el periodo no visto hace falta el informe de un backtest individual (HTML u Open XML): en el probador, pestaña Backtest, clic derecho → Informe.',
+        'The unseen period needs the report of a single backtest (HTML or Open XML): in the tester, Backtest tab, right-click → Report.',
       ),
     },
     [CODE.ANALYSIS_SUCCESS]: {

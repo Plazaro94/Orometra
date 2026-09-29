@@ -37,12 +37,13 @@ function crc32(buf) {
 }
 
 /** Escribe un ZIP minimo. `comprimir` permite probar los dos metodos que se admiten. */
-function zip(entradas, comprimir = true) {
+function zip(entradas, comprimir = true, utf16 = false) {
   const locales = [];
   const central = [];
   let offset = 0;
   for (const [nombre, texto] of entradas) {
-    const datos = Buffer.from(texto, 'utf8');
+    // `utf16`: MT5 escribe sus .xlsx en UTF-16LE con BOM, no en UTF-8 como Excel.
+    const datos = utf16 ? Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(texto, 'utf16le')]) : Buffer.from(texto, 'utf8');
     const cuerpo = comprimir ? zlib.deflateRawSync(datos) : datos;
     const metodo = comprimir ? 8 : 0;
     const nom = Buffer.from(nombre, 'utf8');
@@ -110,6 +111,13 @@ section('1. Libro comprimido (deflate), que es lo que genera Excel');
   check('el tratamiento comun localiza la cabecera', t.headers.length === 8, t.headers.join(','));
   check('y deja 40 filas de datos', t.rows.length === 40, String(t.rows.length));
   check('se marca el formato', t.format === 'xlsx', t.format);
+}
+
+section('1b. Libro en UTF-16 con BOM, como lo guarda MT5');
+{
+  const crudo = await parseXlsx(zip(libro({ filas, compartidas: CAB }), true, true));
+  check('se lee igual que en UTF-8', crudo.rows.length === 41 && crudo.rows[0][0] === 'Pass' && Number(crudo.rows[1][2]) === 1037,
+    `${crudo.rows.length} filas, ${crudo.rows[0] && crudo.rows[0][0]}`);
 }
 
 section('2. Libro sin comprimir (metodo 0), que tambien es ZIP valido');

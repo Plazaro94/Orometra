@@ -23,6 +23,11 @@ export function looksLikeReport(text) {
   return REPORT_SIGNATURE.test(text.slice(0, 20000));
 }
 
+/** Igual, pero buscando en todo el texto (un XML de hoja de cálculo trae antes los estilos). */
+export function mentionsReport(text) {
+  return REPORT_SIGNATURE.test(text);
+}
+
 // Algunos builds escriben los acentos como entidades en vez de como caracteres. Si no
 // se decodifican, "Per&iacute;odo:" no casa con ningun patron y el informe entero
 // aparece vacio sin dar ningun error.
@@ -62,8 +67,10 @@ function tableRows(html) {
  * Se recorre todo aplanado para no depender de cuantas columnas use cada build.
  */
 function labelledValues(rows) {
+  // Las celdas vacías se saltan: en el Open XML de MT5 la etiqueta va en la columna A y el
+  // valor en la D, con dos celdas vacías en medio.
   const flat = [];
-  for (const cells of rows) for (const c of cells) flat.push(c);
+  for (const cells of rows) for (const c of cells) if (c !== null && c !== undefined && String(c).trim() !== '') flat.push(c);
   const pairs = [];
   for (let i = 0; i < flat.length - 1; i++) {
     if (/:$/.test(flat[i])) pairs.push([flat[i].slice(0, -1).trim(), flat[i + 1]]);
@@ -111,9 +118,59 @@ const P = {
  */
 export function parseBacktestReport(text, fileName = '') {
   if (!looksLikeReport(text)) {
-    throw new Error(L('Esto no parece el informe de un backtest de MT5. En el probador: clic derecho sobre los resultados > Informe > HTML.', 'This does not look like an MT5 backtest report. In the tester: right-click the results > Report > HTML.'));
+    throw new Error(NOT_A_REPORT());
   }
-  const rows = tableRows(text);
+  return parseReportRows(tableRows(text), fileName);
+}
+
+const NOT_A_REPORT = () => L(
+  'Esto no parece el informe de un backtest de MT5. En el probador, pestaña Backtest: clic derecho sobre los resultados > Informe > HTML u Open XML.',
+  'This does not look like an MT5 backtest report. In the tester, Backtest tab: right-click the results > Report > HTML or Open XML.',
+);
+
+/**
+ * El mismo informe guardado como hoja de cálculo (Open XML .xlsx o XML Spreadsheet):
+ * trae las mismas etiquetas y la misma tabla de transacciones, en celdas en vez de <td>.
+ * `grid` son las filas crudas de la hoja (ver parseXlsx / parseXmlSpreadsheet).
+ */
+export function parseBacktestReportGrid(grid, fileName = '') {
+  const rows = (grid || []).map((r) => Array.from(r || [], cellText));
+  if (!rowsLookLikeReport(rows)) throw new Error(NOT_A_REPORT());
+  return parseReportRows(rows, fileName);
+}
+
+/** ¿Estas filas de hoja de cálculo son un informe de backtest? */
+export function gridLooksLikeReport(grid) {
+  return rowsLookLikeReport((grid || []).map((r) => Array.from(r || [], cellText)));
+}
+
+// El título del informe puede no ir en una celda (según el build y el idioma). Si falta,
+// se reconoce por su contenido: etiquetas "Beneficio neto:" y "Factor de beneficio:" y
+// ninguna columna Pass, que es lo que distingue un export de optimización.
+function rowsLookLikeReport(rows) {
+  if (mentionsReport(rows.slice(0, 200).map((r) => r.join(' ')).join(' '))) return true;
+  if (rows.slice(0, 5).some((r) => r.some((c) => /^pass$/i.test(c)))) return false;
+  const pairs = labelledValues(rows.slice(0, 400));
+  return findValue(pairs, P.profit) !== null && findValue(pairs, P.profitFactor) !== null;
+}
+
+// Excel guarda las fechas como número de días desde 1899-12-30. MT5 las escribe como
+// texto, pero si alguien abre y vuelve a guardar el libro pueden quedar como número.
+function cellText(v) {
+  if (v === null || v === undefined) return '';
+  return typeof v === 'number' ? String(v) : String(v).trim();
+}
+function dealTime(v) {
+  const s = String(v || '');
+  if (/^\d{5}(\.\d+)?$/.test(s)) {
+    const d = new Date(Math.round((Number(s) - 25569) * 86400000));
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+  }
+  return s;
+}
+
+function parseReportRows(rows, fileName) {
   const pairs = labelledValues(rows);
 
   // ---- Cabecera: instrumento, marco temporal y FECHAS del periodo
@@ -246,7 +303,7 @@ function parseDeals(rows) {
     carrySwap = 0;
     const cost = commission + swap;
     deals.push({
-      time: c[cols.time] || '',
+      time: dealTime(c[cols.time]),
       // `profit` es el resultado bruto de la operacion; `net` le descuenta comision y
       // swap, que es lo que de verdad entra en la cuenta. La suma de los `net` reproduce
       // exactamente el beneficio neto del informe.

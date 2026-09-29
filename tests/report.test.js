@@ -8,7 +8,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseBacktestReport, looksLikeReport, compareParams } from '../core/report.js';
+import { parseBacktestReport, parseBacktestReportGrid, gridLooksLikeReport, looksLikeReport, compareParams } from '../core/report.js';
+import { parseXmlSpreadsheet } from '../core/parse.js';
 
 let failures = 0;
 let checks = 0;
@@ -96,6 +97,35 @@ section('1. Informe sintetico');
     Math.abs(net - netProfit) < 0.01, `${net.toFixed(2)} vs ${netProfit.toFixed(2)}`);
   const bruto = r.deals.reduce((a, d) => a + d.profit, 0);
   check('el bruto es mayor que el neto (hay costes)', bruto > net, `${bruto.toFixed(2)} vs ${net.toFixed(2)}`);
+}
+
+section('1b. El mismo informe en XML (hoja de cálculo) y con celdas numéricas (Open XML)');
+{
+  const { html, netProfit } = syntheticReport();
+  const deco = (x) => x.replace(/<[^>]+>/g, '').replace(/&iacute;/g, 'í').replace(/&aacute;/g, 'á').replace(/&oacute;/g, 'ó').trim();
+  const grid = [...html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)].map((r) => [...r[1].matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((c) => deco(c[1])));
+  const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const xml = `<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Informe"><Table>${
+    grid.map((r) => `<Row>${r.map((c) => (c === '' ? '<Cell/>' : `<Cell><Data ss:Type="String">${esc(c)}</Data></Cell>`)).join('')}</Row>`).join('')
+  }</Table></Worksheet></Workbook>`;
+  const fromHtml = parseBacktestReport(html, 'a.html');
+  const fromXml = parseBacktestReportGrid(parseXmlSpreadsheet(xml).rows, 'a.xml');
+  check('XML: mismas cifras que el HTML', JSON.stringify(fromXml.metrics) === JSON.stringify(fromHtml.metrics), JSON.stringify(fromXml.metrics));
+  check('XML: mismos parámetros', JSON.stringify(fromXml.params) === JSON.stringify(fromHtml.params), JSON.stringify(fromXml.params));
+  check('XML: mismas fechas', fromXml.meta.days === fromHtml.meta.days, String(fromXml.meta.days));
+  check('XML: mismas operaciones', fromXml.deals.length === 40 && Math.abs(fromXml.deals.reduce((a, d) => a + d.net, 0) - netProfit) < 0.01);
+  // En Open XML los números llegan como número y una fecha puede llegar como serial de Excel.
+  const numeric = grid.map((r) => r.map((c) => (/^-?\d+(\.\d+)?$/.test(c) ? Number(c) : c)));
+  const hi = numeric.findIndex((r) => r[0] === 'Fecha/Hora');
+  numeric[hi + 3][0] = 43831.625; // 2020-01-01 15:00, primer cierre
+  const fromNum = parseBacktestReportGrid(numeric, 'a.xlsx');
+  check('Open XML: mismas cifras con celdas numéricas', fromNum.metrics.profitFactor === 1.85 && fromNum.metrics.trades === 40, JSON.stringify(fromNum.metrics));
+  check('Open XML: fecha en serial de Excel convertida', fromNum.deals[0] && /^2020\.01\.01 15:00/.test(fromNum.deals[0].time), fromNum.deals[0] && fromNum.deals[0].time);
+  check('se reconoce como informe desde la hoja', gridLooksLikeReport(numeric));
+  check('una tabla de optimización no se toma por informe', !gridLooksLikeReport([['Pass', 'Result', 'Profit'], [1, 2, 3]]));
+  let threw = false;
+  try { parseBacktestReportGrid([['Pass', 'Result'], [1, 2]], 'x.xlsx'); } catch { threw = true; }
+  check('una hoja que no es informe da error claro', threw);
 }
 
 section('2. Comparacion de parametros');
