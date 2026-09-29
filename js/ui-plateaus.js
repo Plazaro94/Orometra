@@ -6,6 +6,7 @@ import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L } from './i18n.js';
 import { gloss } from './glossary.js';
+import { fallbackNote } from './ui-verdict.js';
 import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory } from './ui-state.js';
 
 /**
@@ -93,6 +94,7 @@ export function renderPlateaus(a) {
         'Ninguna región conexa supera los mínimos con estabilidad suficiente. Revisa el diagnóstico: lo habitual es que falten datos, que el rango probado sea demasiado estrecho o que la estrategia no tenga ventaja.',
         'No connected region clears the minima with enough stability. Check diagnostics: usually data are missing, the tested range is too narrow, or the strategy has no edge.',
       )}</p></div>
+      ${a.fallback ? `<div class="inline-warn"><strong>${L('Sugerencia orientativa', 'Tentative suggestion')}: ${L('pasada', 'pass')} ${esc(a.fallback.record.id)}.</strong> ${fallbackNote(a)}</div>` : ''}
       <button class="text-btn" data-goto="diagnostics">${L('Ir al diagnóstico &rarr;', 'Go to diagnostics &rarr;')}</button>`;
   }
   const sel = a.plateaus[Math.min(state.selectedPlateau, a.plateaus.length - 1)];
@@ -131,7 +133,7 @@ export function renderPlateaus(a) {
 
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Meseta', 'Plateau')} ${sel.rank}</div><h2>${L('Configuración representativa', 'Representative configuration')}</h2></div>
-        <span class="status-pill">${gloss('maximin', L('elegida por criterio maximin', 'chosen by maximin'), { align: 'right' })}</span></div>
+        <span class="status-pill">${gloss('jointpick', L('elegida por puesto conjunto', 'chosen by combined rank'), { align: 'right' })}</span></div>
       ${renderRepCard(a, sel)}
     </section>
 
