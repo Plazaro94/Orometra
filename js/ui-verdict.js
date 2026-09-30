@@ -2,6 +2,7 @@
 
 import { qualityLabel } from '../core/metrics.js';
 import { compareParams } from '../core/report.js';
+import { setCoverageNote } from './export.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag } from './i18n.js';
@@ -208,6 +209,7 @@ export function renderVerdict(a) {
         <strong class="verdict-fact-value mono">${L('Pasada', 'Pass')} ${esc(best.record.id)}</strong>
         <span class="verdict-fact-note">M${best.rank} · ${int(best.size)} ${L('configs', 'configs')} · ${num(best.robust, 0)} ${L('robustez', 'robustness')}</span>
         ${pickActions}
+        ${a.meta.hasForward ? `<span class="verdict-fact-note verdict-fact-note-full set-note">${esc(setCoverageNote(a, best, state.searchSet))}</span>` : ''}
       </div>`
     : a.fallback
       ? `<div class="verdict-fact verdict-fact-risk">

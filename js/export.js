@@ -1,6 +1,7 @@
 // Exportacion: ficheros .set para MT5, rango de refinamiento e informe JSON.
 
 import { getLocale, L } from './i18n.js';
+import { mergeSetValues } from '../core/setfile.js';
 
 /** Formato MT5 (.set / pegar en Inputs): punto decimal, sin locale. */
 export function formatSetValue(value) {
@@ -19,8 +20,9 @@ function fmt(value) {
  * Fichero .set de despliegue: solo valores, que es lo que carga el probador al
  * pulsar "Cargar" en la pestana de parámetros de entrada.
  */
-export function buildSetFile(analysis, plateau) {
+export function buildSetFile(analysis, plateau, baseSet = null) {
   const { paramNames } = analysis.meta;
+  const merged = mergeSetValues(paramNames, paramNames.map((_, j) => fmt(plateau.record.params[j])), baseSet);
   const lines = [
     '; ================================================================',
     L('; Orometra - configuración representativa', '; Orometra - representative configuration'),
@@ -28,20 +30,62 @@ export function buildSetFile(analysis, plateau) {
     L(`; Robustez ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configuraciones en la región`, `; Robustness ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configurations in the region`),
     L('; Elegida por puesto conjunto in-sample + forward, promediado con sus vecinas.', '; Chosen by combined in-sample + forward rank, averaged with its neighbors.'),
     L(`; Generado ${new Date().toISOString()}`, `; Generated ${new Date().toISOString()}`),
+    ...setCompletenessComment(merged),
     '; ================================================================',
   ];
-  paramNames.forEach((name, j) => {
-    lines.push(`${name}=${fmt(plateau.record.params[j])}`);
+  merged.entries.forEach((e) => {
+    lines.push(`${e.name}=${e.text}`);
   });
   lines.push('');
   return lines.join('\r\n') + '\r\n';
+}
+
+/** Comentario del .set sobre qué parámetros lleva (ver mergeSetValues). */
+function setCompletenessComment(merged) {
+  if (merged.complete) {
+    return [L(
+      `; Parámetros: ${merged.entries.length} (${merged.optimized} con la configuración elegida y ${merged.fromSet} con los valores de tu .set de la optimización).`,
+      `; Parameters: ${merged.entries.length} (${merged.optimized} with the chosen configuration and ${merged.fromSet} with the values from your optimization .set).`,
+    )];
+  }
+  return L(
+    [
+      `; OJO: este archivo solo lleva los ${merged.optimized} parámetros que optimizaste. Al cargarlo en MT5,`,
+      '; el resto se queda como lo tengas en ese momento en el probador. Suelta en Orometra el .set',
+      '; de tu optimización para obtener uno completo.',
+    ],
+    [
+      `; NOTE: this file only carries the ${merged.optimized} parameters you optimized. When loaded in MT5,`,
+      '; the rest stay as you have them in the tester at that moment. Drop your optimization .set',
+      '; in Orometra to get a complete one.',
+    ],
+  );
+}
+
+/**
+ * Texto para la interfaz junto al botón de descarga: qué lleva el .set y qué le falta.
+ */
+export function setCoverageNote(analysis, plateau, baseSet = null) {
+  const names = analysis.meta.paramNames;
+  const merged = mergeSetValues(names, names.map((_, j) => fmt(plateau.record.params[j])), baseSet);
+  if (merged.complete) {
+    return L(
+      `El .set lleva los ${merged.entries.length} parámetros: ${merged.optimized} con la meseta elegida y ${merged.fromSet} con los valores de tu .set de la optimización.`,
+      `The .set carries all ${merged.entries.length} parameters: ${merged.optimized} from the chosen plateau and ${merged.fromSet} with the values from your optimization .set.`,
+    );
+  }
+  return L(
+    `El .set solo lleva los ${merged.optimized} parámetros que optimizaste: MT5 no cambiará el resto y quedarán como los tengas en el probador. Suelta el .set de tu optimización para completarlo.`,
+    `The .set only carries the ${merged.optimized} parameters you optimized: MT5 will not change the rest and they will stay as you have them in the tester. Drop your optimization .set to complete it.`,
+  );
 }
 
 /**
  * Fichero .set con rangos para la SEGUNDA optimizacion, en rejilla completa y
  * acotada a la meseta. Formato de MT5: nombre=valor||inicio||paso||fin||Y
  */
-export function buildRefinementSetFile(analysis, plateau) {
+export function buildRefinementSetFile(analysis, plateau, baseSet = null) {
+  const merged = mergeSetValues(plateau.refinement.map((p) => p.name), plateau.refinement.map((p) => fmt(p.center !== undefined ? p.center : p.value)), baseSet);
   const lines = [
     '; ================================================================',
     L('; Orometra - rango de refinamiento', '; Orometra - refinement range'),
@@ -73,16 +117,22 @@ export function buildRefinementSetFile(analysis, plateau) {
     lines.push(L('; recomendado. Si quieres barrerlos, actívalos a mano en el probador.', '; recommended value. If you want to sweep them, enable them by hand in the tester.'));
     lines.push(`; ${categorical.map((p) => p.name).join(', ')}`);
   }
+  lines.push(...setCompletenessComment(merged));
   lines.push('; ================================================================');
+  const byName = new Map();
   plateau.refinement.forEach((p) => {
     if (p.constant) {
-      lines.push(`${p.name}=${fmt(p.value)}||${fmt(p.value)}||0||${fmt(p.value)}||N`);
+      byName.set(p.name, `${p.name}=${fmt(p.value)}||${fmt(p.value)}||0||${fmt(p.value)}||N`);
     } else if (p.fixed) {
       // Categorico, o sin margen en el presupuesto: se deja en el valor recomendado.
-      lines.push(`${p.name}=${fmt(p.center)}||${fmt(p.center)}||0||${fmt(p.center)}||N`);
+      byName.set(p.name, `${p.name}=${fmt(p.center)}||${fmt(p.center)}||0||${fmt(p.center)}||N`);
     } else {
-      lines.push(`${p.name}=${fmt(p.center)}||${fmt(p.start)}||${fmt(p.step)}||${fmt(p.stop)}||Y`);
+      byName.set(p.name, `${p.name}=${fmt(p.center)}||${fmt(p.start)}||${fmt(p.step)}||${fmt(p.stop)}||Y`);
     }
+  });
+  // Los parámetros que no se optimizaron van fijos (N) con el valor de tu .set.
+  merged.entries.forEach((e) => {
+    lines.push(e.source === 'base' ? `${e.name}=${e.text}||${e.text}||0||${e.text}||N` : byName.get(e.name));
   });
   return lines.join('\r\n') + '\r\n';
 }

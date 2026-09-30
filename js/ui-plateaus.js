@@ -7,6 +7,7 @@ import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './ch
 import { L } from './i18n.js';
 import { gloss } from './glossary.js';
 import { fallbackNote } from './ui-verdict.js';
+import { setCoverageNote } from './export.js';
 import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory } from './ui-state.js';
 
 /**
@@ -78,6 +79,7 @@ export function renderRepCard(a, p) {
       `Pegada al borde del rango en: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
       `Stuck to the range edge at: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
     )}</div>` : ''}
+    ${a.meta.hasForward ? `<p class="muted set-note">${esc(setCoverageNote(a, p, state.searchSet))}</p>` : ''}
     <div class="rep-actions">
       <button class="ghost-btn" data-copy="${p.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
       <button class="ghost-btn" data-export="set">${L('Descargar .set', 'Download .set')}</button>
