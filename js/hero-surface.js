@@ -45,6 +45,11 @@ const DEMO_HOLD = 3200;
 const CYCLE = 6400;
 const TOUCH_CYCLES = 3;
 
+// Banderín de cada cifra: largo del palo (px; en pantallas estrechas, 8 menos) y radio del remate
+// en el punto exacto.
+const STICK = 30;
+const TIP = 2;
+
 const SANS = '"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif';
 const MONO = '"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace';
 
@@ -476,24 +481,16 @@ export function mountHeroSurface(canvas, opts = {}) {
       }
     }
 
-    // Puntos (tenues si quedan detrás del relieve).
-    for (const mk of markers) {
-      ctx.globalAlpha = show * mk.vis;
-      ctx.fillStyle = rgba(mk.color, pal.light ? 0.16 : 0.22);
-      ctx.beginPath(); ctx.arc(mk.p[0], mk.p[1], 9, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = rgb(mk.color);
-      ctx.strokeStyle = rgb(pal.bg);
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(mk.p[0], mk.p[1], 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-
-    // Cajas: «etiqueta | cifra» y debajo lo que pierden los vecinos. Se colocan donde no tapen
-    // nada y se deslizan hacia ese sitio.
+    // Cajas: «etiqueta | cifra» y debajo lo que pierden los vecinos. Cada una es un banderín: un
+    // palo fino y vertical desde el punto exacto (con un remate mínimo en la base) sujeta la caja
+    // por abajo. Si ahí no cabe o tapa algo, va a un lado con la línea en diagonal. Las cajas se
+    // deslizan hacia su sitio.
     const fs = small ? 11.5 : 12.5;
     const fs2 = small ? 10.5 : 11;
     const th = small ? 38 : 42;
     boxesMoving = false;
+    // Ninguna caja tapa el punto de la otra (ni su palo, que se añade al colocar cada caja).
+    for (const mk of markers) obstacles.push([mk.p[0] - 9, mk.p[1] - 9, 18, 18]);
     for (const mk of markers) {
       mk.value = fmt(mk.val);
       mk.line2 = `${labels.neighbors || 'neighbors'} ${fmtDrop(mk.drop)}`;
@@ -504,16 +501,20 @@ export function mountHeroSurface(canvas, opts = {}) {
       ctx.font = `500 ${fs2}px ${SANS}`;
       const tw = Math.round(Math.max(w1, ctx.measureText(mk.line2).width + 22));
       const [px, py] = mk.p;
+      const floor = v.cssH - v.capH - th - 4;
       const spots = [];
+      const stick = small ? STICK - 8 : STICK;
+      for (const side of [mk.side, -mk.side]) spots.push([side > 0 ? px - 12 : px - tw + 12, py - stick - th, tw, th]);
       for (const up of [true, false]) {
-        for (const side of [mk.side, -mk.side]) {
-          const bx = side > 0 ? px + 12 : px - 12 - tw;
-          const by = up ? py - th - 14 : py + 14;
-          spots.push([Math.max(8, Math.min(v.cssW - tw - 8, bx)), Math.max(8, Math.min(v.cssH - v.capH - th - 4, by)), tw, th]);
-        }
+        for (const side of [mk.side, -mk.side]) spots.push([side > 0 ? px + 12 : px - 12 - tw, up ? py - th - 14 : py + 14, tw, th]);
       }
-      const target = spots.find((r) => !obstacles.some((o) => hits(r, o))) || spots[0];
-      obstacles.push(target);
+      const inside = (r) => r[0] >= 8 && r[0] + tw <= v.cssW - 8 && r[1] >= 8 && r[1] <= floor;
+      const free = (r) => !obstacles.some((o) => hits(r, o));
+      const fit = (r) => [Math.max(8, Math.min(v.cssW - tw - 8, r[0])), Math.max(8, Math.min(floor, r[1])), tw, th];
+      const target = spots.find((r) => inside(r) && free(r)) || spots.map(fit).find(free) || fit(spots[0]);
+      const ax = Math.max(target[0] + 8, Math.min(target[0] + tw - 8, px));
+      const ay = target[1] + th / 2 < py ? target[1] + th : target[1];
+      obstacles.push(target, [Math.min(px, ax) - 3, Math.min(py, ay), Math.abs(px - ax) + 6, Math.abs(py - ay)]);
       const prev = boxes.get(mk.id);
       const box = prev && k < 1
         ? [lerp(prev[0], target[0], k), lerp(prev[1], target[1], k), tw, th]
@@ -577,12 +578,19 @@ export function mountHeroSurface(canvas, opts = {}) {
       const [bx, by, tw] = mk.box;
       const [px, py] = mk.p;
       const up = by + th / 2 < py;
-      ctx.strokeStyle = rgba(mk.color, 0.7);
-      ctx.lineWidth = 1;
+      // Palo y remate: tenues si el punto queda detrás del relieve.
+      ctx.globalAlpha = show * mk.vis;
+      ctx.strokeStyle = rgba(mk.color, 0.85);
+      ctx.lineWidth = 1.25;
       ctx.beginPath();
-      ctx.moveTo(px, py + (up ? -6 : 6));
-      ctx.lineTo(Math.max(bx + 10, Math.min(bx + tw - 10, px)), up ? by + th : by);
+      ctx.moveTo(px, py);
+      ctx.lineTo(Math.max(bx + 8, Math.min(bx + tw - 8, px)), up ? by + th : by);
       ctx.stroke();
+      if (TIP) {
+        ctx.fillStyle = rgb(mk.color);
+        ctx.beginPath(); ctx.arc(px, py, TIP, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = show;
       ctx.fillStyle = rgb(mix(pal.bg, mk.color, pal.light ? 0.1 : 0.16));
       ctx.strokeStyle = rgb(mix(pal.bg, mk.color, 0.8));
       ctx.beginPath(); roundBox(bx + 0.5, by + 0.5, tw, th, 7); ctx.fill(); ctx.stroke();
