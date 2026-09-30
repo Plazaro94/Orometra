@@ -472,6 +472,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .run-files{font-family:var(--mono);color:var(--muted)}
 .run-files b{color:var(--muted-2);font-weight:400}
 .run-sep{color:var(--line)}
+@media (max-width:640px){.run-stamp{gap:4px 12px}.run-sep{display:none}}
 .run-holdout{color:var(--muted);font-weight:600}
 
 /* ---------------------------------------------------------------- content */
