@@ -463,21 +463,24 @@ export function mountHeroSurface(canvas, opts = {}) {
     }
 
     // Los 8 vecinos de cada punto (un paso en cada parámetro): verdes si aguantan, rosas si se
-    // hunden. Es la prueba del motor, a la vista. (Más claros que el relieve, que es de su color.)
-    const holdC = pal.light ? pal.ok : mix(pal.ok, WHITE, 0.55);
-    const fallC = pal.light ? pal.peak : mix(pal.peak, WHITE, 0.3);
+    // hunden. Es la prueba del motor, a la vista, pero en voz baja: puntitos de luz sin borde ni
+    // líneas, con un halo leve. Se descubren al mirar; no compiten con el relieve.
+    const holdC = pal.light ? pal.ok : mix(pal.ok, WHITE, 0.6);
+    const fallC = pal.light ? pal.peak : mix(pal.peak, WHITE, 0.45);
+    const core = small ? 1.3 : 1.5;
     for (const mk of markers) {
       for (const n of mk.near) {
         const p = project(n[0], n[1], n[2]);
-        const a = show * (1 - 0.85 * cover(n[0], n[1], n[2]));
-        const holds = n[2] >= mk.h * 0.85;
-        ctx.strokeStyle = rgba(mix(mk.color, pal.ink, 0.4), 0.5 * a);
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(mk.p[0], mk.p[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
-        ctx.fillStyle = rgba(holds ? holdC : fallC, a);
-        ctx.strokeStyle = rgba(pal.bg, a);
-        ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.arc(p[0], p[1], small ? 2.2 : 2.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        const a = show * (1 - 0.9 * cover(n[0], n[1], n[2]));
+        if (a < 0.02) continue;
+        const c = n[2] >= mk.h * 0.85 ? holdC : fallC;
+        const glow = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 5);
+        glow.addColorStop(0, rgba(c, (pal.light ? 0.18 : 0.28) * a));
+        glow.addColorStop(1, rgba(c, 0));
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = rgba(c, (pal.light ? 0.7 : 0.8) * a);
+        ctx.beginPath(); ctx.arc(p[0], p[1], core, 0, Math.PI * 2); ctx.fill();
       }
     }
 
