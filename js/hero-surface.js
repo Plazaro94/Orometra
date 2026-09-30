@@ -99,6 +99,17 @@ export function mountHeroSurface(canvas, opts = {}) {
     return { dpr, cssW, cssH };
   };
 
+  // roundRect no existe en navegadores algo antiguos (Safari < 16): mismo trazo a mano.
+  const roundBox = (x, y, w, h, r) => {
+    if (ctx.roundRect) { ctx.roundRect(x, y, w, h, r); return; }
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  };
+
   const fmt = (x) => x.toLocaleString(getLocale() === 'es' ? 'es-ES' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   function draw() {
@@ -128,8 +139,9 @@ export function mountHeroSurface(canvas, opts = {}) {
     const cx = cssW * 0.5;
     const HK = 0.46; // escala vertical de la altura
     const avail = cssH - 50 - 74; // hueco para la etiqueta de periodo y el pie
-    const scale = Math.min(cssW * 0.4, avail / 1.38);
-    const cy = 50 + 1.42 * HK * scale + 4;
+    const rise = 1.45 * HK + 0.33; // lo que sube el pico más alto sobre el centro (con el fondo del suelo)
+    const scale = Math.min(cssW * 0.4, avail / (rise + 0.44));
+    const cy = 50 + (avail - (rise + 0.44) * scale) / 2 + rise * scale;
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
     const project = (u, v, h) => {
@@ -294,7 +306,7 @@ export function mountHeroSurface(canvas, opts = {}) {
       ctx.strokeStyle = rgb(color);
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.roundRect(bx, by, tw, th, 6);
+      roundBox(bx, by, tw, th, 6);
       ctx.fill(); ctx.stroke();
       ctx.fillStyle = rgb(light ? mix(color, textC, 0.5) : mix(color, textC, 0.35));
       ctx.textBaseline = 'middle';
@@ -327,7 +339,7 @@ export function mountHeroSurface(canvas, opts = {}) {
     ctx.globalAlpha = show;
     ctx.fillStyle = rgb(mix(surfC, m > 0.5 ? okC : peakC, light ? 0.16 : 0.22));
     ctx.strokeStyle = rgb(m > 0.5 ? okC : peakC);
-    ctx.beginPath(); ctx.roundRect(px, py, pw, small ? 22 : 26, 13); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); roundBox(px, py, pw, small ? 22 : 26, 13); ctx.fill(); ctx.stroke();
     ctx.fillStyle = rgb(mix(m > 0.5 ? okC : peakC, textC, light ? 0.5 : 0.3));
     ctx.textAlign = 'left';
     ctx.fillText(pill, px + 11, py + (small ? 11.5 : 13.5));
@@ -375,7 +387,12 @@ export function mountHeroSurface(canvas, opts = {}) {
 
   const onPointerEnter = (e) => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') { hover = true; wake(); } };
   const onPointerLeave = (e) => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') { hover = false; wake(); } };
-  const onFocusIn = () => { hover = true; wake(); };
+  // Solo el foco de teclado: un toque o un clic también enfocan y dejarían el «periodo nuevo» fijo.
+  const onFocusIn = () => {
+    let visible = true;
+    try { visible = host.matches(':focus-visible'); } catch { /* selector no soportado */ }
+    if (visible) { hover = true; wake(); }
+  };
   const onFocusOut = () => { hover = false; wake(); };
   const onVisibility = () => { if (!document.hidden) wake(); };
 
@@ -396,6 +413,7 @@ export function mountHeroSurface(canvas, opts = {}) {
   const onPointerUp = (e) => {
     if (!dragging) return;
     dragging = false;
+    if (e.type === 'pointercancel') { wake(); return; }
     // Un toque sin arrastre (táctil) lleva un momento al periodo nuevo.
     if (!fineHover.matches && dragMoved < 6) {
       hover = true;
