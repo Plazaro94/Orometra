@@ -175,6 +175,10 @@ export function mountHeroSurface(canvas, opts = {}) {
   let glCanvas = document.createElement('canvas');
   glCanvas.className = 'lp-surface-gl';
   glCanvas.setAttribute('aria-hidden', 'true');
+  // La colocación va también aquí: con una styles.css antigua en caché (Pages la guarda unos
+  // minutos tras publicar), el lienzo nuevo no se descoloca ni tapa las etiquetas.
+  glCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none';
+  if (getComputedStyle(canvas).position === 'static') canvas.style.position = 'relative';
   canvas.parentNode.insertBefore(glCanvas, canvas);
   const narrow = () => canvas.getBoundingClientRect().width < 520;
   let gl = createTerrainGL(glCanvas, {
