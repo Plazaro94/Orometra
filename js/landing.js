@@ -81,6 +81,7 @@ if (hero) {
       axisA: t('lp.surface.axis.a'),
       axisB: t('lp.surface.axis.b'),
       axisZ: t('lp.surface.axis.z'),
+      neighbors: t('lp.surface.neighbors'),
     }),
   });
 }
