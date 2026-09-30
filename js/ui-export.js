@@ -110,10 +110,10 @@ export function doExport(kind, plateauIndex) {
         'Without forward, a deployment .set is not exported: the region was only measured in-sample. Export the refinement range, or re-audit with the forward file.',
       ));
     }
-    downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best));
+    downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best, state.searchSet));
   } else if (kind === 'refine') {
     if (!best) return api.showError(L('No hay ninguna meseta que refinar.', 'There is no plateau to refine.'));
-    downloadText(`orometra-M${best.rank}-refinamiento.set`, buildRefinementSetFile(a, best));
+    downloadText(`orometra-M${best.rank}-refinamiento.set`, buildRefinementSetFile(a, best, state.searchSet));
   } else if (kind === 'json') {
     downloadText(`orometra-informe-${stamp}.json`, JSON.stringify(buildReport(a, {
       source: state.source ? { is: state.source.is, oos: state.source.oos || null, at: state.source.at } : null,

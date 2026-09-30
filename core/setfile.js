@@ -43,6 +43,7 @@ export function parseSetText(text) {
       params.push({
         name,
         value,
+        raw: String(parts[0]).trim(),
         start,
         step,
         stop,
@@ -53,12 +54,65 @@ export function parseSetText(text) {
       params.push({
         name,
         value: parseSetToken(parts[0]),
+        raw: String(parts[0]).trim(),
         hasRange: false,
         enabled: false,
       });
     }
   }
   return { params };
+}
+
+/**
+ * El export de optimización solo trae los parámetros que se OPTIMIZARON (en una
+ * optimización real: 8 de 78), así que un .set hecho solo con él deja sin tocar el resto
+ * al cargarlo en MT5. El .set con el que se lanzó la optimización sí los trae todos, con el
+ * valor que tenían en cada pasada: con él se completa.
+ *
+ * @param {string[]} names   parámetros optimizados (los del export)
+ * @param {string[]} texts   su valor elegido, ya en formato MT5
+ * @param {{params:Array}|null} baseSet  el .set de la optimización, si se ha soltado
+ * @returns {{complete:boolean, entries:Array<{name:string,text:string,source:'optimized'|'base'}>, optimized:number, fromSet:number}}
+ */
+export function mergeSetValues(names, texts, baseSet) {
+  const chosen = new Map(names.map((n, j) => [n, texts[j]]));
+  const base = baseSet && Array.isArray(baseSet.params) ? baseSet.params : [];
+  if (!base.length) {
+    return { complete: false, entries: names.map((n, j) => ({ name: n, text: texts[j], source: 'optimized' })), optimized: names.length, fromSet: 0 };
+  }
+  const entries = [];
+  const used = new Set();
+  for (const p of base) {
+    if (used.has(p.name)) continue;
+    used.add(p.name);
+    if (chosen.has(p.name)) entries.push({ name: p.name, text: chosen.get(p.name), source: 'optimized' });
+    else entries.push({ name: p.name, text: p.raw !== undefined && p.raw !== '' ? p.raw : String(p.value), source: 'base' });
+  }
+  // Un parámetro del export que el .set no menciona (p. ej. renombrado) se conserva.
+  for (const n of names) if (!used.has(n)) entries.push({ name: n, text: chosen.get(n), source: 'optimized' });
+  const fromSet = entries.filter((e) => e.source === 'base').length;
+  return { complete: true, entries, optimized: entries.length - fromSet, fromSet };
+}
+
+/**
+ * Parámetros que NO se optimizaron y en los que el backtest del periodo no visto difiere
+ * del .set de la optimización: otra gestión del riesgo o del lote invalida la comparación
+ * aunque los parámetros optimizados coincidan.
+ */
+export function compareOtherParams(reportParams, baseSet, optimizedNames) {
+  const out = [];
+  if (!baseSet || !Array.isArray(baseSet.params)) return out;
+  const skip = new Set(optimizedNames || []);
+  for (const p of baseSet.params) {
+    if (skip.has(p.name) || !(p.name in reportParams)) continue;
+    const a = String(reportParams[p.name]).trim().toLowerCase();
+    const b = String(p.raw !== undefined && p.raw !== '' ? p.raw : p.value).trim().toLowerCase();
+    const na = toNumber(a);
+    const nb = toNumber(b);
+    const equal = Number.isFinite(na) && Number.isFinite(nb) ? Math.abs(na - nb) <= 1e-9 * Math.max(1, Math.abs(na)) : a === b;
+    if (!equal) out.push({ name: p.name, report: reportParams[p.name], set: p.raw !== undefined && p.raw !== '' ? p.raw : p.value });
+  }
+  return out;
 }
 
 /** Niveles numericos generados por inicio/paso/fin (como MT5 en rejilla). */

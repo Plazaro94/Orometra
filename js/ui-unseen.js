@@ -4,6 +4,7 @@ import { track } from './track.js';
 import { CODE } from '../core/errors.js';
 import { evaluateUnseen } from '../core/unseen.js';
 import { parseBacktestReport, parseBacktestReportGrid, compareParams } from '../core/report.js';
+import { compareOtherParams } from '../core/setfile.js';
 import { parseXmlSpreadsheet } from '../core/parse.js';
 import { auditUnseenTrades } from '../core/matrix/from-deals.js';
 import { L, localeTag } from './i18n.js';
@@ -167,6 +168,19 @@ export function renderReportCard(a, plateau) {
       )}</div>`
       : '';
 
+  // Parámetros que no se optimizaron: si el backtest usa otros valores que tu .set de la
+  // optimización (lote, riesgo, filtros…), lo que valides no es lo que optimizaste.
+  const others = compareOtherParams(rep.params, state.searchSet, a.meta.paramNames);
+  const othersWarn = others.length
+    ? `<div class="inline-warn report-mismatch">
+        <strong>${L('Hay parámetros que no optimizaste y que difieren de los de tu .set de la optimización.', 'Some parameters you did not optimize differ from those in your optimization .set.')}</strong>
+        ${others.slice(0, 8).map((d) => `<code>${esc(d.name)}</code>: ${L(
+          `el informe trae <b>${esc(String(d.report))}</b> y tu .set <b>${esc(String(d.set))}</b>`,
+          `the report has <b>${esc(String(d.report))}</b> and your .set has <b>${esc(String(d.set))}</b>`,
+        )}`).join('; ')}${others.length > 8 ? L(` y ${others.length - 8} más`, ` and ${others.length - 8} more`) : ''}.
+        ${L('Algunos serán inofensivos (número mágico, comentario), pero un lote o un riesgo distinto cambia el resultado: comprueba que el backtest usa la misma configuración que la optimización.', 'Some will be harmless (magic number, comment), but a different lot or risk changes the result: check that the backtest uses the same setup as the optimization.')}
+      </div>`
+    : '';
   return `<section class="panel">
     <div class="panel-head compact">
       <div><div class="panel-kicker">${L('Informe cargado', 'Report loaded')}</div><h2>${esc(rep.meta.expert || rep.meta.file)}</h2></div>
@@ -179,6 +193,7 @@ export function renderReportCard(a, plateau) {
       <div><span>${L('Beneficio neto', 'Net profit')}</span><strong>${num(rep.metrics.profit, 2)}</strong></div>
     </div>
     ${mismatch}
+    ${othersWarn}
   </section>`;
 }
 

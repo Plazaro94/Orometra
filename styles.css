@@ -423,6 +423,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 }
 .preflight-head strong{font-size:14px;color:var(--text-hi);letter-spacing:-.015em}
 .preflight-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.set-note{margin:8px 0 0;font-size:12px;line-height:1.4;color:var(--muted-3)}
 .noscript-note{margin:24px;padding:14px 16px;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn-text);border-radius:8px}
 .preflight-warn{display:block;margin-top:4px;color:var(--warn-text)}
 .preflight-card{
