@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-30 — Portada: superficie 3D renovada
+
+- Relieve sombreado con curvas de nivel reales, más grande y con etiquetas de ejes. Al pasar
+  el ratón (o solo, en táctil) muestra el mismo resultado en un periodo nuevo: el pico de
+  MT5 n.º 1 (4,71) cae y la meseta de Orometra (2,18) aguanta. Se gira arrastrando (o con
+  ← →). Las cifras enlazan con la tabla de la portada (`tests/hero-surface.test.js`).
+
 ## 2026-09-29 — Banco de pruebas, auditorías 2 y 3, verificación con datos reales
 
 - **Motor** (medido en `bench/`, criterios en `bench/PREREGISTRO.md`): los porcentajes que

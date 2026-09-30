@@ -70,7 +70,20 @@ fineHover.addEventListener('change', syncSurfaceHint);
 const mark = $('#brandMark');
 if (mark) mountBrandMark(mark);
 const hero = $('#heroSurface');
-if (hero) mountHeroSurface(hero);
+if (hero) {
+  mountHeroSurface(hero, {
+    locale: () => getLocale(),
+    labels: () => ({
+      mt5: t('lp.surface.mt5'),
+      pick: t('lp.surface.pick'),
+      periodA: t('lp.surface.period.a'),
+      periodB: t('lp.surface.period.b'),
+      axisA: t('lp.surface.axis.a'),
+      axisB: t('lp.surface.axis.b'),
+      axisZ: t('lp.surface.axis.z'),
+    }),
+  });
+}
 
 const live = $('#surfaceLive');
 const host = $('#heroSurfaceHost');
