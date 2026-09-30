@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-30 — Informe: lectura más rápida
+
+- La tarjeta de arriba del veredicto lleva ya los valores recomendados (antes había que bajar
+  dos pantallas); se quitan de «Configuración ganadora» para no repetirlos.
+- «Qué demuestran estos datos» en lenguaje llano («5018 combinaciones parecidas», «probaste
+  todas las combinaciones»); la robustez se muestra sobre 100.
+- Sin puntos en contra (o a favor) ya no se reserva una columna vacía.
+
 ## 2026-09-30 — Portada: superficie 3D renovada
 
 - Relieve sombreado con curvas de nivel reales, más grande y con etiquetas de ejes. Al pasar

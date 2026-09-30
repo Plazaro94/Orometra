@@ -207,7 +207,10 @@ export function renderVerdict(a) {
     ? `<div class="verdict-fact">
         <span class="verdict-fact-label">${esc(t('verdict.pick'))}</span>
         <strong class="verdict-fact-value mono">${L('Pasada', 'Pass')} ${esc(best.record.id)}</strong>
-        <span class="verdict-fact-note">M${best.rank} · ${int(best.size)} ${L('configs', 'configs')} · ${num(best.robust, 0)} ${L('robustez', 'robustness')}</span>
+        <span class="verdict-fact-note">${int(best.size)} ${L('combinaciones parecidas', 'similar combinations')} · ${L('robustez', 'robustness')} ${num(best.robust, 0)}/100</span>
+        <div class="t3-param-chips verdict-params" aria-label="${esc(L('Valores recomendados', 'Recommended values'))}">
+          ${a.meta.paramNames.map((n, j) => `<span>${esc(n)} <b>${paramHtml(best.record.params[j])}</b></span>`).join('')}
+        </div>
         ${pickActions}
         ${a.meta.hasForward ? `<span class="verdict-fact-note verdict-fact-note-full set-note">${esc(setCoverageNote(a, best, state.searchSet))}</span>` : ''}
       </div>`
@@ -307,9 +310,9 @@ export function renderVerdict(a) {
 
 export function samplingLabel(sampling) {
   return {
-    grid: L('rejilla completa', 'full grid'),
-    partial: L('cobertura parcial', 'partial coverage'),
-    sparse: L('muestreo disperso / genético', 'sparse / genetic sampling'),
+    grid: L('probaste todas las combinaciones', 'you tested every combination'),
+    partial: L('probaste una parte de las combinaciones', 'you tested part of the combinations'),
+    sparse: L('probaste una muestra (optimización genética)', 'you tested a sample (genetic optimization)'),
   }[sampling] || sampling;
 }
 
@@ -340,8 +343,6 @@ export function renderEvidenceSheet(a, best) {
       ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)} %`,
       ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)} %`,
     );
-  } else if (!sc || !sc.present) {
-    covTxt += L(' · sin .set', ' · no .set');
   }
 
   const covNote = sc && sc.usable && Number.isFinite(sc.coverageSearch)
@@ -394,7 +395,7 @@ export function renderEvidenceSheet(a, best) {
   const holdoutNote = hold.note;
 
   const plateauVal = best
-    ? L(`Encontrada · M${best.rank} · ${int(best.size)} configs`, `Found · M${best.rank} · ${int(best.size)} configs`)
+    ? L(`Encontrada · ${int(best.size)} combinaciones parecidas`, `Found · ${int(best.size)} similar combinations`)
     : L('No encontrada', 'Not found');
 
   const rows = [
@@ -450,6 +451,13 @@ export function renderWhyGrade(a, highlights) {
       : `<li class="why-empty">${L('Nada destacado', 'Nothing notable')}</li>`}
     </ul>
   </div>`;
+  // Sin puntos en contra (o a favor) no se reserva media pantalla vacía: una línea basta.
+  const emptyLine = (title) => `<p class="why-none"><strong>${esc(title)}:</strong> ${L('nada destacado', 'nothing notable')}.</p>`;
+  const grid = !cons.length
+    ? `${col(L('A favor', 'In favor'), pros, 'why-pros')}${emptyLine(L('En contra / límites', 'Against / limits'))}`
+    : !pros.length
+      ? `${col(L('En contra / límites', 'Against / limits'), cons, 'why-cons')}${emptyLine(L('A favor', 'In favor'))}`
+      : `${col(L('A favor', 'In favor'), pros, 'why-pros')}${col(L('En contra / límites', 'Against / limits'), cons, 'why-cons')}`;
   return `<section class="panel panel-why">
     <div class="panel-head compact">
       <div>
@@ -457,9 +465,8 @@ export function renderWhyGrade(a, highlights) {
         <h2>${L('Por qué este grado de evidencia', 'Why this evidence grade')}</h2>
       </div>
     </div>
-    <div class="why-grid">
-      ${col(L('A favor', 'In favor'), pros, 'why-pros')}
-      ${col(L('En contra / límites', 'Against / limits'), cons, 'why-cons')}
+    <div class="why-grid${pros.length && cons.length ? '' : ' why-grid-one'}">
+      ${grid}
     </div>
   </section>`;
 }
@@ -585,7 +592,7 @@ export function renderTop3(a) {
         <div class="t3-pass">${L('Pasada', 'Pass')} ${esc(featured.record.id)}</div>
         <div class="t3-flags">${flagBadges(featured)}</div>
       </div>
-      <div class="t3-score">${num(featured.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
+      <div class="t3-score">${num(featured.robust, 0)}<small>${L('de 100 · robustez', 'of 100 · robustness')}</small></div>
     </div>
     <div class="t3-featured-metrics">
       <div><span>${L('Meseta', 'Plateau')}</span><strong>M${featured.rank} · ${int(featured.size)}</strong></div>
@@ -595,9 +602,6 @@ export function renderTop3(a) {
       <div><span>${L('Calidad IS', 'IS quality')}</span><strong>${num(featured.record.qualityIs, 2)}</strong></div>
       ${hasF ? `<div><span>${L('Calidad FW', 'FW quality')}</span><strong>${num(featured.record.qualityOos, 2)}</strong></div>` : ''}
     </div>
-    ${alts.length ? '' : `<div class="t3-param-chips">
-      ${names.map((n, j) => `<span>${esc(n)} <b>${paramHtml(featured.record.params[j])}</b></span>`).join('')}
-    </div>`}
     <div class="t3-featured-actions">
       <button class="primary-btn t3-btn-inline" data-export="set" data-plateau-index="${featured.rank - 1}">${L('Descargar .set', 'Download .set')}</button>
       <button class="ghost-btn t3-btn-inline" data-copy="${featured.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
@@ -610,7 +614,7 @@ export function renderTop3(a) {
         ${alts.map((p, i) => `<article class="t3-alt">
           <div class="t3-rank">${L(`Alternativa ${i + 1}`, `Alternative ${i + 1}`)}</div>
           <div class="t3-pass">${L('Pasada', 'Pass')} ${esc(p.record.id)}</div>
-          <div class="t3-score t3-score-sm">${num(p.robust, 0)}<small>${L('robustez', 'robustness')}</small></div>
+          <div class="t3-score t3-score-sm">${num(p.robust, 0)}<small>${L('de 100 · robustez', 'of 100 · robustness')}</small></div>
           <div class="t3-flags">${flagBadges(p)}</div>
           <p class="t3-alt-meta">M${p.rank} · ${int(p.size)} ${L('configs', 'configs')} · ${int(p.stability.support)} ${L('vecinos', 'neighbors')}</p>
           <div class="t3-alt-actions">

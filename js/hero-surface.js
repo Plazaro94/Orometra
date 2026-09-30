@@ -143,7 +143,10 @@ export function mountHeroSurface(canvas, opts = {}) {
 
     const cx = cssW * 0.5;
     const HK = 0.46; // escala vertical de la altura
-    const avail = cssH - 50 - 74; // hueco para la etiqueta de periodo y el pie
+    // El pie (textos de abajo) se superpone al lienzo y su alto cambia con el ancho y el idioma.
+    const cap = host.querySelector('.lp-surface-caption');
+    const capH = cap ? cap.offsetHeight + 8 : 74;
+    const avail = cssH - 50 - capH; // hueco para la etiqueta de periodo y el pie
     const rise = 1.45 * HK + 0.33; // lo que sube el pico más alto sobre el centro (con el fondo del suelo)
     const scale = Math.min(cssW * 0.4, avail / (rise + 0.44));
     const cy = 50 + (avail - (rise + 0.44) * scale) / 2 + rise * scale;
@@ -365,7 +368,7 @@ export function mountHeroSurface(canvas, opts = {}) {
       const p = project(u, v, 0);
       ctx.textAlign = align;
       const half = ctx.measureText(text).width / 2;
-      ctx.fillText(text, Math.max(half + 8, Math.min(cssW - half - 8, p[0])), p[1] + 12);
+      ctx.fillText(text, Math.max(half + 8, Math.min(cssW - half - 8, p[0])), Math.min(p[1] + 12, cssH - capH - 6));
     };
     axis(0, 1.08, `${labels.axisA || 'Parameter A'} × ${labels.axisB || 'Parameter B'}`, 'center');
     ctx.textAlign = 'left';
