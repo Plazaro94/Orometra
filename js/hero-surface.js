@@ -1,23 +1,26 @@
 // Superficie hero: la tesis de Orometra a escala de producto.
-// Relieve con luz, sombras y curvas de nivel. Al pasar el ratón (o solo, en táctil) se ve el MISMO
-// resultado en un periodo de mercado nuevo: el pico que MT5 pone primero se desmorona (queda su
-// silueta fantasma) y la meseta que recomienda Orometra aguanta. Arrastrar gira la superficie.
+// Relieve con luz, sombras y curvas de nivel. Se ve el MISMO resultado en un periodo de mercado
+// nuevo: el pico que MT5 pone primero se desmorona (queda su silueta fantasma) y la meseta que
+// recomienda Orometra aguanta. Alrededor de cada punto, sus 8 vecinos de la rejilla de pasadas:
+// los de la n.º 1 se hunden, los de la meseta no. Arrastrar gira la superficie.
+//
+// Sin tocar nada lo cuenta solo una vez (en táctil, tres ciclos) y luego se queda quieto; al
+// pasar el ratón o tocar, se ve el periodo nuevo.
 //
 // El relieve se dibuja en WebGL (hero-surface-gl.js) en un lienzo por debajo; sin WebGL, con un
 // dibujo 2D más sencillo del mismo modelo (hero-terrain.js). Las etiquetas van siempre en el
 // lienzo 2D de encima, con la tipografía de la web.
 //
-// Las dos cifras de los marcadores (4.71 y 2.18) son las de la tabla de ejemplo de la portada
-// (sección del problema); tests/hero-surface.test.js comprueba que coinciden.
+// Las alturas son proporcionales a las cifras, y las cifras son las de la tabla de ejemplo de la
+// portada (sección del problema); tests/hero-surface.test.js comprueba ambas cosas.
 
-import { MESA_C, PEAK_A, RIM_Q, height, peakA, terrain, smooth } from './hero-terrain.js';
+import {
+  MESA_C, PEAK_A, RIM_Q, RESULT_H, MT5_RESULT, PICK_RESULT, MT5_AFTER, PICK_AFTER,
+  height, peakA, terrain, neighbors, smooth,
+} from './hero-terrain.js';
 import { createTerrainGL } from './hero-surface-gl.js';
 
-export { height };
-export const MT5_RESULT = 4.71;
-export const PICK_RESULT = 2.18;
-const MT5_AFTER = 1.30;
-const PICK_AFTER = 2.05;
+export { height, MT5_RESULT, PICK_RESULT };
 
 const SPIN = 0.00022;
 const YS = 0.5; // unidades de mundo por unidad de altura
@@ -32,6 +35,15 @@ const LIGHT_VIEW = (() => {
 })();
 // Calidad del WebGL: si los fotogramas van lentos se baja un escalón (resolución y sombras).
 const TIERS = [{ dpr: 1.25, steps: 0 }, { dpr: 1.6, steps: 10 }, { dpr: 2, steps: 16 }];
+// Un fotograma es lento a partir de 40 ms (menos de 25 fps). No vale un umbral más bajo: con el
+// ahorro de batería de iPhone y Android el navegador limita a 30 fps (33 ms) aunque sobre GPU.
+const SLOW_MS = 40;
+// Lo que cuenta sola: en escritorio, una vez (espera, periodo nuevo, vuelta); en táctil, tres
+// ciclos. Después se queda quieta, sin gastar batería, hasta que se toque.
+const DEMO_WAIT = 1200;
+const DEMO_HOLD = 3200;
+const CYCLE = 6400;
+const TOUCH_CYCLES = 3;
 
 const SANS = '"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif';
 const MONO = '"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace';
@@ -60,6 +72,8 @@ const mix = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b
 const WHITE = [255, 255, 255];
 const BLACK = [0, 0, 0];
 
+// Color con significado: el terreno es neutro; el verde azulado es solo de la meseta y el rosa,
+// de los picos.
 function readPalette(root, light) {
   const bg = parseColor(cssColor(root, '--surface', light ? '#ffffff' : '#0d1322'), light ? [255, 255, 255] : [13, 19, 34]);
   const ok = parseColor(cssColor(root, '--ok', light ? '#0b6a73' : '#3ed7d0'), light ? [11, 106, 115] : [62, 215, 208]);
@@ -69,8 +83,10 @@ function readPalette(root, light) {
   if (light) {
     return {
       light, bg, ok, peak, text, muted,
-      low: mix(bg, ok, 0.16),
-      high: mix(bg, ok, 0.46),
+      gndLo: mix(bg, muted, 0.1),
+      gndHi: mix(bg, muted, 0.28),
+      mesaLo: mix(bg, ok, 0.3),
+      mesaHi: mix(bg, ok, 0.5),
       peakFill: mix(bg, peak, 0.62),
       bump: mix(bg, muted, 0.3),
       ink: text,
@@ -81,8 +97,10 @@ function readPalette(root, light) {
   }
   return {
     light, bg, ok, peak, text, muted,
-    low: mix(bg, ok, 0.12),
-    high: mix(bg, ok, 0.62),
+    gndLo: mix(bg, [120, 138, 168], 0.16),
+    gndHi: mix(bg, [150, 168, 196], 0.42),
+    mesaLo: mix(bg, ok, 0.38),
+    mesaHi: mix(bg, ok, 0.66),
     peakFill: mix(bg, peak, 0.82),
     bump: mix(bg, muted, 0.42),
     ink: text,
@@ -109,7 +127,7 @@ function makeView(cssW, cssH, capH, yaw, pitch, rise) {
     return [xr * k, -yv * k, CAM_D - zv];
   };
   let x0 = Infinity; let x1 = -Infinity; let y0 = Infinity; let y1 = -Infinity;
-  for (const [R, y] of [[1.26, 0], [0.74, 1.42 * YS]]) {
+  for (const [R, y] of [[1.26, 0], [0.74, 1.5 * YS]]) {
     for (let i = 0; i < 64; i++) {
       const a = (i / 64) * Math.PI * 2;
       const p = raw(R * Math.cos(a), R * Math.sin(a), y);
@@ -136,7 +154,7 @@ function makeView(cssW, cssH, capH, yaw, pitch, rise) {
     return [xv * c + zr * s, y, -xv * s + zr * c];
   };
   return {
-    c, s, cp, sp, S, ox, oy, D: CAM_D, YS, cssW, cssH, capH, small, project,
+    c, s, cp, sp, S, ox, oy, D: CAM_D, YS, cssW, cssH, capH, small, rise, project,
     cam: toWorld(0, 0, CAM_D),
     light: toWorld(...LIGHT_VIEW),
   };
@@ -154,6 +172,7 @@ export function mountHeroSurface(canvas, opts = {}) {
   const getLocale = typeof opts.locale === 'function' ? opts.locale : () => opts.locale || 'en';
 
   let hover = false;
+  let touched = false; // en cuanto alguien interactúa, deja de contarlo solo
   let collapse = 0;
   let angle = -0.78;
   let raf = 0;
@@ -170,29 +189,43 @@ export function mountHeroSurface(canvas, opts = {}) {
   let palette = null;
   let tier = 2;
   let slow = 0;
+  // Posición de cada caja de cifras: se desliza hacia su sitio en vez de saltar.
+  const boxes = new Map();
+  let boxesMoving = false;
 
-  // El relieve en WebGL, en un lienzo por debajo del de las etiquetas.
-  let glCanvas = document.createElement('canvas');
-  glCanvas.className = 'lp-surface-gl';
-  glCanvas.setAttribute('aria-hidden', 'true');
-  // La colocación va también aquí: con una styles.css antigua en caché (Pages la guarda unos
-  // minutos tras publicar), el lienzo nuevo no se descoloca ni tapa las etiquetas.
-  glCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none';
-  if (getComputedStyle(canvas).position === 'static') canvas.style.position = 'relative';
-  canvas.parentNode.insertBefore(glCanvas, canvas);
+  // El WebGL se prepara después de pintar la página, y el relieve no sube hasta que está listo
+  // (o hasta que se sabe que no hay WebGL y toca el dibujo 2D).
+  let gl = null;
+  let glCanvas = null;
+  let ready = false;
   const narrow = () => canvas.getBoundingClientRect().width < 520;
-  let gl = createTerrainGL(glCanvas, {
-    detail: narrow() ? 168 : 224,
-    onLost: () => {
-      gl = null;
-      if (glCanvas) glCanvas.remove();
-      glCanvas = null;
-      draw();
-    },
-  });
-  if (!gl) {
-    glCanvas.remove();
+  function dropGL() {
+    gl = null;
+    if (glCanvas) glCanvas.remove();
     glCanvas = null;
+    ready = true;
+  }
+  function initGL() {
+    glCanvas = document.createElement('canvas');
+    glCanvas.className = 'lp-surface-gl';
+    glCanvas.setAttribute('aria-hidden', 'true');
+    // La colocación va también aquí: con una styles.css antigua en caché (Pages la guarda unos
+    // minutos tras publicar), el lienzo nuevo no se descoloca ni tapa las etiquetas.
+    glCanvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none';
+    if (getComputedStyle(canvas).position === 'static') canvas.style.position = 'relative';
+    canvas.parentNode.insertBefore(glCanvas, canvas);
+    gl = createTerrainGL(glCanvas, {
+      detail: narrow() ? 168 : 224,
+      onLost: () => { dropGL(); draw(); },
+    });
+    if (!gl) dropGL();
+    checkGL();
+  }
+  function checkGL() {
+    if (!gl || ready) return;
+    const st = gl.status();
+    if (st === 'ready') ready = true;
+    else if (st === 'failed') { gl.dispose(); dropGL(); }
   }
 
   const size = () => {
@@ -220,7 +253,14 @@ export function mountHeroSurface(canvas, opts = {}) {
     ctx.closePath();
   };
 
-  const fmt = (x) => x.toLocaleString(getLocale() === 'es' ? 'es-ES' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const locTag = () => (getLocale() === 'es' ? 'es-ES' : 'en-US');
+  const fmt = (x) => x.toLocaleString(locTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Pérdida media de los vecinos, con signo menos tipográfico («−62 %»; «0 %» si no pierden).
+  const fmtDrop = (drop) => {
+    const pct = Math.round(drop * 100);
+    return new Intl.NumberFormat(locTag(), { style: 'percent', maximumFractionDigits: 0 })
+      .format(pct === 0 ? 0 : -pct / 100).replace('-', '−');
+  };
 
   // Sin WebGL: el mismo relieve con cuadros ordenados de atrás adelante.
   function paint2D(v, pal, m, show, still) {
@@ -281,6 +321,7 @@ export function mountHeroSurface(canvas, opts = {}) {
     };
 
     const lx = -0.62; const ly = -0.78;
+    const iso = 0.25 * RESULT_H;
     ctx.lineCap = 'round';
     for (const [i, j] of order) {
       const a = i * N + j; const b = (i + 1) * N + j; const c = (i + 1) * N + j + 1; const d = i * N + j + 1;
@@ -293,7 +334,8 @@ export function mountHeroSurface(canvas, opts = {}) {
       const shade = Math.max(-1, Math.min(1, -(gx * lx + gy * ly) * 0.5));
       const pink = smooth(0.04, 0.3, (PK[a] + PK[c]) / 2);
       const bump = smooth(0.03, 0.16, (BP[a] + BP[c]) / 2);
-      let col = mix(pal.low, pal.high, smooth(0, 0.75, h));
+      const mesa = 1 - smooth(RIM_Q, RIM_Q * 2.4, (Q[a] + Q[c]) / 2);
+      let col = mix(mix(pal.gndLo, pal.gndHi, smooth(0, 0.5, h)), mix(pal.mesaLo, pal.mesaHi, smooth(0.2, 0.7, h)), mesa);
       col = mix(col, pal.bump, bump);
       col = mix(col, pal.peakFill, pink);
       col = mix(pal.bg, pal.light ? mix(col, BLACK, Math.max(0, -shade) * 0.25) : mix(col, WHITE, Math.max(0, shade) * 0.18), smooth(0.004, 0.045, h) * (0.75 + 0.25 * shade));
@@ -310,7 +352,7 @@ export function mountHeroSurface(canvas, opts = {}) {
       const hi = Math.max(H[a], H[b], H[c], H[d]);
       // En la cima de la meseta no hay curvas: la única línea es su contorno.
       const onTop = Math.min(Q[a], Q[c]) < RIM_Q + 0.12;
-      for (let lvl = 0.07; lvl < hi && !onTop; lvl += 0.07) {
+      for (let lvl = iso; lvl < hi && !onTop; lvl += iso) {
         if (lvl < lo) continue;
         ctx.beginPath();
         tri(H, a, b, c, lvl);
@@ -333,14 +375,32 @@ export function mountHeroSurface(canvas, opts = {}) {
     ctx.stroke();
   }
 
-  // Etiquetas: silueta fantasma del pico caído, marcadores, ejes y el periodo.
-  function annotate(v, pal, m, show) {
+  // Etiquetas: silueta fantasma del pico caído, vecinos, marcadores, escala, ejes y el periodo.
+  // k: cuánto se acercan las cajas a su sitio en este fotograma (1 = directamente).
+  function annotate(v, pal, m, show, k) {
     const labels = getLabels();
     const small = v.small;
     const { project } = v;
     const textC = pal.text;
     const obstacles = [];
+    const hits = (r, o) => r[0] < o[0] + o[2] && r[0] + r[2] > o[0] && r[1] < o[1] + o[3] && r[1] + r[3] > o[1];
     ctx.textBaseline = 'middle';
+
+    // Cuánto tapa el relieve un punto: se recorre el rayo hacia la cámara y se mide lo que más
+    // se mete bajo el terreno (suave, para que no parpadee al girar).
+    const [camX, camY, camZ] = v.cam;
+    const cover = (u, w, h) => {
+      const y0 = h * YS * v.rise;
+      let pen = 0;
+      for (let i = 1; i <= 48; i++) {
+        const t = (i / 48) * 0.6;
+        const x = u + (camX - u) * t;
+        const z = w + (camZ - w) * t;
+        if (x * x + z * z > 1.1) break;
+        pen = Math.max(pen, height(x, z, m) * YS * v.rise - (y0 + (camY - y0) * t));
+      }
+      return smooth(0, 0.03, pen);
+    };
 
     // Periodo (arriba a la izquierda) y eje vertical.
     const pill = m > 0.5 ? (labels.periodB || 'New period') : (labels.periodA || 'Optimised period');
@@ -362,6 +422,7 @@ export function mountHeroSurface(canvas, opts = {}) {
     const z = `↑ ${labels.axisZ || 'Result'}`;
     ctx.fillText(z, 16, 12 + ph + 14);
     obstacles.push([14, 12 + ph + 5, ctx.measureText(z).width + 6, 18]);
+    ctx.globalAlpha = 1;
 
     const ease = m * m * (3 - 2 * m);
 
@@ -370,12 +431,12 @@ export function mountHeroSurface(canvas, opts = {}) {
     if (ghost > 0.01) {
       const tu = v.c; const tv = -v.s; // horizontal en pantalla
       ctx.beginPath();
-      for (let k = -30; k <= 30; k++) {
-        const sd = (k / 30) * 0.3;
+      for (let i = -30; i <= 30; i++) {
+        const sd = (i / 30) * 0.3;
         const u = PEAK_A[0] + tu * sd;
         const w = PEAK_A[1] + tv * sd;
         const p = project(u, w, height(u, w, m) - peakA(u, w, m) + peakA(u, w, 0));
-        if (k === -30) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+        if (i === -30) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
       }
       ctx.setLineDash([3, 4]);
       ctx.strokeStyle = rgba(pal.peak, 0.8 * ghost);
@@ -385,39 +446,39 @@ export function mountHeroSurface(canvas, opts = {}) {
     }
 
     const markers = [
-      { at: MESA_C, val: lerp(PICK_RESULT, PICK_AFTER, ease), color: pal.ok, tag: labels.pick || 'Orometra', side: -1 },
-      { at: PEAK_A, val: lerp(MT5_RESULT, MT5_AFTER, ease), color: pal.peak, tag: labels.mt5 || 'MT5 #1', side: 1 },
+      { id: 'pick', at: MESA_C, val: lerp(PICK_RESULT, PICK_AFTER, ease), color: pal.ok, tag: labels.pick || 'Orometra', side: -1 },
+      { id: 'mt5', at: PEAK_A, val: lerp(MT5_RESULT, MT5_AFTER, ease), color: pal.peak, tag: labels.mt5 || 'MT5 #1', side: 1 },
     ];
-    // Cuánto tapa el relieve un punto: se recorre el rayo hacia la cámara y se mide lo que más
-    // se mete bajo el terreno (suave, para que no parpadee al girar).
-    const [camX, camY, camZ] = v.cam;
-    const cover = (u, w, h) => {
-      const y0 = h * YS * v.rise;
-      let pen = 0;
-      for (let k = 1; k <= 48; k++) {
-        const t = (k / 48) * 0.6;
-        const x = u + (camX - u) * t;
-        const z = w + (camZ - w) * t;
-        if (x * x + z * z > 1.1) break;
-        pen = Math.max(pen, height(x, z, m) * YS * v.rise - (y0 + (camY - y0) * t));
-      }
-      return smooth(0, 0.03, pen);
-    };
     for (const mk of markers) {
-      const h = height(mk.at[0], mk.at[1], m);
-      mk.p = project(mk.at[0], mk.at[1], h);
-      mk.f = project(mk.at[0], mk.at[1], 0);
-      mk.vis = 1 - 0.7 * cover(mk.at[0], mk.at[1], h);
+      mk.h = height(mk.at[0], mk.at[1], m);
+      mk.p = project(mk.at[0], mk.at[1], mk.h);
+      mk.vis = 1 - 0.7 * cover(mk.at[0], mk.at[1], mk.h);
+      mk.near = neighbors(mk.at, m);
+      mk.drop = 1 - mk.near.reduce((sum, n) => sum + n[2], 0) / mk.near.length / mk.h;
     }
 
-    // Tallos y puntos (tenues si quedan detrás del relieve).
+    // Los 8 vecinos de cada punto (un paso en cada parámetro): verdes si aguantan, rosas si se
+    // hunden. Es la prueba del motor, a la vista. (Más claros que el relieve, que es de su color.)
+    const holdC = pal.light ? pal.ok : mix(pal.ok, WHITE, 0.55);
+    const fallC = pal.light ? pal.peak : mix(pal.peak, WHITE, 0.3);
+    for (const mk of markers) {
+      for (const n of mk.near) {
+        const p = project(n[0], n[1], n[2]);
+        const a = show * (1 - 0.85 * cover(n[0], n[1], n[2]));
+        const holds = n[2] >= mk.h * 0.85;
+        ctx.strokeStyle = rgba(mix(mk.color, pal.ink, 0.4), 0.5 * a);
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(mk.p[0], mk.p[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
+        ctx.fillStyle = rgba(holds ? holdC : fallC, a);
+        ctx.strokeStyle = rgba(pal.bg, a);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(p[0], p[1], small ? 2.2 : 2.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      }
+    }
+
+    // Puntos (tenues si quedan detrás del relieve).
     for (const mk of markers) {
       ctx.globalAlpha = show * mk.vis;
-      ctx.strokeStyle = rgba(mk.color, 0.75);
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 3]);
-      ctx.beginPath(); ctx.moveTo(mk.f[0], mk.f[1]); ctx.lineTo(mk.p[0], mk.p[1]); ctx.stroke();
-      ctx.setLineDash([]);
       ctx.fillStyle = rgba(mk.color, pal.light ? 0.16 : 0.22);
       ctx.beginPath(); ctx.arc(mk.p[0], mk.p[1], 9, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = rgb(mk.color);
@@ -425,32 +486,77 @@ export function mountHeroSurface(canvas, opts = {}) {
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(mk.p[0], mk.p[1], 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     }
+    ctx.globalAlpha = 1;
 
-    // Cajas con la cifra, unidas al punto por una línea; se colocan donde no tapen nada.
+    // Cajas: «etiqueta | cifra» y debajo lo que pierden los vecinos. Se colocan donde no tapen
+    // nada y se deslizan hacia ese sitio.
     const fs = small ? 11.5 : 12.5;
-    const th = small ? 23 : 26;
-    const hits = (r, o) => r[0] < o[0] + o[2] && r[0] + r[2] > o[0] && r[1] < o[1] + o[3] && r[1] + r[3] > o[1];
+    const fs2 = small ? 10.5 : 11;
+    const th = small ? 38 : 42;
+    boxesMoving = false;
     for (const mk of markers) {
       mk.value = fmt(mk.val);
+      mk.line2 = `${labels.neighbors || 'neighbors'} ${fmtDrop(mk.drop)}`;
       ctx.font = `600 ${fs}px ${SANS}`;
       mk.lw = ctx.measureText(mk.tag).width;
       ctx.font = `600 ${fs}px ${MONO}`;
-      const tw = Math.round(mk.lw + ctx.measureText(mk.value).width + 26);
+      const w1 = mk.lw + ctx.measureText(mk.value).width + 38;
+      ctx.font = `500 ${fs2}px ${SANS}`;
+      const tw = Math.round(Math.max(w1, ctx.measureText(mk.line2).width + 22));
       const [px, py] = mk.p;
       const spots = [];
       for (const up of [true, false]) {
         for (const side of [mk.side, -mk.side]) {
           const bx = side > 0 ? px + 12 : px - 12 - tw;
           const by = up ? py - th - 14 : py + 14;
-          spots.push([Math.max(8, Math.min(v.cssW - tw - 8, bx)), Math.max(8, Math.min(v.cssH - v.capH - th - 4, by)), tw, th, up]);
+          spots.push([Math.max(8, Math.min(v.cssW - tw - 8, bx)), Math.max(8, Math.min(v.cssH - v.capH - th - 4, by)), tw, th]);
         }
       }
-      mk.box = spots.find((r) => !obstacles.some((o) => hits(r, o))) || spots[0];
-      obstacles.push(mk.box);
+      const target = spots.find((r) => !obstacles.some((o) => hits(r, o))) || spots[0];
+      obstacles.push(target);
+      const prev = boxes.get(mk.id);
+      const box = prev && k < 1
+        ? [lerp(prev[0], target[0], k), lerp(prev[1], target[1], k), tw, th]
+        : target.slice();
+      if (Math.abs(box[0] - target[0]) > 0.3 || Math.abs(box[1] - target[1]) > 0.3) boxesMoving = true;
+      else { box[0] = target[0]; box[1] = target[1]; }
+      boxes.set(mk.id, box);
+      mk.box = box;
+    }
+
+    // Escala: el valor de las curvas de nivel enteras, junto al flanco del pico de MT5.
+    ctx.font = `500 ${small ? 10 : 10.5}px ${MONO}`;
+    ctx.textAlign = 'left';
+    const tu = v.c; const tv = -v.s;
+    const hA = markers[1].h;
+    const taken = markers.map((mk) => mk.box);
+    for (let lvl = 1; lvl <= 4; lvl++) {
+      const hl = lvl * RESULT_H;
+      const a = show * smooth(hl, hl + 0.3 * RESULT_H, hA);
+      if (a < 0.02) continue;
+      let lo = 0;
+      let hi = 0.4;
+      for (let i = 0; i < 24; i++) {
+        const mid = (lo + hi) / 2;
+        if (height(PEAK_A[0] + tu * mid, PEAK_A[1] + tv * mid, m) > hl) lo = mid; else hi = mid;
+      }
+      const u = PEAK_A[0] + tu * lo;
+      const w = PEAK_A[1] + tv * lo;
+      const p = project(u, w, hl);
+      const label = String(lvl);
+      const r = [p[0] + 2, p[1] - 7, ctx.measureText(label).width + 12, 14];
+      if (taken.some((o) => hits(r, o))) continue;
+      taken.push(r);
+      ctx.globalAlpha = a * (1 - 0.85 * cover(u, w, hl));
+      ctx.strokeStyle = rgb(pal.muted);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(p[0] + 2, p[1]); ctx.lineTo(p[0] + 7, p[1]); ctx.stroke();
+      ctx.fillStyle = rgb(pal.muted);
+      ctx.fillText(label, p[0] + 10, p[1] + 0.5);
     }
 
     // Ejes de parámetros: giran con el suelo. Por detrás del relieve se apagan (quedarían encima
-    // de los picos), y ceden el sitio a las cajas de cifras.
+    // de los picos), y ceden el sitio a las cajas de cifras y a la escala.
     ctx.font = `500 ${small ? 11 : 12}px ${SANS}`;
     ctx.textAlign = 'center';
     ctx.fillStyle = rgb(pal.muted);
@@ -461,15 +567,16 @@ export function mountHeroSurface(canvas, opts = {}) {
       const tw = ctx.measureText(text).width;
       const x = Math.max(tw / 2 + 8, Math.min(v.cssW - tw / 2 - 8, p[0]));
       const y = Math.min(p[1] + 3, v.cssH - v.capH - 8);
-      if (markers.some((mk) => hits([x - tw / 2 - 4, y - 9, tw + 8, 18], mk.box))) continue;
+      if (taken.some((o) => hits([x - tw / 2 - 4, y - 9, tw + 8, 18], o))) continue;
       ctx.globalAlpha = 0.9 * a;
       ctx.fillText(text, x, y);
     }
 
     ctx.globalAlpha = show;
     for (const mk of markers) {
-      const [bx, by, tw, , up] = mk.box;
+      const [bx, by, tw] = mk.box;
       const [px, py] = mk.p;
+      const up = by + th / 2 < py;
       ctx.strokeStyle = rgba(mk.color, 0.7);
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -479,19 +586,27 @@ export function mountHeroSurface(canvas, opts = {}) {
       ctx.fillStyle = rgb(mix(pal.bg, mk.color, pal.light ? 0.1 : 0.16));
       ctx.strokeStyle = rgb(mix(pal.bg, mk.color, 0.8));
       ctx.beginPath(); roundBox(bx + 0.5, by + 0.5, tw, th, 7); ctx.fill(); ctx.stroke();
+      const y1 = by + (small ? 13 : 14.5);
+      const y2 = by + th - (small ? 11 : 12);
       ctx.textAlign = 'left';
       ctx.font = `600 ${fs}px ${SANS}`;
       ctx.fillStyle = rgb(mix(mk.color, textC, pal.light ? 0.45 : 0.3));
-      ctx.fillText(mk.tag, bx + 11, by + th / 2 + 1);
+      ctx.fillText(mk.tag, bx + 11, y1);
+      ctx.strokeStyle = rgb(mix(pal.bg, mk.color, 0.45));
+      ctx.beginPath(); ctx.moveTo(bx + mk.lw + 19.5, y1 - 7); ctx.lineTo(bx + mk.lw + 19.5, y1 + 7); ctx.stroke();
       ctx.font = `600 ${fs}px ${MONO}`;
       ctx.fillStyle = rgb(pal.light ? mix(mk.color, textC, 0.7) : mix(mk.color, WHITE, 0.6));
-      ctx.fillText(mk.value, bx + 15 + mk.lw, by + th / 2 + 1);
+      ctx.fillText(mk.value, bx + 27 + mk.lw, y1);
+      ctx.font = `500 ${fs2}px ${SANS}`;
+      ctx.fillStyle = rgb(mix(pal.muted, mk.color, 0.35));
+      ctx.fillText(mk.line2, bx + 11, y2);
     }
     ctx.globalAlpha = 1;
   }
 
-  function draw(still = true) {
+  function draw(still = true, k = 1) {
     const { dpr, cssW, cssH } = size();
+    checkGL();
     const light = (root.dataset.theme || 'dark') === 'light';
     if (!palette || palette.light !== light) palette = readPalette(root, light);
     const m = collapse;
@@ -501,21 +616,18 @@ export function mountHeroSurface(canvas, opts = {}) {
     const cap = host.querySelector('.lp-surface-caption');
     const capH = cap ? cap.offsetHeight + 4 : 74;
     const v = makeView(cssW, cssH, capH, angle + tiltX, PITCH + tiltY, rise);
-    v.rise = rise;
-
-    if (gl && glCanvas) {
-      const q = TIERS[tier];
-      const gdpr = Math.min(q.dpr, devicePixelRatio || 1);
-      gl.draw({
-        width: Math.round(cssW * gdpr), height: Math.round(cssH * gdpr),
-        view: v, m, rise, show, steps: q.steps, palette: { ...palette, peak: palette.peakFill },
-      });
-    }
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
-    if (!gl) paint2D(v, palette, m, show, still);
-    annotate(v, palette, m, show);
+    if (!ready) return;
+    if (gl) {
+      const q = TIERS[tier];
+      const gdpr = Math.min(q.dpr, devicePixelRatio || 1);
+      gl.draw({ width: Math.round(cssW * gdpr), height: Math.round(cssH * gdpr), view: v, m, rise, show, steps: q.steps, palette });
+    } else {
+      paint2D(v, palette, m, show, still);
+    }
+    annotate(v, palette, m, show, k);
 
     const state = m > 0.55 ? 'plateau' : 'peaks';
     if (host.dataset.surfaceState !== state) {
@@ -524,13 +636,15 @@ export function mountHeroSurface(canvas, opts = {}) {
     }
   }
 
-  const cycling = () => !fineHover.matches && inView && !quiet.matches && !hover;
+  const autoLen = () => (fineHover.matches ? DEMO_WAIT + DEMO_HOLD + 900 : CYCLE * TOUCH_CYCLES);
+  const autoOn = () => ready && intro >= 1 && inView && !touched && !hover && !quiet.matches && autoT < autoLen();
 
   function targetCollapse() {
     if (quiet.matches) return 0.92;
     if (hover) return 1;
-    if (!fineHover.matches && inView) {
-      const wave = (Math.sin((autoT / 6400) * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+    if (autoOn()) {
+      if (fineHover.matches) return autoT > DEMO_WAIT && autoT < DEMO_WAIT + DEMO_HOLD ? 1 : 0;
+      const wave = (Math.sin((autoT / CYCLE) * Math.PI * 2 - Math.PI / 2) + 1) / 2;
       return 0.04 + Math.min(1, wave * 1.25) * 0.94;
     }
     return 0;
@@ -538,25 +652,27 @@ export function mountHeroSurface(canvas, opts = {}) {
 
   function frame(t) {
     const dt = last ? Math.min(64, t - last) : 16;
-    // Si el WebGL no llega a ~35 fps de forma sostenida, se baja un escalón de calidad.
-    if (last && gl) {
-      slow = t - last > 28 ? slow + 1 : Math.max(0, slow - 1);
-      if (slow > 40 && tier > 0) { tier--; slow = 0; }
+    // Si el WebGL va por debajo de 25 fps de forma sostenida, se baja un escalón de calidad.
+    if (last && gl && ready) {
+      slow = t - last > SLOW_MS ? slow + 1 : Math.max(0, slow - 1);
+      if (slow > 30 && tier > 0) { tier--; slow = 0; }
     }
     last = t;
-    intro = quiet.matches ? 1 : Math.min(1, intro + dt / 1400);
-    if (cycling()) autoT += dt;
+    checkGL();
+    if (ready) intro = quiet.matches ? 1 : Math.min(1, intro + dt / 1400);
+    if (autoOn()) autoT += dt;
 
     const want = targetCollapse();
     collapse += (want - collapse) * Math.min(1, dt / 300);
     const k = Math.min(1, dt / 260);
     tiltX += (aimX - tiltX) * k;
     tiltY += (aimY - tiltY) * k;
-    if (!dragging && !quiet.matches && (hover || intro < 1 || cycling())) angle += dt * SPIN;
+    if (!dragging && !quiet.matches && (hover || intro < 1 || autoOn())) angle += dt * SPIN;
     const tilting = Math.abs(aimX - tiltX) > 1e-4 || Math.abs(aimY - tiltY) > 1e-4;
-    const moving = Math.abs(want - collapse) > 0.002 || intro < 1 || hover || cycling() || dragging || tilting;
-    draw(!moving);
-    raf = moving ? requestAnimationFrame(frame) : 0;
+    const moving = !ready || Math.abs(want - collapse) > 0.002 || intro < 1 || hover || autoOn() || dragging || tilting;
+    draw(!moving, Math.min(1, dt / 140));
+    // Las cajas que aún se deslizan piden otro fotograma aunque lo demás ya esté quieto.
+    raf = moving || boxesMoving ? requestAnimationFrame(frame) : 0;
   }
 
   const wake = () => {
@@ -565,7 +681,9 @@ export function mountHeroSurface(canvas, opts = {}) {
     raf = requestAnimationFrame(frame);
   };
 
-  const onPointerEnter = (e) => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') { hover = true; wake(); } };
+  const onPointerEnter = (e) => {
+    if (e.pointerType === 'mouse' || e.pointerType === 'pen') { hover = true; touched = true; wake(); }
+  };
   const onPointerLeave = (e) => {
     if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
       hover = false;
@@ -577,13 +695,14 @@ export function mountHeroSurface(canvas, opts = {}) {
   const onFocusIn = () => {
     let visible = true;
     try { visible = host.matches(':focus-visible'); } catch { /* selector no soportado */ }
-    if (visible) { hover = true; wake(); }
+    if (visible) { hover = true; touched = true; wake(); }
   };
   const onFocusOut = () => { hover = false; wake(); };
   const onVisibility = () => { if (!document.hidden) wake(); };
 
   const onPointerDown = (e) => {
     dragging = true;
+    touched = true;
     dragMoved = 0;
     dragX = e.clientX;
     try { canvas.setPointerCapture(e.pointerId); } catch { /* sin captura */ }
@@ -619,6 +738,7 @@ export function mountHeroSurface(canvas, opts = {}) {
   };
   const onKey = (e) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    touched = true;
     angle += e.key === 'ArrowLeft' ? -0.12 : 0.12;
     e.preventDefault();
     if (quiet.matches || !raf) draw();
@@ -654,10 +774,15 @@ export function mountHeroSurface(canvas, opts = {}) {
 
   // Las etiquetas usan IBM Plex: al terminar de cargar, se vuelven a dibujar con ella.
   if (document.fonts && document.fonts.load) {
-    Promise.all([`600 12px "IBM Plex Sans"`, `500 12px "IBM Plex Sans"`, `600 12px "IBM Plex Mono"`].map((f) => document.fonts.load(f)))
+    Promise.all([`600 12px "IBM Plex Sans"`, `500 12px "IBM Plex Sans"`, `600 12px "IBM Plex Mono"`, `500 12px "IBM Plex Mono"`].map((f) => document.fonts.load(f)))
       .then(() => { if (!raf) draw(); })
       .catch(() => { /* se queda la tipografía del sistema */ });
   }
+
+  // El WebGL (contexto y compilación) se prepara cuando la página ya está pintada.
+  const start = () => { initGL(); wake(); };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(start, { timeout: 300 });
+  else setTimeout(start, 30);
 
   wake();
   repaint.dispose = () => {
