@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-30 — Textos: adiós a «la primera fila»
+
+- «La primera fila» no se entendía sin conocer MT5 y se quedaba corta: con miles de
+  combinaciones falla el grupo de arriba, no solo una. Ahora se habla de «los mejores
+  resultados», «lo primero de la lista» o «los primeros puestos», con «suelen» / «a menudo»
+  donde antes se afirmaba sin matices. La tabla de la portada se marca como ejemplo.
+
 ## 2026-09-30 — Informe: lectura más rápida
 
 - La tarjeta de arriba del veredicto lleva ya los valores recomendados (antes había que bajar

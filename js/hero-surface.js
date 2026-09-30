@@ -3,8 +3,8 @@
 // el MISMO resultado en un periodo de mercado nuevo: el pico que MT5 pone primero cae y la
 // meseta que recomienda Orometra aguanta. Arrastrar gira la superficie.
 //
-// Las dos cifras de los marcadores (4.71 y 2.18) son las de la tabla «La primera fila» de la
-// portada; tests/hero-surface.test.js comprueba que coinciden.
+// Las dos cifras de los marcadores (4.71 y 2.18) son las de la tabla de ejemplo de la portada
+// (sección del problema); tests/hero-surface.test.js comprueba que coinciden.
 
 export const MT5_RESULT = 4.71;
 export const PICK_RESULT = 2.18;
