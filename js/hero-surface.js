@@ -18,11 +18,14 @@ const MESA_C = { u: -0.18, v: -0.10 };
 
 // Niveles de las curvas: [altura, clase]. 0 = suelo de la meseta, 1 = borde de la meseta, 2 = pico.
 const LEVELS = [
-  [0.08, 0], [0.16, 0], [0.24, 0], [0.32, 0], [0.40, 0], [0.48, 0], [0.56, 0], [0.655, 1],
+  [0.08, 0], [0.16, 0], [0.24, 0], [0.32, 0], [0.40, 0], [0.48, 0], [0.56, 0], [0.62, 1],
   [0.78, 2], [0.95, 2], [1.12, 2],
 ];
 
 const gauss = (du, dv, w) => Math.exp(-(du * du + dv * dv) / (2 * w * w));
+
+// El borde de la meseta está cerca de su centro; los picos, lejos (>0.9).
+const nearMesa = (u, v) => (u - MESA_C.u) ** 2 + (v - MESA_C.v) ** 2 < 0.42;
 
 function mesaHeight(u, v) {
   return Math.min(MESA_CAP, gauss(u - MESA_C.u, v - MESA_C.v, 0.52) * 0.96);
@@ -85,8 +88,9 @@ export function mountHeroSurface(canvas, opts = {}) {
   let dragX = 0;
   let tapTimer = 0;
 
+  const rect0Width = () => canvas.getBoundingClientRect().width;
   const size = () => {
-    const dpr = Math.min(2.25, devicePixelRatio || 1);
+    const dpr = Math.min(rect0Width() < 520 ? 2 : 2.25, devicePixelRatio || 1);
     const rect = canvas.getBoundingClientRect();
     const cssW = Math.max(1, Math.round(rect.width) || 560);
     const cssH = Math.max(1, Math.round(rect.height) || 420);
@@ -112,11 +116,12 @@ export function mountHeroSurface(canvas, opts = {}) {
 
   const fmt = (x) => x.toLocaleString(getLocale() === 'es' ? 'es-ES' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  function draw() {
+  function draw(still = true) {
     const { dpr, cssW, cssH } = size();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const light = (root.dataset.theme || 'dark') === 'light';
-    const N = cssW < 520 ? 40 : 56;
+    // Malla fina cuando la imagen está quieta; algo más gruesa mientras se mueve, para ir fluido.
+    const N = cssW < 520 ? (still ? 60 : 48) : (still ? 104 : 72);
     const m = collapse;
     const show = Math.min(1, 0.25 + intro * 0.75);
 
@@ -188,6 +193,18 @@ export function mountHeroSurface(canvas, opts = {}) {
       }
     }
 
+    // Pendiente en cada vértice (diferencias centradas): el sombreado sale sin teselas.
+    const GU = new Float32Array(N * N);
+    const GV = new Float32Array(N * N);
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        const i0 = Math.max(0, i - 1); const i1 = Math.min(N - 1, i + 1);
+        const j0 = Math.max(0, j - 1); const j1 = Math.min(N - 1, j + 1);
+        GU[i * N + j] = (H[i1 * N + j] - H[i0 * N + j]) / ((i1 - i0) * step);
+        GV[i * N + j] = (H[i * N + j1] - H[i * N + j0]) / ((j1 - j0) * step);
+      }
+    }
+
     const order = [];
     for (let i = 0; i < N - 1; i++) {
       for (let j = 0; j < N - 1; j++) {
@@ -204,21 +221,24 @@ export function mountHeroSurface(canvas, opts = {}) {
     const ly = -0.78;
     const fillMul = light ? 1.7 : 1;
     const lineBase = light ? 1.5 : 1;
-    const tri = (a, b, c, lvl, out) => {
-      const hs = [H[a], H[b], H[c]];
-      const idx = [a, b, c];
-      const pts = [];
-      for (let e = 0; e < 3; e++) {
-        const p = idx[e];
-        const q = idx[(e + 1) % 3];
-        const hp = hs[e];
-        const hq = hs[(e + 1) % 3];
-        if ((hp < lvl) !== (hq < lvl)) {
-          const t = (lvl - hp) / (hq - hp);
-          pts.push(lerp(X[p], X[q], t), lerp(Y[p], Y[q], t));
-        }
-      }
-      if (pts.length === 4) out.push(pts);
+    // Un tramo de curva de nivel dentro del triángulo (a, b, c), añadido al trazo actual.
+    const tri = (a, b, c, lvl) => {
+      const ia = H[a] < lvl;
+      const ib = H[b] < lvl;
+      const ic = H[c] < lvl;
+      if (ia === ib && ib === ic) return false;
+      let n = 0;
+      let x0 = 0; let y0 = 0;
+      const edge2 = (p, q, hp, hq) => {
+        const t = (lvl - hp) / (hq - hp);
+        const x = X[p] + (X[q] - X[p]) * t;
+        const y = Y[p] + (Y[q] - Y[p]) * t;
+        if (n === 0) { x0 = x; y0 = y; n = 1; } else { ctx.moveTo(x0, y0); ctx.lineTo(x, y); n = 2; }
+      };
+      if (ia !== ib) edge2(a, b, H[a], H[b]);
+      if (ib !== ic) edge2(b, c, H[b], H[c]);
+      if (ic !== ia && n < 2) edge2(c, a, H[c], H[a]);
+      return n === 2;
     };
 
     for (const [i, j] of order) {
@@ -231,8 +251,8 @@ export function mountHeroSurface(canvas, opts = {}) {
       const v = -1 + (j + 0.5) * step;
       const r = Math.sqrt(u * u + v * v);
       const edge = 1 - smooth(0.66, 0.97, r);
-      const gu = (H[b] + H[c] - H[a] - H[d]) / (2 * step);
-      const gv = (H[d] + H[c] - H[a] - H[b]) / (2 * step);
+      const gu = (GU[a] + GU[b] + GU[c] + GU[d]) / 4;
+      const gv = (GV[a] + GV[b] + GV[c] + GV[d]) / 4;
       const gx = gu * cos - gv * sin;
       const gy = gu * sin + gv * cos;
       const shade = Math.max(-1, Math.min(1, -(gx * lx + gy * ly) * 0.55));
@@ -245,7 +265,7 @@ export function mountHeroSurface(canvas, opts = {}) {
         const col = mix(surfC, mix(okC, peakC, pink), al);
         ctx.fillStyle = rgb(col);
         ctx.strokeStyle = ctx.fillStyle;
-        ctx.lineWidth = 0.7;
+        ctx.lineWidth = 0.5;
         ctx.beginPath();
         ctx.moveTo(X[a], Y[a]); ctx.lineTo(X[b], Y[b]); ctx.lineTo(X[c], Y[c]); ctx.lineTo(X[d], Y[d]);
         ctx.closePath();
@@ -256,24 +276,44 @@ export function mountHeroSurface(canvas, opts = {}) {
       const lo = Math.min(H[a], H[b], H[c], H[d]);
       const hi = Math.max(H[a], H[b], H[c], H[d]);
       for (const [lvl, cls] of LEVELS) {
-        if (lvl < lo || lvl >= hi) continue;
-        const segs = [];
-        tri(a, b, c, lvl, segs);
-        tri(a, c, d, lvl, segs);
-        if (!segs.length) continue;
+        if (lvl < lo || lvl >= hi || edge * show < 0.06) continue;
+        // El borde de la meseta se repasa al final (más abajo) para que no lo muerdan los cuadros de delante.
+        if (cls === 1 && hi <= 0.7 && nearMesa(u, v)) continue;
         ctx.beginPath();
-        for (const s of segs) { ctx.moveTo(s[0], s[1]); ctx.lineTo(s[2], s[3]); }
+        const s1 = tri(a, b, c, lvl);
+        const s2 = tri(a, c, d, lvl);
+        if (!s1 && !s2) continue;
+        // Colores ya mezclados con el fondo y opacos: sin puntos donde se solapan los tramos.
         if (cls === 1) {
-          ctx.strokeStyle = rgb(okC); ctx.lineWidth = 1.7 * lineBase; ctx.globalAlpha = (0.55 + 0.4 * m) * edge * show;
+          ctx.strokeStyle = rgb(mix(surfC, okC, (0.6 + 0.35 * m) * edge * show)); ctx.lineWidth = 1.7 * lineBase;
         } else if (cls === 2) {
-          ctx.strokeStyle = rgb(peakC); ctx.lineWidth = 1.2 * lineBase; ctx.globalAlpha = 0.85 * edge * show;
+          ctx.strokeStyle = rgb(mix(surfC, peakC, 0.85 * edge * show)); ctx.lineWidth = 1.2 * lineBase;
         } else {
-          ctx.strokeStyle = rgb(mix(textC, surfC, 0.35)); ctx.lineWidth = 0.8 * lineBase; ctx.globalAlpha = (light ? 0.38 : 0.26) * edge * show;
+          ctx.strokeStyle = rgb(mix(surfC, textC, (light ? 0.3 : 0.2) * edge * show)); ctx.lineWidth = 0.8 * lineBase;
         }
+        ctx.lineCap = 'round';
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
     }
+
+    // Borde de la meseta: una sola pasada limpia por encima (los picos quedan lejos de él).
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = rgb(mix(surfC, okC, (0.6 + 0.35 * m) * show));
+    ctx.lineWidth = 1.7 * lineBase;
+    ctx.beginPath();
+    for (const [i, j] of order) {
+      const a = i * N + j;
+      const b = (i + 1) * N + j;
+      const c = (i + 1) * N + j + 1;
+      const d = i * N + j + 1;
+      const hi = Math.max(H[a], H[b], H[c], H[d]);
+      if (hi > 0.7 || Math.min(H[a], H[b], H[c], H[d]) >= 0.62 || hi < 0.62) continue;
+      if (!nearMesa(-1 + (i + 0.5) * step, -1 + (j + 0.5) * step)) continue;
+      tri(a, b, c, 0.62);
+      tri(a, c, d, 0.62);
+    }
+    ctx.stroke();
 
     // Marcadores: la cifra que da MT5 y la que da la meseta, en periodo optimizado / nuevo.
     const ease = m * m * (3 - 2 * m);
@@ -374,8 +414,8 @@ export function mountHeroSurface(canvas, opts = {}) {
     const want = targetCollapse();
     collapse += (want - collapse) * Math.min(1, dt / 260);
     if (!dragging && !quiet.matches && (hover || intro < 1 || cycling())) angle += dt * SPIN;
-    draw();
-    const moving = Math.abs(want - collapse) > 0.002 || intro < 1 || hover || cycling();
+    const moving = Math.abs(want - collapse) > 0.002 || intro < 1 || hover || cycling() || dragging;
+    draw(!moving);
     raf = moving ? requestAnimationFrame(frame) : 0;
   }
 
