@@ -623,6 +623,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .why-col span{font-size:var(--fs-xs);color:var(--muted);line-height:1.45}
 .why-pros strong{color:var(--ok-text)}
 .why-cons strong{color:var(--warn-text)}
+.why-grid-one{grid-template-columns:1fr}
+.why-none{margin:0;color:var(--muted-2);font-size:var(--fs-sm)}
+.verdict-params{margin:8px 0 10px}
 .why-empty{color:var(--muted-2) !important;font-size:var(--fs-sm)}
 .range-table-wrap{overflow:auto;margin-top:8px;position:relative}
 .range-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
