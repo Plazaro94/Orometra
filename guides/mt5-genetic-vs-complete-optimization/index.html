@@ -74,7 +74,7 @@
       <li data-i18n="guide.genetic.sum.1">The complete search tests every combination: slow, but it leaves no gaps.</li>
       <li data-i18n="guide.genetic.sum.2">The genetic search tests a part, guided by the criterion you optimize: fast, but it leaves zones unexplored.</li>
       <li data-i18n="guide.genetic.sum.3">If the complete search takes hours rather than days, use it.</li>
-      <li data-i18n="guide.genetic.sum.4">If you use the genetic one, trust the top row even less and check its neighbors.</li>
+      <li data-i18n="guide.genetic.sum.4">If you use the genetic one, trust the top of the list even less and check its neighbors.</li>
     </ol>
   </aside>
 
@@ -88,7 +88,7 @@
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.genetic.s3.title">Why the genetic search makes overfitting easier</h2>
-    <p data-i18n="guide.genetic.s3.body">The algorithm actively hunts for the combination that scores highest, and that hunt also rewards the one that got lucky. It also leaves the map in pieces: around the best pass there may be few tested neighbors, and without them you cannot know whether you are on a plateau or on a peak. That is why, with the genetic search, the top row deserves even less trust.</p>
+    <p data-i18n="guide.genetic.s3.body">The algorithm actively hunts for the combination that scores highest, and that hunt also rewards the one that got lucky. It also leaves the map in pieces: around the best pass there may be few tested neighbors, and without them you cannot know whether you are on a plateau or on a peak. That is why, with the genetic search, the top of the list deserves even less trust.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.genetic.s4.title">Which one to choose</h2>
@@ -104,7 +104,7 @@
     <ul class="lp-list">
       <li data-i18n="guide.genetic.err.1">Using the genetic search out of habit when the complete one would be quick.</li>
       <li data-i18n="guide.genetic.err.2">Optimizing too many parameters &quot;because the genetic search can handle it&quot;. It can compute it, but that does not make the result more reliable.</li>
-      <li data-i18n="guide.genetic.err.3">Taking the top row of a genetic search as the answer. It is the one the algorithm chased, and the one most likely to owe its result to luck.</li>
+      <li data-i18n="guide.genetic.err.3">Taking the top of the list from a genetic search as the answer. Those are the passes the algorithm chased, and the ones that can most easily owe their result to luck.</li>
       <li data-i18n="guide.genetic.err.4">Comparing two genetic runs and concluding something changed: since they start at random, two identical runs can give different tables.</li>
     </ul>
   </section>

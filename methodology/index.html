@@ -135,7 +135,7 @@
       <span class="lp-method-num">04</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s4.title">Plateaus, not peaks</h2>
-        <p data-i18n="doc.method.s4.body">For each configuration it checks its neighbors, measured in steps of your grid (from 30 to 50, or from 0.1 to 0.2, is one step). A plateau is a connected zone where the neighbors also clear your minimums. Isolated peaks are rejected. Inside the plateau it picks the configuration with the best combined rank in-sample and forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau and there is a forward, it gives a tentative suggestion by the same rule and says so. In our blind benchmark it beats picking the top row, the best forward row, the rank sum and random choice; it narrowly loses to “average with neighbors” when every case without a plateau counts as a miss (with the tentative suggestion, it wins).</p>
+        <p data-i18n="doc.method.s4.body">For each configuration it checks its neighbors, measured in steps of your grid (from 30 to 50, or from 0.1 to 0.2, is one step). A plateau is a connected zone where the neighbors also clear your minimums. Isolated peaks are rejected. Inside the plateau it picks the configuration with the best combined rank in-sample and forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau and there is a forward, it gives a tentative suggestion by the same rule and says so. In our blind benchmark it beats picking the pass MT5 lists first (highest in-sample profit), the best forward row, the rank sum and random choice; it narrowly loses to “average with neighbors” when every case without a plateau counts as a miss (with the tentative suggestion, it wins).</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -265,7 +265,7 @@
 
   <section class="lp-doc-block doc-ai" id="ia" aria-labelledby="doc-ai-title">
     <h2 id="doc-ai-title" data-i18n="doc.ai.title">Why not just ask an AI?</h2>
-    <p class="doc-ai-lead" data-i18n="doc.ai.lead">Paste your table into a chat and you will get a convincing explanation of why the top row is good. With thousands of combinations tested, there is always one. That is not analysis — it is a story.</p>
+    <p class="doc-ai-lead" data-i18n="doc.ai.lead">Paste your table into a chat and you will get a convincing explanation of why the best result in the list is good. With thousands of combinations tested, some always look good by chance. That is not analysis — it is a story.</p>
     <dl class="doc-ai-list">
       <div><dt data-i18n="doc.ai.1.title">Same data, same answer</dt><dd data-i18n="doc.ai.1.body">A language model writes every answer from scratch: it changes with the wording of your question, the order of the data and from one day to the next. Orometra is a calculation: same files, same result, today and a year from now. That is what lets you compare one optimization with another.</dd></div>
       <div><dt data-i18n="doc.ai.2.title">A fixed method, not an improvised one</dt><dd data-i18n="doc.ai.2.body">Ask an AI to assess robustness and it makes up a method on the spot. You cannot know whether it is the same as last time, or whether it is right. Orometra's method is written on this page, it is always the same, and automated tests check that it keeps doing what it says.</dd></div>

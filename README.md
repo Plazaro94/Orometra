@@ -39,7 +39,7 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
    mejor puesto en in-sample más su puesto en forward, ambos promediados con sus vecinas. Se
    midió en el banco de pruebas (`bench/`) frente a la regla maximin anterior y a métodos
    habituales. Sin meseta y con forward, se da una sugerencia **orientativa** con la misma
-   regla. Resultado honesto del examen ciego: gana a elegir la primera fila, la mejor del
+   regla. Resultado honesto del examen ciego: gana a elegir la pasada que MT5 pone primera (mayor beneficio in-sample), la mejor del
    forward, la suma de puestos y el azar; **pierde por poco contra «media con vecinas»** si
    se cuenta como fallo cada caso en que Orometra no propone meseta (con la sugerencia
    orientativa gana). Detalle en `bench/PREREGISTRO.md`.
