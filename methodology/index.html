@@ -73,10 +73,10 @@
     <li><a href="#calidad"><span class="doc-index-num">03</span><span class="doc-index-text"><strong data-i18n="doc.method.s3.title">Quality without the Result column</strong><span data-i18n="doc.method.s3.short">Several objective metrics at once</span></span></a></li>
     <li><a href="#mesetas"><span class="doc-index-num">04</span><span class="doc-index-text"><strong data-i18n="doc.method.s4.title">Plateaus, not peaks</strong><span data-i18n="doc.method.s4.short">Neighbors must work too</span></span></a></li>
     <li><a href="#forward"><span class="doc-index-num">05</span><span class="doc-index-text"><strong data-i18n="doc.method.s5.title">The forward confirms or demotes</strong><span data-i18n="doc.method.s5.short">Tested on data it did not see</span></span></a></li>
-    <li><a href="#suerte"><span class="doc-index-num">06</span><span class="doc-index-text"><strong data-i18n="doc.method.s6.title">It measures how much could be luck</strong><span data-i18n="doc.method.s6.short">Does your best beat pure chance?</span></span></a></li>
+    <li><a href="#suerte"><span class="doc-index-num">06</span><span class="doc-index-text"><strong data-i18n="doc.method.s6.title">It estimates how much could be chance</strong><span data-i18n="doc.method.s6.short">Does your best beat pure chance?</span></span></a></li>
     <li><a href="#umbrales"><span class="doc-index-num">07</span><span class="doc-index-text"><strong data-i18n="doc.method.s7.title">It tests itself</strong><span data-i18n="doc.method.s7.short">The answer must not depend on its settings</span></span></a></li>
     <li><a href="#niveles"><span class="doc-index-num">08</span><span class="doc-index-text"><strong data-i18n="doc.method.s8.title">What each evidence level means</strong><span data-i18n="doc.method.s8.short">How much your data back the answer</span></span></a></li>
-    <li><a href="#backtest"><span class="doc-index-num">09</span><span class="doc-index-text"><strong data-i18n="doc.method.s9.title">The final test: your backtest on unseen data</strong><span data-i18n="doc.method.s9.short">The only fully clean check</span></span></a></li>
+    <li><a href="#backtest"><span class="doc-index-num">09</span><span class="doc-index-text"><strong data-i18n="doc.method.s9.title">The acid test: your backtest on unseen data</strong><span data-i18n="doc.method.s9.short">The only fully clean check</span></span></a></li>
     </ol>
   </nav>
 
@@ -169,7 +169,7 @@
     <section class="lp-doc-block lp-method-step" id="suerte">
       <span class="lp-method-num">06</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s6.title">It measures how much could be luck</h2>
+        <h2 data-i18n="doc.method.s6.title">It estimates how much could be chance</h2>
         <p data-i18n="doc.method.s6.body">Test thousands of combinations and some will look great by pure chance. The engine computes the best Sharpe you would expect from luck alone with that many trials and compares it with yours. If yours does not beat it, the report flags it as critical: the top result may be nothing but noise. Beating it is necessary, not sufficient: it rules out that the result comes only from trying a lot, but it does not validate the strategy.</p>
       </div>
     </section>
@@ -217,7 +217,7 @@
     <section class="lp-doc-block lp-method-step has-media" id="backtest">
       <span class="lp-method-num">09</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s9.title">The final test: your backtest on unseen data</h2>
+        <h2 data-i18n="doc.method.s9.title">The acid test: your backtest on unseen data</h2>
         <p data-i18n="doc.method.s9.body">The cleanest check is to test the configuration on a period you used neither to optimize nor to validate. Drop that backtest report into the app and it tells you whether the result is normal for your EA, with a Monte Carlo over your own trades; it warns you if there are too few trades to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
