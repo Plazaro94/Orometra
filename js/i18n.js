@@ -51,9 +51,13 @@ export function setLocale(lang) {
 
 export function applyStaticI18n() {
   if (typeof document === 'undefined') return;
+  // Si una clave no existe (p. ej. el navegador tiene en caché un i18n.js anterior a la
+  // página, que ya trae los textos nuevos), se deja el texto que trae el HTML: escribir
+  // el nombre de la clave («home.take.title») es peor que no traducir.
+  const has = (key) => Boolean(key) && (key in (STRINGS[getLocale()] || {}) || key in STRINGS.en);
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n');
-    if (!key) return;
+    if (!has(key)) return;
     const attr = el.getAttribute('data-i18n-attr');
     const value = t(key);
     if (attr) el.setAttribute(attr, value);
@@ -61,7 +65,7 @@ export function applyStaticI18n() {
   });
   document.querySelectorAll('[data-i18n-html]').forEach((el) => {
     const key = el.getAttribute('data-i18n-html');
-    if (key) el.innerHTML = t(key);
+    if (has(key)) el.innerHTML = t(key);
   });
   syncDocumentMeta();
   // Se muestra en el siguiente fotograma: da tiempo a que la app termine su primer
