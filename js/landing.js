@@ -54,9 +54,26 @@ $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => {
   setLocale(b.dataset.langSet);
   syncLang();
   syncSurfaceHint();
+  syncNotFoundLinks();
 }));
+// La 404 es una sola página para los dos idiomas: en español, sus enlaces llevan a la
+// versión en español de cada página (las que la tienen).
+const ES_HREF = { '/': '/es/', '/methodology/': '/es/methodology/', '/privacy/': '/es/privacy/' };
+function syncNotFoundLinks() {
+  if (document.documentElement.getAttribute('data-page') !== 'notfound') return;
+  const es = getLocale() === 'es';
+  $$('a[href]').forEach((a) => {
+    if (!a.dataset.hrefEn) {
+      if (!(a.getAttribute('href') in ES_HREF)) return;
+      a.dataset.hrefEn = a.getAttribute('href');
+    }
+    a.setAttribute('href', es ? ES_HREF[a.dataset.hrefEn] : a.dataset.hrefEn);
+  });
+}
+
 syncLang();
 applyStaticI18n();
+syncNotFoundLinks();
 
 const fineHover = matchMedia('(hover: hover) and (pointer: fine)');
 function syncSurfaceHint() {

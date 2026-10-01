@@ -74,10 +74,10 @@
     <li><a href="#calidad"><span class="doc-index-num">03</span><span class="doc-index-text"><strong data-i18n="doc.method.s3.title">Calidad sin la columna Result</strong><span data-i18n="doc.method.s3.short">Varias métricas objetivas a la vez</span></span></a></li>
     <li><a href="#mesetas"><span class="doc-index-num">04</span><span class="doc-index-text"><strong data-i18n="doc.method.s4.title">Mesetas, no picos</strong><span data-i18n="doc.method.s4.short">Los vecinos también tienen que funcionar</span></span></a></li>
     <li><a href="#forward"><span class="doc-index-num">05</span><span class="doc-index-text"><strong data-i18n="doc.method.s5.title">El forward confirma o rebaja</strong><span data-i18n="doc.method.s5.short">Prueba en datos que no usó</span></span></a></li>
-    <li><a href="#suerte"><span class="doc-index-num">06</span><span class="doc-index-text"><strong data-i18n="doc.method.s6.title">Mide cuánto puede ser suerte</strong><span data-i18n="doc.method.s6.short">¿Tu mejor resultado supera al azar?</span></span></a></li>
+    <li><a href="#suerte"><span class="doc-index-num">06</span><span class="doc-index-text"><strong data-i18n="doc.method.s6.title">Calcula cuánto pudo ser azar</strong><span data-i18n="doc.method.s6.short">¿Tu mejor resultado supera al azar?</span></span></a></li>
     <li><a href="#umbrales"><span class="doc-index-num">07</span><span class="doc-index-text"><strong data-i18n="doc.method.s7.title">Se examina a sí mismo</strong><span data-i18n="doc.method.s7.short">La respuesta no puede depender de sus ajustes</span></span></a></li>
     <li><a href="#niveles"><span class="doc-index-num">08</span><span class="doc-index-text"><strong data-i18n="doc.method.s8.title">Qué significa cada nivel de evidencia</strong><span data-i18n="doc.method.s8.short">Cuánto respaldan tus datos la respuesta</span></span></a></li>
-    <li><a href="#backtest"><span class="doc-index-num">09</span><span class="doc-index-text"><strong data-i18n="doc.method.s9.title">La prueba final: tu backtest en un periodo no visto</strong><span data-i18n="doc.method.s9.short">La única comprobación del todo limpia</span></span></a></li>
+    <li><a href="#backtest"><span class="doc-index-num">09</span><span class="doc-index-text"><strong data-i18n="doc.method.s9.title">La prueba de fuego: tu backtest en un periodo no visto</strong><span data-i18n="doc.method.s9.short">La única comprobación del todo limpia</span></span></a></li>
     </ol>
   </nav>
 
@@ -170,7 +170,7 @@
     <section class="lp-doc-block lp-method-step" id="suerte">
       <span class="lp-method-num">06</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s6.title">Mide cuánto puede ser suerte</h2>
+        <h2 data-i18n="doc.method.s6.title">Calcula cuánto pudo ser azar</h2>
         <p data-i18n="doc.method.s6.body">Si pruebas miles de combinaciones, alguna saldrá muy bien por puro azar. El motor calcula el mejor Sharpe que cabría esperar solo por suerte con ese número de pruebas y lo compara con el tuyo. Si no lo supera, el informe lo marca como aviso crítico: el primer puesto puede no ser más que ruido. Superarlo es necesario, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.</p>
       </div>
     </section>
@@ -218,7 +218,7 @@
     <section class="lp-doc-block lp-method-step has-media" id="backtest">
       <span class="lp-method-num">09</span>
       <div class="lp-method-step-text">
-        <h2 data-i18n="doc.method.s9.title">La prueba final: tu backtest en un periodo no visto</h2>
+        <h2 data-i18n="doc.method.s9.title">La prueba de fuego: tu backtest en un periodo no visto</h2>
         <p data-i18n="doc.method.s9.body">Lo más limpio es probar la configuración en un periodo que no hayas usado ni para optimizar ni para validar. Suelta el informe de ese backtest en la aplicación y te dice si el resultado es normal para tu EA, con un Monte Carlo sobre tus propias operaciones; te avisa si hay pocas operaciones para concluir nada, y muestra qué pasa si el spread o el slippage empeoran respecto a la optimización.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">

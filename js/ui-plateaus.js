@@ -127,7 +127,7 @@ export function renderPlateaus(a) {
 
   return `<div class="detail-head">
       <div class="detail-kicker">${L('02 / Mesetas', '02 / Plateaus')}</div>
-      <h2>${L('Regiones estables detectadas', 'Stable regions detected')}</h2>
+      <h2>${L('Las mesetas de tu optimización', 'The plateaus in your optimization')}</h2>
       <p>${L(
         'Ordenadas por el <strong>suelo</strong> de la región, no por su cima. Una meseta es un conjunto conexo de configuraciones donde incluso el cuartil bajo del entorno mantiene calidad buena.',
         'Ordered by the region <strong>floor</strong>, not its peak. A plateau is a connected set of configurations where even the lower quartile of the neighborhood keeps good quality.',
@@ -322,7 +322,7 @@ export function renderRejected(a) {
   }
   return `<div class="detail-head">
       <div class="detail-kicker">${L('03 / Descartes', '03 / Rejected')}</div>
-      <h2>${L('Las que encabezan tu tabla y aún así no se recomiendan', 'Ones that top your table and still are not recommended')}</h2>
+      <h2>${L('Primeras en MT5, descartadas aquí', 'Top in MT5, discarded here')}</h2>
       <p>${L(
         `Ordenadas por <code>${esc(critName)}</code>, que es la columna por la que MT5 te las presenta. Para cada una se indica por qué el motor no la respalda. Esta es la tabla que evita la mayoría de los errores.`,
         `Ordered by <code>${esc(critName)}</code>, the column MT5 presents them by. For each one the engine explains why it does not back it. This is the table that prevents most mistakes.`,
@@ -454,7 +454,7 @@ export function renderDiagnostics(a) {
 
   return `<div class="detail-head">
       <div class="detail-kicker">${L('05 / Diagnóstico', '05 / Diagnostics')}</div>
-      <h2>${L('Qué se ha leído y con qué se ha juzgado', 'What was read and what it was judged by')}</h2>
+      <h2>${L('Datos y criterios del análisis', 'Analysis data and criteria')}</h2>
       <p>${L('Todo lo que decide el veredicto está aquí. Si algo se ha clasificado mal, se ve en esta pantalla.',
         'Everything that decides the verdict is here. If something was misclassified, it shows on this screen.')}</p>
     </div>

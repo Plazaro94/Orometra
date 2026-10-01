@@ -33,6 +33,9 @@
       var nav = (navigator.language || '').toLowerCase();
       lang = nav.indexOf('es') === 0 ? 'es' : 'en';
     }
+    // Página 404 (una sola para todo el sitio): si la dirección rota es de la versión en
+    // español (/es/…), se muestra en español aunque el navegador esté en inglés.
+    if (root.getAttribute('data-page') === 'notfound' && /^\/es(\/|$)/.test(location.pathname)) lang = 'es';
     // Paginas publicas (portada, metodologia, privacidad): cada idioma tiene su propia
     // direccion (/ y /es/) para que Google indexe las dos. El idioma lo decide la
     // direccion; si el visitante prefiere el otro (lo eligio antes, o su navegador esta
