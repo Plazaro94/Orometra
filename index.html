@@ -118,6 +118,62 @@
     </div>
   </section>
 
+  <!-- 2a. Lo que te llevas: la misma tarjeta del informe -->
+  <section class="hm-section hm-take" aria-labelledby="hm-take-title">
+    <h2 id="hm-take-title" data-i18n="home.take.title">What you take away</h2>
+    <p class="hm-sub" data-i18n="home.take.sub">Not a table to interpret: a decision. This is the first thing the report shows (example data).</p>
+    <div class="hm-take-grid">
+      <figure class="hm-take-card">
+        <div class="vx v-warn" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Example verdict card">
+          <div class="vx-main">
+            <div class="vx-pick">
+              <span class="vx-label"><b class="hm-take-n" aria-hidden="true">1</b><span data-i18n="home.take.pick.label">Which configuration to use</span></span>
+              <div class="vx-pass"><span data-i18n="home.take.pick.pass">Pass</span> <b>4283</b></div>
+              <p class="vx-pass-note" data-i18n="home.take.pick.note">The center of a stable zone of 412 similar configurations.</p>
+              <div class="t3-param-chips vx-params"><span>FastMA <b>14</b></span><span>SlowMA <b>70</b></span><span>ATR_SL <b>2</b></span><span>ATR_TP <b>4</b></span></div>
+              <div class="vx-actions"><a class="primary-btn" href="app/?demo=1" data-i18n="home.take.pick.download">Download .set</a><a class="ghost-btn" href="app/?demo=1" data-i18n="home.take.pick.copy">Copy parameters</a></div>
+            </div>
+            <div class="vx-trust">
+              <span class="vx-label"><b class="hm-take-n" aria-hidden="true">2</b><span data-i18n="home.take.trust.label">How much to trust it</span></span>
+              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Evidence: moderate (3 of 4)">
+                <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.1">Insufficient</span></div>
+                <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.2">Weak</span></div>
+                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.3">Moderate</span></div>
+                <div class="vx-seg"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Strong</span></div>
+              </div>
+              <p class="vx-trust-line" data-i18n="home.take.trust.line">A stable, validated zone. To reach strong it still needs a test on a period you have not used.</p>
+              <div class="vx-stats">
+                <div class="vx-stat"><strong>88<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustness</span></div>
+                <div class="vx-stat"><strong>12<small> / 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Neighbors that pass</span></div>
+                <div class="vx-stat"><strong>94 %</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Holds on validation</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="vx-next">
+            <span class="vx-label"><b class="hm-take-n" aria-hidden="true">3</b><span data-i18n="home.take.next.label">What to do now</span></span>
+            <ol class="vx-steps">
+              <li class="vx-step"><span class="vx-step-n" aria-hidden="true">1</span><div><strong data-i18n="home.take.next.1">Download the .set</strong></div></li>
+              <li class="vx-step"><span class="vx-step-n" aria-hidden="true">2</span><div><strong data-i18n="home.take.next.2">Test it on a period you have not used</strong></div></li>
+              <li class="vx-step"><span class="vx-step-n" aria-hidden="true">3</span><div><strong data-i18n="home.take.next.3">Check the result here</strong></div></li>
+            </ol>
+          </div>
+        </div>
+      </figure>
+      <div class="hm-take-side">
+        <ol class="hm-take-legend">
+          <li><b class="hm-take-n" aria-hidden="true">1</b><div><strong data-i18n="home.take.leg.1.t">One configuration, not a ranking</strong><p data-i18n="home.take.leg.1.b">The center of a zone where the neighboring values also work, with a .set ready to load in MT5.</p></div></li>
+          <li><b class="hm-take-n" aria-hidden="true">2</b><div><strong data-i18n="home.take.leg.2.t">How much to trust it, in plain words</strong><p data-i18n="home.take.leg.2.b">Four evidence levels. It never says more than your data can support.</p></div></li>
+          <li><b class="hm-take-n" aria-hidden="true">3</b><div><strong data-i18n="home.take.leg.3.t">The next step</strong><p data-i18n="home.take.leg.3.b">How to confirm it before risking money, and a check of that backtest when you bring it back.</p></div></li>
+        </ol>
+        <pre class="hm-take-set" data-i18n="home.take.aria.set" data-i18n-attr="aria-label" aria-label="Example .set file"><span class="hm-take-set-name">Orometra-4283.set</span>FastMA=14
+SlowMA=70
+ATR_SL=2
+ATR_TP=4</pre>
+        <p class="hm-more"><a href="app/?demo=1" data-i18n="home.take.more">See the full sample report →</a></p>
+      </div>
+    </div>
+  </section>
+
   <!-- 2b. El motor por dentro -->
   <section class="hm-section" aria-labelledby="hm-engine-title">
     <h2 id="hm-engine-title" data-i18n="home.engine.title">What the engine does for you</h2>

@@ -220,14 +220,15 @@ export function sensitivityBars(analysis) {
     const wEff = Math.max(2, scale(value));
     const wMarg = Math.max(0, scale(marginal));
     const marker = rescued
-      ? `<line class="ch-sens-marginal" x1="${fx(labelW + wMarg)}" y1="${y}" x2="${fx(labelW + wMarg)}" y2="${y + 20}"/>`
+      ? `<line class="ch-sens-marginal" x1="${fx(labelW + wMarg)}" y1="${y + 2}" x2="${fx(labelW + wMarg)}" y2="${y + 18}"/>`
       : '';
     const note = rescued ? ` (${fmt2(value)} · ${L('aislado', 'isolated')} ${fmt2(marginal)})` : `${fmt2(value)}${roleNote ? ' · ' + roleNote : ''}`;
     const label = rescued ? note.trim() : note;
     return `<text class="ch-row-label" x="${labelW - 8}" y="${y + 13}" text-anchor="end">${esc(r.name)}</text>
-      <rect class="${cls}" x="${labelW}" y="${y + 3}" width="${fx(wEff)}" height="14" rx="3"/>
+      <rect class="ch-sens-track" x="${labelW}" y="${y + 6}" width="${fx(scale(maxS))}" height="8" rx="4"/>
+      <rect class="${cls}" x="${labelW}" y="${y + 6}" width="${fx(wEff)}" height="8" rx="4"/>
       ${marker}
-      <text class="ch-count" x="${labelW + wEff + 8}" y="${y + 14}">${esc(label)}</text>`;
+      <text class="ch-count" x="${fx(labelW + scale(maxS) + 10)}" y="${y + 14}">${esc(label)}</text>`;
   }).join('');
   const topName = rows.length ? rows[0].name : '';
   return `${svgOpen(W, H, L(`Influencia relativa de cada parámetro; el más influyente es ${topName}.`, `Relative influence of each parameter; the most influential is ${topName}.`))}${body}</svg>`;
