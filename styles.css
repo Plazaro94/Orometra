@@ -1662,6 +1662,41 @@ html.i18n-pending body{visibility:hidden}
   .hm-sub{margin-top:-12px;font-size:16px}
 }
 
+/* Portada: lo que te llevas. La misma tarjeta del informe (clases .vx), con tres marcas
+   numeradas que explica la columna de al lado, y un trozo del .set. */
+.hm-take-grid{display:flex;flex-direction:column;gap:28px}
+.hm-take-card{margin:0;min-width:0}
+.hm-take-card .vx{margin:0;box-shadow:0 18px 48px -24px rgba(0,0,0,.55)}
+.hm-take-card .vx-label{display:flex;align-items:center;gap:8px}
+.hm-take-card .vx-next{margin-top:18px;padding-top:16px}
+.hm-take-card .vx-step strong{font-size:13.5px;margin-top:2px}
+.hm-take-card a.primary-btn,.hm-take-card a.ghost-btn{text-decoration:none;display:inline-flex;align-items:center}
+.hm-take-n{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
+  background:var(--ok);color:var(--bg);font-size:11.5px;font-weight:800;line-height:1;
+}
+/* Debajo de la tarjeta: las tres explicaciones y el .set, en una fila. */
+.hm-take-side{display:grid;grid-template-columns:minmax(0,3fr) minmax(220px,1fr);gap:28px;align-items:start}
+.hm-take-legend{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.hm-take-legend li{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.hm-take-legend .hm-take-n{width:24px;height:24px;font-size:12.5px;margin-top:1px}
+.hm-take-legend strong{display:block;color:var(--text-hi);font-size:16px;letter-spacing:-.01em}
+.hm-take-legend p{margin:4px 0 0;color:var(--text-2);line-height:1.55;font-size:14.5px}
+.hm-take-set{
+  margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);
+  font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--text-hi);white-space:pre;overflow:auto;
+}
+.hm-take-set-name{display:block;margin-bottom:6px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--muted-2)}
+.hm-take-side .hm-more{grid-column:1 / -1;margin-top:0}
+@media (max-width:980px){
+  .hm-take-side{grid-template-columns:1fr}
+  .hm-take-set{max-width:360px}
+}
+@media (max-width:720px){
+  .hm-take-legend{grid-template-columns:1fr;gap:18px}
+  .hm-take-card .vx-steps{grid-template-columns:1fr;gap:10px}
+}
+
 /* Portada: confianza comprobable. Cuatro pruebas, cada una con su enlace. */
 .hm-proof-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .hm-proof-grid li{
