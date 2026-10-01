@@ -49,6 +49,14 @@ const DEFS = {
     es: 'Dispersión de calidad dentro de la meseta: cuánto varían entre sí las configuraciones vecinas que la forman.',
     en: 'Quality dispersion within the plateau: how much the neighboring configurations that form it vary among themselves.',
   },
+  quality: {
+    es: 'Nota de 0 a 1 que da Orometra a cada configuración con varias métricas a la vez (factor de beneficio, recuperación, caída máxima, Sharpe, operaciones), no con la columna Result que optimizaste.',
+    en: 'A 0-to-1 score Orometra gives each configuration from several metrics at once (profit factor, recovery, maximum drawdown, Sharpe, trades), not from the Result column you optimized.',
+  },
+  retention: {
+    es: 'Calidad en el periodo de validación (forward) dividida entre la calidad en el periodo optimizado, en la mediana de la meseta. 100 % es que no pierde nada al salir de los datos con los que se optimizó.',
+    en: 'Quality on the validation period (forward) divided by quality on the optimized period, at the plateau median. 100% means it loses nothing once outside the data it was optimized on.',
+  },
   robustness: {
     es: 'Puntuación compuesta que resume el suelo, el tamaño y la coherencia de la meseta en un solo número para ordenar candidatas.',
     en: 'A composite score summarizing the plateau\'s floor, size and coherence into a single number to rank candidates.',

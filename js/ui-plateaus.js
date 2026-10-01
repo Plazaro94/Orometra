@@ -112,7 +112,7 @@ export function renderPlateaus(a) {
   }
   const sel = a.plateaus[Math.min(state.selectedPlateau, a.plateaus.length - 1)];
   const rows = a.plateaus.map((p) => `<tr class="${p.rank === sel.rank ? 'sel' : ''}">
-      <td><button class="link-btn" data-plateau="${p.rank - 1}">M${p.rank}</button></td>
+      <td><button class="link-btn" data-plateau="${p.rank - 1}">${L(`Meseta ${p.rank}`, `Plateau ${p.rank}`)}</button></td>
       <td class="mono">${esc(p.record.id)}</td>
       <td class="strong">${num(p.robust, 0)}</td>
       <td>${int(p.size)}</td>
@@ -234,8 +234,8 @@ function renderPlateauSurfacePanel(a, plateau) {
       </div>
     </div>
     <p class="panel-intro">${L(
-      `La altura es la calidad in-sample real de cada pasada. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta (se descubre con el in-sample; el forward solo la valida). El resto de parámetros queda fijo en los valores de Pass ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
-      `Height is the real in-sample quality of each pass. In <strong>teal</strong>, the configurations that belong to this plateau (found in-sample; the forward only validates it). The rest of the parameters stay fixed at Pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
+      `La altura es la calidad real de cada pasada en el periodo optimizado. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta (se descubre en el periodo optimizado; el forward solo la valida). El resto de parámetros queda fijo en los valores de la pasada ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
+      `Height is the real quality of each pass on the optimized period. In <strong>teal</strong>, the configurations that belong to this plateau (found on the optimized period; the forward only validates it). The rest of the parameters stay fixed at pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
     )}</p>
     <div class="surface-wrap">
       <canvas id="plateauSurfaceCanvas" role="img" aria-label="${esc(L('Superficie 3D de calidad real para dos parámetros', '3D surface of real quality for two parameters'))}"></canvas>
