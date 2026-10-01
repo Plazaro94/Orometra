@@ -246,21 +246,28 @@ function renderPlateauSurfacePanel(a, plateau) {
 }
 
 function renderSurfaceDetail(a, grid, hit) {
+  // Sin nada señalado se muestra la pasada elegida (la del banderín), no un hueco.
+  const fine = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const hint = `<p class="muted surface-hint">${fine
+    ? L('Pasa el ratón sobre una barra para ver otra pasada.', 'Hover a bar to see another pass.')
+    : L('Toca una barra para ver otra pasada.', 'Tap a bar to see another pass.')}</p>`;
+  let picked = false;
   if (!hit) {
-    const fine = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
-    return `<p class="muted">${fine
-      ? L('Pasa el ratón sobre una barra para ver la pasada exacta.', 'Hover a bar to see the exact pass.')
-      : L('Toca una barra para ver la pasada exacta.', 'Tap a bar to see the exact pass.')}</p>`;
+    const [ra, rb] = grid.repCell || [];
+    const cell = ra >= 0 && rb >= 0 && grid.grid[rb] ? grid.grid[rb][ra] : null;
+    if (!cell) return hint;
+    hit = { ...cell, a: ra, b: rb };
+    picked = true;
   }
   const rec = a.records[hit.recordIndex];
-  return `<div class="evidence-list">
+  return `${picked ? `<div class="surface-detail-kicker">${L('La elegida', 'The selected one')}</div>` : ''}<div class="evidence-list">
     <div><span>${esc(grid.names[0])}</span><strong>${paramHtml(grid.levelsA[hit.a])}</strong></div>
     <div><span>${esc(grid.names[1])}</span><strong>${paramHtml(grid.levelsB[hit.b])}</strong></div>
     <div><span>${L('Pasada', 'Pass')}</span><strong class="mono">${esc(rec.id)}</strong></div>
-    <div><span>${L('Calidad in-sample', 'In-sample quality')}</span><strong>${num(hit.quality, 3)}</strong></div>
-    <div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${Number.isFinite(hit.qualityOos) ? num(hit.qualityOos, 3) : '—'}</strong></div>
+    <div><span>${L('Calidad al optimizar', 'Quality when optimizing')}</span><strong>${num(hit.quality, 2)}</strong></div>
+    <div><span>${L('Calidad en el forward', 'Quality on the forward')}</span><strong>${Number.isFinite(hit.qualityOos) ? num(hit.qualityOos, 2) : '—'}</strong></div>
     <div><span>${L('¿En esta meseta?', 'In this plateau?')}</span><strong class="big ${hit.inPlateau ? 'ok' : 'warn'}">${hit.inPlateau ? L('sí', 'yes') : L('no', 'no')}</strong></div>
-  </div>`;
+  </div>${hint}`;
 }
 
 export function disposePlateauSurface() {
@@ -276,6 +283,7 @@ export function mountPlateauSurfaceView(a) {
   if (state.surfaceDimA == null || state.surfaceDimB == null) return; // renderPlateauSurfacePanel aun no corrio
   const grid = buildAxisPairGrid(a, sel, state.surfaceDimA, state.surfaceDimB);
   plateauSurfaceHandle = mountPlateauSurface(canvas, grid, {
+    label: `${L('Pasada', 'Pass')} ${sel.record.id}`,
     onHover(cell, aIdx, bIdx) {
       const detail = $('#surfaceDetail');
       if (!detail) return;

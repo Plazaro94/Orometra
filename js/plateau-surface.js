@@ -1,6 +1,6 @@
-// Superficie isométrica de una meseta real: mismo lenguaje visual que el hero
-// de la portada (js/hero-surface.js), pero con datos de verdad en vez de una
-// fórmula. Los datos son discretos (niveles probados de dos parámetros), así
+// Superficie isométrica de una meseta real: mismo lenguaje visual que el relieve
+// de la portada (js/hero-surface.js: luz, paleta y banderín), pero con datos de
+// verdad en vez de una fórmula. Los datos son discretos (niveles probados de dos parámetros), así
 // que se dibuja como barras isométricas —un histograma 3D—, no como una malla
 // continua: interpolar entre niveles reales inventaría valores que nadie
 // probó.
@@ -20,13 +20,14 @@ function cssColor(el, name, fallback) {
  * salir, con null), para que la interfaz pueda mostrar el detalle a un lado.
  * Devuelve `{ destroy(), setGrid(nuevaRejilla) }`.
  */
-export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
+export function mountPlateauSurface(canvas, grid, { onHover, label } = {}) {
   if (!canvas || !canvas.getContext) return { destroy() {}, setGrid() {} };
   const ctx = canvas.getContext('2d', { alpha: false });
   const root = document.documentElement;
   const quiet = matchMedia('(prefers-reduced-motion: reduce)');
 
   let data = grid;
+  let repLabel = label || '';
   let angle = -0.72;
   let raf = 0;
   let dragging = false;
@@ -45,27 +46,47 @@ export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
     return { dpr, cssW, cssH };
   };
 
+  const parse = (str, fb) => {
+    const t = String(str || '').trim();
+    let m = /^#([0-9a-f]{6})/i.exec(t);
+    if (m) return [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16));
+    m = /^#([0-9a-f]{3})$/i.exec(t);
+    if (m) return [...m[1]].map((c) => parseInt(c + c, 16));
+    m = /^rgba?\(\s*([\d.]+)[ ,]+([\d.]+)[ ,]+([\d.]+)/i.exec(t);
+    return m ? [+m[1], +m[2], +m[3]] : fb;
+  };
+  const mix = (a, b, t) => [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * t);
+  const rgb = (c) => `rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`;
+  const WHITE = [255, 255, 255];
+  const BLACK = [0, 0, 0];
+  const SANS = '"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif';
+
+  // La misma paleta que el relieve de la portada: el turquesa es solo de la meseta y
+  // se intensifica con la calidad; el resto es neutro.
   function theme() {
     const isLight = root.dataset.theme === 'light';
+    const bg = parse(cssColor(root, '--surface', isLight ? '#ffffff' : '#0d1322'), isLight ? [255, 255, 255] : [13, 19, 34]);
+    const ok = parse(cssColor(root, '--ok', isLight ? '#0b6a73' : '#3ed7d0'), isLight ? [11, 106, 115] : [62, 215, 208]);
+    const muted = parse(cssColor(root, '--muted-3', isLight ? '#51565d' : '#96a2b4'), [150, 162, 180]);
+    const text = parse(cssColor(root, '--text', isLight ? '#14181d' : '#eaf1f9'), [234, 241, 249]);
     return {
-      isLight,
-      ok: cssColor(root, '--ok', '#3ed7d0'),
-      okBg: cssColor(root, '--ok-bg', '#052220'),
-      text: cssColor(root, '--muted', '#8fa3bd'),
-      faint: cssColor(root, '--muted-3', '#5a6b7d'),
-      surface: cssColor(root, '--surface', '#0c1220'),
-      surface2: cssColor(root, '--surface-2', '#101828'),
-      line: cssColor(root, '--line', '#2a3853'),
+      isLight, bg, ok, muted, text,
+      bg2: parse(cssColor(root, '--surface-2', isLight ? '#eef1f5' : '#131c2f'), [19, 28, 47]),
+      line: parse(cssColor(root, '--line', isLight ? '#d9dee5' : '#24314a'), [36, 49, 74]),
+      // Tono de la cara superior según la calidad (t de 0 a 1).
+      plateauTop: (t) => (isLight ? mix(mix(bg, ok, 0.35), ok, t) : mix(mix(bg, ok, 0.4), mix(ok, WHITE, 0.15), t)),
+      groundTop: (t) => (isLight ? mix(mix(bg, muted, 0.16), mix(bg, muted, 0.42), t) : mix(mix(bg, [120, 138, 168], 0.22), mix(bg, [150, 168, 196], 0.5), t)),
     };
   }
 
-  // Mezcla simple hex/rgb -> con alpha, vía globalAlpha (no hace falta parsear).
-  function withAlpha(ctxRef, color, alpha, fn) {
-    ctxRef.save();
-    ctxRef.globalAlpha = alpha;
-    ctxRef.fillStyle = color;
-    fn();
-    ctxRef.restore();
+  // Geometría compartida por el dibujo y la detección del ratón.
+  function layout(cssW, cssH) {
+    const cx = cssW * 0.5;
+    const cy = cssH * 0.62;
+    // La diagonal del suelo girado mide ~3 veces la escala: cabe a lo ancho con margen
+    // para los nombres de los ejes.
+    const scale = Math.max(40, Math.min((cssW - 48) / 3.1, cssH * 0.46));
+    return { cx, cy, scale };
   }
 
   function project(cx, cy, scale, u, v, h) {
@@ -82,119 +103,175 @@ export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const th = theme();
 
-    ctx.fillStyle = th.surface;
+    ctx.fillStyle = rgb(th.bg);
+    ctx.fillRect(0, 0, cssW, cssH);
+    const wash = ctx.createRadialGradient(cssW * 0.5, cssH * 0.45, cssH * 0.05, cssW * 0.5, cssH * 0.55, cssW * 0.7);
+    wash.addColorStop(0, rgb(th.bg2));
+    wash.addColorStop(1, rgb(th.bg));
+    ctx.fillStyle = wash;
     ctx.fillRect(0, 0, cssW, cssH);
 
-    const { grid: cells, levelsA, levelsB, repCell } = data;
+    const { grid: cells, levelsA, levelsB, repCell, names } = data;
     const nA = levelsA.length;
     const nB = levelsB.length;
     if (!nA || !nB) return;
 
-    const cx = cssW * 0.5;
-    const cy = cssH * 0.6;
-    const scale = Math.min(cssW, cssH) * 0.42;
+    const { cx, cy, scale } = layout(cssW, cssH);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
     const stepU = 2 / nA;
     const stepV = 2 / nB;
     const u0 = (a) => -1 + a * stepU;
     const v0 = (b) => -1 + b * stepV;
+    const P = (u, v, h) => project(cx, cy, scale, u, v, h);
 
-    // Base a altura 0, para el "suelo" de referencia.
-    ctx.save();
-    ctx.strokeStyle = th.line;
-    ctx.globalAlpha = 0.5;
-    ctx.lineWidth = 1;
+    // Suelo: base, rejilla de celdas y una sombra suave bajo las barras.
+    const plate = [[-1.06, -1.06], [1.06, -1.06], [1.06, 1.06], [-1.06, 1.06]].map(([u, v]) => P(u, v, 0));
     ctx.beginPath();
-    const floorCorners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([u, v]) => project(cx, cy, scale, u, v, 0));
-    ctx.moveTo(floorCorners[0][0], floorCorners[0][1]);
-    for (let k = 1; k < 4; k++) ctx.lineTo(floorCorners[k][0], floorCorners[k][1]);
+    plate.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
     ctx.closePath();
+    ctx.fillStyle = rgb(mix(th.bg, th.isLight ? th.muted : BLACK, th.isLight ? 0.06 : 0.25));
+    ctx.fill();
+    ctx.strokeStyle = rgb(mix(th.bg, th.line, 0.9));
+    ctx.lineWidth = 1;
     ctx.stroke();
-    ctx.restore();
+    ctx.beginPath();
+    for (let a = 1; a < nA; a++) { const p1 = P(u0(a), -1, 0); const p2 = P(u0(a), 1, 0); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); }
+    for (let b = 1; b < nB; b++) { const p1 = P(-1, v0(b), 0); const p2 = P(1, v0(b), 0); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); }
+    ctx.strokeStyle = rgb(mix(th.bg, th.line, 0.5));
+    ctx.stroke();
 
-    // Prepara cada barra con su profundidad de pintado (pintor: atrás -> adelante).
+    // Barras, de atrás adelante. Un pequeño hueco entre ellas para que se lean como
+    // pasadas sueltas, no como un bloque.
+    const gap = 0.08;
     const bars = [];
+    let qMin = Infinity;
+    let qMax = -Infinity;
     for (let b = 0; b < nB; b++) {
       for (let a = 0; a < nA; a++) {
         const cell = cells[b][a];
         if (!cell) continue; // hueco: no se dibuja nada, ni a altura 0
-        const h = Math.max(0.02, Math.min(1, cell.quality));
-        const corners = [
-          [u0(a), v0(b)], [u0(a) + stepU, v0(b)],
-          [u0(a) + stepU, v0(b) + stepV], [u0(a), v0(b) + stepV],
-        ];
-        const base = corners.map(([u, v]) => project(cx, cy, scale, u, v, 0));
-        const top = corners.map(([u, v]) => project(cx, cy, scale, u, v, h));
-        const depth = base.reduce((s, p) => s + p[1], 0) / 4;
-        bars.push({
-          a, b, cell, h, base, top, depth,
-          isRep: repCell[0] === a && repCell[1] === b,
-          isHover: hoverCell && hoverCell.a === a && hoverCell.b === b,
-        });
+        if (cell.inPlateau) { qMin = Math.min(qMin, cell.quality); qMax = Math.max(qMax, cell.quality); }
+        const uc = u0(a) + stepU / 2;
+        const vc = v0(b) + stepV / 2;
+        bars.push({ a, b, cell, uc, vc, depth: uc * sin + vc * cos });
       }
     }
     bars.sort((x, y) => x.depth - y.depth);
-
-    // Dentro de la meseta, la calidad ya varia de una celda a otra (es lo que
-    // decide la altura de la barra); el color no lo reflejaba, asi que una
-    // celda pegada al suelo minimo (borde real de la meseta) se veia igual de
-    // "buena" que el nucleo. Se normaliza dentro del rango de calidad que
-    // realmente tienen las celdas de esta meseta, para que el contraste se
-    // note aunque el rango absoluto sea estrecho.
-    let qMin = Infinity;
-    let qMax = -Infinity;
-    for (const bar of bars) {
-      if (!bar.cell.inPlateau) continue;
-      if (bar.cell.quality < qMin) qMin = bar.cell.quality;
-      if (bar.cell.quality > qMax) qMax = bar.cell.quality;
-    }
     const qSpan = qMax > qMin ? qMax - qMin : 0;
+    let allMin = Infinity;
+    let allMax = -Infinity;
+    for (const bar of bars) { allMin = Math.min(allMin, bar.cell.quality); allMax = Math.max(allMax, bar.cell.quality); }
+    const allSpan = allMax > allMin ? allMax - allMin : 1;
 
+    // Luz fija en pantalla, arriba a la izquierda: las caras que miran a la izquierda
+    // se ven más claras.
+    const face = (pts, col) => {
+      ctx.beginPath();
+      pts.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+      ctx.fillStyle = rgb(col);
+      ctx.fill();
+      ctx.strokeStyle = ctx.fillStyle;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    };
+    let rep = null;
     for (const bar of bars) {
-      const { base, top, cell, isRep, isHover } = bar;
-      const inPlateau = cell.inPlateau;
-      const depthT = inPlateau && qSpan ? (cell.quality - qMin) / qSpan : 1;
-      const edgeFactor = inPlateau ? 0.5 + 0.5 * depthT : 1;
-      const baseColor = inPlateau ? th.ok : th.text;
-      const topAlpha = (inPlateau ? (th.isLight ? 0.85 : 0.6) : (th.isLight ? 0.4 : 0.24)) * edgeFactor;
-      const sideAlpha = topAlpha * 0.55;
-      const frontAlpha = topAlpha * 0.38;
-
-      // Cara lateral derecha (corners 1-2, base y techo).
-      ctx.beginPath();
-      ctx.moveTo(top[1][0], top[1][1]);
-      ctx.lineTo(top[2][0], top[2][1]);
-      ctx.lineTo(base[2][0], base[2][1]);
-      ctx.lineTo(base[1][0], base[1][1]);
-      ctx.closePath();
-      withAlpha(ctx, baseColor, sideAlpha, () => ctx.fill());
-
-      // Cara frontal (corners 2-3).
-      ctx.beginPath();
-      ctx.moveTo(top[2][0], top[2][1]);
-      ctx.lineTo(top[3][0], top[3][1]);
-      ctx.lineTo(base[3][0], base[3][1]);
-      ctx.lineTo(base[2][0], base[2][1]);
-      ctx.closePath();
-      withAlpha(ctx, baseColor, frontAlpha, () => ctx.fill());
-
-      // Cara superior.
-      ctx.beginPath();
-      ctx.moveTo(top[0][0], top[0][1]);
-      for (let k = 1; k < 4; k++) ctx.lineTo(top[k][0], top[k][1]);
-      ctx.closePath();
-      withAlpha(ctx, baseColor, topAlpha, () => ctx.fill());
-
-      if (isRep || isHover) {
-        ctx.save();
-        ctx.strokeStyle = isRep ? th.ok : th.faint;
-        ctx.lineWidth = isRep ? 2 : 1.25;
-        ctx.globalAlpha = 0.95;
+      const { a, b, cell, uc, vc } = bar;
+      const h = Math.max(0.02, Math.min(1, cell.quality));
+      const hu = (stepU * (1 - gap)) / 2;
+      const hv = (stepV * (1 - gap)) / 2;
+      const c = [[uc - hu, vc - hv], [uc + hu, vc - hv], [uc + hu, vc + hv], [uc - hu, vc + hv]];
+      const base = c.map(([u, v]) => P(u, v, 0));
+      const top = c.map(([u, v]) => P(u, v, h));
+      const t = cell.inPlateau ? (qSpan ? (cell.quality - qMin) / qSpan : 1) : (cell.quality - allMin) / allSpan;
+      const topCol = cell.inPlateau ? th.plateauTop(t) : th.groundTop(t);
+      // Caras laterales visibles: la normal exterior apunta hacia quien mira.
+      const sides = [
+        { k: [1, 2], nx: cos, nz: sin }, // +u
+        { k: [3, 0], nx: -cos, nz: -sin }, // -u
+        { k: [2, 3], nx: -sin, nz: cos }, // +v
+        { k: [0, 1], nx: sin, nz: -cos }, // -v
+      ];
+      for (const sd of sides) {
+        if (sd.nz <= 0.001) continue;
+        const lit = 0.5 + 0.5 * Math.max(-1, Math.min(1, -sd.nx));
+        const col = th.isLight ? mix(topCol, BLACK, 0.28 - 0.16 * lit) : mix(topCol, BLACK, 0.55 - 0.25 * lit);
+        const [i, j] = sd.k;
+        face([top[i], top[j], base[j], base[i]], col);
+      }
+      face(top, th.isLight ? topCol : mix(topCol, WHITE, 0.06));
+      const isRep = repCell[0] === a && repCell[1] === b;
+      const isHover = hoverCell && hoverCell.a === a && hoverCell.b === b;
+      if (isHover && !isRep) {
         ctx.beginPath();
-        ctx.moveTo(top[0][0], top[0][1]);
-        for (let k = 1; k < 4; k++) ctx.lineTo(top[k][0], top[k][1]);
+        top.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
         ctx.closePath();
+        ctx.strokeStyle = rgb(th.text);
+        ctx.lineWidth = 1.5;
         ctx.stroke();
-        ctx.restore();
+      }
+      if (isRep) rep = { top: P(uc, vc, h), outline: top };
+    }
+
+    // Nombres de los ejes, junto a los dos bordes del suelo más cercanos.
+    ctx.font = `500 12px ${SANS}`;
+    ctx.fillStyle = rgb(th.muted);
+    ctx.textBaseline = 'middle';
+    const edgeLabel = (u1, v1, u2, v2, text) => {
+      const m = P((u1 + u2) / 2, (v1 + v2) / 2, 0);
+      const toward = [(m[0] - cx), (m[1] - cy)];
+      const len = Math.hypot(...toward) || 1;
+      const tw = ctx.measureText(text).width;
+      let x = m[0] + (toward[0] / len) * 16;
+      const y = Math.min(cssH - 10, m[1] + (toward[1] / len) * 14);
+      // Se coloca centrado en su borde y se mete dentro del lienzo si se sale.
+      x = Math.max(8 + tw / 2, Math.min(cssW - 8 - tw / 2, x));
+      ctx.textAlign = 'center';
+      ctx.fillText(text, x, y);
+    };
+    // Los bordes cuyo centro queda más abajo en pantalla son los de delante.
+    const edgesU = [[-1.06, -1.06, 1.06, -1.06], [-1.06, 1.06, 1.06, 1.06]];
+    const edgesV = [[-1.06, -1.06, -1.06, 1.06], [1.06, -1.06, 1.06, 1.06]];
+    const front = (e) => P((e[0] + e[2]) / 2, (e[1] + e[3]) / 2, 0)[1];
+    const eu = edgesU.sort((x, y) => front(y) - front(x))[0];
+    const ev = edgesV.sort((x, y) => front(y) - front(x))[0];
+    if (names) {
+      edgeLabel(...eu, names[0]);
+      edgeLabel(...ev, names[1]);
+    }
+
+    // La pasada elegida: el banderín de la portada (palo fino y remate de 2 px).
+    if (rep) {
+      ctx.beginPath();
+      rep.outline.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+      ctx.strokeStyle = rgb(th.isLight ? th.ok : mix(th.ok, WHITE, 0.3));
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      const [x, y] = rep.top;
+      const stick = 34;
+      ctx.strokeStyle = rgb(th.ok);
+      ctx.lineWidth = 1.25;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - stick); ctx.stroke();
+      ctx.fillStyle = rgb(th.ok);
+      ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI * 2); ctx.fill();
+      if (repLabel) {
+        ctx.font = `600 12px ${SANS}`;
+        const tw = ctx.measureText(repLabel).width + 20;
+        const bh = 24;
+        const bx = Math.max(6, Math.min(cssW - tw - 6, x - 12));
+        const by = Math.max(6, y - stick - bh);
+        ctx.fillStyle = rgb(mix(th.bg, th.ok, th.isLight ? 0.1 : 0.16));
+        ctx.strokeStyle = rgb(mix(th.bg, th.ok, 0.8));
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(bx + 0.5, by + 0.5, tw, bh, 7); else ctx.rect(bx + 0.5, by + 0.5, tw, bh);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = rgb(mix(th.ok, th.text, th.isLight ? 0.45 : 0.3));
+        ctx.textAlign = 'left';
+        ctx.fillText(repLabel, bx + 10, by + bh / 2 + 0.5);
       }
     }
   }
@@ -217,9 +294,7 @@ export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
     const { grid: cells, levelsA, levelsB } = data;
     const nA = levelsA.length;
     const nB = levelsB.length;
-    const cx = rect.width * 0.5;
-    const cy = rect.height * 0.6;
-    const scale = Math.min(rect.width, rect.height) * 0.42;
+    const { cx, cy, scale } = layout(rect.width, rect.height);
     const stepU = 2 / nA;
     const stepV = 2 / nB;
     let best = null;
@@ -308,8 +383,9 @@ export function mountPlateauSurface(canvas, grid, { onHover } = {}) {
       ro.disconnect();
       mo.disconnect();
     },
-    setGrid(next) {
+    setGrid(next, nextLabel) {
       data = next;
+      if (nextLabel !== undefined) repLabel = nextLabel;
       hoverCell = null;
       schedule();
     },
