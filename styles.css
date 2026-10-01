@@ -568,6 +568,91 @@ details.panel > .panel-body{padding:0 20px 20px}
 .verdict-fact-cta{align-self:flex-start;margin-top:2px;font-weight:600}
 .verdict-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .verdict-actions button{padding:9px 14px;font-size:13.5px}
+/* ---------------------------------------------------------------- decisión (veredicto)
+   Lo primero del informe: qué configuración usar, cuánto fiarte y qué hacer ahora. El
+   nivel se lee en el medidor y en su color; la tarjeta es neutra, como el resto. */
+.vx{
+  --lv:var(--evidence-moderate);--lv-text:var(--evidence-moderate-text);
+  border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
+  padding:24px 26px 22px;margin-bottom:12px;
+}
+.vx.v-no{--lv:var(--evidence-none);--lv-text:var(--evidence-none-text)}
+.vx.v-weak{--lv:var(--evidence-weak);--lv-text:var(--evidence-weak-text)}
+.vx.v-go{--lv:var(--evidence-strong);--lv-text:var(--evidence-strong-text)}
+.vx-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
+.vx-trust{padding-left:28px;border-left:1px solid var(--line);min-width:0}
+.vx-pick{min-width:0}
+.vx-label{display:block;font-size:12px;font-weight:700;color:var(--muted-2);margin:0 0 8px}
+.vx-pass{font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--text-hi)}
+.vx-pass b{font-family:var(--mono);font-weight:700;letter-spacing:-.04em}
+.vx-pass-risk{font-size:22px;color:var(--warn-text)}
+.vx-pass-note{margin:6px 0 14px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.vx-pass-note b{color:var(--text-hi)}
+.vx-params{margin:0 0 16px}
+.vx-actions{display:flex;flex-wrap:wrap;gap:8px}
+.vx-actions button{padding:11px 18px;font-size:14px}
+.vx-fine{margin:12px 0 0;font-size:11.5px;line-height:1.45;color:var(--muted-2);max-width:56ch}
+.vx-level{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.15;color:var(--text-hi)}
+.vx-level b{color:var(--lv-text);font-weight:700}
+.vx-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:14px 0 12px}
+.vx-seg-bar{display:block;height:6px;border-radius:3px;background:var(--line)}
+.vx-seg.is-on .vx-seg-bar{background:var(--lv)}
+.vx-seg.is-on:not(.is-here) .vx-seg-bar{opacity:.55}
+.vx-seg-name{display:block;margin-top:7px;font-size:11.5px;color:var(--muted-2)}
+.vx-seg.is-here .vx-seg-name{color:var(--text-hi);font-weight:700}
+.vx-trust-line{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--text-2)}
+.vx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.vx-stat{border:1px solid var(--line-soft);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px 12px 11px;min-width:0}
+.vx-stat > strong{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--text-hi);font-variant-numeric:tabular-nums;line-height:1.1}
+.vx-stat > strong small{font-size:13px;font-weight:600;color:var(--muted-2);letter-spacing:0}
+.vx-stat-label{display:block;margin-top:6px;font-size:12.5px;font-weight:700;color:var(--text)}
+.vx-stat-note{display:block;margin-top:3px;font-size:11.5px;line-height:1.4;color:var(--muted)}
+.vx-next{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.vx-next .vx-label{margin-bottom:14px}
+.vx-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.vx-step{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.vx-step-n{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
+  border:1px solid var(--ok-line);color:var(--ok-text);font-weight:700;font-size:13px;
+}
+.vx-step strong{display:block;font-size:14px;color:var(--text-hi);line-height:1.35;margin-top:3px}
+.vx-step p{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--muted)}
+.vx-step-cta{margin-top:6px;font-weight:600;color:var(--ok-text)}
+.vx-next-text{margin:0;font-size:14.5px;line-height:1.55;color:var(--text-2);max-width:80ch}
+/* Por qué: el resumen del motor y, debajo, a favor / en contra con su marca. */
+.why-summary{margin:0 0 18px;font-size:14.5px;line-height:1.6;color:var(--text-2);max-width:82ch}
+.panel-why .why-col li{flex-direction:row;gap:10px;align-items:flex-start}
+.panel-why .why-col li > div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.why-mark{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-top:1px;
+  border-radius:50%;font-size:11px;font-weight:800;line-height:1;
+}
+.why-pros .why-mark{color:var(--ok-text);background:var(--ok-bg);border:1px solid var(--ok-line)}
+.why-cons .why-mark{color:var(--warn-text);background:var(--warn-bg);border:1px solid var(--warn-line)}
+/* Detalle técnico: plegado por defecto, con una línea de lo que hay dentro. */
+.vx-section-title{margin:26px 0 10px;font-size:13px;font-weight:700;color:var(--muted-2);letter-spacing:0}
+.vx-detail{margin-bottom:8px}
+.vx-detail > summary h2{font-size:15px;margin-top:0}
+.vx-detail-hint{margin:3px 0 0;font-size:12.5px;color:var(--muted);font-weight:400}
+.vx-detail .panel-body h3{font-size:13px;margin:0 0 10px}
+.vx-detail .grid-secondary{gap:24px}
+.vx-detail-actions{display:flex;justify-content:flex-end;margin:0 0 6px}
+.t3-panel .t3-alts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:0 0 16px}
+.t3-alt .t3-score{text-align:left}
+@media (max-width:720px){
+  .vx{padding:20px 18px 18px}
+  .vx-main{grid-template-columns:1fr;gap:20px}
+  .vx-trust{padding-left:0;border-left:0;padding-top:20px;border-top:1px solid var(--line)}
+  .vx-pass{font-size:26px}
+  .vx-level{font-size:21px}
+  .vx-stats{gap:6px}
+  .vx-stat{padding:10px 9px}
+  .vx-stat > strong{font-size:19px}
+  .vx-stat-note{display:none}
+  .vx-steps{grid-template-columns:1fr;gap:16px}
+  .vx-actions button{flex:1 1 auto}
+}
+
 /* Viendo un informe, "Ver un informe de ejemplo" sobra: para volver a empezar esta
    "Empezar de cero". */
 .has-analysis #demoBtn{display:none}
@@ -1111,7 +1196,10 @@ tr.sel td{color:var(--text-2)}
   th{color:var(--muted-3)}
   td{color:#111}
   th,td{border-bottom:1px solid var(--line)}
-  .verdict-banner{border:2px solid #111;background:#fff !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
+  .verdict-banner,.vx{border:2px solid #111;background:#fff !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
+  .vx-pass,.vx-level,.vx-stat > strong,.vx-step strong{color:#000}
+  .vx-stat{background:#fff;border-color:var(--line-strong)}
+  .vx-actions,.vx-step-cta,.vx-section-title,.vx-detail{display:none !important}
   .panel-head{margin-bottom:8px}
   .panel-intro{margin-bottom:8px}
   .run-stamp{margin-bottom:3mm;color:var(--muted-3)}

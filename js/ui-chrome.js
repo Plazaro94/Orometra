@@ -260,7 +260,7 @@ export const TAB_HASH = {
 };
 export const HASH_TAB = Object.fromEntries(Object.entries(TAB_HASH).map(([k, v]) => [v, k]));
 
-export function setTab(tab, fromHash) {
+export function setTab(tab, fromHash, { scroll = true } = {}) {
   state.tab = tab;
   // El ancla permite compartir "mira la pestaña de descartes" con un enlace, y que el
   // botón de atrás del navegador haga lo que se espera.
@@ -276,7 +276,7 @@ export function setTab(tab, fromHash) {
   const status = $('#viewStatus');
   const current = document.querySelector(`.nav-item[data-tab="${tab}"] span:last-child`);
   if (status) status.textContent = current ? current.textContent : '';
-  $('#view').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (scroll) $('#view').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   revealActiveTab();
 }
 

@@ -96,7 +96,7 @@ export function buildVerdict(ctx) {
   if (degreesOfFreedom && Number.isFinite(degreesOfFreedom.perParam) && degreesOfFreedom.params > 0) {
     const d = degreesOfFreedom;
     const per = d.perParam;
-    const periodoEs = d.basedOn === 'forward' ? 'el forward' : 'el in-sample';
+    const periodoEs = d.basedOn === 'forward' ? 'el forward' : 'el periodo optimizado';
     const periodoEn = d.basedOn === 'forward' ? 'the forward' : 'the in-sample';
     const tradesN = Math.round(d.basedOn === 'forward' ? d.tradesOos : d.tradesIs).toLocaleString(localeTag());
     const extraEs = Number.isFinite(d.trialsPerTrade) && d.trialsPerTrade > 1
@@ -114,9 +114,9 @@ export function buildVerdict(ctx) {
         L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Todo lo que sigue debe leerse como provisional.${extraEs}`,
           `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. Everything that follows should be read as provisional.${extraEn}`), null);
     } else if (per >= 100) {
-      add(SEV.OK, L(`~${fmt(per, 0)} operaciones por parámetro ajustado`, `~${fmt(per, 0)} trades per fitted parameter`),
-        L(`${d.params} parámetros frente a ${tradesN} operaciones en ${periodoEs}. Hay bastantes operaciones por parámetro: la muestra no es el punto débil.`,
-          `${d.params} parameters versus ${tradesN} trades in ${periodoEn}. There are plenty of trades per parameter: sample size is not the weak point.`), null);
+      add(SEV.OK, L(`Operaciones de sobra: ~${fmt(per, 0)} por parámetro`, `Plenty of trades: ~${fmt(per, 0)} per parameter`),
+        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Con tantas operaciones por parámetro, el tamaño de la muestra no es el punto débil.`,
+          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. With this many trades per parameter, sample size is not the weak point.`), null);
     }
   }
 
@@ -156,31 +156,31 @@ export function buildVerdict(ctx) {
         L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)}% al cruzar periodos, y no hay región amplia donde refugiarse. Por encima del 50% ese ranking vale menos que una moneda.`,
           `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and there is no broad region to fall back on. Above 50% that ranking is worth less than a coin flip.`), 'stats');
     } else if (fragility >= 0.3) {
-      add(SEV.WARN, L(`Fragilidad del ranking Result: ${fmt((100 * fragility), 0)}%`, `Result-ranking fragility: ${fmt((100 * fragility), 0)}%`),
-        L('El orden de Result conserva algo de valor, pero no el suficiente para fiarte de la cima. Selecciona por meseta.',
-          'Result order retains some value, but not enough to trust the top. Select by plateau.'), 'stats');
+      add(SEV.WARN, L(`El orden de MT5 solo se mantiene a medias: falla el ${fmt((100 * fragility), 0)} %`, `The MT5 order only half holds: it fails ${fmt((100 * fragility), 0)}%`),
+        L(`La mejor fila según la columna Result de un periodo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)} % de las veces. Ese orden conserva algo de valor, pero no el suficiente para fiarte de la primera fila: elige por meseta.`,
+          `The best row by the Result column of one period falls below the middle of the table in the other ${fmt((100 * fragility), 0)}% of the time. That order keeps some value, but not enough to trust the top row: choose by plateau.`), 'stats');
     } else {
-      add(SEV.OK, L(`Fragilidad del ranking Result: ${fmt((100 * fragility), 0)}%`, `Result-ranking fragility: ${fmt((100 * fragility), 0)}%`),
-        L('El orden de Result de un periodo conserva valor predictivo en el otro.',
-          'Result order in one period retains predictive value in the other.'), 'stats');
+      add(SEV.OK, L(`El orden de MT5 se mantiene entre periodos: solo falla el ${fmt((100 * fragility), 0)} %`, `The MT5 order holds across periods: it only fails ${fmt((100 * fragility), 0)}%`),
+        L(`La mejor fila según la columna Result de un periodo solo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)} % de las veces: ese orden sí anticipa algo.`,
+          `The best row by the Result column of one period only falls below the middle of the table in the other ${fmt((100 * fragility), 0)}% of the time: that order does anticipate something.`), 'stats');
     }
   }
 
   if (Number.isFinite(fragilityQuality)) {
     if (fragilityQuality >= 0.5) {
-      add(SEV.WARN, L(`Fragilidad de la calidad Orometra: ${fmt((100 * fragilityQuality), 0)}%`, `Orometra quality fragility: ${fmt((100 * fragilityQuality), 0)}%`),
-        L('Aunque no uses Result, la calidad reconstruida (PF/DD/ops…) también pierde orden al cruzar periodos. La meseta sigue siendo mejor que la cima, pero el periodo no visto es imprescindible.',
-          'Even without Result, rebuilt quality (PF/DD/trades…) also loses rank across periods. The plateau is still better than the peak, but the unseen period is essential.'), 'stats');
+      add(SEV.WARN, L(`La nota de Orometra también se tambalea entre periodos: falla el ${fmt((100 * fragilityQuality), 0)} %`, `The Orometra score also wobbles across periods: it fails ${fmt((100 * fragilityQuality), 0)}%`),
+        L('Aunque no se use la columna Result, la nota con varias métricas a la vez (factor de beneficio, caída, operaciones…) también pierde orden al pasar de un periodo a otro. La meseta sigue siendo mejor que la cima, pero probarla en un periodo no visto es imprescindible.',
+          'Even without the Result column, the score built from several metrics at once (profit factor, drawdown, trades…) also loses order from one period to the other. The plateau is still better than the peak, but testing it on an unseen period is essential.'), 'stats');
     } else if (fragilityQuality < 0.3) {
-      add(SEV.OK, L(`Fragilidad de la calidad Orometra: ${fmt((100 * fragilityQuality), 0)}%`, `Orometra quality fragility: ${fmt((100 * fragilityQuality), 0)}%`),
-        L('La calidad reconstruida conserva orden entre periodos mejor que un ranking frágil.',
-          'Rebuilt quality keeps order across periods better than a fragile ranking.'), null);
+      add(SEV.OK, L(`La nota de Orometra se mantiene entre periodos: solo falla el ${fmt((100 * fragilityQuality), 0)} %`, `The Orometra score holds across periods: it only fails ${fmt((100 * fragilityQuality), 0)}%`),
+        L('La nota con varias métricas a la vez (factor de beneficio, caída, operaciones…) conserva el orden de las configuraciones de un periodo a otro.',
+          'The score built from several metrics at once (profit factor, drawdown, trades…) keeps the order of configurations from one period to the other.'), null);
     }
   }
 
   if (selectionMode === 'isThenOos' && hasForward) {
-    add(SEV.INFO, L('Mesetas descubiertas in-sample y validadas en forward', 'Plateaus discovered in-sample and validated on forward'),
-      L('El motor busca zonas con la calidad y los mínimos del in-sample. El forward no crea ni amplía la meseta: la valida después, y si muchas de sus configuraciones fallan tus mínimos en forward, esa meseta baja de puesto. Pesa menos en la elección que si puntuara, pero no es un tramo ciego.',
+    add(SEV.INFO, L('La zona se busca en el periodo optimizado y se valida en el forward', 'The zone is found on the optimized period and validated on the forward'),
+      L('El motor busca zonas con la calidad y los mínimos del periodo optimizado. El forward no crea ni amplía la zona: la comprueba después, y si muchas de sus configuraciones no cumplen tus mínimos en el forward, esa zona baja de puesto. Pesa menos en la elección que si puntuara, pero no es un tramo ciego.',
         'The engine finds regions with in-sample quality and minima. The forward neither creates nor widens the plateau: it validates it afterwards, and if many of its configurations fail your minima on the forward, that plateau drops in rank. It weighs less in the choice than if it scored, but it is not a blind period.'), null);
     const v = bestPlateau && bestPlateau.oosValidation;
     const partial = v && Number.isFinite(v.withForward) && v.withForward < v.size;
@@ -492,10 +492,10 @@ export function buildVerdict(ctx) {
 
   if (invertedRisk && invertedRisk.length && bestPlateau) {
     const altEs = alternativePlateau
-      ? ` La meseta ${alternativePlateau.rank} (representante Pass ${alternativePlateau.record.id}) no tiene ese problema y es la alternativa natural.`
+      ? ` La meseta ${alternativePlateau.rank} (representante: pasada ${alternativePlateau.record.id}) no tiene ese problema y es la alternativa natural.`
       : '';
     const altEn = alternativePlateau
-      ? ` Plateau ${alternativePlateau.rank} (representative Pass ${alternativePlateau.record.id}) does not have that problem and is the natural alternative.`
+      ? ` Plateau ${alternativePlateau.rank} (representative: pass ${alternativePlateau.record.id}) does not have that problem and is the natural alternative.`
       : '';
     add(SEV.WARN, L('La configuración propuesta se apoya en un valor que el forward castiga', 'The proposed configuration leans on a value the forward punishes'),
       L(`${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: es el valor que gana en el in-sample, pero su nivel es de los peores en el forward. Que esta configuración concreta aguante ahí puede ser mérito suyo o puede ser suerte, y no hay forma de distinguirlo con estos datos.${altEs}`,

@@ -41,7 +41,7 @@ export function buildPlainSummary(a) {
     top.forEach((p, i) => {
       const role = i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`);
       lines.push('');
-      lines.push(`${role} — ${L('Pasada', 'Pass')} ${p.record.id} (M${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
+      lines.push(`${role} — ${L('Pasada', 'Pass')} ${p.record.id} (${L('meseta', 'plateau')} ${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
       lines.push(`  ${L('Operaciones in-sample / forward', 'In-sample / forward trades')}: ${p.record.is.trades}${hasF ? ` / ${p.record.oos.trades}` : ` / ${L('sin forward', 'no forward')}`}`);
       a.meta.paramNames.forEach((n, j) => lines.push(`  ${n} = ${paramValue(p.record.params[j])}`));
     });

@@ -388,7 +388,7 @@ export function renderUnseen(a) {
   const v = state.unseen.values;
   const res = state.unseen.result;
 
-  const options = a.plateaus.slice(0, 5).map((pl, i) => `<option value="${i}"${i === idx ? ' selected' : ''}>M${pl.rank} - ${L('Pasada', 'Pass')} ${esc(pl.record.id)}${i === 0 ? L(' (recomendada)', ' (recommended)') : ''}</option>`).join('');
+  const options = a.plateaus.slice(0, 5).map((pl, i) => `<option value="${i}"${i === idx ? ' selected' : ''}>${L(`Meseta ${pl.rank}`, `Plateau ${pl.rank}`)} · ${L('Pasada', 'Pass')} ${esc(pl.record.id)}${i === 0 ? L(' (recomendada)', ' (recommended)') : ''}</option>`).join('');
 
   const fields = fieldsDef.map((f) => `<label class="field">
       <span>${esc(f.label)}${f.required ? ' <em class="req-mark">*</em>' : ''}</span>

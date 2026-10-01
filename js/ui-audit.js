@@ -5,7 +5,7 @@ import { parseTable } from '../core/parse.js';
 import { AnalysisError, CODE, classifyError, errorCopy } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
 import { state, api, $, $$, esc } from './ui-state.js';
-import { displayVerdictLevel } from './ui-verdict.js';
+import { displayVerdictLevel, levelName } from './ui-verdict.js';
 
 export function showProgress(pct, label) {
   $('#statusBar').hidden = false;
@@ -263,9 +263,10 @@ export async function runAudit() {
       at: new Date(),
     };
     // El nivel MOSTRADO (sin periodo no visto, 'sólida' se muestra como moderada).
+    // La pestaña del navegador dice el nivel en palabras («Evidencia moderada · …»): un
+    // «!» suelto delante del nombre parecía un error.
     const shownLevel = displayVerdictLevel(analysis);
-    const mark = shownLevel === 'strong' ? '✓' : shownLevel === 'moderate' ? '!' : '·';
-    document.title = `${mark} ${state.source.is} · Orometra`;
+    document.title = `${L('Evidencia', 'Evidence')} ${levelName(shownLevel).toLowerCase()} · ${state.source.is} · Orometra`;
     // Primer analisis de la sesion: colapsa la ficha de carga de archivos, que si no
     // se repite entera en cada una de las 7 pestanas. Un reanalisis (mismos archivos,
     // otros minimos) no toca el estado expandido/colapsado que ya eligio el usuario.
@@ -297,7 +298,11 @@ export async function runAudit() {
         drawdown: m.drawdown, recoveryFactor: m.recoveryFactor, sharpe: m.sharpe,
       };
     }
-    api.setTab('verdict');
+    // Un informe nuevo se lee desde arriba: el título es el veredicto. Bajar hasta la
+    // vista dejaba el título fuera y, en el móvil, el inicio de la tarjeta bajo las
+    // pestañas fijas.
+    api.setTab('verdict', false, { scroll: false });
+    window.scrollTo({ top: 0 });
     api.updatePolicyPreview();
     track(state.isDemo ? 'analisis-ejemplo' : analysis.meta.hasForward ? 'analisis-is-forward' : 'analisis-solo-is');
   } catch (error) {

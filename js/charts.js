@@ -62,7 +62,7 @@ function formatTick(v) {
 /** Dispersión calidad IS frente a calidad OOS. La diagonal marca "no se degrada". */
 export function scatterIsOos(analysis) {
   const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 44 };
-  if (!analysis.meta.hasForward) return `<p class="muted">${L('Sin periodo forward no hay comparación in-sample/forward.', 'Without a forward period there is no in-sample/forward comparison.')}</p>`;
+  if (!analysis.meta.hasForward) return `<p class="muted">${L('Sin periodo forward no hay comparación entre la optimización y la validación.', 'Without a forward period there is no comparison between optimization and validation.')}</p>`;
   const xScale = (v) => pad.l + v * (W - pad.l - pad.r);
   const yScale = (v) => H - pad.b - v * (H - pad.t - pad.b);
   const pts = [];
@@ -75,7 +75,7 @@ export function scatterIsOos(analysis) {
   }
   const reps = analysis.plateaus.slice(0, 5).map((p, i) => {
     const r = p.record;
-    return `<circle class="pt-rep" cx="${fx(xScale(r.qualityIs))}" cy="${fx(yScale(r.qualityOos))}" r="6"/><text class="ch-point-label" x="${fx(xScale(r.qualityIs) + 10)}" y="${fx(yScale(r.qualityOos) - 8)}">M${i + 1}</text>`;
+    return `<circle class="pt-rep" cx="${fx(xScale(r.qualityIs))}" cy="${fx(yScale(r.qualityOos))}" r="6"/><text class="ch-point-label" x="${fx(xScale(r.qualityIs) + 10)}" y="${fx(yScale(r.qualityOos) - 8)}">${i === 0 ? esc(L('Elegida', 'Selected')) : i + 1}</text>`;
   }).join('');
   const diagonal = `<line class="ch-diagonal" x1="${xScale(0)}" y1="${yScale(0)}" x2="${xScale(1)}" y2="${yScale(1)}"/>`;
   const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1];
@@ -84,15 +84,15 @@ export function scatterIsOos(analysis) {
   const svg = frame(W, H, pad, diagonal + pts.join('') + reps, {
     label: L(`Calidad in-sample frente a forward: el ${worse} % de las configuraciones pierde calidad en el forward.`,
       `In-sample versus forward quality: ${worse}% of configurations lose quality on the forward.`),
-    xLabel: L('Calidad en In-Sample', 'In-sample quality'),
-    yLabel: L('Calidad en Out-of-Sample', 'Out-of-sample quality'),
+    xLabel: L('Calidad en el periodo optimizado', 'Quality on the optimized period'),
+    yLabel: L('Calidad en el forward', 'Quality on the forward'),
     xTicks: ticks, yTicks: ticks, xScale, yScale,
   });
   return wrapChart(svg, legend([
     { cls: 'chart-swatch-fail', label: L('No pasan mínimos', 'Fail gates') },
     { cls: 'chart-swatch-pass', label: L('Pasan mínimos', 'Pass gates') },
     { cls: 'chart-swatch-plateau', label: L('En meseta', 'In a plateau') },
-    { cls: 'chart-swatch-rep', label: L('Representante', 'Representative') },
+    { cls: 'chart-swatch-rep', label: L('Centro de cada meseta', 'Center of each plateau') },
   ]));
 }
 
@@ -166,14 +166,14 @@ export function degradationChart(analysis) {
   const yMid = (pad.t + H - pad.b) / 2;
   const svg = `${svgOpen(W, H, degLabel)}
     ${gy}${bars}<path class="ch-line-q25" d="${q25line}"/>${labels}
-    <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(L('Criterio forward (mediana)', 'Forward criterion (median)'))}</text>
+    <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(L('Resultado en el forward (mediana)', 'Result on the forward (median)'))}</text>
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
-    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(L('Decil del criterio in-sample (D10 = tus mejores)', 'In-sample criterion decile (D10 = your best)'))}</text>
+    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(L('Grupos según su puesto en la optimización (D10 = tu 10 % mejor)', 'Groups by optimization rank (D10 = your best 10%)'))}</text>
   </svg>`;
   return wrapChart(svg, legend([
-    { cls: 'chart-swatch-bar', label: L('Mediana OOS', 'OOS median') },
-    { cls: 'chart-swatch-bar-top', label: L('D10 (mejores IS)', 'D10 (best IS)') },
-    { cls: 'chart-swatch-q25', label: L('Cuartil bajo OOS', 'OOS lower quartile') },
+    { cls: 'chart-swatch-bar', label: L('Mediana en el forward', 'Forward median') },
+    { cls: 'chart-swatch-bar-top', label: L('D10: tus mejores', 'D10: your best') },
+    { cls: 'chart-swatch-q25', label: L('El 25 % peor en el forward', 'Worst 25% on the forward') },
   ]));
 }
 

@@ -82,7 +82,7 @@ section('2. Los hallazgos reales llevan la categoria esperada');
     all.filter((f) => !KNOWN.has(f.category)).map((f) => f.title).join(' | '));
   // Una muestra por categoria, con el titulo como pista para leer el fallo.
   const expect = [
-    [/Fragilidad del ranking Result/, 'stats'],
+    [/El orden de MT5/, 'stats'],
     [/umbral del azar/, 'stats'],
     [/Correlación IS -> OOS/, 'stats'],
     [/aguanta el .* variaciones de umbral|sus propios umbrales/, 'stability'],
