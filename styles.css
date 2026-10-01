@@ -572,13 +572,9 @@ details.panel > .panel-body{padding:0 20px 20px}
    Lo primero del informe: qué configuración usar, cuánto fiarte y qué hacer ahora. El
    nivel se lee en el medidor y en su color; la tarjeta es neutra, como el resto. */
 .vx{
-  --lv:var(--evidence-moderate);--lv-text:var(--evidence-moderate-text);
   border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
   padding:24px 26px 22px;margin-bottom:12px;
 }
-.vx.v-no{--lv:var(--evidence-none);--lv-text:var(--evidence-none-text)}
-.vx.v-weak{--lv:var(--evidence-weak);--lv-text:var(--evidence-weak-text)}
-.vx.v-go{--lv:var(--evidence-strong);--lv-text:var(--evidence-strong-text)}
 .vx-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
 .vx-trust{padding-left:28px;border-left:1px solid var(--line);min-width:0}
 .vx-pick{min-width:0}
@@ -593,12 +589,22 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-actions button{padding:11px 18px;font-size:14px}
 .vx-fine{margin:12px 0 0;font-size:11.5px;line-height:1.45;color:var(--muted-2);max-width:56ch}
 .vx-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:2px 0 14px}
-.vx-seg-bar{display:block;height:6px;border-radius:3px;background:var(--line)}
-.vx-seg.is-on .vx-seg-bar{background:var(--lv)}
-.vx-seg.is-on:not(.is-here) .vx-seg-bar{opacity:.55}
+/* Un solo color, el turquesa de la marca, que se intensifica tramo a tramo: el nivel se
+   lee por cuánto se llena y por lo intenso que es el último tramo. No se usan los colores
+   de aviso: el nivel califica la evidencia, no la estrategia. Cada tramo tiene su tono
+   de barra (--s) y uno más claro para su nombre (--t), legible sobre el fondo. */
+.vx-seg:nth-child(1){--s:#2a6f73;--t:#7cb5b8}
+.vx-seg:nth-child(2){--s:#2b9599;--t:#5ec4c4}
+.vx-seg:nth-child(3){--s:#33b9b5;--t:#48d1cb}
+.vx-seg:nth-child(4){--s:#4ae3dc;--t:#4ae3dc}
+:root[data-theme="light"] .vx-seg:nth-child(1){--s:#b3dcdd;--t:#3f8a8f}
+:root[data-theme="light"] .vx-seg:nth-child(2){--s:#66b8bb;--t:#2a7b80}
+:root[data-theme="light"] .vx-seg:nth-child(3){--s:#1e8c93;--t:#1d6f76}
+:root[data-theme="light"] .vx-seg:nth-child(4){--s:#0b5f66;--t:#0b5f66}
+.vx-seg-bar{display:block;height:8px;border-radius:4px;background:var(--line)}
+.vx-seg.is-on .vx-seg-bar{background:var(--s)}
 .vx-seg-name{display:block;margin-top:7px;font-size:11.5px;color:var(--muted-2)}
-.vx-seg-bar{height:8px;border-radius:4px}
-.vx-seg.is-here .vx-seg-name{color:var(--lv-text);font-weight:700;font-size:15px;margin-top:8px}
+.vx-seg.is-here .vx-seg-name{color:var(--t);font-weight:700;font-size:15px;margin-top:8px}
 /* Bajo la tarjeta, los datos del análisis como contexto. */
 .vx + .run-stamp{margin:-2px 0 12px}
 .vx-trust-line{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--text-2)}
