@@ -356,7 +356,6 @@ function renderDecision(a, dv, best, hold) {
       <div class="vx-pick">${pick}</div>
       <div class="vx-trust">
         <span class="vx-label">${esc(L('Cuánto fiarte', 'How much to trust it'))}</span>
-        <div class="vx-level">${L(`Evidencia <b>${esc(levelName(dv.level).toLowerCase())}</b>`, `<b>${esc(levelName(dv.level))}</b> evidence`)}</div>
         ${evidenceMeter(dv.level)}
         <p class="vx-trust-line">${esc(trustLine(a, dv.level))}</p>
         ${keyFigures(a, best)}
@@ -441,9 +440,11 @@ export function renderVerdict(a) {
       </div>`) : '',
   ].filter(Boolean).join('');
 
-  return `${stamp}
-  ${renderOutcomeBanner(a)}
+  // El título de la página ya dice el nivel: la tarjeta va primero y los datos del
+  // análisis (pasadas, fecha, mínimos), que son contexto, justo debajo.
+  return `${renderOutcomeBanner(a)}
   ${renderDecision(a, dv, best, hold)}
+  ${stamp}
   ${demoNote}
   ${renderWhyGrade(a, highlights, dv.summary)}
   ${renderTop3(a)}

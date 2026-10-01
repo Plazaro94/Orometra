@@ -592,14 +592,15 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-actions{display:flex;flex-wrap:wrap;gap:8px}
 .vx-actions button{padding:11px 18px;font-size:14px}
 .vx-fine{margin:12px 0 0;font-size:11.5px;line-height:1.45;color:var(--muted-2);max-width:56ch}
-.vx-level{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.15;color:var(--text-hi)}
-.vx-level b{color:var(--lv-text);font-weight:700}
-.vx-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:14px 0 12px}
+.vx-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:2px 0 14px}
 .vx-seg-bar{display:block;height:6px;border-radius:3px;background:var(--line)}
 .vx-seg.is-on .vx-seg-bar{background:var(--lv)}
 .vx-seg.is-on:not(.is-here) .vx-seg-bar{opacity:.55}
 .vx-seg-name{display:block;margin-top:7px;font-size:11.5px;color:var(--muted-2)}
-.vx-seg.is-here .vx-seg-name{color:var(--text-hi);font-weight:700}
+.vx-seg-bar{height:8px;border-radius:4px}
+.vx-seg.is-here .vx-seg-name{color:var(--lv-text);font-weight:700;font-size:15px;margin-top:8px}
+/* Bajo la tarjeta, los datos del análisis como contexto. */
+.vx + .run-stamp{margin:-2px 0 12px}
 .vx-trust-line{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--text-2)}
 .vx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .vx-stat{border:1px solid var(--line-soft);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px 12px 11px;min-width:0}
@@ -644,7 +645,6 @@ details.panel > .panel-body{padding:0 20px 20px}
   .vx-main{grid-template-columns:1fr;gap:20px}
   .vx-trust{padding-left:0;border-left:0;padding-top:20px;border-top:1px solid var(--line)}
   .vx-pass{font-size:26px}
-  .vx-level{font-size:21px}
   .vx-stats{gap:6px}
   .vx-stat{padding:10px 9px}
   .vx-stat > strong{font-size:19px}
@@ -1197,7 +1197,7 @@ tr.sel td{color:var(--text-2)}
   td{color:#111}
   th,td{border-bottom:1px solid var(--line)}
   .verdict-banner,.vx{border:2px solid #111;background:#fff !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
-  .vx-pass,.vx-level,.vx-stat > strong,.vx-step strong{color:#000}
+  .vx-pass,.vx-stat > strong,.vx-step strong{color:#000}
   .vx-stat{background:#fff;border-color:var(--line-strong)}
   .vx-actions,.vx-step-cta,.vx-section-title,.vx-detail{display:none !important}
   .panel-head{margin-bottom:8px}
