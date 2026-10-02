@@ -1,40 +1,42 @@
 :root{
   /* ================================================================ TEMA OSCURO
-   *                          «sala de máquinas»
-   * Azul marino frío, contraste alto, acento turquesa. Lee como terminal.
+   *                              «grafito»
+   * Grises neutros, sin brillos, un solo acento petróleo. Lee como una herramienta
+   * profesional: el color se reserva para lo que significa algo.
    *
    * REGLA DE COLOR DEL PRODUCTO, y es deliberada: en trading el verde y el rojo ya
    * significan GANANCIA y PÉRDIDA. Si el veredicto usara esos mismos colores, una
    * insignia verde se leería como «esto da dinero», que es precisamente lo que esta
    * aplicación NO afirma: dice «esto ha pasado la auditoría». Por eso:
    *
-   *     veredicto  ->  turquesa (sólida) · ámbar (moderada) · bronce (débil, con matices) · granate (insuficiente / no hay)
+   *     veredicto  ->  petróleo (sólida) · ocre (moderada) · gris (débil e insuficiente)
+   *     picos      ->  gris: lo frágil ya lo dice el texto; el color es solo para la meseta
    *     dinero     ->  verde (beneficio)   · rojo (pérdida)
+   *     errores    ->  teja apagado (archivo que no se lee, columnas que faltan)
    *
-   * El verde no aparece nunca en un veredicto, y el turquesa nunca en una cifra.
-   * Evidencia débil NO usa el granate de error: si hay meseta, no debe leerse como “fallo”.
+   * El verde no aparece nunca en un veredicto, y el petróleo nunca en una cifra.
    */
-  --bg:#070b14;          --surface:#0d1322;     --surface-2:#131c2f;   --surface-3:#1a2438;
-  --line-soft:#1b2740;   --line:#2a3853;        --line-strong:#3b4c6b;
+  --bg:#0c0d0f;          --surface:#131416;     --surface-2:#191a1d;   --surface-3:#202226;
+  --line-soft:#1d1f22;   --line:#2a2c30;        --line-strong:#3a3d42;
   /* Los tres "muted" pasaban el mínimo de WCAG AA (4.5:1) sobre --surface, pero caían
    * por debajo sobre --surface-3 (donde vive una insignia o una pestaña activa) y se
    * notaba a poco brillo de pantalla. Recalibrados por contraste, no a ojo: 8/7/6:1
    * sobre el fondo más claro que realmente usan, conservando el matiz y el orden
    * muted > muted-2 > muted-3. */
-  --muted-3:#96a2b4;     --muted-2:#a0b0c1;     --muted:#adbccf;
-  --text-2:#c0cede;      --text:#eaf1f9;        --text-hi:#ffffff;
-  --ok-bg:#052220;       --ok-line:#15514e;     --ok:#3ed7d0;     --ok-text:#8ae9e3;     --ok-hi:#c8fffb;
-  --warn-bg:#2a2113;     --warn-line:#5a4728;   --warn:#f2c26b;   --warn-text:#f7dba8;   --warn-hi:#ffeccb;
-  --danger-bg:#27101b;   --danger-line:#4d2237; --danger:#f07fa8; --danger-text:#f5a6c2; --danger-hi:#ffd0e1;
-  --info-bg:#101a2c;     --info-line:#2b405f;   --info:#6fa8ff;   --info-text:#9dc3ff;   --info-hi:#cfe2ff;
-  --profit:#4fd97e;      --loss:#ff7b6b;
+  --muted-3:#9a9da3;     --muted-2:#a6a9ae;     --muted:#b3b6bb;
+  --text-2:#c9cbcf;      --text:#e6e7e9;        --text-hi:#ffffff;
+  --ok-bg:#121a19;       --ok-line:#2b3d3b;     --ok:#3fa39b;     --ok-text:#7fc4bd;     --ok-hi:#bfe3df;
+  --warn-bg:#1b1914;     --warn-line:#3b3528;   --warn:#b8995a;   --warn-text:#d9c59a;   --warn-hi:#efe2c4;
+  --danger-bg:#1d1516;   --danger-line:#45292b; --danger:#c47b78; --danger-text:#dba6a3; --danger-hi:#f0d0ce;
+  --info-bg:#151820;     --info-line:#2b3444;   --info:#7f9cc9;   --info-text:#a9bde0;   --info-hi:#d4def0;
+  --profit:#5cb883;      --loss:#d9675c;
 
   /* Tokens semánticos del producto (capa de significado, no solo color) */
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#9fb0c8; --evidence-weak-bg:#141c2b; --evidence-weak-line:#34455f; --evidence-weak-text:#c8d4e4;
-  --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
-  --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
+  --evidence-weak:#a6a9ae; --evidence-weak-bg:#191a1d; --evidence-weak-line:#2e3034; --evidence-weak-text:#c9cbcf;
+  --evidence-none:#80848b; --evidence-none-bg:#17181a; --evidence-none-line:#2e3034; --evidence-none-text:#c9cbcf;
+  --peak:#8b8f96;            --peak-bg:#18191b;            --peak-text:#c9cbcf;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
 
   --accent:var(--ok);    --accent2:var(--info);
@@ -81,24 +83,23 @@
 
 /* ================================================================== TEMA CLARO
  *                              «informe»
- * Gris neutro, negro casi puro, acento turquesa profundo. Lee como documento
- * impreso: nada de azules en el texto, para que se distinga del tema oscuro a
- * primera vista y no parezca el mismo producto con la luz cambiada. */
+ * Gris cálido muy claro, negro casi puro, acento petróleo profundo. Lee como un
+ * informe impreso de análisis: mismas reglas de color que el tema oscuro. */
 [data-theme="light"]{
-  --bg:#f6f7f9;          --surface:#ffffff;     --surface-2:#eef1f5;   --surface-3:#e3e8ee;
-  --line-soft:#e8ecf1;   --line:#d5dbe3;        --line-strong:#b4bdc9;
-  --muted-3:#51565d;     --muted-2:#464c54;     --muted:#3d444c;
-  --text-2:#384049;      --text:#14181d;        --text-hi:#000000;
-  --ok-bg:#e4f4f5;       --ok-line:#a8d8db;     --ok:#0b6a73;     --ok-text:#0a5e66;     --ok-hi:#064047;
-  --warn-bg:#fbf1dd;     --warn-line:#e6cfa0;   --warn:#8a5b0a;   --warn-text:#7a5009;   --warn-hi:#5c3c06;
-  --danger-bg:#fbe9ef;   --danger-line:#efc2d2; --danger:#9b2f52; --danger-text:#8a2948; --danger-hi:#6b1f37;
-  --info-bg:#eaf0fc;     --info-line:#c0d2f2;   --info:#1f4fb0;   --info-text:#1c479e;   --info-hi:#133272;
-  --profit:#17794a;      --loss:#b3352a;
+  --bg:#f4f4f2;          --surface:#ffffff;     --surface-2:#f1f1ef;   --surface-3:#e8e8e5;
+  --line-soft:#ebebe8;   --line:#dedfdb;        --line-strong:#babcb7;
+  --muted-3:#55595f;     --muted-2:#4b4f55;     --muted:#42464c;
+  --text-2:#33373c;      --text:#16181b;        --text-hi:#000000;
+  --ok-bg:#eef5f4;       --ok-line:#c5dcda;     --ok:#0f6b6a;     --ok-text:#0d5f5e;     --ok-hi:#073f3e;
+  --warn-bg:#f8f2e6;     --warn-line:#e3d3b0;   --warn:#8a6414;   --warn-text:#7a5810;   --warn-hi:#5a400a;
+  --danger-bg:#f8ecec;   --danger-line:#e6c6c4; --danger:#9a3b36; --danger-text:#8a332f; --danger-hi:#66231f;
+  --info-bg:#edf1f8;     --info-line:#c9d4e8;   --info:#2a4f8f;   --info-text:#24467f;   --info-hi:#17305a;
+  --profit:#1d7a4c;      --loss:#b23a2f;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#56657a; --evidence-weak-bg:#eef1f6; --evidence-weak-line:#c7d0dc; --evidence-weak-text:#3e4b5d;
-  --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
-  --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
+  --evidence-weak:#5f646b; --evidence-weak-bg:#f1f1ef; --evidence-weak-line:#d3d4d0; --evidence-weak-text:#42464c;
+  --evidence-none:#7a7f86; --evidence-none-bg:#f1f1ef; --evidence-none-line:#d8d9d5; --evidence-none-text:#4b4f55;
+  --peak:#6f747b;            --peak-bg:#efefed;            --peak-text:#42464c;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
   color-scheme:light;
 }
@@ -175,8 +176,8 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .lang-btn:focus-visible,.theme-btn:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
 .sidebar-bottom .lang-row{margin-bottom:8px}
 .swatch{width:11px;height:11px;border-radius:50%;border:1px solid var(--line-strong);flex:none}
-.swatch.dark{background:#0b1220}
-.swatch.light{background:#f2f5fa}
+.swatch.dark{background:#0c0d0f}
+.swatch.light{background:#f4f4f2}
 
 /* ------------------------------------------------------------ bloque de entrada */
 .hero{margin:0 0 30px}
@@ -595,16 +596,16 @@ details.panel > .panel-body{padding:0 20px 20px}
    de barra (--s) y uno más claro para su nombre (--t), legible sobre el fondo. */
 /* Los cuatro niveles de evidencia, de insuficiente (1) a sólida (4): el mismo teal que se
    intensifica en el medidor del informe y en la lista de niveles de la metodología. */
-:root{--lv-1:#2a6f73;--lv-2:#2b9599;--lv-3:#33b9b5;--lv-4:#4ae3dc}
-:root[data-theme="light"]{--lv-1:#b3dcdd;--lv-2:#66b8bb;--lv-3:#1e8c93;--lv-4:#0b5f66}
-.vx-seg:nth-child(1){--s:var(--lv-1);--t:#7cb5b8}
-.vx-seg:nth-child(2){--s:var(--lv-2);--t:#5ec4c4}
-.vx-seg:nth-child(3){--s:var(--lv-3);--t:#48d1cb}
-.vx-seg:nth-child(4){--s:var(--lv-4);--t:#4ae3dc}
-:root[data-theme="light"] .vx-seg:nth-child(1){--t:#3f8a8f}
-:root[data-theme="light"] .vx-seg:nth-child(2){--t:#2a7b80}
-:root[data-theme="light"] .vx-seg:nth-child(3){--t:#1d6f76}
-:root[data-theme="light"] .vx-seg:nth-child(4){--t:#0b5f66}
+:root{--lv-1:#3a3d42;--lv-2:#52565c;--lv-3:#3fa39b;--lv-4:#57bdb5}
+:root[data-theme="light"]{--lv-1:#cfd1cd;--lv-2:#a9aca7;--lv-3:#0f6b6a;--lv-4:#0b5554}
+.vx-seg:nth-child(1){--s:var(--lv-1);--t:#b3b6bb}
+.vx-seg:nth-child(2){--s:var(--lv-2);--t:#c9cbcf}
+.vx-seg:nth-child(3){--s:var(--lv-3);--t:#7fc4bd}
+.vx-seg:nth-child(4){--s:var(--lv-4);--t:#8fd3cc}
+:root[data-theme="light"] .vx-seg:nth-child(1){--t:#55595f}
+:root[data-theme="light"] .vx-seg:nth-child(2){--t:#42464c}
+:root[data-theme="light"] .vx-seg:nth-child(3){--t:#0f6b6a}
+:root[data-theme="light"] .vx-seg:nth-child(4){--t:#0b5554}
 .vx-seg-bar{display:block;height:8px;border-radius:4px;background:var(--line)}
 .vx-seg.is-on .vx-seg-bar{background:var(--s)}
 .vx-seg-name{display:block;margin-top:7px;font-size:12px;line-height:1.3;color:var(--muted-2)}
@@ -1219,20 +1220,20 @@ tr.sel td{color:var(--text-2)}
      ni "--surface" con la esperanza de que valgan lo mismo en los dos temas (en el claro
      son negro y blanco: la página salía en negativo). */
   :root,[data-theme="dark"],[data-theme="light"]{
-  --bg:#f6f7f9;          --surface:#ffffff;     --surface-2:#eef1f5;   --surface-3:#e3e8ee;
-  --line-soft:#e8ecf1;   --line:#d5dbe3;        --line-strong:#b4bdc9;
-  --muted-3:#51565d;     --muted-2:#464c54;     --muted:#3d444c;
-  --text-2:#384049;      --text:#14181d;        --text-hi:#000000;
-  --ok-bg:#e4f4f5;       --ok-line:#a8d8db;     --ok:#0b6a73;     --ok-text:#0a5e66;     --ok-hi:#064047;
-  --warn-bg:#fbf1dd;     --warn-line:#e6cfa0;   --warn:#8a5b0a;   --warn-text:#7a5009;   --warn-hi:#5c3c06;
-  --danger-bg:#fbe9ef;   --danger-line:#efc2d2; --danger:#9b2f52; --danger-text:#8a2948; --danger-hi:#6b1f37;
-  --info-bg:#eaf0fc;     --info-line:#c0d2f2;   --info:#1f4fb0;   --info-text:#1c479e;   --info-hi:#133272;
-  --profit:#17794a;      --loss:#b3352a;
+  --bg:#f4f4f2;          --surface:#ffffff;     --surface-2:#f1f1ef;   --surface-3:#e8e8e5;
+  --line-soft:#ebebe8;   --line:#dedfdb;        --line-strong:#babcb7;
+  --muted-3:#55595f;     --muted-2:#4b4f55;     --muted:#42464c;
+  --text-2:#33373c;      --text:#16181b;        --text-hi:#000000;
+  --ok-bg:#eef5f4;       --ok-line:#c5dcda;     --ok:#0f6b6a;     --ok-text:#0d5f5e;     --ok-hi:#073f3e;
+  --warn-bg:#f8f2e6;     --warn-line:#e3d3b0;   --warn:#8a6414;   --warn-text:#7a5810;   --warn-hi:#5a400a;
+  --danger-bg:#f8ecec;   --danger-line:#e6c6c4; --danger:#9a3b36; --danger-text:#8a332f; --danger-hi:#66231f;
+  --info-bg:#edf1f8;     --info-line:#c9d4e8;   --info:#2a4f8f;   --info-text:#24467f;   --info-hi:#17305a;
+  --profit:#1d7a4c;      --loss:#b23a2f;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#56657a; --evidence-weak-bg:#eef1f6; --evidence-weak-line:#c7d0dc; --evidence-weak-text:#3e4b5d;
-  --evidence-none:var(--danger); --evidence-none-bg:var(--danger-bg); --evidence-none-line:var(--danger-line); --evidence-none-text:var(--danger-text);
-  --peak:var(--danger);            --peak-bg:var(--danger-bg);            --peak-text:var(--danger-text);
+  --evidence-weak:#5f646b; --evidence-weak-bg:#f1f1ef; --evidence-weak-line:#d3d4d0; --evidence-weak-text:#42464c;
+  --evidence-none:#7a7f86; --evidence-none-bg:#f1f1ef; --evidence-none-line:#d8d9d5; --evidence-none-text:#4b4f55;
+  --peak:#6f747b;            --peak-bg:#efefed;            --peak-text:#42464c;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
   color-scheme:light;
 }

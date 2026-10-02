@@ -77,14 +77,14 @@ const mix = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b
 const WHITE = [255, 255, 255];
 const BLACK = [0, 0, 0];
 
-// Color con significado: el terreno es neutro; el verde azulado es solo de la meseta y el rosa,
-// de los picos.
+// Color con significado: el terreno es neutro, el acento petróleo es solo de la meseta y los
+// picos van en gris.
 function readPalette(root, light) {
-  const bg = parseColor(cssColor(root, '--surface', light ? '#ffffff' : '#0d1322'), light ? [255, 255, 255] : [13, 19, 34]);
-  const ok = parseColor(cssColor(root, '--ok', light ? '#0b6a73' : '#3ed7d0'), light ? [11, 106, 115] : [62, 215, 208]);
-  const peak = parseColor(cssColor(root, '--peak', light ? '#9b2f52' : '#f07fa8'), light ? [155, 47, 82] : [240, 127, 168]);
-  const text = parseColor(cssColor(root, '--text', light ? '#14181d' : '#eaf1f9'), light ? [20, 24, 29] : [234, 241, 249]);
-  const muted = parseColor(cssColor(root, '--muted-3', light ? '#51565d' : '#96a2b4'), light ? [81, 86, 93] : [150, 162, 180]);
+  const bg = parseColor(cssColor(root, '--surface', light ? '#ffffff' : '#131416'), light ? [255, 255, 255] : [19, 20, 22]);
+  const ok = parseColor(cssColor(root, '--ok', light ? '#0f6b6a' : '#3fa39b'), light ? [15, 107, 106] : [63, 163, 155]);
+  const peak = parseColor(cssColor(root, '--peak', light ? '#6f747b' : '#8b8f96'), light ? [111, 116, 123] : [139, 143, 150]);
+  const text = parseColor(cssColor(root, '--text', light ? '#16181b' : '#e6e7e9'), light ? [22, 24, 27] : [230, 231, 233]);
+  const muted = parseColor(cssColor(root, '--muted-3', light ? '#55595f' : '#9a9da3'), light ? [85, 89, 95] : [154, 157, 163]);
   if (light) {
     return {
       light, bg, ok, peak, text, muted,
@@ -102,15 +102,15 @@ function readPalette(root, light) {
   }
   return {
     light, bg, ok, peak, text, muted,
-    gndLo: mix(bg, [120, 138, 168], 0.16),
-    gndHi: mix(bg, [150, 168, 196], 0.42),
+    gndLo: mix(bg, [140, 143, 148], 0.14),
+    gndHi: mix(bg, [165, 168, 173], 0.36),
     mesaLo: mix(bg, ok, 0.38),
     mesaHi: mix(bg, ok, 0.66),
     peakFill: mix(bg, peak, 0.82),
     bump: mix(bg, muted, 0.42),
     ink: text,
-    rim: mix(ok, WHITE, 0.12),
-    spec: mix(BLACK, mix(ok, WHITE, 0.5), 0.35),
+    rim: ok,
+    spec: mix(BLACK, WHITE, 0.16),
     look: [0.18, 0.3, 0.85, 0.5],
   };
 }
@@ -462,9 +462,9 @@ export function mountHeroSurface(canvas, opts = {}) {
       mk.drop = 1 - mk.near.reduce((sum, n) => sum + n[2], 0) / mk.near.length / mk.h;
     }
 
-    // Los 8 vecinos de cada punto (un paso en cada parámetro): verdes si aguantan, rosas si se
+    // Los 8 vecinos de cada punto (un paso en cada parámetro): en el acento si aguantan, grises si se
     // hunden. Es la prueba del motor, a la vista, pero en voz baja: puntitos de luz sin borde ni
-    // líneas, con un halo leve. Se descubren al mirar; no compiten con el relieve.
+    // líneas, sin halo. Se descubren al mirar; no compiten con el relieve.
     const holdC = pal.light ? pal.ok : mix(pal.ok, WHITE, 0.6);
     const fallC = pal.light ? pal.peak : mix(pal.peak, WHITE, 0.45);
     const core = small ? 1.3 : 1.5;
@@ -474,11 +474,6 @@ export function mountHeroSurface(canvas, opts = {}) {
         const a = show * (1 - 0.9 * cover(n[0], n[1], n[2]));
         if (a < 0.02) continue;
         const c = n[2] >= mk.h * 0.85 ? holdC : fallC;
-        const glow = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], 5);
-        glow.addColorStop(0, rgba(c, (pal.light ? 0.18 : 0.28) * a));
-        glow.addColorStop(1, rgba(c, 0));
-        ctx.fillStyle = glow;
-        ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = rgba(c, (pal.light ? 0.7 : 0.8) * a);
         ctx.beginPath(); ctx.arc(p[0], p[1], core, 0, Math.PI * 2); ctx.fill();
       }
