@@ -45,6 +45,8 @@
     <span class="brand-name">Orometra</span>
   </a>
   <div class="lp-top-actions">
+    <a class="lp-nav-link" href="/es/methodology/" data-i18n="nav.method">Metodología</a>
+    <a class="lp-nav-link" href="/es/guias/" data-i18n="nav.guides">Guías</a>
     <div class="lang-row" role="radiogroup" aria-label="Idioma" data-i18n="lang.label" data-i18n-attr="aria-label">
       <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
       <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
@@ -267,15 +269,18 @@
   <section class="lp-doc-block doc-ai" id="ia" aria-labelledby="doc-ai-title">
     <h2 id="doc-ai-title" data-i18n="doc.ai.title">¿Por qué no pedírselo a una IA?</h2>
     <p class="doc-ai-lead" data-i18n="doc.ai.lead">Pega tu tabla en un chat y tendrás una explicación convincente de por qué el mejor resultado de la lista es bueno. Con miles de combinaciones probadas, siempre hay alguno que lo parece por azar. Eso no es un análisis: es una historia.</p>
-    <dl class="doc-ai-list">
-      <div><dt data-i18n="doc.ai.1.title">Mismos datos, misma respuesta</dt><dd data-i18n="doc.ai.1.body">Un modelo de lenguaje escribe cada respuesta desde cero: cambia con la forma de preguntar, con el orden de los datos y de un día para otro. Orometra es un cálculo: mismos archivos, mismo resultado, hoy y dentro de un año. Eso es lo que te permite comparar una optimización con otra.</dd></div>
-      <div><dt data-i18n="doc.ai.2.title">Un método fijo, no improvisado</dt><dd data-i18n="doc.ai.2.body">Si le pides a una IA que valore la robustez, se inventa un método en ese momento. No puedes saber si es el mismo que la última vez, ni si es correcto. El método de Orometra está escrito en esta página, es siempre el mismo y hay pruebas automáticas que comprueban que sigue haciendo lo que dice.</dd></div>
-      <div><dt data-i18n="doc.ai.3.title">Cifras que puedes comprobar</dt><dd data-i18n="doc.ai.3.body">Los modelos de lenguaje pueden dar cifras que suenan bien y no salen de ningún cálculo. Aunque escriban código, tienes que revisar ese código cada vez. Cada cifra del informe de Orometra sale de las columnas de tu export y se puede rastrear.</dd></div>
-      <div><dt data-i18n="doc.ai.4.title">Sabe decir que no</dt><dd data-i18n="doc.ai.4.body">Una IA está hecha para ser útil, así que tiende a contestar aunque los datos no den para una conclusión. Orometra baja el nivel de evidencia y te dice por qué: si no hay meseta, si el forward no la confirma o si el resultado no supera al azar, se queda en «débil»; y si los datos no dan ni para eso, dice «insuficiente».</dd></div>
-      <div><dt data-i18n="doc.ai.5.title">Tu estrategia sigue siendo tuya</dt><dd data-i18n="doc.ai.5.body">Para que una IA analice tu optimización tienes que subir tus parámetros —el corazón de tu estrategia— a los servidores de otra empresa. Orometra hace el análisis en tu navegador: tus archivos no salen de tu ordenador.</dd></div>
-      <div><dt data-i18n="doc.ai.6.title">Algo que puedes usar</dt><dd data-i18n="doc.ai.6.body">Una IA te devuelve texto. Orometra te devuelve una configuración concreta, su nivel de evidencia, los motivos, un .set para cargar en MT5 y el rango para volver a optimizar a su alrededor.</dd></div>
-    </dl>
-    <p data-i18n="doc.ai.close">La IA es muy buena explicando conceptos: úsala para entender el informe y preguntarle lo que quieras sobre él. Pero decidir con qué configuración arriesgas tu dinero merece un criterio fijo, probado y que no cambie de una conversación a otra.</p>
+    <details class="doc-ai-details">
+      <summary data-i18n="doc.ai.more">Leer la explicación completa</summary>
+      <dl class="doc-ai-list">
+        <div><dt data-i18n="doc.ai.1.title">Mismos datos, misma respuesta</dt><dd data-i18n="doc.ai.1.body">Un modelo de lenguaje escribe cada respuesta desde cero: cambia con la forma de preguntar, con el orden de los datos y de un día para otro. Orometra es un cálculo: mismos archivos, mismo resultado, hoy y dentro de un año. Eso es lo que te permite comparar una optimización con otra.</dd></div>
+        <div><dt data-i18n="doc.ai.2.title">Un método fijo, no improvisado</dt><dd data-i18n="doc.ai.2.body">Si le pides a una IA que valore la robustez, se inventa un método en ese momento. No puedes saber si es el mismo que la última vez, ni si es correcto. El método de Orometra está escrito en esta página, es siempre el mismo y hay pruebas automáticas que comprueban que sigue haciendo lo que dice.</dd></div>
+        <div><dt data-i18n="doc.ai.3.title">Cifras que puedes comprobar</dt><dd data-i18n="doc.ai.3.body">Los modelos de lenguaje pueden dar cifras que suenan bien y no salen de ningún cálculo. Aunque escriban código, tienes que revisar ese código cada vez. Cada cifra del informe de Orometra sale de las columnas de tu export y se puede rastrear.</dd></div>
+        <div><dt data-i18n="doc.ai.4.title">Sabe decir que no</dt><dd data-i18n="doc.ai.4.body">Una IA está hecha para ser útil, así que tiende a contestar aunque los datos no den para una conclusión. Orometra baja el nivel de evidencia y te dice por qué: si no hay meseta, si el forward no la confirma o si el resultado no supera al azar, se queda en «débil»; y si los datos no dan ni para eso, dice «insuficiente».</dd></div>
+        <div><dt data-i18n="doc.ai.5.title">Tu estrategia sigue siendo tuya</dt><dd data-i18n="doc.ai.5.body">Para que una IA analice tu optimización tienes que subir tus parámetros —el corazón de tu estrategia— a los servidores de otra empresa. Orometra hace el análisis en tu navegador: tus archivos no salen de tu ordenador.</dd></div>
+        <div><dt data-i18n="doc.ai.6.title">Algo que puedes usar</dt><dd data-i18n="doc.ai.6.body">Una IA te devuelve texto. Orometra te devuelve una configuración concreta, su nivel de evidencia, los motivos, un .set para cargar en MT5 y el rango para volver a optimizar a su alrededor.</dd></div>
+      </dl>
+      <p data-i18n="doc.ai.close">La IA es muy buena explicando conceptos: úsala para entender el informe y preguntarle lo que quieras sobre él. Pero decidir con qué configuración arriesgas tu dinero merece un criterio fijo, probado y que no cambie de una conversación a otra.</p>
+    </details>
   </section>
 
   <section class="lp-doc-cta">

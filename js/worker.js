@@ -1,11 +1,12 @@
 // El análisis corre fuera del hilo principal: una rejilla completa de 100.000
 // pasadas bloquearia la pestana durante segundos si se ejecutase en la interfaz.
 
-import { parseTable } from '../core/parse.js';
-import { preflightSummary } from '../core/schema.js';
+import { parseTable, finishTable } from '../core/parse.js';
+import { preflightSummary, roleFromTable } from '../core/schema.js';
+import { gridLooksLikeReport } from '../core/report.js';
 import { runAnalysis } from '../core/analysis.js';
 import { setLocale } from './i18n.js';
-import { CODE, withCode } from '../core/errors.js';
+import { AnalysisError, CODE, withCode } from '../core/errors.js';
 
 // Tablas ya leidas en la comprobacion previa, por archivo (nombre|tamaño|fecha). Parsear
 // un XML de 70 MB cuesta segundos: hacerlo en el hilo principal congelaba la pagina y
@@ -18,13 +19,30 @@ function remember(key, table) {
   tableCache.set(key, table);
   while (tableCache.size > CACHE_MAX) tableCache.delete(tableCache.keys().next().value);
 }
-function tableFor(table, key, buffer, name) {
+const isZip = (buffer) => {
+  const b = new Uint8Array(buffer, 0, Math.min(2, buffer.byteLength));
+  return b[0] === 0x50 && b[1] === 0x4b;
+};
+
+// Un .xlsx se descomprime aquí y no en la página: antes se leía en el hilo principal hasta
+// cuatro veces (detectar si era informe, detectar el periodo, comprobación previa y
+// análisis) y la pestaña se congelaba con libros grandes.
+async function readSheet(buffer) {
+  const { parseXlsx } = await import('./xlsx.js');
+  return parseXlsx(buffer);
+}
+
+async function tableFor(table, key, buffer, name) {
   if (table) return table;
   if (key && tableCache.has(key)) return tableCache.get(key);
-  if (!buffer) return null;
+  if (!buffer) {
+    if (!key) return null;
+    // La página creía que la tabla seguía aquí y no la ha mandado: que la reenvíe.
+    throw new AnalysisError(CODE.CACHE_MISS, 'cache miss', { key });
+  }
   let parsed;
   try {
-    parsed = parseTable(buffer, name);
+    parsed = isZip(buffer) ? finishTable(await readSheet(buffer), name) : parseTable(buffer, name);
   } catch (err) {
     throw withCode(CODE.FILE_ERROR, err);
   }
@@ -32,22 +50,38 @@ function tableFor(table, key, buffer, name) {
   return parsed;
 }
 
-self.onmessage = (event) => {
+self.onmessage = async (event) => {
   const { id, isBuffer, oosBuffer, isName, oosName, policy, locale, searchSet } = event.data;
   const post = (type, payload) => self.postMessage({ id, type, ...payload });
   try {
     // Sin esto, L() en el worker cae siempre a español (no hay document).
     if (locale === 'en' || locale === 'es') setLocale(locale);
+    if (event.data.kind === 'inspect') {
+      // ¿Este .xlsx es el informe de un backtest, la optimización o el forward? Si es una
+      // tabla, se queda aquí leída para la comprobación previa y el análisis.
+      let sheet;
+      try {
+        sheet = await readSheet(event.data.buffer);
+      } catch (err) {
+        throw withCode(CODE.FILE_ERROR, err);
+      }
+      if (gridLooksLikeReport(sheet.rows)) {
+        post('done', { summary: { role: 'report' } });
+        return;
+      }
+      const table = finishTable(sheet, event.data.name);
+      remember(event.data.key, table);
+      post('done', { summary: { role: roleFromTable(table) } });
+      return;
+    }
     if (event.data.kind === 'preflight') {
-      const table = tableFor(null, event.data.key, event.data.buffer, event.data.name);
+      const table = await tableFor(null, event.data.key, event.data.buffer, event.data.name);
       post('done', { summary: preflightSummary(table) });
       return;
     }
     post('progress', { pct: 2, label: locale === 'en' ? 'Reading files' : 'Leyendo archivos' });
-    // Los Excel binarios llegan ya parseados desde el hilo principal, porque el
-    // lector opcional solo puede cargarse alli.
-    const isTable = tableFor(event.data.isTable, event.data.isKey, isBuffer, isName);
-    const oosTable = tableFor(event.data.oosTable, event.data.oosKey, oosBuffer, oosName);
+    const isTable = await tableFor(event.data.isTable, event.data.isKey, isBuffer, isName);
+    const oosTable = await tableFor(event.data.oosTable, event.data.oosKey, oosBuffer, oosName);
     const analysis = runAnalysis({
       isTable,
       oosTable,

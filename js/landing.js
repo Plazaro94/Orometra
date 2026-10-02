@@ -59,7 +59,7 @@ $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => {
 }));
 // La 404 es una sola página para los dos idiomas: en español, sus enlaces llevan a la
 // versión en español de cada página (las que la tienen).
-const ES_HREF = { '/': '/es/', '/methodology/': '/es/methodology/', '/privacy/': '/es/privacy/' };
+const ES_HREF = { '/': '/es/', '/methodology/': '/es/methodology/', '/guides/': '/es/guias/', '/privacy/': '/es/privacy/' };
 function syncNotFoundLinks() {
   if (document.documentElement.getAttribute('data-page') !== 'notfound') return;
   const es = getLocale() === 'es';
@@ -141,7 +141,94 @@ function mountMobileMenu() {
   placeTheme();
 }
 
+// La sección en la que estás, marcada en la cabecera (Metodología o Guías).
+function markCurrentSection() {
+  const here = location.pathname;
+  $$('.lp-top-actions .lp-nav-link').forEach((a) => {
+    const target = new URL(a.getAttribute('href'), location.href).pathname;
+    if (target !== '/' && here.startsWith(target)) a.setAttribute('aria-current', 'page');
+  });
+}
+
+// Guías en escritorio: el texto a la izquierda y, en la mitad derecha, que antes quedaba
+// vacía, el índice de la guía y el botón para analizar. Se monta a partir de los títulos de
+// la propia guía, así que no hay que mantenerlo a mano en cada página. La fecha de la guía
+// (la de sus datos estructurados) va debajo de la entradilla.
+function mountGuideRail() {
+  const main = $('main.guide');
+  if (!main) return;
+  const heads = $$('main.guide section.guide-step > h2');
+  heads.forEach((h, i) => { if (!h.id) h.id = `seccion-${i + 1}`; });
+  const lead = $('main.guide .lp-lead');
+  let modified = null;
+  try {
+    const ld = JSON.parse(($('script[type="application/ld+json"]') || {}).textContent || '{}');
+    const nodes = ld['@graph'] || [ld];
+    const article = nodes.find((n) => n['@type'] === 'Article');
+    modified = article && (article.dateModified || article.datePublished);
+  } catch { /* sin datos estructurados */ }
+  if (lead && modified) {
+    const when = new Date(`${modified}T12:00:00`);
+    const meta = document.createElement('p');
+    meta.className = 'guide-meta';
+    meta.textContent = t('guide.updated', { date: when.toLocaleDateString(getLocale() === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) });
+    lead.after(meta);
+  }
+  if (heads.length < 3) return;
+  const rail = document.createElement('aside');
+  rail.className = 'guide-rail';
+  rail.setAttribute('aria-label', t('guide.toc'));
+  const inner = document.createElement('div');
+  inner.className = 'guide-rail-inner';
+  const k = document.createElement('p');
+  k.className = 'guide-rail-k';
+  k.textContent = t('guide.toc');
+  const list = document.createElement('ol');
+  heads.forEach((h) => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = `#${h.id}`;
+    a.textContent = h.textContent.trim();
+    li.append(a);
+    list.append(li);
+  });
+  const cta = document.createElement('div');
+  cta.className = 'guide-rail-cta';
+  const q = document.createElement('p');
+  q.textContent = t('guide.rail.q');
+  const go = document.createElement('a');
+  go.className = 'primary-btn';
+  go.href = '/app/';
+  go.textContent = t('lp.cta');
+  cta.append(q, go);
+  inner.append(k, list, cta);
+  rail.append(inner);
+  main.prepend(rail);
+  // La sección que estás leyendo, marcada en el índice.
+  if (typeof IntersectionObserver === 'undefined') return;
+  const links = new Map(heads.map((h, i) => [h, list.children[i].firstChild]));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      links.forEach((a) => a.removeAttribute('aria-current'));
+      links.get(e.target).setAttribute('aria-current', 'true');
+    });
+  }, { rootMargin: '0px 0px -70% 0px' });
+  heads.forEach((h) => io.observe(h));
+}
+
+// Metodología: la explicación larga de «¿Por qué no pedírselo a una IA?» va plegada (la
+// portada ya da el resumen), y se abre sola cuando se llega desde su enlace (#ia).
+function openAiDetails() {
+  const d = $('#ia details');
+  if (d && location.hash === '#ia') d.open = true;
+}
+
 mountMobileMenu();
+markCurrentSection();
+mountGuideRail();
+openAiDetails();
+window.addEventListener('hashchange', openAiDetails);
 syncLang();
 applyStaticI18n();
 syncNotFoundLinks();

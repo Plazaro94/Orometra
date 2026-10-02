@@ -1808,3 +1808,51 @@ html.i18n-pending body{visibility:hidden}
 html{zoom:var(--z)}
 .surface-detail-kicker{font-size:12px;font-weight:700;color:var(--ok-text);margin:0 0 8px}
 .surface-hint{margin:12px 0 0}
+
+/* ---------------------------------------------------------------- pulido de páginas */
+/* Cabecera: la sección en la que estás (Metodología o Guías). */
+.lp-nav-link[aria-current="page"]{color:var(--text-hi);text-decoration:underline;text-underline-offset:6px;text-decoration-color:var(--accent)}
+
+/* Guías: fecha bajo la entradilla y, en escritorio, el índice a la derecha. */
+.guide-meta{margin:-14px 0 24px;font-size:var(--fs-sm);color:var(--muted)}
+.guide-rail{display:none}
+@media (min-width:1080px){
+  .lp-doc.guide{display:grid;grid-template-columns:minmax(0,1fr) 264px;column-gap:56px;align-items:start}
+  .lp-doc.guide > *{grid-column:1}
+  .lp-doc.guide > .guide-rail{display:block;grid-column:2;grid-row:1 / span 60;align-self:stretch}
+  .guide-rail-inner{position:sticky;top:24px;padding:20px 0 0;border-top:1px solid var(--line)}
+  .guide-rail-k{margin:0 0 10px;font-size:var(--fs-sm);font-weight:700;color:var(--text-2)}
+  .guide-rail ol{margin:0;padding:0;list-style:none;counter-reset:rail}
+  .guide-rail li{counter-increment:rail}
+  .guide-rail li a{display:flex;gap:10px;padding:6px 0;color:var(--text-2);text-decoration:none;line-height:1.4;font-size:var(--fs-sm)}
+  .guide-rail li a::before{content:counter(rail,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:1px}
+  .guide-rail li a:hover,.guide-rail li a[aria-current]{color:var(--text-hi)}
+  .guide-rail li a[aria-current]::before{color:var(--accent)}
+  .guide-rail-cta{margin-top:24px;padding:18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+  .guide-rail-cta p{margin:0 0 14px;color:var(--text-2);line-height:1.5;font-size:var(--fs-sm)}
+  .guide-rail-cta .primary-btn{display:flex;justify-content:center;width:100%}
+}
+
+/* Índice de guías: dos columnas cuando hay sitio. */
+@media (min-width:860px){
+  .guide-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Preguntas frecuentes: el título a la izquierda y las preguntas a la derecha. */
+.hm-faq-head p{margin:0;color:var(--text-2);line-height:1.6}
+.hm-faq-head a{color:var(--ok-text)}
+@media (min-width:900px){
+  .hm-faq-section{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);column-gap:64px;align-items:start}
+  .hm-faq-section .hm-faq{max-width:none}
+  .hm-faq-head{position:sticky;top:24px}
+}
+@media (max-width:899px){
+  .hm-faq-head p{margin:-12px 0 24px}
+}
+
+/* Metodología: la explicación larga sobre la IA, plegada. */
+.doc-ai-details{margin-top:18px}
+.doc-ai-details > summary{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--ok-text);font-weight:600;list-style:none}
+.doc-ai-details > summary::-webkit-details-marker{display:none}
+.doc-ai-details > summary::after{content:"+";font-weight:400;font-size:18px;line-height:1}
+.doc-ai-details[open] > summary::after{content:"−"}
