@@ -39,6 +39,10 @@
 <link rel="stylesheet" href="styles.css">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","description":"Your best MT5 result might be luck. Orometra analyzes your MetaTrader 5 optimization and tells you which configuration actually holds up — the stable plateau, not the lucky peak — right in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js"></script>
+<!-- El relieve 3D se importa bajo demanda desde landing.js; aquí se adelanta su descarga. -->
+<link rel="modulepreload" href="js/hero-surface.js">
+<link rel="modulepreload" href="js/hero-surface-gl.js">
+<link rel="modulepreload" href="js/hero-terrain.js">
 </head>
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
@@ -83,11 +87,11 @@
       <p class="hm-trust" data-i18n="home.trust">Free · No sign-up · Your files never leave your computer</p>
     </div>
     <div class="hm-hero-visual">
-      <div class="lp-surface" id="heroSurfaceHost" tabindex="0" role="button" data-i18n="lp.surface.aria" data-i18n-attr="aria-label" aria-label="Parameter surface: isolated peaks collapse into a stable plateau">
+      <div class="lp-surface" id="heroSurfaceHost" tabindex="0" role="button" data-i18n="lp.surface.aria" data-i18n-attr="aria-label" aria-label="Parameter surface: in a new market period the peak MT5 ranks first falls and the stable plateau holds">
         <canvas class="lp-surface-canvas" id="heroSurface" width="1120" height="896" aria-hidden="true"></canvas>
         <div class="lp-surface-caption">
           <span class="lp-surface-peak" data-i18n="lp.compare.before.spark">Isolated peak</span>
-          <span class="lp-surface-hint" data-i18n="lp.surface.hint">Hover — peaks collapse into the plateau</span>
+          <span class="lp-surface-hint" data-i18n="lp.surface.hint">Hover to see a new market period · drag to rotate</span>
           <span class="lp-surface-ok" data-i18n="lp.compare.after.spark">Stable plateau</span>
         </div>
         <span class="lp-sr-live" id="surfaceLive" aria-live="polite"></span>

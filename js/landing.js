@@ -1,8 +1,8 @@
 // Portada de marketing. Comparte tema e idioma con la app.
 import { mountBrandMark } from './brandmark.js';
 import { enhanceRadioGroups } from './radiogroup.js';
-import { mountHeroSurface } from './hero-surface.js';
-import { setLocale, getLocale, applyStaticI18n, t } from './i18n.js';
+import { setLocale, getLocale, applyStaticI18n, t } from './i18n-core.js';
+import './i18n-site.js';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -230,7 +230,9 @@ mountGuideRail();
 openAiDetails();
 window.addEventListener('hashchange', openAiDetails);
 syncLang();
-applyStaticI18n();
+// Las páginas con idioma fijo ya vienen escritas en él (tools/build-es.js comprueba que
+// su HTML coincide con js/i18n.js): solo la 404, común a los dos idiomas, se traduce aquí.
+if (!document.documentElement.hasAttribute('data-lang-fixed')) applyStaticI18n();
 syncNotFoundLinks();
 enhanceRadioGroups();
 
@@ -246,7 +248,8 @@ fineHover.addEventListener('change', syncSurfaceHint);
 const mark = $('#brandMark');
 if (mark) mountBrandMark(mark);
 const hero = $('#heroSurface');
-if (hero) {
+// El relieve solo está en la portada: el resto de páginas no descarga su código.
+if (hero) import('./hero-surface.js').then(({ mountHeroSurface }) => {
   mountHeroSurface(hero, {
     locale: () => getLocale(),
     labels: () => ({
@@ -260,7 +263,7 @@ if (hero) {
       neighbors: t('lp.surface.neighbors'),
     }),
   });
-}
+});
 
 const live = $('#surfaceLive');
 const host = $('#heroSurfaceHost');

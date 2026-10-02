@@ -40,6 +40,10 @@
 <link rel="stylesheet" href="/styles.css">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","description":"Tu mejor resultado de MT5 puede ser suerte. Orometra analiza tu optimización de MetaTrader 5 y te dice qué configuración aguanta de verdad —la meseta estable, no el pico con suerte—, directamente en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js"></script>
+<!-- El relieve 3D se importa bajo demanda desde landing.js; aquí se adelanta su descarga. -->
+<link rel="modulepreload" href="/js/hero-surface.js">
+<link rel="modulepreload" href="/js/hero-surface-gl.js">
+<link rel="modulepreload" href="/js/hero-terrain.js">
 </head>
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
