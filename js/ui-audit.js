@@ -80,6 +80,7 @@ export function getWorker() {
   if (worker) return worker;
   try {
     worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+    workerKeys.clear();
     worker.onerror = () => {
       const dead = worker;
       worker = null;
@@ -106,12 +107,8 @@ export async function analyseOnMainThread(payload) {
   const { runAnalysis } = await import('../core/analysis.js');
   let isTable;
   let oosTable;
-  try {
-    isTable = payload.isTable || parseTable(payload.isBuffer, payload.isName);
-    oosTable = payload.oosTable || (payload.oosBuffer ? parseTable(payload.oosBuffer, payload.oosName) : null);
-  } catch (err) {
-    throw withCode(CODE.FILE_ERROR, err);
-  }
+  isTable = payload.isTable || await readTableHere(payload.isBuffer, payload.isName);
+  oosTable = payload.oosTable || (payload.oosBuffer ? await readTableHere(payload.oosBuffer, payload.oosName) : null);
   return runAnalysis({
     isTable,
     oosTable,
@@ -172,23 +169,87 @@ export function runInWorker(payload) {
   });
 }
 
+/** Identifica un archivo para reutilizar su tabla ya leida en el worker. */
+export const fileKey = (file) => (file && file.size !== undefined ? `${file.name}|${file.size}|${file.lastModified || 0}` : null);
+
+// Archivos que el worker actual ya tiene leídos (por fileKey). Así el análisis no vuelve a
+// leer ni a transferir un XML de 80 MB que el worker ya tiene. Si el worker los ha olvidado
+// (caché llena, o es uno nuevo), responde CACHE_MISS y se reenvían.
+export const workerKeys = new Set();
+
+const isZip = (buffer) => {
+  const b = new Uint8Array(buffer, 0, Math.min(2, buffer.byteLength));
+  return b[0] === 0x50 && b[1] === 0x4b;
+};
+
+/** Reserva sin worker: leer la tabla en la propia página (también un .xlsx). */
+async function readTableHere(buffer, name) {
+  try {
+    if (isZip(buffer)) {
+      const { parseXlsx } = await import('./xlsx.js');
+      const { finishTable } = await import('../core/parse.js');
+      return finishTable(await parseXlsx(buffer), name);
+    }
+    return parseTable(buffer, name);
+  } catch (err) {
+    throw withCode(CODE.FILE_ERROR, err);
+  }
+}
+
+/** Lo que el worker necesita de un archivo: la clave y, si no lo tiene ya, su contenido. */
+async function filePart(file, force = false) {
+  const key = fileKey(file);
+  const buffer = force || !workerKeys.has(key) ? await file.arrayBuffer() : null;
+  return { key, buffer, name: file.name };
+}
+
+/** Pide algo al worker; si ya no tenía alguno de los archivos, lo repite enviándolos. */
+async function askWorker(build) {
+  try {
+    return await runInWorker(await build(false));
+  } catch (err) {
+    if (!err || err.code !== CODE.CACHE_MISS) throw err;
+    workerKeys.clear();
+    return runInWorker(await build(true));
+  }
+}
+
+/**
+ * ¿Un .xlsx es el informe de un backtest, la optimización o el forward? Se lee en el
+ * worker, que se queda la tabla para la comprobación previa y el análisis.
+ */
+export async function inspectXlsx(file) {
+  const buffer = await file.arrayBuffer();
+  if (!isZip(buffer)) return null;
+  const key = fileKey(file);
+  if (getWorker()) {
+    const summary = await runInWorker({ kind: 'inspect', buffer, key, name: file.name, locale: getLocale() });
+    if (summary.role !== 'report') workerKeys.add(key);
+    return summary.role;
+  }
+  const { parseXlsx } = await import('./xlsx.js');
+  const { finishTable } = await import('../core/parse.js');
+  const { gridLooksLikeReport } = await import('../core/report.js');
+  const { roleFromTable } = await import('../core/schema.js');
+  const sheet = await parseXlsx(buffer);
+  return gridLooksLikeReport(sheet.rows) ? 'report' : roleFromTable(finishTable(sheet, file.name));
+}
+
 /**
  * Comprobacion previa de un archivo: filas, parametros y metricas. Se lee en el worker
- * (y se queda alli para el analisis); solo el .xlsx, que se descomprime aqui, se resume
- * en el hilo principal. Sin metricas o sin parametros no es un export de optimizacion.
+ * (y se queda alli para el analisis). Sin metricas no es un export de optimizacion.
  */
 export async function preflightFile(file) {
-  const prepared = await prepareTable(file);
   let summary;
-  const w = prepared.table ? null : getWorker();
-  if (w) {
-    summary = await runInWorker({
-      kind: 'preflight', buffer: prepared.buffer, name: prepared.name || file.name, key: fileKey(file), locale: getLocale(),
+  if (getWorker()) {
+    summary = await askWorker(async (force) => {
+      const part = await filePart(file, force);
+      return { kind: 'preflight', buffer: part.buffer, name: part.name, key: part.key, locale: getLocale() };
     });
+    workerKeys.add(fileKey(file));
   } else {
     const { preflightSummary } = await import('../core/schema.js');
-    const table = prepared.table || parseTable(prepared.buffer, prepared.name || file.name);
-    summary = preflightSummary(table);
+    summary = preflightSummary(await readTableHere(await file.arrayBuffer(), file.name));
   }
   if (!summary.metrics) {
     throw new AnalysisError(CODE.FILE_ERROR, L(
@@ -200,27 +261,6 @@ export async function preflightFile(file) {
   // reconocen por estructura (valen lo mismo en los dos periodos) y no por su número de
   // valores distintos. Si al final no hay ninguno, el análisis lo dice con su propio error.
   return { ok: true, name: file.name, ...summary };
-}
-
-/** Identifica un archivo para reutilizar su tabla ya leida en el worker. */
-export const fileKey = (file) => (file && file.size !== undefined ? `${file.name}|${file.size}|${file.lastModified || 0}` : null);
-
-export async function prepareTable(file) {
-  const buffer = await file.arrayBuffer();
-  const head = new Uint8Array(buffer.slice(0, 2));
-  // Un .xlsx es un ZIP; descomprimirlo es asincrono y no cabe dentro del lector
-  // sincrono, asi que se resuelve aqui y se manda ya en forma de tabla. El modulo se
-  // carga solo si hace falta: la inmensa mayoria de los archivos de MT5 son XML.
-  if (head[0] === 0x50 && head[1] === 0x4b) {
-    const { parseXlsx } = await import('./xlsx.js');
-    const { finishTable } = await import('../core/parse.js');
-    try {
-      return { table: finishTable(await parseXlsx(buffer), file.name) };
-    } catch (err) {
-      throw withCode(CODE.FILE_ERROR, err);
-    }
-  }
-  return { buffer, name: file.name };
 }
 
 // Cancelar una auditoría: el cálculo corre en el worker y no se puede interrumpir desde
@@ -272,25 +312,33 @@ export async function runAudit() {
         searchSet: state.searchSet || null,
       };
     } else {
-      const is = await prepareTable(state.isFile);
-      const oos = state.oosFile ? await prepareTable(state.oosFile) : null;
-      payload = {
-        isTable: is.table || null,
-        isBuffer: is.buffer || null,
-        isName: is.name || (state.isFile && state.isFile.name),
-        isKey: fileKey(state.isFile),
-        oosKey: state.oosFile ? fileKey(state.oosFile) : null,
-        oosTable: oos ? oos.table || null : null,
-        oosBuffer: oos ? oos.buffer || null : null,
-        oosName: oos ? oos.name : null,
-        policy,
-        locale: getLocale(),
-        searchSet: state.searchSet || null,
+      // Solo se manda el contenido de los archivos que el worker no tenga ya leídos.
+      const build = async (force) => {
+        const is = await filePart(state.isFile, force || !getWorker());
+        const oos = state.oosFile ? await filePart(state.oosFile, force || !getWorker()) : null;
+        // Se pudo pedir cancelar mientras se leían los archivos, antes de llegar al worker.
+        if (cancelRequested) throw CANCELLED();
+        return {
+          isBuffer: is.buffer,
+          isName: is.name,
+          isKey: is.key,
+          oosKey: oos ? oos.key : null,
+          oosBuffer: oos ? oos.buffer : null,
+          oosName: oos ? oos.name : null,
+          policy,
+          locale: getLocale(),
+          searchSet: state.searchSet || null,
+        };
       };
+      payload = build;
     }
     // Se pudo pedir cancelar mientras se leían los archivos, antes de llegar al worker.
     if (cancelRequested) throw CANCELLED();
-    const analysis = await runInWorker(payload);
+    const analysis = typeof payload === 'function' ? await askWorker(payload) : await runInWorker(payload);
+    if (!state.isDemo) {
+      workerKeys.add(fileKey(state.isFile));
+      if (state.oosFile) workerKeys.add(fileKey(state.oosFile));
+    }
     state.analysis = analysis;
     state.source = {
       is: state.isDemo ? L('Ejemplo sintético', 'Synthetic example') : (state.isFile && state.isFile.name) || '—',

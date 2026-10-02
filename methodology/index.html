@@ -44,6 +44,8 @@
     <span class="brand-name">Orometra</span>
   </a>
   <div class="lp-top-actions">
+    <a class="lp-nav-link" href="/methodology/" data-i18n="nav.method">Methodology</a>
+    <a class="lp-nav-link" href="/guides/" data-i18n="nav.guides">Guides</a>
     <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
       <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
       <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
@@ -266,15 +268,18 @@
   <section class="lp-doc-block doc-ai" id="ia" aria-labelledby="doc-ai-title">
     <h2 id="doc-ai-title" data-i18n="doc.ai.title">Why not just ask an AI?</h2>
     <p class="doc-ai-lead" data-i18n="doc.ai.lead">Paste your table into a chat and you will get a convincing explanation of why the best result in the list is good. With thousands of combinations tested, some always look good by chance. That is not analysis — it is a story.</p>
-    <dl class="doc-ai-list">
-      <div><dt data-i18n="doc.ai.1.title">Same data, same answer</dt><dd data-i18n="doc.ai.1.body">A language model writes every answer from scratch: it changes with the wording of your question, the order of the data and from one day to the next. Orometra is a calculation: same files, same result, today and a year from now. That is what lets you compare one optimization with another.</dd></div>
-      <div><dt data-i18n="doc.ai.2.title">A fixed method, not an improvised one</dt><dd data-i18n="doc.ai.2.body">Ask an AI to assess robustness and it makes up a method on the spot. You cannot know whether it is the same as last time, or whether it is right. Orometra's method is written on this page, it is always the same, and automated tests check that it keeps doing what it says.</dd></div>
-      <div><dt data-i18n="doc.ai.3.title">Numbers you can check</dt><dd data-i18n="doc.ai.3.body">Language models can give figures that sound right and come from no calculation. Even when they write code, you have to review that code every time. Every figure in Orometra's report comes from the columns of your export and can be traced back.</dd></div>
-      <div><dt data-i18n="doc.ai.4.title">It knows when to say no</dt><dd data-i18n="doc.ai.4.body">An AI is built to be helpful, so it tends to answer even when the data cannot support a conclusion. Orometra lowers the evidence level and says why: if there is no plateau, if the forward does not confirm it or if the result does not beat chance, it stays at weak; and if the data are not enough even for that, it says “insufficient”.</dd></div>
-      <div><dt data-i18n="doc.ai.5.title">Your strategy stays yours</dt><dd data-i18n="doc.ai.5.body">For an AI to analyze your optimization you have to upload your parameters — the heart of your strategy — to another company's servers. Orometra runs the analysis in your browser: your files never leave your computer.</dd></div>
-      <div><dt data-i18n="doc.ai.6.title">Something you can use</dt><dd data-i18n="doc.ai.6.body">An AI gives you text. Orometra gives you a specific configuration, its evidence level, the reasons, a .set to load in MT5 and the range to re-optimize around it.</dd></div>
-    </dl>
-    <p data-i18n="doc.ai.close">AI is very good at explaining concepts: use it to understand the report and ask it anything about it. But the decision of which configuration you risk your money on deserves a criterion that is fixed, tested and does not change from one conversation to the next.</p>
+    <details class="doc-ai-details">
+      <summary data-i18n="doc.ai.more">Read the full explanation</summary>
+      <dl class="doc-ai-list">
+        <div><dt data-i18n="doc.ai.1.title">Same data, same answer</dt><dd data-i18n="doc.ai.1.body">A language model writes every answer from scratch: it changes with the wording of your question, the order of the data and from one day to the next. Orometra is a calculation: same files, same result, today and a year from now. That is what lets you compare one optimization with another.</dd></div>
+        <div><dt data-i18n="doc.ai.2.title">A fixed method, not an improvised one</dt><dd data-i18n="doc.ai.2.body">Ask an AI to assess robustness and it makes up a method on the spot. You cannot know whether it is the same as last time, or whether it is right. Orometra's method is written on this page, it is always the same, and automated tests check that it keeps doing what it says.</dd></div>
+        <div><dt data-i18n="doc.ai.3.title">Numbers you can check</dt><dd data-i18n="doc.ai.3.body">Language models can give figures that sound right and come from no calculation. Even when they write code, you have to review that code every time. Every figure in Orometra's report comes from the columns of your export and can be traced back.</dd></div>
+        <div><dt data-i18n="doc.ai.4.title">It knows when to say no</dt><dd data-i18n="doc.ai.4.body">An AI is built to be helpful, so it tends to answer even when the data cannot support a conclusion. Orometra lowers the evidence level and says why: if there is no plateau, if the forward does not confirm it or if the result does not beat chance, it stays at weak; and if the data are not enough even for that, it says “insufficient”.</dd></div>
+        <div><dt data-i18n="doc.ai.5.title">Your strategy stays yours</dt><dd data-i18n="doc.ai.5.body">For an AI to analyze your optimization you have to upload your parameters — the heart of your strategy — to another company's servers. Orometra runs the analysis in your browser: your files never leave your computer.</dd></div>
+        <div><dt data-i18n="doc.ai.6.title">Something you can use</dt><dd data-i18n="doc.ai.6.body">An AI gives you text. Orometra gives you a specific configuration, its evidence level, the reasons, a .set to load in MT5 and the range to re-optimize around it.</dd></div>
+      </dl>
+      <p data-i18n="doc.ai.close">AI is very good at explaining concepts: use it to understand the report and ask it anything about it. But the decision of which configuration you risk your money on deserves a criterion that is fixed, tested and does not change from one conversation to the next.</p>
+    </details>
   </section>
 
   <section class="lp-doc-cta">

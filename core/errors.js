@@ -14,6 +14,9 @@ export const CODE = {
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   // Lo pidió el usuario: no es un fallo y no se muestra como tal.
   CANCELLED: 'CANCELLED',
+  // Interno: el worker ya no tiene la tabla que la página creía que tenía. La página la
+  // reenvía; nunca llega a mostrarse.
+  CACHE_MISS: 'CACHE_MISS',
   ANALYSIS_SUCCESS: 'ANALYSIS_SUCCESS',
 };
 

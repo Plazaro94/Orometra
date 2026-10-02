@@ -52,6 +52,7 @@
     </a>
     <div class="lp-top-actions">
       <a class="lp-nav-link" href="/es/methodology/" data-i18n="nav.method">Metodología</a>
+      <a class="lp-nav-link" href="/es/guias/" data-i18n="nav.guides">Guías</a>
       <div class="lang-row" role="radiogroup" aria-label="Idioma" data-i18n="lang.label" data-i18n-attr="aria-label">
         <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
         <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
@@ -231,8 +232,11 @@ ATR_TP=4</pre>
   </section>
 
   <!-- 4. Preguntas frecuentes -->
-  <section class="hm-section" aria-labelledby="hm-faq-title">
-    <h2 id="hm-faq-title" data-i18n="home.faq.title">Preguntas frecuentes</h2>
+  <section class="hm-section hm-faq-section" aria-labelledby="hm-faq-title">
+    <div class="hm-faq-head">
+      <h2 id="hm-faq-title" data-i18n="home.faq.title">Preguntas frecuentes</h2>
+      <p data-i18n-html="home.faq.more">¿Otra duda? Escríbenos a <a href="mailto:hello@orometra.com">hello@orometra.com</a>.</p>
+    </div>
     <div class="hm-faq" aria-labelledby="hm-faq-title">
       <details><summary data-i18n="home.faq.1.q">¿Qué archivos necesito?</summary><p data-i18n-html="home.faq.1.a">Los XML exportados de tu optimización de MT5: la pestaña de resultados (in-sample) y, si activaste forward, también la pestaña forward. El archivo .opt no sirve. <a href="/es/guias/exportar-optimizacion-mt5-xml/">Guía paso a paso</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">¿Hace falta el periodo forward?</summary><p data-i18n="home.faq.2.a">No, pero es muy recomendable. Sin él, Orometra analiza solo el in-sample y la evidencia no puede pasar de débil.</p></details>

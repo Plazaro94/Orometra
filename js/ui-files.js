@@ -2,7 +2,7 @@
 
 import { parseTable } from '../core/parse.js';
 import { metricColumns, inferParamsSingle, roleFromTable } from '../core/schema.js';
-import { looksLikeReport, mentionsReport, gridLooksLikeReport } from '../core/report.js';
+import { looksLikeReport, mentionsReport } from '../core/report.js';
 import { looksLikeSetFile, parseSetText } from '../core/setfile.js';
 import { classifyError, CODE } from '../core/errors.js';
 import { buildDemoTables } from './demo.js';
@@ -27,23 +27,18 @@ export async function detectRole(file) {
     // que no se reconociera por su cabecera (otro idioma del terminal) acababa como
     // in-sample: mejor mandarlo al lector de informes, que explica qué le falta.
     if (/\.html?$/i.test(file.name)) return 'report';
-    // El informe de un backtest también puede venir como Open XML (.xlsx) o XML: se mira
-    // antes que nada, porque como tabla parecería un in-sample.
-    if (/\.xlsx$/i.test(file.name)) {
+    // Un .xlsx (ZIP) se abre una sola vez, en el worker: dice si es el informe de un
+    // backtest o una tabla de optimización, y en ese caso de qué periodo. La tabla se queda
+    // en el worker para la comprobación previa y el análisis.
+    if (BINARY_HINT.test(file.name)) {
       try {
-        const { parseXlsx } = await import('./xlsx.js');
-        const sheet = await parseXlsx(await file.arrayBuffer());
-        if (gridLooksLikeReport(sheet.rows)) return 'report';
+        const role = await api.inspectXlsx(file);
+        if (role) return role;
       } catch { /* no es un libro legible: sigue la detección normal */ }
     }
     if (/\.xml$/i.test(file.name)) {
       const text = decodeHead(await file.slice(0, 262144).arrayBuffer());
       if (/<Workbook\b/i.test(text) && mentionsReport(text) && !/Forward\s*Result|Back\s*Result|<Data[^>]*>\s*Pass\s*</i.test(text)) return 'report';
-    }
-    // .xlsx es ZIP: hay que parsear para ver cabeceras (Forward Result / Back Result).
-    if (BINARY_HINT.test(file.name) || /\.xlsx?$/i.test(file.name)) {
-      const prepared = await api.prepareTable(file);
-      if (prepared.table) return roleFromTable(prepared.table);
     }
     const buf = await file.slice(0, 131072).arrayBuffer();
     const head = decodeHead(buf);
@@ -255,11 +250,6 @@ export function setFile(which, file) {
 
 export const preflightToken = { is: 0, oos: 0 };
 
-export async function resolveTable(file) {
-  const prepared = await api.prepareTable(file);
-  if (prepared.table) return prepared.table;
-  return parseTable(prepared.buffer, prepared.name || file.name);
-}
 
 export async function buildPreflightSummary(file) {
   return api.preflightFile(file);

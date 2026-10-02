@@ -51,6 +51,7 @@
     </a>
     <div class="lp-top-actions">
       <a class="lp-nav-link" href="methodology/" data-i18n="nav.method">Methodology</a>
+      <a class="lp-nav-link" href="guides/" data-i18n="nav.guides">Guides</a>
       <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
         <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
         <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
@@ -230,8 +231,11 @@ ATR_TP=4</pre>
   </section>
 
   <!-- 4. Preguntas frecuentes -->
-  <section class="hm-section" aria-labelledby="hm-faq-title">
-    <h2 id="hm-faq-title" data-i18n="home.faq.title">Frequently asked questions</h2>
+  <section class="hm-section hm-faq-section" aria-labelledby="hm-faq-title">
+    <div class="hm-faq-head">
+      <h2 id="hm-faq-title" data-i18n="home.faq.title">Frequently asked questions</h2>
+      <p data-i18n-html="home.faq.more">Something else? Write to us at <a href="mailto:hello@orometra.com">hello@orometra.com</a>.</p>
+    </div>
     <div class="hm-faq" aria-labelledby="hm-faq-title">
       <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n-html="home.faq.1.a">The XML exports of your MT5 optimization: the results tab (in-sample) and, if you enabled forward, the forward tab too. The .opt file does not work. <a href="/guides/export-mt5-optimization-xml/">Step-by-step guide</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">Do I need the forward period?</summary><p data-i18n="home.faq.2.a">No, but it is highly recommended. Without it, Orometra analyzes the in-sample only and the evidence cannot go beyond weak.</p></details>
