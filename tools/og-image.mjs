@@ -24,8 +24,8 @@ async function loadPlaywright() {
 }
 
 const COPY = {
-  en: { url: '/', file: 'og-image.jpg', title: 'Your best MT5 result might be luck.', lead: 'Orometra tells you which configuration actually holds up — and why.' },
-  es: { url: '/es/', file: 'og-image-es.jpg', title: 'Tu mejor resultado de MT5 puede ser suerte.', lead: 'Orometra te dice qué configuración aguanta de verdad, y por qué.' },
+  en: { url: '/', file: 'og-image.jpg', title: 'Separate the fragile from the stable in your MT5 optimization.', lead: 'Orometra tells you which configuration of your EA is stable and how much evidence backs it.' },
+  es: { url: '/es/', file: 'og-image-es.jpg', title: 'Separa lo frágil de lo estable en tu optimización de MT5.', lead: 'Orometra te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.' },
 };
 
 // Fuentes e icono incrustados: la tarjeta se monta en una página en blanco, y desde ahí el
@@ -37,10 +37,10 @@ const card = (c, img) => `<!doctype html><html><head><meta charset="utf-8"><styl
 ${font(400)}${font(600)}${font(700)}
 *{box-sizing:border-box;margin:0}
 body{width:1200px;height:630px;overflow:hidden;background:#070b14;font-family:Plex,sans-serif;color:#e8eef6;
-  display:grid;grid-template-columns:470px 1fr;align-items:center;padding:0 44px 0 64px;gap:30px}
+  display:grid;grid-template-columns:500px 1fr;align-items:center;padding:0 44px 0 64px;gap:30px}
 .brand{display:flex;align-items:center;gap:14px;font-weight:600;font-size:28px;margin-bottom:34px}
 .brand img{width:52px;height:52px;border-radius:12px;background:#111a2b;padding:6px}
-h1{font-weight:700;font-size:52px;line-height:1.1;letter-spacing:-.01em}
+h1{font-weight:700;font-size:48px;line-height:1.1;letter-spacing:-.01em}
 p{margin-top:24px;font-size:24px;line-height:1.4;color:#a9b6c6}
 .url{margin-top:34px;font-weight:600;font-size:22px;color:#5fe0d6}
 .art{display:block;width:100%;border-radius:22px;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
