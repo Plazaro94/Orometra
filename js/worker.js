@@ -5,6 +5,7 @@ import { parseTable } from '../core/parse.js';
 import { preflightSummary } from '../core/schema.js';
 import { runAnalysis } from '../core/analysis.js';
 import { setLocale } from './i18n.js';
+import { CODE, withCode } from '../core/errors.js';
 
 // Tablas ya leidas en la comprobacion previa, por archivo (nombre|tamaño|fecha). Parsear
 // un XML de 70 MB cuesta segundos: hacerlo en el hilo principal congelaba la pagina y
@@ -21,7 +22,12 @@ function tableFor(table, key, buffer, name) {
   if (table) return table;
   if (key && tableCache.has(key)) return tableCache.get(key);
   if (!buffer) return null;
-  const parsed = parseTable(buffer, name);
+  let parsed;
+  try {
+    parsed = parseTable(buffer, name);
+  } catch (err) {
+    throw withCode(CODE.FILE_ERROR, err);
+  }
   remember(key, parsed);
   return parsed;
 }

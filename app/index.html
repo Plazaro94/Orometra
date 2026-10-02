@@ -189,8 +189,9 @@
       </div>
 
       <div class="status-bar" id="statusBar" hidden>
-        <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
-        <span id="progressLabel" data-i18n="progress">Analyzing…</span>
+        <div class="progress" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="progressLabel"><div class="progress-fill" id="progressFill"></div></div>
+        <span id="progressLabel" aria-live="polite" data-i18n="progress">Analyzing…</span>
+        <button class="text-btn" id="cancelBtn" type="button" data-i18n="analyze.cancel" hidden>Cancel</button>
       </div>
 
       <div class="error-box" id="errorBox" hidden role="alert">

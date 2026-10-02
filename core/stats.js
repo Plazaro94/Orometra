@@ -156,21 +156,6 @@ export function expectedMaximum(mu, sigma, n) {
   return mu + sigma * expectedMaxZ(n);
 }
 
-/**
- * Error típico asintotico de un Sharpe estimado con `n` observaciones (Lo, 2002),
- * asumiendo rendimientos independientes: SE = sqrt((1 + SR^2/2) / (n - 1)).
- *
- * Es la cifra correcta para el contraste de seleccion. La alternativa tentadora
- * -usar la dispersión del Sharpe ENTRE configuraciones- esta mal: esa dispersión la
- * produce sobre todo la forma de la superficie de parámetros, no el ruido de
- * estimacion, y al tomarla como hipotesis nula infla el umbral hasta declarar
- * "azar" resultados que no lo son.
- */
-export function sharpeStandardError(sharpe, observations) {
-  if (!isNum(sharpe) || !(observations > 2)) return NaN;
-  return Math.sqrt((1 + 0.5 * sharpe * sharpe) / (observations - 1));
-}
-
 import { makeRng } from './rng.js';
 export { makeRng };
 

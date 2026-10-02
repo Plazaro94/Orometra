@@ -5,6 +5,8 @@
 // parsea de forma nativa y SheetJS solo se usa como respaldo para .xlsx reales.
 
 import { L } from '../js/i18n.js';
+import { AnalysisError, CODE } from './errors.js';
+import { decodeEntities } from './entities.js';
 const XML_SIGNATURE = /<\?mso-application\s+progid="Excel\.Sheet"\?>|<Workbook[\s>]/i;
 
 /** Detecta la codificacion por BOM. MT5 exporta UTF-8, pero hay builds que usan UTF-16. */
@@ -19,20 +21,6 @@ function decodeBuffer(buffer) {
   return new TextDecoder('utf-8').decode(buffer);
 }
 
-const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", '#39': "'" };
-
-function unescapeXml(s) {
-  if (s.indexOf('&') === -1) return s;
-  return s.replace(/&(#x?[0-9a-fA-F]+|\w+);/g, (m, code) => {
-    if (ENTITIES[code] !== undefined) return ENTITIES[code];
-    if (code[0] === '#') {
-      const n = code[1] === 'x' || code[1] === 'X' ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
-      return Number.isFinite(n) && n >= 0 && n <= 0x10ffff ? String.fromCodePoint(n) : m;
-    }
-    return m;
-  });
-}
-
 /**
  * Parsea XML Spreadsheet 2003. Devuelve la primera hoja con datos.
  * Respeta ss:Index (celdas saltadas) y ss:Type para no convertir texto a numero.
@@ -43,9 +31,9 @@ export function parseXmlSpreadsheet(text) {
   let ws;
   while ((ws = sheetRe.exec(text))) {
     const nameMatch = ws[1].match(/ss:Name="([^"]*)"/);
-    sheets.push({ name: nameMatch ? unescapeXml(nameMatch[1]) : 'Sheet', body: ws[2] });
+    sheets.push({ name: nameMatch ? decodeEntities(nameMatch[1]) : 'Sheet', body: ws[2] });
   }
-  if (!sheets.length) throw new Error(L('No se encuentra ninguna tabla en este XML: puede estar incompleto (cortado al copiarlo o descargarlo) o no ser el que exporta el probador de MT5. Vuelve a exportarlo desde la pestaña Optimización.', 'No table found in this XML: it may be incomplete (cut off while copying or downloading) or not the one the MT5 tester exports. Export it again from the Optimization tab.'));
+  if (!sheets.length) throw new AnalysisError(CODE.FILE_ERROR, L('No se encuentra ninguna tabla en este XML: puede estar incompleto (cortado al copiarlo o descargarlo) o no ser el que exporta el probador de MT5. Vuelve a exportarlo desde la pestaña Optimización.', 'No table found in this XML: it may be incomplete (cut off while copying or downloading) or not the one the MT5 tester exports. Export it again from the Optimization tab.'));
 
   const rowRe = /<Row\b([^>]*)(?:\/>|>([\s\S]*?)<\/Row>)/g;
   const cellRe = /<Cell\b([^>]*?)(?:\/>|>([\s\S]*?)<\/Cell>)/g;
@@ -69,7 +57,7 @@ export function parseXmlSpreadsheet(text) {
         const d = body.match(dataRe);
         if (d) {
           const type = (d[1].match(/ss:Type="([^"]*)"/) || [, ''])[1];
-          const raw = unescapeXml(d[2].replace(/<[^>]+>/g, ''));
+          const raw = decodeEntities(d[2].replace(/<[^>]+>/g, ''));
           cells[col] = type === 'Number' ? Number(raw) : raw;
         } else {
           cells[col] = null;
@@ -80,7 +68,7 @@ export function parseXmlSpreadsheet(text) {
     }
     if (rows.length > 1) return { sheet: sheet.name, rows, format: 'xml-spreadsheet' };
   }
-  throw new Error(L('El archivo tiene hojas pero ninguna con datos. Vuelve a exportar desde MT5 con la tabla de resultados visible.', 'The file has sheets but none with data. Export again from MT5 with the results table visible.'));
+  throw new AnalysisError(CODE.FILE_ERROR, L('El archivo tiene hojas pero ninguna con datos. Vuelve a exportar desde MT5 con la tabla de resultados visible.', 'The file has sheets but none with data. Export again from MT5 with the results table visible.'));
 }
 
 /** Divide una linea de CSV/TSV respetando comillas dobles. */
@@ -109,7 +97,7 @@ function splitDelimited(line, delimiter) {
 
 export function parseDelimited(text) {
   const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '');
-  if (lines.length < 2) throw new Error(L('Esto no parece una exportación de MT5: no se encuentran filas de datos. En el probador, clic derecho sobre la tabla de resultados y exporta el informe (formato XML).', 'This does not look like an MT5 export: no data rows found. In the tester, right-click the results table and export the report (XML format).'));
+  if (lines.length < 2) throw new AnalysisError(CODE.FILE_ERROR, L('Esto no parece una exportación de MT5: no se encuentran filas de datos. En el probador, clic derecho sobre la tabla de resultados y exporta el informe (formato XML).', 'This does not look like an MT5 export: no data rows found. In the tester, right-click the results table and export the report (XML format).'));
   const header = lines[0];
   const tabs = (header.match(/\t/g) || []).length;
   const semis = (header.match(/;/g) || []).length;
@@ -131,10 +119,10 @@ export function parseTable(buffer, fileName = '') {
   if (head[0] === 0x50 && head[1] === 0x4b) {
     // Un .xlsx es un ZIP y descomprimirlo es asincrono, asi que no cabe aqui: la
     // interfaz lo detecta antes y usa `parseXlsx` de `xlsx.js`. Ver `prepareTable`.
-    throw new Error(L('Este archivo es un .xlsx. Se lee por otra vía; si ves este mensaje, recarga la página e inténtalo de nuevo.', 'This file is an .xlsx. It is read another way; if you see this message, reload the page and try again.'));
+    throw new AnalysisError(CODE.FILE_ERROR, L('Este archivo es un .xlsx. Se lee por otra vía; si ves este mensaje, recarga la página e inténtalo de nuevo.', 'This file is an .xlsx. It is read another way; if you see this message, reload the page and try again.'));
   }
   if (head[0] === 0xd0 && head[1] === 0xcf) {
-    throw new Error(L('Este archivo es un Excel binario antiguo (.xls de verdad), un formato que MT5 no genera. Vuelve a exportar desde el probador en XML, o ábrelo en Excel y guárdalo como CSV.', 'This file is an old binary Excel (a real .xls), a format MT5 does not produce. Export again from the tester as XML, or open it in Excel and save it as CSV.'));
+    throw new AnalysisError(CODE.FILE_ERROR, L('Este archivo es un Excel binario antiguo (.xls de verdad), un formato que MT5 no genera. Vuelve a exportar desde el probador en XML, o ábrelo en Excel y guárdalo como CSV.', 'This file is an old binary Excel (a real .xls), a format MT5 does not produce. Export again from the tester as XML, or open it in Excel and save it as CSV.'));
   }
   const text = decodeBuffer(buffer);
   const parsed = XML_SIGNATURE.test(text.slice(0, 4096))
@@ -170,7 +158,7 @@ export function finishTable(parsed, fileName = '') {
     headers.push(name);
     keptCols.push(c);
   }
-  if (headers.length < 2) throw new Error(L('No se reconoce la fila de cabeceras. Se esperaba una línea con los nombres de las columnas (Pass, Result, Profit... y tus parámetros).', 'The header row is not recognized. A line with the column names was expected (Pass, Result, Profit... and your parameters).'));
+  if (headers.length < 2) throw new AnalysisError(CODE.FILE_ERROR, L('No se reconoce la fila de cabeceras. Se esperaba una línea con los nombres de las columnas (Pass, Result, Profit... y tus parámetros).', 'The header row is not recognized. A line with the column names was expected (Pass, Result, Profit... and your parameters).'));
 
   const rows = [];
   for (let r = headerRowIndex + 1; r < raw.length; r++) {
@@ -178,7 +166,7 @@ export function finishTable(parsed, fileName = '') {
     const row = keptCols.map((c) => (src[c] === undefined ? null : src[c]));
     if (row.some((v) => v !== null && v !== '')) rows.push(row);
   }
-  if (!rows.length) throw new Error(L('Se ha encontrado la cabecera pero no hay ninguna fila debajo. El archivo está vacío de resultados.', 'The header was found but there are no rows below it. The file has no results.'));
+  if (!rows.length) throw new AnalysisError(CODE.FILE_ERROR, L('Se ha encontrado la cabecera pero no hay ninguna fila debajo. El archivo está vacío de resultados.', 'The header was found but there are no rows below it. The file has no results.'));
 
   normalizeDecimalColumns(headers, rows, parsed.decimalHint || null);
   return { name: fileName, sheet: parsed.sheet, format: parsed.format, headers, rows };

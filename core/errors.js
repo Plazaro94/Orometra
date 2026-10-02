@@ -10,6 +10,10 @@ export const CODE = {
   NO_PLATEAU: 'NO_PLATEAU',
   WORKER_ERROR: 'WORKER_ERROR',
   REPORT_ERROR: 'REPORT_ERROR',
+  TOO_LARGE: 'TOO_LARGE',
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  // Lo pidió el usuario: no es un fallo y no se muestra como tal.
+  CANCELLED: 'CANCELLED',
   ANALYSIS_SUCCESS: 'ANALYSIS_SUCCESS',
 };
 
@@ -22,27 +26,29 @@ export class AnalysisError extends Error {
   }
 }
 
-/** Clasifica un Error genérico (p. ej. del parser) en un código tipado. */
+/**
+ * Clasifica un error por su código. Los fallos previstos (archivo, esquema, motor…) se
+ * lanzan como AnalysisError con código; cualquier otro es un fallo nuestro, no de los
+ * datos del usuario. Antes se adivinaba por el texto del mensaje y lo que no encajaba
+ * salía como "datos no utilizables": el usuario culpaba a su archivo de un error interno.
+ */
 export function classifyError(err) {
-  if (err && err.code && CODE[err.code]) {
-    return { code: err.code, message: err.message || String(err), details: err.details || {} };
-  }
   const message = err && err.message ? err.message : String(err);
-  const m = message.toLowerCase();
+  if (err && err.code && CODE[err.code]) {
+    return { code: err.code, message, details: err.details || {} };
+  }
+  return { code: CODE.INTERNAL_ERROR, message, details: {} };
+}
 
-  if (/worker|tardado|timeout|transfer|inesperad|unexpected|demasiado/.test(m)) {
-    return { code: CODE.WORKER_ERROR, message, details: {} };
-  }
-  if (/pass|emparej|coincid|parámetro|parametro|comun|común|procedencia|misma optim|same optim/.test(m)) {
-    return { code: CODE.SCHEMA_ERROR, message, details: {} };
-  }
-  if (/xml|xlsx|xls|csv|zip|cabecera|header|formato|format|vac[ií]o|empty|hoja|sheet|binario|opt\b|compatible|unsupported|corrupt|descomprim/.test(m)) {
-    return { code: CODE.FILE_ERROR, message, details: {} };
-  }
-  if (/pocas configur|muy pocas|utilizables|limpi/.test(m)) {
-    return { code: CODE.DATA_ERROR, message, details: {} };
-  }
-  return { code: CODE.DATA_ERROR, message, details: {} };
+/**
+ * El mismo error con `code` si no traía uno. Para las fronteras donde cualquier fallo es
+ * del archivo (leerlo y descomprimirlo): un XML truncado puede romper el lector de mil
+ * formas, y todas significan "este archivo no se puede leer".
+ */
+export function withCode(code, err) {
+  if (err && err.code && CODE[err.code]) return err;
+  const message = err && err.message ? err.message : String(err);
+  return new AnalysisError(code, message, { cause: err && err.name ? err.name : undefined });
 }
 
 /** Estado del análisis cuando el motor sí termina (no es un throw). */
@@ -137,10 +143,24 @@ export function errorCopy(code, L) {
         'The unseen period needs the report of a single backtest (HTML or Open XML): in the tester, Backtest tab, right-click → Report.',
       ),
     },
+    [CODE.TOO_LARGE]: {
+      title: L('Optimización demasiado grande', 'Optimization too large'),
+      hint: L(
+        'Recorta los rangos de los parámetros o divide la optimización en partes y analízalas por separado.',
+        'Narrow the parameter ranges, or split the optimization into parts and analyze them separately.',
+      ),
+    },
+    [CODE.INTERNAL_ERROR]: {
+      title: L('Error interno de Orometra', 'Orometra internal error'),
+      hint: L(
+        'No es culpa de tu archivo: el análisis ha fallado por un error nuestro. Vuelve a intentarlo; si se repite, escríbenos a hello@orometra.com con el mensaje de arriba.',
+        'It is not your file: the analysis failed because of a bug on our side. Try again; if it repeats, write to hello@orometra.com with the message above.',
+      ),
+    },
     [CODE.ANALYSIS_SUCCESS]: {
       title: L('Auditoría completada', 'Audit complete'),
       hint: L('Se encontró al menos una región estable con el criterio actual.', 'At least one stable region was found under the current criteria.'),
     },
   };
-  return map[code] || map[CODE.DATA_ERROR];
+  return map[code] || map[CODE.INTERNAL_ERROR];
 }

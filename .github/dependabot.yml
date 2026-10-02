@@ -1,0 +1,8 @@
+# Las acciones van fijadas por SHA (una etiqueta se puede mover); Dependabot propone
+# las actualizaciones. No hay dependencias de npm que vigilar.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

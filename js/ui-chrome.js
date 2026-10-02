@@ -2,6 +2,7 @@
 
 import { DEFAULT_POLICY, gateFailures } from '../core/metrics.js';
 import { mountBrandMark } from './brandmark.js';
+import { enhanceRadioGroups } from './radiogroup.js';
 import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
@@ -43,6 +44,7 @@ export function initChrome() {
   syncLangButtons();
   $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => changeLanguage(b.dataset.langSet)));
   applyStaticI18n();
+  enhanceRadioGroups();
   initTabsFade();
 
   const mark = $('#brandMark');
