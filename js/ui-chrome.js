@@ -237,11 +237,11 @@ export function updatePolicyPreview() {
   $('#policyPreviewNote').textContent = delta === 0
     ? L(
       `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el periodo optimizado'} (${pct(pass / total, 0)}), igual que el análisis actual`,
-      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the optimized period'} (${pct(pass / total, 0)}), same as the current analysis`,
+      `would meet these minimums in ${a.meta.hasForward ? 'both periods' : 'the optimized period'} (${pct(pass / total, 0)}), same as the current analysis`,
     )
     : L(
       `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el periodo optimizado'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
-      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the optimized period'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
+      `would meet these minimums in ${a.meta.hasForward ? 'both periods' : 'the optimized period'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
     );
   // Se compara la POLITICA, no el recuento: otros minimos con el mismo numero de
   // supervivientes (0 = 0) no dejaban recalcular y los campos no casaban con el informe.
@@ -250,7 +250,7 @@ export function updatePolicyPreview() {
   const samePolicy = Boolean(used) && used.minProfitFactor === g.minProfitFactor && used.maxDrawdownPct === g.maxDrawdownPct
     && used.minTrades === g.minTrades && used.requireProfit === g.requireProfit;
   if (!samePolicy && delta === 0) {
-    $('#policyPreviewNote').textContent += L(' · los mínimos han cambiado: recalcula para actualizar el informe', ' · the minima changed: recalculate to update the report');
+    $('#policyPreviewNote').textContent += L(' · los mínimos han cambiado: recalcula para actualizar el informe', ' · the minimums changed: recalculate to update the report');
   }
   $('#policyRerun').disabled = state.busy || samePolicy;
 }
@@ -639,7 +639,7 @@ export function renderLegal() {
         nadie): el tema de color, el idioma y los mínimos que configures, para no tener que repetirlos. Puedes
         borrarlos vaciando los datos del sitio.`,
           `<strong>Three things are stored in your own browser</strong> (local storage, never sent to
-        anyone): the color theme, the language and the minima you set, so you do not have to repeat them. You can
+        anyone): the color theme, the language and the minimums you set, so you do not have to repeat them. You can
         clear them by wiping the site data.`,
         )}</li>
         <li>${L(

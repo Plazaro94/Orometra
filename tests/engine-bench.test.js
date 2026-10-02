@@ -74,8 +74,8 @@ for (const seed of [2, 4, 12]) {
   check(`S3 #${seed}: cumple los mínimos en los dos periodos`, a.fallback && a.fallback.passesBoth && a.fallback.record.passesJoint);
   check(`S3 #${seed}: el nivel no sube por ella`, !isPos(a.verdict.level), a.verdict.level);
   const note = a.fallback ? fallbackNote(a) : '';
-  check(`S3 #${seed}: el texto dice que no es zona estable y nombra los parámetros`,
-    note.startsWith('Sin zona estable') && a.meta.paramNames.every((n) => note.includes(`${n}=`)), note);
+  check(`S3 #${seed}: el texto dice que no es una meseta y nombra los parámetros`,
+    note.startsWith('Sin meseta') && a.meta.paramNames.every((n) => note.includes(`${n}=`)), note);
 }
 
 section('Auditoría 2 · N1. Cambiar de idioma no cambia el veredicto');

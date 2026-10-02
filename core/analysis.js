@@ -16,7 +16,7 @@ import {
   median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum,
   mean, stdev, extent, makeRng,
 } from './stats.js';
-import { buildVerdict, peakRejectReasons } from './verdict.js';
+import { buildVerdict, peakRejectReasons, peakRejectTags } from './verdict.js';
 import { coverageAgainstSet } from './setfile.js';
 import { L } from '../js/i18n.js';
 
@@ -681,7 +681,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const peaks = byCriterion
     .slice(0, 80)
     .filter((p) => inPlateau[p.index] < 0)
-    .map((p) => ({ ...p, reasons: peakRejectReasons(p, opts) }))
+    .map((p) => ({ ...p, reasons: peakRejectReasons(p, opts), tags: peakRejectTags(p, opts) }))
     .slice(0, 12);
 
   progress(onProgress, 90, L('Contrastes estadísticos', 'Statistical contrasts'));

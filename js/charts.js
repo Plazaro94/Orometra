@@ -273,7 +273,7 @@ export function plateauHeatmap(analysis, dimA, dimB) {
   }
   const xl = la.map((v, a) => `<text class="ch-tick" x="${pad.l + a * cw + (cw - 2) / 2}" y="${H - pad.b + 14}" text-anchor="middle">${esc(formatTick(v))}</text>`).join('');
   const yl = lb.map((v, b) => `<text class="ch-tick" x="${pad.l - 8}" y="${pad.t + (lb.length - 1 - b) * ch + ch / 2 + 3}" text-anchor="end">${esc(formatTick(v))}</text>`).join('');
-  return `${svgOpen(W, H, L(`Calidad mediana de cada combinación de ${analysis.meta.paramNames[dimA]} y ${analysis.meta.paramNames[dimB]}.`, `Median quality of each combination of ${analysis.meta.paramNames[dimA]} and ${analysis.meta.paramNames[dimB]}.`))}
+  return `${svgOpen(W, H, L(`Calidad mediana de cada par de valores de ${analysis.meta.paramNames[dimA]} y ${analysis.meta.paramNames[dimB]}.`, `Median quality of each pair of values of ${analysis.meta.paramNames[dimA]} and ${analysis.meta.paramNames[dimB]}.`))}
     ${body}${xl}${yl}
     <text class="ch-axis-label" x="${pad.l + (la.length * cw) / 2}" y="${H - 6}" text-anchor="middle">${esc(analysis.meta.paramNames[dimA])}</text>
     <text class="ch-axis-label" x="14" y="${pad.t + (lb.length * ch) / 2}" text-anchor="middle" transform="rotate(-90 14 ${pad.t + (lb.length * ch) / 2})">${esc(analysis.meta.paramNames[dimB])}</text>

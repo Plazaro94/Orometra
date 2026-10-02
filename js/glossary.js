@@ -38,8 +38,8 @@ const DEFS = {
     en: 'How often the best row of one period falls to the bottom half in the other. If it is high, the MT5 table order depends on which period you look at and is no use for choosing.',
   },
   effectiveTrials: {
-    es: 'Número de regiones distintas del espacio de parámetros probadas, contando vecinos cercanos como una sola prueba en vez de varias independientes.',
-    en: 'Number of distinct regions of the parameter space tested, counting nearby neighbors as a single trial instead of several independent ones.',
+    es: 'Número de partes distintas del espacio de parámetros probadas, contando vecinos cercanos como una sola prueba en vez de varias independientes.',
+    en: 'Number of distinct areas of the parameter space tested, counting nearby neighbors as a single trial instead of several independent ones.',
   },
   sampling: {
     es: 'Cómo cubrió la optimización el espacio de parámetros: rejilla completa (prueba todas las combinaciones), parcial, o dispersa (algoritmo genético, que concentra las pruebas donde ya iba bien).',
