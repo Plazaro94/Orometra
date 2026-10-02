@@ -411,13 +411,13 @@ export function renderParams(a) {
         'La influencia de cada parámetro (por sí solo, con el resto fijo y la mayor de las dos) está en el gráfico de arriba y en el desglose completo de Diagnóstico. Aquí, solo lo que no sale en ningún otro sitio: qué valores probaste de verdad y qué papel juega cada uno en el motor.',
         "Each parameter's influence (on its own, with the rest fixed, and the larger of the two) is in the chart above and in the full breakdown in Diagnostics. Here, only what appears nowhere else: which values you actually tested and what role each plays in the engine.",
       )}</p>
-      <div class="table-wrap"><table>
+      <div class="table-wrap"><table class="stack-table">
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Niveles', 'Levels')}</th><th>${L('Papel en el motor', 'Role in the engine')}</th><th>${L('Valores', 'Values')}</th></tr></thead>
-        <tbody>${a.sensitivity.map((s) => `<tr>
-          <td class="mono">${esc(s.name)}${a.meta.paramTypes && a.meta.paramTypes[s.index] !== 'number' ? ` <span class="badge">${esc(a.meta.paramTypes[s.index] === 'bool' ? 'bool' : 'enum')}</span>` : ''}</td>
-          <td>${int(s.levels)}</td>
-          <td>${roleBadge(dimRole(a, s))}</td>
-          <td class="values">${(s.values || []).map(paramHtml).join(' · ')}</td>
+        <tbody>${a.sensitivity.map((s) => `<tr class="stack-row">
+          <td class="mono" data-label="${L('Parámetro', 'Parameter')}">${esc(s.name)}${a.meta.paramTypes && a.meta.paramTypes[s.index] !== 'number' ? ` <span class="badge">${esc(a.meta.paramTypes[s.index] === 'bool' ? 'bool' : 'enum')}</span>` : ''}</td>
+          <td data-label="${L('Niveles', 'Levels')}">${int(s.levels)}</td>
+          <td data-label="${L('Papel en el motor', 'Role in the engine')}">${roleBadge(dimRole(a, s))}</td>
+          <td class="values" data-label="${L('Valores', 'Values')}">${(s.values || []).map(paramHtml).join(' · ')}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>`;

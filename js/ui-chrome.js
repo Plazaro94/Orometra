@@ -419,7 +419,7 @@ function ensureGlossOutsideClickListener() {
  * derecho: sin esto, una columna cortada en seco parece un texto roto en vez
  * de una tabla que se puede deslizar. */
 function markScrollableTables() {
-  $$('.table-wrap, .range-table-wrap').forEach((el) => {
+  $$('.table-wrap, .range-table-wrap, .chart-scroll').forEach((el) => {
     const scrolls = el.scrollWidth > el.clientWidth + 1;
     el.classList.toggle('has-hscroll', scrolls);
     // Si se desliza, tambien con teclado: sin foco no se puede recorrer con las flechas.
