@@ -107,7 +107,7 @@ export function doExport(kind, plateauIndex) {
     if (!a.meta.hasForward) {
       return api.showError(L(
         'Sin forward no se exporta un .set de despliegue: la región solo se midió en el periodo optimizado. Exporta el rango de refinamiento, o vuelve a auditar con el archivo forward.',
-        'Without forward, a deployment .set is not exported: the region was only measured on the optimized period. Export the refinement range, or re-audit with the forward file.',
+        'Without forward, a deployment .set is not exported: the plateau was only measured on the optimized period. Export the refinement range, or re-audit with the forward file.',
       ));
     }
     downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best, state.searchSet));

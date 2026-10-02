@@ -344,7 +344,7 @@ export function renderPreflight() {
       <em>${esc(t('preflight.rows'))} ${int(p.rows)} · ${esc(t('preflight.params'))} ${esc(paramsText)} · ${esc(t('preflight.metrics'))} ${int(p.metrics)}</em>
       ${miss.length ? `<em class="preflight-warn">${esc(L(
     `No se reconocen las columnas de: ${miss.map((m) => MISSING[m]).join(', ')}. Orometra lee cabeceras de MT5 en inglés y en español; sin estas columnas, sus mínimos no se pueden aplicar.`,
-    `Columns not recognized for: ${miss.map((m) => MISSING[m]).join(', ')}. Orometra reads MT5 headers in English and Spanish; without these columns, their minima cannot be applied.`,
+    `Columns not recognized for: ${miss.map((m) => MISSING[m]).join(', ')}. Orometra reads MT5 headers in English and Spanish; without these columns, their minimums cannot be applied.`,
   ))}</em>` : ''}
     </div>`;
   }).join('');
@@ -369,7 +369,7 @@ export function renderPreflight() {
     } else if (state.analysis) {
       note.textContent = L(
         'Archivos leídos. Puedes volver a auditar si cambias los mínimos.',
-        'Files read. You can audit again if you change the minima.',
+        'Files read. You can audit again if you change the minimums.',
       );
     } else {
       note.textContent = t('preflight.note.ok');
@@ -377,7 +377,7 @@ export function renderPreflight() {
     if (!hasError && !reading && hasMissing) {
       note.textContent = L(
         'Faltan columnas clave: los mínimos correspondientes no se aplicarán y el veredicto no será fiable. Mira el aviso de la ficha.',
-        'Key columns are missing: the corresponding minima will not be applied and the verdict will not be reliable. See the notice on the card.',
+        'Key columns are missing: the corresponding minimums will not be applied and the verdict will not be reliable. See the notice on the card.',
       );
     }
     note.classList.toggle('is-warn', hasError || hasMissing);

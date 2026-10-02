@@ -122,21 +122,21 @@ export function errorCopy(code, L) {
       title: L('Evidencia insuficiente para una meseta', 'Insufficient evidence for a plateau'),
       hint: L(
         'Hay configuraciones que pasan los mínimos, pero no hay masa interior suficiente para afirmar una región estable.',
-        'Some configurations clear the minima, but there is not enough interior mass to claim a stable region.',
+        'Some configurations clear the minimums, but there is not enough interior mass to claim a plateau.',
       ),
     },
     [CODE.NO_QUALIFYING_CONFIGS]: {
-      title: L('Ninguna configuración pasa los mínimos', 'No configuration clears the minima'),
+      title: L('Ninguna configuración pasa los mínimos', 'No configuration clears the minimums'),
       hint: L(
         'Eso no es un fallo técnico: con estos mínimos no hay candidatos. Relaja los mínimos (factor de beneficio, drawdown, operaciones) o revisa el rango que optimizaste.',
-        'This is not a technical failure: with these minima there are no candidates. Relax the minima (profit factor, drawdown, trades) or review the range you optimized.',
+        'This is not a technical failure: with these minimums there are no candidates. Relax the minimums (profit factor, drawdown, trades) or review the range you optimized.',
       ),
     },
     [CODE.NO_PLATEAU]: {
       title: L('Sin meseta estable', 'No stable plateau'),
       hint: L(
         'Hay candidatos, pero no una región conexa con soporte local suficiente. Revisa descartes y cobertura.',
-        'There are candidates, but no connected region with enough local support. Check rejected peaks and coverage.',
+        'There are candidates, but no plateau with enough local support. Check rejected peaks and coverage.',
       ),
     },
     [CODE.REPORT_ERROR]: {
@@ -162,7 +162,7 @@ export function errorCopy(code, L) {
     },
     [CODE.ANALYSIS_SUCCESS]: {
       title: L('Auditoría completada', 'Audit complete'),
-      hint: L('Se encontró al menos una región estable con el criterio actual.', 'At least one stable region was found under the current criteria.'),
+      hint: L('Se encontró al menos una meseta con el criterio actual.', 'At least one plateau was found under the current criteria.'),
     },
   };
   return map[code] || map[CODE.INTERNAL_ERROR];

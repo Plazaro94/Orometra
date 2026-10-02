@@ -61,7 +61,7 @@ export function renderRepCard(a, p) {
       <div><span>${L('Calidad en el periodo optimizado', 'Quality on the optimized period')}</span><strong>${num(r.qualityIs, 2)} <em>${esc(qualityLabel(r.qualityIs))}</em></strong></div>
       ${hasF ? `<div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${num(r.qualityOos, 2)} <em>${esc(qualityLabel(r.qualityOos))}</em></strong></div>` : ''}
       <div><span>${L('Vecinos observados', 'Observed neighbors')}</span><strong>${p.neighborhood ? int(p.neighborhood.observed) : int(p.stability.support)}</strong></div>
-      <div><span>${L('Pasan mínimos / fallan', 'Pass minima / fail')}</span><strong>${p.neighborhood
+      <div><span>${L('Pasan mínimos / fallan', 'Pass minimums / fail')}</span><strong>${p.neighborhood
         ? `${int(p.neighborhood.passing)} / ${int(p.neighborhood.failing)}`
         : pct(p.stability.fracPass, 0)}</strong></div>
       ${p.neighborhood && p.neighborhood.slotsComplete
@@ -105,7 +105,7 @@ export function renderPlateaus(a) {
     return `<div class="detail-head"><div class="detail-kicker">${L('02 / Mesetas', '02 / Plateaus')}</div><h2>${L('No se ha encontrado ninguna meseta', 'No plateau was found')}</h2>
       <p>${L(
         'Ninguna región conexa supera los mínimos con estabilidad suficiente. Revisa el diagnóstico: lo habitual es que falten datos, que el rango probado sea demasiado estrecho o que la estrategia no tenga ventaja.',
-        'No connected region clears the minima with enough stability. Check diagnostics: usually data are missing, the tested range is too narrow, or the strategy has no edge.',
+        'No plateau clears the minimums with enough stability. Check diagnostics: usually data are missing, the tested range is too narrow, or the strategy has no edge.',
       )}</p></div>
       ${a.fallback ? `<div class="inline-warn"><strong>${L('Sugerencia orientativa', 'Tentative suggestion')}: ${L('pasada', 'pass')} ${esc(a.fallback.record.id)}.</strong> ${fallbackNote(a)}</div>` : ''}
       <button class="text-btn" data-goto="diagnostics">${L('Ir al diagnóstico &rarr;', 'Go to diagnostics &rarr;')}</button>`;
@@ -136,7 +136,7 @@ export function renderPlateaus(a) {
     ${sparseSampling ? `<div class="inline-warn">${L(
       `Esta optimización usó ${a.meta.sampling === 'sparse' ? 'muestreo disperso (genético)' : 'una rejilla parcial'}, así que la meseta de abajo puede tener huecos sin probar. Antes de decidir con esto,`,
       `This optimization used ${a.meta.sampling === 'sparse' ? 'sparse (genetic) sampling' : 'a partial grid'}, so the plateau below can have untested gaps. Before deciding on this,`,
-    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas combinaciones y confirma si la meseta aguanta entera.', "— it's a small number of combinations and confirms whether the whole plateau holds.")}</div>` : ''}
+    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas configuraciones y confirma si la meseta aguanta entera.', "— it's a small number of configurations and confirms whether the whole plateau holds.")}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
         <thead><tr><th>#</th><th>${L('Pasada elegida', 'Chosen pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Centro', 'Center')}</th><th>${L('Las más flojas', 'Weakest')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Variación', 'Spread')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
@@ -156,8 +156,8 @@ export function renderPlateaus(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div>
         ${sparseSampling ? `<span class="status-pill warn-pill">${L('Recomendado', 'Recommended')}</span>` : ''}</div>
       <p class="panel-intro">${L(
-        `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Con la búsqueda completa no quedan huecos sin probar y la forma de la meseta se mide mejor. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinaciones</strong>, un tamaño que se puede ejecutar de verdad.`,
-        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} combinations</strong> — a size you can actually run.`,
+        `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Con la búsqueda completa no quedan huecos sin probar y la forma de la meseta se mide mejor. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configuraciones</strong>, un tamaño que se puede ejecutar de verdad.`,
+        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configurations</strong> — a size you can actually run.`,
       )}</p>
       <div class="table-wrap"><table>
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Centro', 'Center')}</th><th>${L('Inicio', 'Start')}</th><th>${L('Paso', 'Step')}</th><th>${L('Fin', 'Stop')}</th><th>${L('Niveles', 'Levels')}</th></tr></thead>
@@ -217,8 +217,8 @@ function renderPlateauSurfacePanel(a, plateau) {
   const grid = buildAxisPairGrid(a, plateau, dimA, dimB);
   const gapNote = grid.coverage < 0.999
     ? L(
-      `Cobertura de esta rejilla 2D: ${Math.round(grid.coverage * 100)} %. Las celdas vacías no son cero: son combinaciones que la optimización (probablemente genética) no probó con el resto de parámetros en el valor de tu meseta — no se inventa un dato ahí.`,
-      `Coverage of this 2D grid: ${Math.round(grid.coverage * 100)} %. Empty cells are not zero: they are combinations the optimization (likely genetic) never tested with the other parameters at your plateau's value — nothing is invented there.`,
+      `Cobertura de esta rejilla 2D: ${Math.round(grid.coverage * 100)} %. Las celdas vacías no son cero: son configuraciones que la optimización (probablemente genética) no probó con el resto de parámetros en el valor de tu meseta — no se inventa un dato ahí.`,
+      `Coverage of this 2D grid: ${Math.round(grid.coverage * 100)} %. Empty cells are not zero: they are configurations the optimization (likely genetic) never tested with the other parameters at your plateau's value — nothing is invented there.`,
     )
     : L(
       'Rejilla completa para estos dos parámetros: cada celda es una pasada real.',
@@ -249,8 +249,8 @@ function renderSurfaceDetail(a, grid, hit) {
   // Sin nada señalado se muestra la pasada elegida (la del banderín), no un hueco.
   const fine = typeof matchMedia === 'function' && matchMedia('(hover: hover) and (pointer: fine)').matches;
   const hint = `<p class="muted surface-hint">${fine
-    ? L('Pasa el ratón sobre una barra para ver otra pasada.', 'Hover a bar to see another pass.')
-    : L('Toca una barra para ver otra pasada.', 'Tap a bar to see another pass.')}</p>`;
+    ? L('Pasa el ratón sobre una barra para ver otra configuración.', 'Hover a bar to see another configuration.')
+    : L('Toca una barra para ver otra configuración.', 'Tap a bar to see another configuration.')}</p>`;
   let picked = false;
   if (!hit) {
     const [ra, rb] = grid.repCell || [];
@@ -309,6 +309,28 @@ function skippedRanksNote(peaks) {
   )}</p>`;
 }
 
+/**
+ * Tus mínimos, una sola vez encima de la tabla: antes cada fila repetía la misma frase
+ * larga («no cumple los mínimos (in-sample: PF < 1,20, DD > 20 %)»). En las filas queda
+ * solo lo que las distingue.
+ */
+function rejectedMinimums(a) {
+  const g = a.meta.policy.gates;
+  const parts = [
+    g.requireProfit ? L('beneficio positivo', 'positive profit') : '',
+    `${L('factor de beneficio', 'profit factor')} ≥ ${num(g.minProfitFactor, 2)}`,
+    `drawdown ≤ ${num(g.maxDrawdownPct, 0)} %`,
+    a.meta.hasForward
+      ? L(`${int(a.meta.minTradesIs)} operaciones en el periodo optimizado y ${int(a.meta.minTradesOos)} en el forward`,
+        `${int(a.meta.minTradesIs)} trades on the optimized period and ${int(a.meta.minTradesOos)} on the forward`)
+      : L(`${int(a.meta.minTradesIs)} operaciones`, `${int(a.meta.minTradesIs)} trades`),
+  ].filter(Boolean);
+  return `<p class="rejected-minimums"><strong>${L('Tus mínimos', 'Your minimums')}:</strong> ${parts.join(' · ')}. ${L('En cada fila, lo que la descarta.', 'Each row shows what rules it out.')}<span class="hover-hint"> ${L(
+    'Pasa el ratón por una etiqueta para ver el detalle.',
+    'Hover a tag to see the detail.',
+  )}</span></p>`;
+}
+
 export function renderRejected(a) {
   const critName = a.meta.hasForward
     ? (a.meta.criterionOosName || L('criterio forward', 'forward criterion'))
@@ -330,6 +352,7 @@ export function renderRejected(a) {
       ${skippedRanksNote(a.peaks)}
     </div>
     <section class="panel">
+      ${rejectedMinimums(a)}
       <div class="table-wrap"><table class="stack-table">
         <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinos', 'Neighbors')}</th><th>${L('Vecinos flojos', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
         <tbody>${a.peaks.map((p) => `<tr class="stack-row">
@@ -339,7 +362,7 @@ export function renderRejected(a) {
           <td data-label="${L('Calidad', 'Quality')}">${num(p.score, 2)}</td>
           <td data-label="${L('Vecinos', 'Neighbors')}">${int(p.st.support)}</td>
           <td data-label="${L('Vecinos flojos', 'Weak neighbors')}">${num(p.st.q25, 2)}</td>
-          <td class="reasons" data-label="${L('Motivo del descarte', 'Rejection reason')}">${p.reasons.map((r) => `<span class="reason">${esc(r)}</span>`).join('')}</td>
+          <td class="reasons" data-label="${L('Motivo del descarte', 'Rejection reason')}">${(p.tags || p.reasons.map((r) => ({ tag: r, detail: r }))).map((t) => `<span class="reason" title="${esc(t.detail)}"><span class="reason-tag">${esc(t.tag)}</span>${t.tag === t.detail ? '' : `<span class="reason-detail">${esc(t.detail)}</span>`}</span>`).join('')}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>`;
@@ -394,15 +417,15 @@ export function renderParams(a) {
       ${parameterProfile(a, state.selectedParam)}
       <p class="chart-note">${L(
         'La caja abarca la mitad central de las configuraciones que pasan los mínimos; la línea, el valor típico (mediana). Una caída brusca de un valor al siguiente es un acantilado.',
-        'The box spans the middle half of the configurations that pass the minima; the line is the typical value (median). A sharp drop from one value to the next is a cliff.',
+        'The box spans the middle half of the configurations that pass the minimums; the line is the typical value (median). A sharp drop from one value to the next is a cliff.',
       )}</p>
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Mapa', 'Map')}</div><h2>${L('Los dos parámetros más influyentes', 'The two most influential parameters')}</h2></div></div>
       ${plateauHeatmap(a, dimA, dimB)}
       <p class="chart-note">${L(
-        'Calidad mediana de cada combinación. Las zonas claras contiguas son mesetas; una celda clara rodeada de oscuras es un pico.',
-        'Median quality of each combination. Contiguous light zones are plateaus; a light cell surrounded by dark ones is a peak.',
+        'Calidad mediana de cada par de valores. Las manchas claras contiguas son mesetas; una celda clara rodeada de oscuras es un pico.',
+        'Median quality of each pair of values. Contiguous light areas are plateaus; a light cell surrounded by dark ones is a peak.',
       )}</p>
     </section>
     <section class="panel">
@@ -482,7 +505,7 @@ export function renderDiagnostics(a) {
       <section class="panel">
         <div class="panel-head compact"><div><div class="panel-kicker">${gloss('sampling', L('Muestreo', 'Sampling'))}</div><h2>${L('Cómo optimizaste', 'How you optimized')}</h2></div></div>
         <div class="evidence-list">
-          <div><span>${L('Combinaciones posibles', 'Possible combinations')}</span><strong>${int(a.meta.cartesian)}</strong></div>
+          <div><span>${L('Configuraciones posibles', 'Possible configurations')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones analizadas', 'Configurations analyzed')}</span><strong>${int(a.meta.total)}${a.integrity && a.integrity.collapsedTopology > 0 ? ` <em>${L('tras agrupar', 'after grouping')} ${esc((a.meta.flatDims || []).join(', '))}</em>` : ''}</strong></div>
           <div><span>${L('Parte probada', 'Share tested')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(1).format(a.meta.coverage * 100) + ' %' : '—'}</strong></div>
           <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(1).format(a.meta.searchCoverage.coverageSearch * 100) + ' %' : L('sin .set', 'no .set')}</strong></div>
@@ -528,7 +551,7 @@ export function renderDiagnostics(a) {
     </section>
 
     <section class="panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Política', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minima')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Política', 'Policy')}</div><h2>${L('Mínimos aplicados', 'Applied minimums')}</h2></div></div>
       <div class="evidence-list">
         <div><span>${L('Beneficio positivo', 'Positive profit')}</span><strong>${g.requireProfit ? L('exigido', 'required') : L('no exigido', 'not required')}</strong></div>
         <div><span>${gloss('profitFactor', L('Factor de beneficio mínimo', 'Minimum profit factor'))}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
@@ -553,7 +576,7 @@ export function renderDiagnostics(a) {
         <div><span>· ${L('eligiendo en el forward, validando en el periodo optimizado', 'choosing on the forward, validating on the optimized period')}</span><strong>${pct(a.stats.fragilityFolds.oosToIs.value, 0)}</strong></div>
         <div><span>· ${L('asimetría entre sentidos', 'asymmetry across directions')}</span><strong>${pct(a.stats.fragilityAsymmetry, 0)}</strong></div>` : ''}
         <div><span>${L('Pruebas realizadas', 'Trials run')}</span><strong>${int(a.meta.total)}</strong></div>
-        <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (regiones distintas)', 'Effective trials (distinct regions)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
+        <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (independientes)', 'Effective trials (independent)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
         ${a.stats.sharpeTest ? `
         <div><span>${gloss('sharpe', L('Sharpe máximo observado', 'Maximum observed Sharpe'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
         <div><span>${L('Sharpe medio entre pasadas', 'Mean Sharpe across trials')}</span><strong>${num(a.stats.sharpeTest.mean, 3)}</strong></div>
@@ -657,7 +680,7 @@ export function renderStabilityPanel(a) {
         </div>
       </div>
       <div>
-        <h3>${L('Tus mínimos', 'Your minima')}</h3>
+        <h3>${L('Tus mínimos', 'Your minimums')}</h3>
         <p class="stability-sub">${L('Factor de beneficio exigido, drawdown máximo, operaciones mínimas.', 'Required profit factor, maximum drawdown, minimum trades.')}</p>
         ${gates ? `<div class="evidence-list">
           <div><span>${L('Variaciones probadas', 'Variations tried')}</span><strong>${int(gates.draws)}</strong></div>

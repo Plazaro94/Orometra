@@ -66,7 +66,7 @@
 <main id="main" class="lp-main lp-doc">
   <p class="lp-eyebrow" data-i18n="doc.method.eyebrow">Methodology</p>
   <h1 data-i18n="doc.method.h1">How the engine decides</h1>
-  <p class="lp-lead" data-i18n="doc.method.lead">We do not re-rank your MT5 table. We look for stable zones, and tell you how much evidence backs them. These are the steps, in the order the engine runs them.</p>
+  <p class="lp-lead" data-i18n="doc.method.lead">We do not re-rank your MT5 table. We look for plateaus, and tell you how much evidence backs them. These are the steps, in the order the engine runs them.</p>
 
   <nav class="doc-index" data-i18n="doc.method.index" data-i18n-attr="aria-label" aria-label="Steps">
     <ol>
@@ -172,19 +172,19 @@
       <span class="lp-method-num">06</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s6.title">It estimates how much could be chance</h2>
-        <p data-i18n="doc.method.s6.body">Test thousands of combinations and some will look great by pure chance. The engine computes the best Sharpe you would expect from luck alone with that many trials and compares it with yours. If yours does not beat it, the report flags it as critical: the top result may be nothing but noise. Beating it is necessary, not sufficient: it rules out that the result comes only from trying a lot, but it does not validate the strategy.</p>
+        <p data-i18n="doc.method.s6.body">Test thousands of configurations and some will look great by pure chance. The engine computes the best Sharpe you would expect from luck alone with that many trials and compares it with yours. If yours does not beat it, the report flags it as critical: the top result may be nothing but noise. Beating it is necessary, not sufficient: it rules out that the result comes only from trying a lot, but it does not validate the strategy.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="umbrales">
       <span class="lp-method-num">07</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s7.title">It tests itself</h2>
-        <p data-i18n="doc.method.s7.body">What the engine requires to call something a plateau (minimum quality, robustness, support, size…) are our decisions, not laws. To check that the recommendation does not depend on them, the search is repeated 50 times moving them by up to ±20%, and it counts how often the same region still wins. The same is done, with fewer repetitions, moving your minimums (with very large files this second test is skipped, and you are told). If a recommendation only appears with the exact numbers, it is not a recommendation.</p>
+        <p data-i18n="doc.method.s7.body">What the engine requires to call something a plateau (minimum quality, robustness, support, size…) are our decisions, not laws. To check that the recommendation does not depend on them, the search is repeated 50 times moving them by up to ±20%, and it counts how often the same plateau still wins. The same is done, with fewer repetitions, moving your minimums (with very large files this second test is skipped, and you are told). If a recommendation only appears with the exact numbers, it is not a recommendation.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
           <rect x="110" y="55" width="260" height="50" rx="25" fill="var(--evidence-strong-bg)" stroke="var(--evidence-strong-line)"/>
-          <text x="240" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="var(--evidence-strong-text)" data-i18n="doc.method.thr.pill">48 / 50 · same region wins</text>
+          <text x="240" y="86" text-anchor="middle" font-size="13" font-weight="700" fill="var(--evidence-strong-text)" data-i18n="doc.method.thr.pill">48 / 50 · same plateau wins</text>
           <line x1="140" y1="185" x2="340" y2="185" stroke="var(--muted-3)" stroke-width="1.3" stroke-dasharray="3 4"/>
           <line x1="140" y1="178" x2="140" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
           <line x1="340" y1="178" x2="340" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
@@ -267,7 +267,7 @@
 
   <section class="lp-doc-block doc-ai" id="ia" aria-labelledby="doc-ai-title">
     <h2 id="doc-ai-title" data-i18n="doc.ai.title">Why not just ask an AI?</h2>
-    <p class="doc-ai-lead" data-i18n="doc.ai.lead">Paste your table into a chat and you will get a convincing explanation of why the best result in the list is good. With thousands of combinations tested, some always look good by chance. That is not analysis — it is a story.</p>
+    <p class="doc-ai-lead" data-i18n="doc.ai.lead">Paste your table into a chat and you will get a convincing explanation of why the best result in the list is good. With thousands of configurations tested, some always look good by chance. That is not analysis — it is a story.</p>
     <details class="doc-ai-details">
       <summary data-i18n="doc.ai.more">Read the full explanation</summary>
       <dl class="doc-ai-list">
