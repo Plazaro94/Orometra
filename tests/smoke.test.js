@@ -126,6 +126,8 @@ section('4. Errores tipados: título + pista, no solo “Analysis failed”');
     CODE.INSUFFICIENT_DATA,
     CODE.NO_QUALIFYING_CONFIGS,
     CODE.NO_PLATEAU,
+    CODE.TOO_LARGE,
+    CODE.INTERNAL_ERROR,
   ]) {
     const copy = errorCopy(code, L);
     check(`${code} tiene título propio`, Boolean(copy.title) && copy.title !== 'Analysis failed');
@@ -135,7 +137,7 @@ section('4. Errores tipados: título + pista, no solo “Analysis failed”');
   const typed = new AnalysisError(CODE.FILE_ERROR, 'Bad XML Spreadsheet');
   const classified = classifyError(typed);
   check('AnalysisError conserva code', classified.code === CODE.FILE_ERROR);
-  check('classifyError tipifica mensaje de worker', classifyError(new Error('Worker timeout')).code === CODE.WORKER_ERROR);
+  check('classifyError conserva el código del worker', classifyError(new AnalysisError(CODE.WORKER_ERROR, 'Worker timeout')).code === CODE.WORKER_ERROR);
 
   check('ui importa errorCopy/classifyError', /errorCopy/.test(uiSrc) && /classifyError/.test(uiSrc));
   check('showError rellena errorHint', /function showError[\s\S]{0,600}errorHint/.test(uiSrc));

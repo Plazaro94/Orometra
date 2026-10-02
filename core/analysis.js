@@ -20,6 +20,11 @@ import { buildVerdict, peakRejectReasons } from './verdict.js';
 import { coverageAgainstSet } from './setfile.js';
 import { L } from '../js/i18n.js';
 
+// Tope de configuraciones por archivo. Un XML de MT5 de 80 MB (el máximo que se admite)
+// trae unas 100.000; 250.000 se analizan en ~8 s con ~850 MB de memoria. Por encima, el
+// navegador puede quedarse sin memoria a medio análisis: mejor decirlo antes de empezar.
+export const MAX_ROWS = 300000;
+
 const METRIC_KEYS = ['profit', 'profitFactor', 'recoveryFactor', 'sharpe', 'drawdown', 'trades', 'expectedPayoff'];
 
 function readMetrics(row, roles) {
@@ -43,6 +48,15 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // no imponerle nuestra escala de riesgo. Ver `resolvePolicy`.
   const policy = resolvePolicy(rawPolicy);
   const hasForward = Boolean(oosTable);
+  const rowCount = Math.max(isTable && isTable.rows ? isTable.rows.length : 0, oosTable && oosTable.rows ? oosTable.rows.length : 0);
+  if (rowCount > MAX_ROWS) {
+    const n = rowCount.toLocaleString(L('es-ES', 'en-US'));
+    const max = MAX_ROWS.toLocaleString(L('es-ES', 'en-US'));
+    throw new AnalysisError(CODE.TOO_LARGE, L(
+      `La optimización tiene ${n} configuraciones y el máximo que se puede analizar en el navegador es ${max}.`,
+      `The optimization has ${n} configurations and the most that can be analyzed in the browser is ${max}.`,
+    ), { rows: rowCount, max: MAX_ROWS });
+  }
   progress(onProgress, 5, L('Emparejando archivos', 'Matching files'));
 
   let paramNames = [];
@@ -547,7 +561,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // optimizar alrededor del centro y puede ser mucho más ancho.
     const paramSpan = paramNames.map((_, j) => {
       const vals = comp.map((i) => records[i].params[j]).filter((v) => typeof v === 'number' && Number.isFinite(v));
-      return vals.length === comp.length ? { min: Math.min(...vals), max: Math.max(...vals) } : null;
+      if (vals.length !== comp.length) return null;
+      const [min, max] = extent(vals);
+      return { min, max };
     });
     return {
       extent: ext,
@@ -733,7 +749,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   if (sharpeValues.length >= 30 && stdev(sharpeValues) > 1e-12) {
     const sigma = stdev(sharpeValues);
     const chanceMax = expectedMaximum(0, sigma, effectiveTrials);
-    const observedMax = Math.max(...sharpeValues);
+    const observedMax = extent(sharpeValues)[1];
     sharpeTest = {
       period,
       observedMax,

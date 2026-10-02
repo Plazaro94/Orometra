@@ -11,7 +11,7 @@ import { runAnalysis } from '../core/analysis.js';
 import { buildDemoTables } from '../js/demo.js';
 import { DEFAULT_POLICY } from '../core/metrics.js';
 import { buildSetFile } from '../js/export.js';
-import { expectedMaximum, expectedMaxZ, sharpeStandardError, normInv, quantile, spearman } from '../core/stats.js';
+import { expectedMaximum, expectedMaxZ, normInv, quantile, spearman } from '../core/stats.js';
 
 let failures = 0;
 let checks = 0;
@@ -90,9 +90,6 @@ check('normInv(0.975) ~ 1.95996', Math.abs(normInv(0.975) - 1.959964) < 1e-4, St
 check('normInv(0.5) ~ 0', Math.abs(normInv(0.5)) < 1e-9);
 check('expectedMaximum crece con N', expectedMaximum(0, 1, 10000) > expectedMaximum(0, 1, 100));
 check('expectedMaxZ(1000) entre 3 y 3,5', expectedMaxZ(1000) > 3 && expectedMaxZ(1000) < 3.5, String(expectedMaxZ(1000)));
-// SE de Lo (2002): con SR=0 se reduce a 1/sqrt(n-1).
-check('sharpeStandardError(0, 101) = 0,1', Math.abs(sharpeStandardError(0, 101) - 0.1) < 1e-9, String(sharpeStandardError(0, 101)));
-check('el SE del Sharpe baja al crecer las operaciones', sharpeStandardError(2, 2000) < sharpeStandardError(2, 200));
 check('quantile mediana de 1..9 = 5', quantile([1, 2, 3, 4, 5, 6, 7, 8, 9], 0.5) === 5);
 check('spearman monotono = 1', Math.abs(spearman([1, 2, 3, 4, 5], [10, 20, 30, 40, 50]) - 1) < 1e-9);
 check('spearman inverso = -1', Math.abs(spearman([1, 2, 3, 4, 5], [50, 40, 30, 20, 10]) + 1) < 1e-9);

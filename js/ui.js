@@ -20,6 +20,7 @@ import {
   setBusy,
   prepareTable,
   runAudit,
+  cancelAudit,
   runInWorker,
   preflightFile,
 } from './ui-audit.js';
@@ -104,6 +105,7 @@ $('#policyToggle').addEventListener('click', () => togglePolicy());
 bindDropzone('#mainDrop', '#mainFile', null);
 bindGlobalDrop();
 $('#analyzeBtn').addEventListener('click', runAudit);
+$('#cancelBtn').addEventListener('click', cancelAudit);
 $('#demoBtn').addEventListener('click', loadDemo);
 $('#exportBtn').addEventListener('click', toggleExportMenu);
 $('#intakeExpandBtn').addEventListener('click', () => {

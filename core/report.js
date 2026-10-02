@@ -14,6 +14,7 @@
 // cada campo se busca con patrones que cubren castellano e ingles.
 
 import { L } from '../js/i18n.js';
+import { decodeEntities, XML_ENTITIES } from './entities.js';
 import { toNumber } from './parse.js';
 
 const REPORT_SIGNATURE = /Strategy\s*Tester\s*Report|Informe\s*del\s*Probador|Testbericht|Rapport\s*du\s*testeur/i;
@@ -32,27 +33,15 @@ export function mentionsReport(text) {
 // se decodifican, "Per&iacute;odo:" no casa con ningun patron y el informe entero
 // aparece vacio sin dar ningun error.
 const NAMED_ENTITIES = {
-  nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'",
+  ...XML_ENTITIES,
+  nbsp: ' ',
   aacute: 'á', eacute: 'é', iacute: 'í', oacute: 'ó', uacute: 'ú',
   Aacute: 'Á', Eacute: 'É', Iacute: 'Í', Oacute: 'Ó', Uacute: 'Ú',
   ntilde: 'ñ', Ntilde: 'Ñ', uuml: 'ü', Uuml: 'Ü',
   ordm: 'º', ordf: 'ª', deg: '°', euro: '€', pound: '£',
 };
 
-function decodeEntities(text) {
-  if (text.indexOf('&') === -1) return text;
-  return text.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (m, code) => {
-    if (code[0] === '#') {
-      const n = code[1] === 'x' || code[1] === 'X' ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
-      // Un código fuera del rango Unicode (o un sustituto suelto) hace lanzar fromCodePoint:
-      // un informe manipulado no puede romper la lectura con un error interno.
-      return Number.isFinite(n) && n > 0 && n <= 0x10ffff && !(n >= 0xd800 && n <= 0xdfff) ? String.fromCodePoint(n) : m;
-    }
-    return NAMED_ENTITIES[code] !== undefined ? NAMED_ENTITIES[code] : m;
-  });
-}
-
-const stripTags = (html) => decodeEntities(html.replace(/<[^>]+>/g, '')).trim();
+const stripTags = (html) => decodeEntities(html.replace(/<[^>]+>/g, ''), NAMED_ENTITIES).trim();
 
 function tableRows(html) {
   const out = [];

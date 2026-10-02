@@ -2,14 +2,17 @@
 
 import { track } from './track.js';
 import { parseTable } from '../core/parse.js';
-import { AnalysisError, CODE, classifyError, errorCopy } from '../core/errors.js';
+import { AnalysisError, CODE, classifyError, errorCopy, withCode } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
 import { state, api, $, $$, esc } from './ui-state.js';
 import { displayVerdictLevel, levelName } from './ui-verdict.js';
 
 export function showProgress(pct, label) {
+  const value = Math.max(2, Math.min(100, pct));
   $('#statusBar').hidden = false;
-  $('#progressFill').style.width = `${Math.max(2, Math.min(100, pct))}%`;
+  $('#progressFill').style.width = `${value}%`;
+  const bar = $('#progressBar');
+  if (bar) bar.setAttribute('aria-valuenow', String(Math.round(value)));
   $('#progressLabel').textContent = label;
 }
 
@@ -31,6 +34,7 @@ export function showError(errOrMessage, code = CODE.DATA_ERROR) {
   }
   $('#statusBar').hidden = true;
   $('#errorBox').dataset.code = classified.code;
+  return classified.code;
 }
 
 export function clearError() {
@@ -63,8 +67,8 @@ export const pendingRequests = new Map();
 
 export const WORKER_TIMEOUT_MS = 10 * 60 * 1000;
 
-export function failAllPending(message) {
-  const error = new Error(message);
+export function failAllPending(message, code = CODE.WORKER_ERROR) {
+  const error = new AnalysisError(code, message);
   pendingRequests.forEach((entry) => {
     clearTimeout(entry.timer);
     entry.reject(error);
@@ -100,8 +104,14 @@ export function getWorker() {
 /** Reserva: si el worker no esta disponible, se calcula en el hilo principal. */
 export async function analyseOnMainThread(payload) {
   const { runAnalysis } = await import('../core/analysis.js');
-  const isTable = payload.isTable || parseTable(payload.isBuffer, payload.isName);
-  const oosTable = payload.oosTable || (payload.oosBuffer ? parseTable(payload.oosBuffer, payload.oosName) : null);
+  let isTable;
+  let oosTable;
+  try {
+    isTable = payload.isTable || parseTable(payload.isBuffer, payload.isName);
+    oosTable = payload.oosTable || (payload.oosBuffer ? parseTable(payload.oosBuffer, payload.oosName) : null);
+  } catch (err) {
+    throw withCode(CODE.FILE_ERROR, err);
+  }
   return runAnalysis({
     isTable,
     oosTable,
@@ -141,7 +151,7 @@ export function runInWorker(payload) {
         w.terminate();
       } catch { /* ignore */ }
       worker = null;
-      reject(new Error(L(
+      reject(new AnalysisError(CODE.WORKER_ERROR, L(
         'El análisis ha tardado demasiado y se ha cancelado. Prueba con una optimización más pequeña.',
         'The analysis took too long and was canceled. Try a smaller optimization.',
       )));
@@ -154,7 +164,7 @@ export function runInWorker(payload) {
       w.postMessage({ id, ...payload }, transfer);
     } catch (err) {
       finish();
-      reject(new Error(L(
+      reject(new AnalysisError(CODE.WORKER_ERROR, L(
         'No se han podido enviar los datos al motor de análisis: ',
         'Could not send data to the analysis engine: ',
       ) + (err && err.message ? err.message : String(err))));
@@ -204,13 +214,34 @@ export async function prepareTable(file) {
   if (head[0] === 0x50 && head[1] === 0x4b) {
     const { parseXlsx } = await import('./xlsx.js');
     const { finishTable } = await import('../core/parse.js');
-    return { table: finishTable(await parseXlsx(buffer), file.name) };
+    try {
+      return { table: finishTable(await parseXlsx(buffer), file.name) };
+    } catch (err) {
+      throw withCode(CODE.FILE_ERROR, err);
+    }
   }
   return { buffer, name: file.name };
 }
 
+// Cancelar una auditoría: el cálculo corre en el worker y no se puede interrumpir desde
+// fuera, así que se termina el worker (el siguiente análisis crea otro).
+let cancelRequested = false;
+const CANCELLED = () => new AnalysisError(CODE.CANCELLED, L('Análisis cancelado.', 'Analysis canceled.'));
+
+export function cancelAudit() {
+  if (!state.busy) return;
+  cancelRequested = true;
+  const w = worker;
+  worker = null;
+  if (w) {
+    try { w.terminate(); } catch { /* ignore */ }
+  }
+  failAllPending(CANCELLED().message, CODE.CANCELLED);
+}
+
 export async function runAudit() {
   if (state.busy) return;
+  cancelRequested = false;
   clearError();
   const policyProblem = api.policyInputProblem && api.policyInputProblem();
   if (policyProblem) {
@@ -227,6 +258,8 @@ export async function runAudit() {
   }
   setBusy(true);
   showProgress(2, L('Leyendo archivos', 'Reading files'));
+  const cancelBtn = $('#cancelBtn');
+  if (cancelBtn) cancelBtn.hidden = false;
   try {
     const policy = api.readPolicy();
     let payload;
@@ -255,6 +288,8 @@ export async function runAudit() {
         searchSet: state.searchSet || null,
       };
     }
+    // Se pudo pedir cancelar mientras se leían los archivos, antes de llegar al worker.
+    if (cancelRequested) throw CANCELLED();
     const analysis = await runInWorker(payload);
     state.analysis = analysis;
     state.source = {
@@ -306,9 +341,15 @@ export async function runAudit() {
     api.updatePolicyPreview();
     track(state.isDemo ? 'analisis-ejemplo' : analysis.meta.hasForward ? 'analisis-is-forward' : 'analisis-solo-is');
   } catch (error) {
-    showError(error);
-    if (!state.isDemo) track('analisis-error');
+    if (error && error.code === CODE.CANCELLED) {
+      $('#statusBar').hidden = true;
+      return;
+    }
+    const code = showError(error);
+    // Los fallos nuestros se cuentan aparte: son los que hay que arreglar.
+    if (!state.isDemo) track(code === CODE.INTERNAL_ERROR ? 'analisis-error-interno' : 'analisis-error');
   } finally {
+    if (cancelBtn) cancelBtn.hidden = true;
     setBusy(false);
   }
 }

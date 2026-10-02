@@ -10,8 +10,9 @@ https://orometra.com (dominio propio, fichero `CNAME`)
 
 No se suben a Pages `tests/`, `docs/` ni `node_modules/`.
 
-Además, `.github/workflows/ci.yml` ejecuta los mismos tests en cada push y PR a
-`main` (aunque no haya deploy).
+Además, `.github/workflows/ci.yml` ejecuta los mismos tests en cada PR a `main`
+(los push a `main` ya los prueba el despliegue). Las acciones van fijadas por SHA y
+Dependabot (`.github/dependabot.yml`) propone sus actualizaciones.
 
 En el repo: **Settings → Pages → Source: GitHub Actions** (solo hace falta
 configurarlo una vez). En el plan gratuito de GitHub, Pages requiere el

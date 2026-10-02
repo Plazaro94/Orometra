@@ -178,5 +178,21 @@ section('5. Tope de descompresión (bomba ZIP declarada)');
   check('rechaza entrada con uncompressed declarado enorme', /grande|límite|limite/i.test(msg), msg);
 }
 
+section('Entidades fuera de rango y errores con código');
+{
+  // Un libro corrupto o manipulado con &#99999999; hacía lanzar fromCodePoint: el archivo
+  // fallaba con un error interno que la app mostraba como "datos no utilizables".
+  const raras = [...CAB.slice(0, 6), 'Inp&#99999999;', 'Inp&#xD800;B'];
+  const conRaras = [raras, ...filas.slice(1)];
+  let crudo = null;
+  let err = null;
+  try { crudo = await parseXlsx(zip(libro({ filas: conRaras, compartidas: raras }), true)); } catch (e) { err = e; }
+  check('una entidad fuera de rango no rompe la lectura', crudo && !err, err && err.message);
+  check('y se deja tal cual', crudo && crudo.rows[0][6] === 'Inp&#99999999;' && crudo.rows[0][7] === 'Inp&#xD800;B', crudo && crudo.rows[0].join(','));
+  let zipErr = null;
+  try { await parseXlsx(new Uint8Array([1, 2, 3, 4]).buffer); } catch (e) { zipErr = e; }
+  check('un ZIP roto es un error de archivo (con código)', zipErr && zipErr.code === 'FILE_ERROR', zipErr && `${zipErr.code} ${zipErr.message}`);
+}
+
 section(failures ? `RESULTADO: ${checks - failures}/${checks} — ${failures} FALLO(S)` : `RESULTADO: ${checks}/${checks} correctas`);
 process.exit(failures ? 1 : 0);

@@ -1,5 +1,6 @@
 // Portada de marketing. Comparte tema e idioma con la app.
 import { mountBrandMark } from './brandmark.js';
+import { enhanceRadioGroups } from './radiogroup.js';
 import { mountHeroSurface } from './hero-surface.js';
 import { setLocale, getLocale, applyStaticI18n, t } from './i18n.js';
 
@@ -74,6 +75,7 @@ function syncNotFoundLinks() {
 syncLang();
 applyStaticI18n();
 syncNotFoundLinks();
+enhanceRadioGroups();
 
 const fineHover = matchMedia('(hover: hover) and (pointer: fine)');
 function syncSurfaceHint() {
