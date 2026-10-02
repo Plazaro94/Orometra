@@ -236,12 +236,12 @@ export function updatePolicyPreview() {
   $('#policyPreviewCount').textContent = L(`${int(pass)} de ${int(total)}`, `${int(pass)} of ${int(total)}`);
   $('#policyPreviewNote').textContent = delta === 0
     ? L(
-      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el in-sample'} (${pct(pass / total, 0)}), igual que el análisis actual`,
-      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the in-sample'} (${pct(pass / total, 0)}), same as the current analysis`,
+      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el periodo optimizado'} (${pct(pass / total, 0)}), igual que el análisis actual`,
+      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the optimized period'} (${pct(pass / total, 0)}), same as the current analysis`,
     )
     : L(
-      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
-      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the in-sample'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
+      `cumplirían estos mínimos en ${a.meta.hasForward ? 'los dos periodos' : 'el periodo optimizado'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} respecto al análisis actual`,
+      `would meet these minima in ${a.meta.hasForward ? 'both periods' : 'the optimized period'} (${pct(pass / total, 0)}), ${delta > 0 ? '+' : ''}${int(delta)} vs the current analysis`,
     );
   // Se compara la POLITICA, no el recuento: otros minimos con el mismo numero de
   // supervivientes (0 = 0) no dejaban recalcular y los campos no casaban con el informe.

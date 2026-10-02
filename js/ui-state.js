@@ -4,8 +4,8 @@ import { L, localeTag } from './i18n.js';
 
 export const roleBadge = (role) => {
   const ROLE_COPY = {
-    distancia: ['ok', L('mide la distancia', 'measures distance')],
-    particion: ['', L('parte el espacio', 'partitions the space')],
+    distancia: ['ok', L('cuenta para buscar vecinos', 'counts when finding neighbors')],
+    particion: ['', L('solo vecinos si coincide', 'neighbors only if equal')],
     liberado: ['', L('bloqueo liberado', 'block released')],
     plano: ['', L('plano: se ignora', 'flat: ignored')],
     'no optimizado': ['', L('no optimizado', 'not optimized')],

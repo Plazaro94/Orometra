@@ -361,14 +361,14 @@ export function renderUnseen(a) {
       <h2>${L('La prueba de fuego', 'The acid test')}</h2>
       <p>
         ${L(
-          `Ya has elegido configuración mirando el in-sample y el forward, así que ninguno de los dos
+          `Ya has elegido configuración mirando el periodo optimizado y el forward, así que ninguno de los dos
         sigue siendo ciego. Este es el último paso: lanza en MT5 un backtest de la configuración
         elegida sobre un tramo que <strong>no hayas usado ni para optimizar ni para validar</strong>,
         y trae aquí sus números. La pregunta no es si son espectaculares, sino si son
         <strong>normales para este EA</strong>. Es un contraste distinto del grado de evidencia
         del veredicto — aquí no se mide la fuerza de la meseta, se mide si este tramo nuevo encaja
         con lo que el EA ya demostró.`,
-          `You already chose a configuration looking at in-sample and forward, so neither is
+          `You already chose a configuration looking at the optimized period and the forward, so neither is
         still blind. This is the last step: run in MT5 a backtest of the chosen configuration
         on a segment you <strong>have not used for optimizing or validating</strong>,
         and bring its numbers here. The question is not whether they are spectacular, but whether they are

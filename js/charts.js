@@ -82,8 +82,8 @@ export function scatterIsOos(analysis) {
   const both = analysis.records.filter((r) => Number.isFinite(r.qualityIs) && Number.isFinite(r.qualityOos));
   const worse = both.length ? Math.round((100 * both.filter((r) => r.qualityOos < r.qualityIs).length) / both.length) : 0;
   const svg = frame(W, H, pad, diagonal + pts.join('') + reps, {
-    label: L(`Calidad in-sample frente a forward: el ${worse} % de las configuraciones pierde calidad en el forward.`,
-      `In-sample versus forward quality: ${worse}% of configurations lose quality on the forward.`),
+    label: L(`Calidad en el periodo optimizado frente al forward: el ${worse} % de las configuraciones pierde calidad en el forward.`,
+      `Optimized-period versus forward quality: ${worse}% of configurations lose quality on the forward.`),
     xLabel: L('Calidad en el periodo optimizado', 'Quality on the optimized period'),
     yLabel: L('Calidad en el forward', 'Quality on the forward'),
     xTicks: ticks, yTicks: ticks, xScale, yScale,
@@ -160,8 +160,8 @@ export function degradationChart(analysis) {
   const top = rows[rows.length - 1];
   const restMedian = median(rows.slice(0, -1).map((r) => r.oosMedian).filter(Number.isFinite));
   const degLabel = L(
-    `Criterio forward por decil del criterio in-sample: tus mejores (D10) tienen mediana ${formatTick(top.oosMedian)} frente a ${formatTick(restMedian)} del resto.`,
-    `Forward criterion by in-sample criterion decile: your best (D10) have median ${formatTick(top.oosMedian)} versus ${formatTick(restMedian)} for the rest.`,
+    `Criterio forward por decil del criterio en el periodo optimizado: tus mejores (D10) tienen mediana ${formatTick(top.oosMedian)} frente a ${formatTick(restMedian)} del resto.`,
+    `Forward criterion by optimized-period criterion decile: your best (D10) have median ${formatTick(top.oosMedian)} versus ${formatTick(restMedian)} for the rest.`,
   );
   const yMid = (pad.t + H - pad.b) / 2;
   const svg = `${svgOpen(W, H, degLabel)}

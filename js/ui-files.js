@@ -107,8 +107,8 @@ export async function acceptFiles(fileList, preferred, nested = false) {
   if (!nested) {
     state.dropNote = all.length > files.length
       ? L(
-        `Has soltado ${all.length} archivos y solo se leen 4 (in-sample, forward, informe del backtest y .set). Los demás se han ignorado.`,
-        `You dropped ${all.length} files and only 4 are read (in-sample, forward, backtest report and .set). The rest were ignored.`,
+        `Has soltado ${all.length} archivos y solo se leen 4 (optimización, forward, informe del backtest y .set). Los demás se han ignorado.`,
+        `You dropped ${all.length} files and only 4 are read (optimization, forward, backtest report and .set). The rest were ignored.`,
       )
       : '';
   }
@@ -125,8 +125,8 @@ export async function acceptFiles(fileList, preferred, nested = false) {
     const target = role || preferred || 'is';
     if (target === 'is' && state.isFile && !state.oosFile && !sameFile(state.isFile, files[0])) {
       state.dropNote = L(
-        `${state.isFile.name} se ha sustituido por ${files[0].name}: los dos son exportaciones in-sample (ninguno trae Forward Result / Back Result). Si querías añadir el forward, exporta la tabla de la pestaña de resultados del forward.`,
-        `${state.isFile.name} was replaced by ${files[0].name}: both are in-sample exports (neither has Forward Result / Back Result). If you meant to add the forward, export the table from the forward results tab.`,
+        `${state.isFile.name} se ha sustituido por ${files[0].name}: los dos son exportaciones de la optimización (ninguno trae Forward Result / Back Result). Si querías añadir el forward, exporta la tabla de la pestaña de resultados del forward.`,
+        `${state.isFile.name} was replaced by ${files[0].name}: both are optimization exports (neither has Forward Result / Back Result). If you meant to add the forward, export the table from the forward results tab.`,
       );
     }
     if (role === 'report') {
@@ -158,8 +158,8 @@ export async function acceptFiles(fileList, preferred, nested = false) {
   const pair = files.slice(0, 2);
   if (pair.length === 2 && sameFile(pair[0], pair[1])) {
     api.showError(L(
-      'Has soltado el mismo archivo dos veces. Hacen falta el export in-sample y el export forward de la misma optimización.',
-      'You dropped the same file twice. The in-sample export and the forward export of the same optimization are needed.',
+      'Has soltado el mismo archivo dos veces. Hacen falta el export de la optimización y el del forward de la misma ejecución.',
+      'You dropped the same file twice. The optimization export and the forward export of the same run are needed.',
     ), CODE.SCHEMA_ERROR);
     return;
   }
@@ -168,8 +168,8 @@ export async function acceptFiles(fileList, preferred, nested = false) {
     // Dos exports forward: asignar uno como in-sample en silencio compararia el forward
     // consigo mismo y daria un veredicto limpio falso.
     api.showError(L(
-      'Los dos archivos son exportaciones forward (traen Forward Result / Back Result). Falta el export in-sample: en MT5, pestaña de resultados de optimización → clic derecho → exportar XML.',
-      'Both files are forward exports (they have Forward Result / Back Result). The in-sample export is missing: in MT5, optimization results tab → right-click → export XML.',
+      'Los dos archivos son exportaciones forward (traen Forward Result / Back Result). Falta el export de la optimización: en MT5, pestaña de resultados de optimización → clic derecho → exportar XML.',
+      'Both files are forward exports (they have Forward Result / Back Result). The optimization export is missing: in MT5, optimization results tab → right-click → export XML.',
     ), CODE.SCHEMA_ERROR);
     return;
   }
@@ -180,8 +180,8 @@ export async function acceptFiles(fileList, preferred, nested = false) {
     // Ambos parecen in-sample: no asignar el segundo a forward en silencio.
     setFile('is', files[0]);
     api.showError(L(
-      'Los dos archivos parecen in-sample (ninguno trae columnas Forward Result / Back Result). Se ha cargado solo el primero. Si tienes el export forward, suéltalo también; si no, puedes auditar solo el in-sample.',
-      'Both files look like in-sample (neither has Forward Result / Back Result columns). Only the first one was loaded. If you have the forward export, drop it too; if not, you can audit the in-sample alone.',
+      'Los dos archivos parecen exports de la optimización (ninguno trae columnas Forward Result / Back Result). Se ha cargado solo el primero. Si tienes el export forward, suéltalo también; si no, puedes auditar solo la optimización.',
+      'Both files look like optimization exports (neither has Forward Result / Back Result columns). Only the first one was loaded. If you have the forward export, drop it too; if not, you can audit the optimization alone.',
     ), CODE.SCHEMA_ERROR);
   } else {
     setFile('is', files[0]);
@@ -208,7 +208,7 @@ export function updateDropStatus() {
   if (state.isDemo) { statusEl.textContent = t('demo.loaded'); return; }
   if (!isName && !oosName) { statusEl.textContent = t('drop.main.status'); return; }
   statusEl.textContent = [
-    `${L('In-sample', 'In-sample')}: ${isName || L('falta', 'missing')}`,
+    `${L('Optimización', 'Optimization')}: ${isName || L('falta', 'missing')}`,
     `${L('Forward', 'Forward')}: ${oosName || L('no cargado (opcional)', 'not loaded (optional)')}`,
   ].join(' · ') + (state.dropNote ? ` · ${state.dropNote}` : '');
 }
@@ -304,7 +304,7 @@ export function renderPreflight() {
   const note = $('#preflightNote');
   if (!host || !grid) return;
   const slots = [
-    { key: 'is', label: L('In-sample', 'In-sample') },
+    { key: 'is', label: L('Optimización', 'Optimization') },
     { key: 'oos', label: L('Forward', 'Forward') },
   ];
   const hasAny = slots.some((s) => state.preflight[s.key]);

@@ -42,7 +42,7 @@ export function buildPlainSummary(a) {
       const role = i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`);
       lines.push('');
       lines.push(`${role} — ${L('Pasada', 'Pass')} ${p.record.id} (${L('meseta', 'plateau')} ${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
-      lines.push(`  ${L('Operaciones in-sample / forward', 'In-sample / forward trades')}: ${p.record.is.trades}${hasF ? ` / ${p.record.oos.trades}` : ` / ${L('sin forward', 'no forward')}`}`);
+      lines.push(`  ${L('Operaciones periodo optimizado / forward', 'Optimized-period / forward trades')}: ${p.record.is.trades}${hasF ? ` / ${p.record.oos.trades}` : ` / ${L('sin forward', 'no forward')}`}`);
       a.meta.paramNames.forEach((n, j) => lines.push(`  ${n} = ${paramValue(p.record.params[j])}`));
     });
     lines.push('');
@@ -106,8 +106,8 @@ export function doExport(kind, plateauIndex) {
     if (!best) return api.showError(L('No hay ninguna meseta que exportar.', 'There is no plateau to export.'));
     if (!a.meta.hasForward) {
       return api.showError(L(
-        'Sin forward no se exporta un .set de despliegue: la región solo se midió in-sample. Exporta el rango de refinamiento, o vuelve a auditar con el archivo forward.',
-        'Without forward, a deployment .set is not exported: the region was only measured in-sample. Export the refinement range, or re-audit with the forward file.',
+        'Sin forward no se exporta un .set de despliegue: la región solo se midió en el periodo optimizado. Exporta el rango de refinamiento, o vuelve a auditar con el archivo forward.',
+        'Without forward, a deployment .set is not exported: the region was only measured on the optimized period. Export the refinement range, or re-audit with the forward file.',
       ));
     }
     downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best, state.searchSet));

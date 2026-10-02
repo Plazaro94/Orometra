@@ -140,11 +140,11 @@ export function fallbackNote(a) {
   const params = a.meta.paramNames.map((n, j) => `${esc(n)}=${paramHtml(a.fallback.record.params[j])}`).join(', ');
   const gates = a.fallback.passesBoth
     ? ''
-    : L(' Ninguna configuración cumple tus mínimos en los dos periodos: esta solo los cumple en el in-sample.',
-      ' No configuration meets your minima in both periods: this one only meets them in-sample.');
+    : L(' Ninguna configuración cumple tus mínimos en los dos periodos: esta solo los cumple en el periodo optimizado.',
+      ' No configuration meets your minima in both periods: this one only meets them on the optimized period.');
   return L(
-    `Sin zona estable. Es la que mejor combina in-sample y forward junto con sus vecinas (${params}).${gates} No la uses sin probarla antes en un periodo no visto.`,
-    `No stable region. It is the one that best combines in-sample and forward together with its neighbors (${params}).${gates} Do not use it without first testing it on an unseen period.`,
+    `Sin zona estable. Es la que mejor combina el periodo optimizado y el forward junto con sus vecinas (${params}).${gates} No la uses sin probarla antes en un periodo no visto.`,
+    `No stable region. It is the one that best combines the optimized period and the forward together with its neighbors (${params}).${gates} Do not use it without first testing it on an unseen period.`,
   );
 }
 

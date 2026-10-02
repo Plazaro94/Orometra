@@ -251,8 +251,8 @@ export async function runAudit() {
   const demoOk = state.isDemo && state.isTable && state.oosTable;
   if (!demoOk && !state.isFile) {
     showError(L(
-      'Carga al menos el archivo in-sample para auditar.',
-      'Load at least the in-sample file to audit.',
+      'Carga al menos el export de la optimización para auditar.',
+      'Load at least the optimization export to audit.',
     ));
     return;
   }
