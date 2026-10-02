@@ -651,7 +651,9 @@ export function mountHeroSurface(canvas, opts = {}) {
   const autoOn = () => ready && intro >= 1 && inView && !touched && !hover && !quiet.matches && autoT < autoLen();
 
   function targetCollapse() {
-    if (quiet.matches) return 0.92;
+    // Sin animación se muestra el periodo nuevo entero (con la silueta del pico caído): a
+    // medio camino, las cifras de los banderines no serían las de la tabla de la portada.
+    if (quiet.matches) return 1;
     if (hover) return 1;
     if (autoOn()) {
       if (fineHover.matches) return autoT > DEMO_WAIT && autoT < DEMO_WAIT + DEMO_HOLD ? 1 : 0;
@@ -674,7 +676,7 @@ export function mountHeroSurface(canvas, opts = {}) {
     if (autoOn()) autoT += dt;
 
     const want = targetCollapse();
-    collapse += (want - collapse) * Math.min(1, dt / 300);
+    collapse = quiet.matches ? want : collapse + (want - collapse) * Math.min(1, dt / 300);
     const k = Math.min(1, dt / 260);
     tiltX += (aimX - tiltX) * k;
     tiltY += (aimY - tiltY) * k;

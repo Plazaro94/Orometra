@@ -130,7 +130,7 @@ function jsonLd(page, locale, pagePath) {
     return { '@context': 'https://schema.org', '@graph': [
       { '@type': 'Article', headline: strip(t(`${k}.h1`)), description: strip(t(`meta.description.${page}`)), inLanguage: lang,
         mainEntityOfPage: url, url, datePublished: PUBLISHED[page], dateModified: PUBLISHED[page],
-        image: `${ORIGIN}/${locale === 'es' ? 'og-image-es.jpg' : 'og-image.jpg'}`, author: org, publisher: org },
+        image: `${ORIGIN}/${locale === 'es' ? 'og-image-es.jpg?v=2' : 'og-image.jpg?v=2'}`, author: org, publisher: org },
       { '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Orometra', item: home },
         { '@type': 'ListItem', position: 2, name: strip(t('nav.guides')), item: guidesUrl },
@@ -168,8 +168,8 @@ function build(file, enPath, esPath, page) {
   html = setMeta(html, /<meta name="twitter:title"[^>]*>/, title);
   html = setMeta(html, /<meta name="twitter:description"[^>]*>/, desc);
   html = setMeta(html, /<meta property="og:locale"[^>]*>/, 'es_ES');
-  html = setMeta(html, /<meta property="og:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg`);
-  html = setMeta(html, /<meta name="twitter:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg`);
+  html = setMeta(html, /<meta property="og:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg?v=2`);
+  html = setMeta(html, /<meta name="twitter:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg?v=2`);
   html = html.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}${esPath}">`);
   html = html.replace(/^<!doctype html>\n/i,
     `<!doctype html>\n<!-- GENERADO por tools/build-es.js a partir de ${file}. No editar a mano: cambia la pagina inglesa o js/i18n.js y vuelve a ejecutarlo. -->\n`);
