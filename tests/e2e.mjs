@@ -78,7 +78,7 @@ try {
   {
     const page = await appPage('es');
     await page.goto(`${BASE}/es/`);
-    check('el titular está en español', (await page.textContent('h1')).includes('suerte'));
+    check('el titular está en español', (await page.textContent('h1')).includes('frágil'));
     const og = await page.getAttribute('meta[property="og:image"]', 'content');
     check('la imagen para redes es la de la versión en español', /og-image-es\.jpg/.test(og), og);
     // Las páginas públicas ya vienen en su idioma: no descargan los textos de la app.
