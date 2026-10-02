@@ -97,15 +97,15 @@ export function errorCopy(code, L) {
     [CODE.SCHEMA_ERROR]: {
       title: L('Error de datos / esquema', 'Data / schema error'),
       hint: L(
-        'Los archivos no encajan como in-sample y forward de la misma optimización (Pass, parámetros o procedencia).',
-        'The files do not match as in-sample and forward from the same optimization (Pass, parameters, or provenance).',
+        'Los archivos no encajan como la optimización y el forward de una misma ejecución (Pass, parámetros o procedencia).',
+        'The files do not match as the optimization and forward exports of the same run (Pass, parameters, or provenance).',
       ),
     },
     [CODE.DATA_ERROR]: {
       title: L('Datos no utilizables', 'Unusable data'),
       hint: L(
-        'Quedan muy pocas configuraciones legibles. Revisa columnas, valores vacíos o el emparejado in-sample/forward.',
-        'Too few readable configurations remained. Check columns, empty values, or the IS/Forward pairing.',
+        'Quedan muy pocas configuraciones legibles. Revisa columnas, valores vacíos o el emparejado entre la optimización y el forward.',
+        'Too few readable configurations remained. Check columns, empty values, or the optimization/forward pairing.',
       ),
     },
     [CODE.WORKER_ERROR]: {

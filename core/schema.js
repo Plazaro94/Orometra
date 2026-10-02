@@ -77,7 +77,7 @@ export function pairTables(isTable, oosTable) {
   const isId = findIdColumn(isTable);
   const oosId = findIdColumn(oosTable);
   if (isId < 0 || oosId < 0) {
-    throw new AnalysisError(CODE.SCHEMA_ERROR, L('No se encuentra la columna "Pass" (el número de pasada) en alguno de los archivos. Sin ella no se pueden emparejar el in-sample y el forward. ¿Seguro que ambos son exportaciones del probador de estrategias?', 'The "Pass" column (the pass number) is missing in one of the files. Without it in-sample and forward cannot be matched. Are both files exports from the strategy tester?'));
+    throw new AnalysisError(CODE.SCHEMA_ERROR, L('No se encuentra la columna "Pass" (el número de pasada) en alguno de los archivos. Sin ella no se pueden emparejar la optimización y el forward. ¿Seguro que ambos son exportaciones del probador de estrategias?', 'The "Pass" column (the pass number) is missing in one of the files. Without it the optimization and forward cannot be matched. Are both files exports from the strategy tester?'));
   }
 
   const isIdx = indexById(isTable, isId);
@@ -112,7 +112,7 @@ export function pairTables(isTable, oosTable) {
     }
   }
   if (!matched.length) {
-    throw new AnalysisError(CODE.SCHEMA_ERROR, L('Ninguna pasada coincide entre los dos archivos: parecen de optimizaciones distintas. Deben ser el in-sample y el forward de la MISMA ejecución.', 'No pass matches between the two files: they look like different optimizations. They must be the in-sample and forward of the SAME run.'));
+    throw new AnalysisError(CODE.SCHEMA_ERROR, L('Ninguna pasada coincide entre los dos archivos: parecen de optimizaciones distintas. Deben ser la optimización y el forward de la MISMA ejecución.', 'No pass matches between the two files: they look like different optimizations. They must be the optimization and forward of the SAME run.'));
   }
 
   // Prueba estructural: un parámetro no cambia entre periodos; una métrica si.

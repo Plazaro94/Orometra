@@ -71,8 +71,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // periodo se compararia consigo mismo: fragilidad 0 % y un veredicto limpio falso.
     if (roleFromTable(isTable) === 'oos') {
       throw new AnalysisError(CODE.SCHEMA_ERROR, L(
-        'El archivo in-sample es en realidad una exportación forward (trae las columnas Forward Result / Back Result). Carga el export de la pestaña de optimización in-sample y el de la pestaña forward.',
-        'The in-sample file is actually a forward export (it has Forward Result / Back Result columns). Load the export from the in-sample optimization tab and the one from the forward tab.',
+        'El archivo de la optimización es en realidad una exportación forward (trae las columnas Forward Result / Back Result). Carga el export de la pestaña de resultados de la optimización y el de la pestaña forward.',
+        'The optimization file is actually a forward export (it has Forward Result / Back Result columns). Load the export from the optimization results tab and the one from the forward tab.',
       ), { reason: 'isLooksForward' });
     }
     const paired = pairTables(isTable, oosTable);
@@ -95,8 +95,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // Hard-fail: mezclar optimizaciones distintas no puede producir una "meseta".
     if (prov && prov.checked && prov.compared >= 5 && prov.ratio < 0.98) {
       throw new AnalysisError(CODE.SCHEMA_ERROR, L(
-        `Los archivos no parecen de la misma optimización: en ${prov.mismatches} de ${prov.compared} pasadas el Result del in-sample no coincide con el Back Result del forward. No se puede auditar así.`,
-        `The files do not look like the same optimization: in ${prov.mismatches} of ${prov.compared} passes the in-sample Result does not match the forward Back Result. Cannot audit like this.`,
+        `Los archivos no parecen de la misma optimización: en ${prov.mismatches} de ${prov.compared} pasadas el Result de la optimización no coincide con el Back Result del forward. No se puede auditar así.`,
+        `The files do not look like the same optimization: in ${prov.mismatches} of ${prov.compared} passes the optimization Result does not match the forward Back Result. Cannot audit like this.`,
       ), { provenance: prov });
     }
     paramNames = paired.paramColumns.map((p) => p.name);
@@ -148,8 +148,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       }
       if (compared >= 10 && identical / compared >= 0.95) {
         throw new AnalysisError(CODE.SCHEMA_ERROR, L(
-          `Los dos archivos tienen las mismas cifras en ${identical} de ${compared} pasadas: parece el mismo periodo cargado dos veces. Carga el in-sample y el forward de la misma optimización.`,
-          `Both files have the same figures in ${identical} of ${compared} passes: it looks like the same period loaded twice. Load the in-sample and the forward from the same optimization.`,
+          `Los dos archivos tienen las mismas cifras en ${identical} de ${compared} pasadas: parece el mismo periodo cargado dos veces. Carga el export de la optimización y el del forward de la misma ejecución.`,
+          `Both files have the same figures in ${identical} of ${compared} passes: it looks like the same period loaded twice. Load the optimization export and the forward export from the same run.`,
         ), { reason: 'samePeriodTwice', identical, compared });
       }
     }

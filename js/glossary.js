@@ -18,24 +18,24 @@ const DEFS = {
     en: 'The largest drop in equity from a prior peak to the following low, within the analyzed period.',
   },
   jointpick: {
-    es: 'Regla de elección dentro de la meseta: el puesto de cada configuración en el in-sample más su puesto en el forward, ambos promediados con sus vecinas. Usa los dos periodos sin que uno solo decida, y el promedio con las vecinas quita la suerte de un punto concreto. Una configuración que MT5 no pasó al forward cuenta como el último puesto del forward: no hay prueba fuera de la muestra a su favor.',
-    en: 'Selection rule inside the plateau: each configuration\'s in-sample rank plus its forward rank, both averaged with its neighbors. It uses both periods without letting one decide alone, and averaging with neighbors removes single-point luck. A configuration MT5 did not pass to the forward counts as last on the forward: there is no out-of-sample evidence in its favor.',
+    es: 'Regla de elección dentro de la meseta: el puesto de cada configuración en el periodo optimizado más su puesto en el forward, ambos promediados con sus vecinas. Usa los dos periodos sin que uno solo decida, y el promedio con las vecinas quita la suerte de un punto concreto. Una configuración que MT5 no pasó al forward cuenta como el último puesto del forward: no hay ninguna prueba fuera del periodo optimizado a su favor.',
+    en: 'Selection rule inside the plateau: each configuration\'s rank on the optimized period plus its forward rank, both averaged with its neighbors. It uses both periods without letting one decide alone, and averaging with neighbors removes single-point luck. A configuration MT5 did not pass to the forward counts as last on the forward: there is no evidence outside the optimized period in its favor.',
   },
   maximin: {
     es: 'Criterio de selección que elige el punto cuyo peor vecino es el mejor posible — en vez del punto con el valor más alto (el pico).',
     en: 'A selection rule that picks the point whose worst neighbor is the best possible one — instead of the single highest-value point (the peak).',
   },
   q10: {
-    es: 'Percentil 10: el valor por debajo del cual cae el 10% peor de las configuraciones vecinas. Se usa como "suelo" conservador de la meseta.',
-    en: 'The 10th percentile: the value below which the worst 10% of neighboring configurations fall. Used as a conservative "floor" for the plateau.',
+    es: 'La calidad de las configuraciones más flojas de la meseta: solo un 10 % de ellas queda por debajo. Es una medida prudente de lo peor que puede pasar dentro de la zona.',
+    en: 'The quality of the plateau\'s weakest configurations: only 10% of them fall below it. A cautious measure of the worst that can happen inside the zone.',
   },
   q25: {
-    es: 'Percentil 25 (primer cuartil): el valor por debajo del cual cae el 25% peor de las configuraciones del entorno.',
-    en: 'The 25th percentile (first quartile): the value below which the worst 25% of neighborhood configurations fall.',
+    es: 'La calidad de los vecinos más flojos: solo una cuarta parte de los vecinos queda por debajo. Si es baja, a su alrededor hay mucha configuración que no funciona.',
+    en: 'The quality of the weakest neighbors: only a quarter of the neighbors fall below it. If it is low, there is a lot around it that does not work.',
   },
   fragility: {
-    es: 'Cuánto cambia la configuración elegida si en vez de elegir por in-sample validas por forward, o al revés. Alta fragilidad = la elección depende de qué mitad de datos mires.',
-    en: 'How much the chosen configuration changes if, instead of picking by in-sample, you validate by forward, or vice versa. High fragility = the choice depends on which half of the data you look at.',
+    es: 'Cuántas veces la mejor fila de un periodo cae a la mitad de abajo en el otro. Si es alta, el orden de la tabla de MT5 depende de qué periodo mires y no sirve para elegir.',
+    en: 'How often the best row of one period falls to the bottom half in the other. If it is high, the MT5 table order depends on which period you look at and is no use for choosing.',
   },
   effectiveTrials: {
     es: 'Número de regiones distintas del espacio de parámetros probadas, contando vecinos cercanos como una sola prueba en vez de varias independientes.',
@@ -46,7 +46,7 @@ const DEFS = {
     en: 'How the optimization covered the parameter space: full grid (every combination tested), partial, or sparse (genetic algorithm, which concentrates trials where things already looked good).',
   },
   coherence: {
-    es: 'Dispersión de calidad dentro de la meseta: cuánto varían entre sí las configuraciones vecinas que la forman.',
+    es: 'Cuánto varía la calidad entre las configuraciones que forman la meseta. Poca variación = zona pareja.',
     en: 'Quality dispersion within the plateau: how much the neighboring configurations that form it vary among themselves.',
   },
   quality: {
@@ -58,8 +58,8 @@ const DEFS = {
     en: 'Quality on the validation period (forward) divided by quality on the optimized period, at the plateau median. 100% means it loses nothing once outside the data it was optimized on.',
   },
   robustness: {
-    es: 'Puntuación compuesta que resume el suelo, el tamaño y la coherencia de la meseta en un solo número para ordenar candidatas.',
-    en: 'A composite score summarizing the plateau\'s floor, size and coherence into a single number to rank candidates.',
+    es: 'Nota que resume en un solo número cómo rinden las configuraciones más flojas de la meseta, su tamaño y lo pareja que es, para ordenar las candidatas.',
+    en: 'A score that sums up in one number how the plateau\'s weakest configurations perform, its size and how even it is, to rank candidates.',
   },
 };
 
