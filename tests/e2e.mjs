@@ -192,6 +192,14 @@ try {
     check('cambiar de pestaña desde abajo lleva al principio de la nueva', at.view >= at.tabs - 1 && at.view < 200, JSON.stringify(at));
     check('al bajar, solo las pestañas quedan fijas', at.tabs < 70, String(at.tabs));
     check('sin scroll horizontal', await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+    // El texto de los gráficos (SVG) se escalaba con el ancho: en el móvil salía a 5 px.
+    await page.click('.nav-item[data-tab="params"]');
+    await page.waitForTimeout(300);
+    const minText = await page.evaluate(() => Math.min(...[...document.querySelectorAll('#view svg.chart text')].map((t) => {
+      const svg = t.ownerSVGElement;
+      return parseFloat(getComputedStyle(t).fontSize) * svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+    })));
+    check('el texto de los gráficos se lee en el móvil (≥ 10 px)', minText >= 10, `${minText.toFixed(1)} px`);
     await ctx.close();
   }
 

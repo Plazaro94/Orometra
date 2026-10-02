@@ -20,7 +20,10 @@ function legend(items) {
  * descripcion. Sin ella un lector de pantalla no obtenia nada de estos graficos.
  */
 function svgOpen(W, H, label) {
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" preserveAspectRatio="xMidYMid meet"><title>${esc(label)}</title>`;
+  // El SVG escala su texto con el ancho: en un móvil (caja de ~310 px para 620 unidades)
+  // las etiquetas salían a 5 px y en un escritorio ancho a 18. --w deja que el CSS
+  // limite cuánto crece y, en el móvil, le dé su ancho natural y se deslice de lado.
+  return `<div class="chart-scroll" style="--w:${Math.round(W)}px"><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" preserveAspectRatio="xMidYMid meet"><title>${esc(label)}</title>`;
 }
 
 function wrapChart(svg, legendHtml) {
@@ -49,7 +52,7 @@ function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = []
     ${body}
     ${xLabel ? `<text class="ch-axis-label" x="${(pad.l + width - pad.r) / 2}" y="${height - 4}" text-anchor="middle">${esc(xLabel)}</text>` : ''}
     ${yLabel ? `<text class="ch-axis-label" x="${12}" y="${(pad.t + height - pad.b) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(pad.t + height - pad.b) / 2})">${esc(yLabel)}</text>` : ''}
-  </svg>`;
+  </svg></div>`;
 }
 
 function formatTick(v) {
@@ -132,7 +135,7 @@ export function parameterProfile(analysis, paramIndex) {
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
     <line class="ch-axis" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}"/>
     <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(sens.name)} ${esc(L('— valor probado (abajo, nº de configuraciones)', '— tested value (below, number of configurations)'))}</text>
-  </svg>`;
+  </svg></div>`;
 }
 
 /** Degradacion de la mediana OOS por decil del criterio in-sample. */
@@ -169,7 +172,7 @@ export function degradationChart(analysis) {
     <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(L('Resultado en el forward (mediana)', 'Result on the forward (median)'))}</text>
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
     <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(L('Grupos según su puesto en la optimización (D10 = tu 10 % mejor)', 'Groups by optimization rank (D10 = your best 10%)'))}</text>
-  </svg>`;
+  </svg></div>`;
   return wrapChart(svg, legend([
     { cls: 'chart-swatch-bar', label: L('Mediana en el forward', 'Forward median') },
     { cls: 'chart-swatch-bar-top', label: L('D10: tus mejores', 'D10: your best') },
@@ -231,7 +234,7 @@ export function sensitivityBars(analysis) {
       <text class="ch-count" x="${fx(labelW + scale(maxS) + 10)}" y="${y + 14}">${esc(label)}</text>`;
   }).join('');
   const topName = rows.length ? rows[0].name : '';
-  return `${svgOpen(W, H, L(`Influencia relativa de cada parámetro; el más influyente es ${topName}.`, `Relative influence of each parameter; the most influential is ${topName}.`))}${body}</svg>`;
+  return `${svgOpen(W, H, L(`Influencia relativa de cada parámetro; el más influyente es ${topName}.`, `Relative influence of each parameter; the most influential is ${topName}.`))}${body}</svg></div>`;
 }
 
 /** Mapa 2D: calidad mediana por pareja de valores de los dos parámetros dados. */
@@ -265,7 +268,7 @@ export function plateauHeatmap(analysis, dimA, dimB) {
       const m = median(vals);
       const opacity = Math.max(0.06, Math.min(1, m));
       body += `<rect class="hm-cell" style="opacity:${opacity.toFixed(3)}" x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2"><title>${esc(analysis.meta.paramNames[dimA])}=${esc(String(la[a]))}, ${esc(analysis.meta.paramNames[dimB])}=${esc(String(lb[b]))}\ncalidad mediana ${m.toFixed(3)} (${vals.length} configs)</title></rect>`;
-      if (cw >= 40) body += `<text class="hm-text" x="${x + (cw - 2) / 2}" y="${y + ch / 2 + 3}" text-anchor="middle">${fmt2(m)}</text>`;
+      if (cw >= 40) body += `<text class="hm-text" x="${x + (cw - 2) / 2}" y="${y + ch / 2 + 4}" text-anchor="middle">${fmt2(m)}</text>`;
     }
   }
   const xl = la.map((v, a) => `<text class="ch-tick" x="${pad.l + a * cw + (cw - 2) / 2}" y="${H - pad.b + 14}" text-anchor="middle">${esc(formatTick(v))}</text>`).join('');
@@ -274,5 +277,5 @@ export function plateauHeatmap(analysis, dimA, dimB) {
     ${body}${xl}${yl}
     <text class="ch-axis-label" x="${pad.l + (la.length * cw) / 2}" y="${H - 6}" text-anchor="middle">${esc(analysis.meta.paramNames[dimA])}</text>
     <text class="ch-axis-label" x="14" y="${pad.t + (lb.length * ch) / 2}" text-anchor="middle" transform="rotate(-90 14 ${pad.t + (lb.length * ch) / 2})">${esc(analysis.meta.paramNames[dimB])}</text>
-  </svg>`;
+  </svg></div>`;
 }

@@ -51,7 +51,7 @@ export function holdoutFact(a) {
     return {
       value: L('No aportado', 'Not supplied'),
       note: a && a.meta && a.meta.hasForward
-        ? L('El forward ya se usó para validar. Falta un periodo no visto.', 'The forward was already used to validate. An unseen period is still missing.')
+        ? L('Pendiente: es el siguiente paso.', 'Pending: it is the next step.')
         : L('Validación independiente aún no cargada.', 'Independent validation not loaded yet.'),
       short: L('Periodo no visto: no aportado', 'Unseen period: not supplied'),
       done: false,
@@ -209,8 +209,7 @@ export function trustLine(a, level) {
   }
   if (level === 'moderate') {
     if (a.verdict.level === 'strong') {
-      return L('Zona estable y validada. Para llegar a sólida falta probarla en un periodo que no hayas usado.',
-        'A stable, validated zone. To reach strong it still needs a test on a period you have not used.');
+      return L('Zona estable y validada en el forward.', 'A stable zone, validated on the forward.');
     }
     return warnings === 1
       ? L('Zona estable con apoyo real, con un aviso que conviene leer.', 'A stable zone with real support, with one warning worth reading.')
@@ -420,7 +419,7 @@ export function renderVerdict(a) {
       </ul>`) : '',
     a.meta.hasForward ? detailPanel(L('Gráficos: optimización frente a validación', 'Charts: optimization vs validation'),
       L('Cuánto se degrada cada configuración y qué les pasa a tus mejores.', 'How much each configuration degrades and what happens to your best.'),
-      `<div class="grid-secondary">
+      `<div class="grid-secondary chart-pair">
         <div>
           <h3>${L('Calidad en la optimización frente a la validación', 'Quality in optimization vs validation')}</h3>
           ${scatterIsOos(a)}
@@ -567,11 +566,11 @@ export function renderEvidenceSheet(a, best) {
       </div>`).join('')}
     </div>
     <p class="chart-note">${a.meta.hasForward ? L(
-      'El forward ya se usó para validar y ordenar las mesetas. Un periodo no visto es la comprobación limpia. Una meseta es estabilidad en tu muestra — no una promesa de beneficio futuro.',
-      'The forward was already used to validate and rank plateaus. An unseen period is the clean check. A plateau is stability in your sample — not a promise of future profit.',
+      'El forward ya se usó para validar y ordenar las mesetas. Una meseta es estabilidad en tus datos, no una promesa de beneficio futuro.',
+      'The forward was already used to validate and rank plateaus. A plateau is stability in your data, not a promise of future profit.',
     ) : L(
-      'Sin forward, todo está medido sobre los datos con los que se optimizó. Un periodo no visto es la comprobación limpia. Una meseta es estabilidad en tu muestra — no una promesa de beneficio futuro.',
-      'Without a forward, everything is measured on the data used to optimize. An unseen period is the clean check. A plateau is stability in your sample — not a promise of future profit.',
+      'Sin forward, todo está medido sobre los datos con los que se optimizó. Una meseta es estabilidad en tus datos, no una promesa de beneficio futuro.',
+      'Without a forward, everything is measured on the data used to optimize. A plateau is stability in your data, not a promise of future profit.',
     )}</p>
   </div>`;
 }

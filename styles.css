@@ -123,7 +123,7 @@ body{
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 h1,h2,h3{margin:0;font-family:var(--font-display);letter-spacing:-.02em}
-code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--text)}
+code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);padding:1px 3px;border-radius:4px;color:var(--text)}
 ::selection{background:var(--ok-bg);color:var(--ok-hi)}
 :focus-visible{outline:2px solid var(--accent2);outline-offset:2px;border-radius:6px}
 
@@ -593,18 +593,24 @@ details.panel > .panel-body{padding:0 20px 20px}
    lee por cuánto se llena y por lo intenso que es el último tramo. No se usan los colores
    de aviso: el nivel califica la evidencia, no la estrategia. Cada tramo tiene su tono
    de barra (--s) y uno más claro para su nombre (--t), legible sobre el fondo. */
-.vx-seg:nth-child(1){--s:#2a6f73;--t:#7cb5b8}
-.vx-seg:nth-child(2){--s:#2b9599;--t:#5ec4c4}
-.vx-seg:nth-child(3){--s:#33b9b5;--t:#48d1cb}
-.vx-seg:nth-child(4){--s:#4ae3dc;--t:#4ae3dc}
-:root[data-theme="light"] .vx-seg:nth-child(1){--s:#b3dcdd;--t:#3f8a8f}
-:root[data-theme="light"] .vx-seg:nth-child(2){--s:#66b8bb;--t:#2a7b80}
-:root[data-theme="light"] .vx-seg:nth-child(3){--s:#1e8c93;--t:#1d6f76}
-:root[data-theme="light"] .vx-seg:nth-child(4){--s:#0b5f66;--t:#0b5f66}
+/* Los cuatro niveles de evidencia, de insuficiente (1) a sólida (4): el mismo teal que se
+   intensifica en el medidor del informe y en la lista de niveles de la metodología. */
+:root{--lv-1:#2a6f73;--lv-2:#2b9599;--lv-3:#33b9b5;--lv-4:#4ae3dc}
+:root[data-theme="light"]{--lv-1:#b3dcdd;--lv-2:#66b8bb;--lv-3:#1e8c93;--lv-4:#0b5f66}
+.vx-seg:nth-child(1){--s:var(--lv-1);--t:#7cb5b8}
+.vx-seg:nth-child(2){--s:var(--lv-2);--t:#5ec4c4}
+.vx-seg:nth-child(3){--s:var(--lv-3);--t:#48d1cb}
+.vx-seg:nth-child(4){--s:var(--lv-4);--t:#4ae3dc}
+:root[data-theme="light"] .vx-seg:nth-child(1){--t:#3f8a8f}
+:root[data-theme="light"] .vx-seg:nth-child(2){--t:#2a7b80}
+:root[data-theme="light"] .vx-seg:nth-child(3){--t:#1d6f76}
+:root[data-theme="light"] .vx-seg:nth-child(4){--t:#0b5f66}
 .vx-seg-bar{display:block;height:8px;border-radius:4px;background:var(--line)}
 .vx-seg.is-on .vx-seg-bar{background:var(--s)}
-.vx-seg-name{display:block;margin-top:7px;font-size:11.5px;color:var(--muted-2)}
-.vx-seg.is-here .vx-seg-name{color:var(--t);font-weight:700;font-size:15px;margin-top:8px}
+.vx-seg-name{display:block;margin-top:7px;font-size:12px;line-height:1.3;color:var(--muted-2)}
+/* La etiqueta activa destaca por color y peso, a la misma altura que las demás: más
+   grande quedaba descolgada y, en el móvil, casi pegada a la siguiente. */
+.vx-seg.is-here .vx-seg-name{color:var(--t);font-weight:700}
 /* Bajo la tarjeta, los datos del análisis como contexto. */
 .vx + .run-stamp{margin:-2px 0 12px}
 .vx-trust-line{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--text-2)}
@@ -883,9 +889,9 @@ th.t3-label{padding-left:2px}
    deja de verse justo cuando hace falta. display:flex + position:sticky en el
    pseudo-elemento lo mantiene anclado al borde derecho visible mientras se
    desliza el contenido. */
-.table-wrap.has-hscroll,.range-table-wrap.has-hscroll{display:flex}
-.table-wrap.has-hscroll>table,.range-table-wrap.has-hscroll>table{flex:1 0 auto}
-.table-wrap.has-hscroll::after,.range-table-wrap.has-hscroll::after{
+.table-wrap.has-hscroll,.range-table-wrap.has-hscroll,.chart-scroll.has-hscroll{display:flex}
+.table-wrap.has-hscroll>table,.range-table-wrap.has-hscroll>table,.chart-scroll.has-hscroll>.chart{flex:1 0 auto}
+.table-wrap.has-hscroll::after,.range-table-wrap.has-hscroll::after,.chart-scroll.has-hscroll::after{
   content:'';position:sticky;top:0;right:0;flex:0 0 28px;margin-left:-28px;
   align-self:stretch;
   background:linear-gradient(to right, transparent, var(--surface));
@@ -958,7 +964,13 @@ tr.sel td{color:var(--text-2)}
 .columns-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
 
 .inline-select{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
-.inline-select select{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;max-width:260px}
+.inline-select select{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 10px;font-size:12px;max-width:260px;min-width:0}
+/* En el móvil, la etiqueta encima y el selector a todo el ancho: el texto de la opción
+   («Meseta 1 · Pasada 11445 (recomendada)») se salía de la tarjeta. */
+@media (max-width:720px){
+  .inline-select{flex-wrap:wrap;min-width:0;max-width:100%}
+  .inline-select select{flex:1 1 100%;width:100%;max-width:100%;min-height:44px}
+}
 
 /* --------------------------------------------------- superficie 3D de la meseta */
 .surface-axes{display:flex;flex-wrap:wrap;gap:10px 16px}
@@ -994,6 +1006,13 @@ tr.sel td{color:var(--text-2)}
 
 /* ---------------------------------------------------------------- graficos */
 .chart{width:100%;height:auto;display:block;overflow:visible}
+/* Los gráficos no crecen más de un 15 % sobre su tamaño de diseño: en una caja ancha el
+   texto llegaba a 18 px, más grande que el del propio informe. */
+.chart-scroll{position:relative}
+.chart-scroll>.chart{max-width:calc(var(--w) * 1.15)}
+/* Dos gráficos lado a lado solo si cada uno tiene sitio; si no, uno debajo de otro (a
+   1280 px, lado a lado, el texto quedaba a 8 px). */
+.grid-secondary.chart-pair{grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr))}
 .chart-note{margin:12px 0 0;font-size:12.5px;color:var(--muted-2);line-height:1.5}
 .chart-block{display:flex;flex-direction:column;gap:10px}
 .chart-legend{
@@ -1013,11 +1032,11 @@ tr.sel td{color:var(--text-2)}
 .chart-swatch-q25{width:14px;height:0;border-top:2px dashed var(--warn);border-radius:0}
 .ch-grid{stroke:var(--surface-3);stroke-width:1}
 .ch-axis{stroke:var(--line);stroke-width:1}
-.ch-tick{fill:var(--muted-2);font-size:10px;font-family:var(--font)}
-.ch-count{fill:var(--muted-3);font-size:9px;font-family:var(--font)}
-.ch-axis-label{fill:var(--muted-2);font-size:10.5px;font-family:var(--font)}
-.ch-row-label{fill:var(--muted);font-size:11px;font-family:var(--mono)}
-.ch-point-label{fill:var(--text-2);font-size:10px;font-weight:700;font-family:var(--font)}
+.ch-tick{fill:var(--muted-2);font-size:11.5px;font-family:var(--font)}
+.ch-count{fill:var(--muted-3);font-size:10.5px;font-family:var(--font)}
+.ch-axis-label{fill:var(--muted-2);font-size:12px;font-family:var(--font)}
+.ch-row-label{fill:var(--muted);font-size:12px;font-family:var(--mono)}
+.ch-point-label{fill:var(--text-2);font-size:11.5px;font-weight:700;font-family:var(--font)}
 .ch-diagonal{stroke:var(--line-strong);stroke-width:1;stroke-dasharray:4 4}
 .pt-fail{fill:var(--muted-3);opacity:.4}
 .pt-pass{fill:var(--info);opacity:.55}
@@ -1040,7 +1059,7 @@ tr.sel td{color:var(--text-2)}
 .ch-sens-marginal-swatch{display:inline-block;width:2px;height:12px;background:var(--text-hi);vertical-align:middle;margin:0 1px}
 .hm-cell{fill:var(--accent)}
 .hm-empty{fill:var(--surface-2)}
-.hm-text{fill:var(--ok-bg);font-size:9.5px;font-weight:700;font-family:var(--font);pointer-events:none}
+.hm-text{fill:var(--ok-bg);font-size:11px;font-weight:700;font-family:var(--font);pointer-events:none}
 
 /* ---------------------------------------------------------------- responsive */
 @media (max-width:1180px){
@@ -1064,6 +1083,15 @@ tr.sel td{color:var(--text-2)}
 .tab-next-name{font-size:15px;font-weight:600;color:var(--text-hi)}
 
 @media (max-width:720px){
+  /* Zonas táctiles de 44 px de alto sin agrandar los controles (la cabecera no cabría en
+     375 px): un área invisible alrededor de cada botón recoge el toque. */
+  .nav-item,.lang-btn,.theme-btn{position:relative}
+  .nav-item::after{content:'';position:absolute;inset:-4px 0}
+  .lang-btn::after,.theme-btn::after{content:'';position:absolute;inset:-8px -2px}
+  /* En el móvil, cada gráfico a su tamaño de diseño (el texto a 11-12 px) y deslizable
+     de lado, con el mismo difuminado que avisa en las tablas. */
+  .chart-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .chart-scroll>.chart{min-width:var(--w);max-width:none}
   .shell{display:block}
   /*
    * La barra lateral no se oculta: se convierte en una cabecera compacta y fija arriba,
@@ -1357,10 +1385,10 @@ tr.sel td{color:var(--text-2)}
 .doc-level{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--radius-sm);padding:10px 14px;background:var(--surface)}
 .doc-level dt{font-weight:700;color:var(--text-hi);margin:0 0 3px}
 .doc-level dd{margin:0;color:var(--text-2);font-size:var(--fs-base);line-height:1.55}
-.doc-level-strong{border-left-color:var(--evidence-strong)}
-.doc-level-moderate{border-left-color:var(--evidence-moderate)}
-.doc-level-weak{border-left-color:var(--evidence-weak)}
-.doc-level-insufficient{border-left-color:var(--evidence-none)}
+.doc-level-strong{border-left-color:var(--lv-4)}
+.doc-level-moderate{border-left-color:var(--lv-3)}
+.doc-level-weak{border-left-color:var(--lv-2)}
+.doc-level-insufficient{border-left-color:var(--lv-1)}
 .doc-limits{margin-top:40px;max-width:760px;scroll-margin-top:16px}
 .doc-limits h2{font-size:clamp(22px,2.4vw,28px);margin:0 0 14px;color:var(--text-hi);letter-spacing:-.02em}
 
