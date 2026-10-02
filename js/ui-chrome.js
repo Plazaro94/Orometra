@@ -46,6 +46,7 @@ export function initChrome() {
   applyStaticI18n();
   enhanceRadioGroups();
   initTabsFade();
+  trackHeadHeight();
 
   const mark = $('#brandMark');
   if (mark) repaintMark = mountBrandMark(mark);
@@ -278,8 +279,44 @@ export function setTab(tab, fromHash, { scroll = true } = {}) {
   const status = $('#viewStatus');
   const current = document.querySelector(`.nav-item[data-tab="${tab}"] span:last-child`);
   if (status) status.textContent = current ? current.textContent : '';
-  if (scroll) $('#view').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (scroll) scrollToView();
   revealActiveTab();
+}
+
+const narrow = matchMedia('(max-width:720px)');
+
+/**
+ * Lleva al principio de la pestaña nueva si no se ve. Con scrollIntoView('nearest'), al
+ * cambiar de pestaña desde el final de una larga se aterrizaba a media pestaña nueva
+ * (en el móvil, 2.000 px por debajo de su título). En el móvil, las pestañas quedan fijas
+ * arriba y el título tiene que caer justo debajo de ellas, no tapado.
+ */
+function scrollToView() {
+  const view = $('#view');
+  if (!view) return;
+  const strip = $('.sidebar-scroll');
+  const stuck = narrow.matches && strip ? strip.getBoundingClientRect().height : 0;
+  const top = view.getBoundingClientRect().top;
+  if (top >= stuck && top < window.innerHeight * 0.6) return;
+  const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: Math.max(0, window.scrollY + top - stuck - 12), behavior: quiet ? 'auto' : 'smooth' });
+}
+
+// Orden de lectura del informe: al final de cada pestaña, un enlace a la siguiente. En el
+// móvil, las últimas pestañas quedan fuera de la tira y sin esto pasaban desapercibidas.
+const REPORT_ORDER = ['verdict', 'plateaus', 'rejected', 'params', 'diagnostics', 'unseen'];
+function renderNextTab(tab) {
+  const i = REPORT_ORDER.indexOf(tab);
+  if (i < 0 || i === REPORT_ORDER.length - 1) return '';
+  const next = REPORT_ORDER[i + 1];
+  const nameEl = document.querySelector(`.nav-item[data-tab="${next}"] span:last-child`);
+  const name = nameEl ? nameEl.textContent.trim() : next;
+  return `<nav class="tab-next" aria-label="${esc(L('Siguiente sección del informe', 'Next report section'))}">
+    <button class="ghost-btn tab-next-btn" type="button" data-goto="${next}">
+      <span class="tab-next-k">${esc(L('Siguiente', 'Next'))} · ${i + 2}/${REPORT_ORDER.length}</span>
+      <span class="tab-next-name">${esc(name)} <span aria-hidden="true">→</span></span>
+    </button>
+  </nav>`;
 }
 
 /* Movil: las 7 pestanas no caben y 3 quedaban fuera sin ninguna pista. Un difuminado
@@ -293,6 +330,17 @@ function updateTabsFade() {
   const right = max > 4 && strip.scrollLeft < max - 4;
   strip.dataset.more = left && right ? 'both' : left ? 'left' : right ? 'right' : '';
 }
+/* Móvil: lo que mide la fila de la marca, para que al bajar se vaya y solo queden fijas
+ * las pestañas (ver .sidebar en styles.css). */
+function trackHeadHeight() {
+  const head = $('.sidebar-head');
+  if (!head) return;
+  const sync = () => document.documentElement.style.setProperty('--sidebar-head-h', `${head.offsetHeight}px`);
+  sync();
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(sync).observe(head);
+  else window.addEventListener('resize', sync);
+}
+
 function initTabsFade() {
   const strip = $('.sidebar-scroll');
   if (!strip) return;
@@ -348,7 +396,7 @@ export function render() {
     diagnostics: () => api.renderDiagnostics(a),
     unseen: () => api.renderUnseen(a),
   };
-  view.innerHTML = (map[state.tab] || map.verdict)();
+  view.innerHTML = (map[state.tab] || map.verdict)() + renderNextTab(map[state.tab] ? state.tab : 'verdict');
   bindViewEvents();
   if (state.tab === 'plateaus') api.mountPlateauSurfaceView(a); else api.disposePlateauSurface();
 }

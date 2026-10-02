@@ -165,6 +165,20 @@ npm test
 - **`tests/verdict-coherence.test.js`**: el copy del método coincide con el modo de selección,
   un solo nivel de evidencia en pantalla y en el export, modo solo in-sample e IC diario.
 - **`tests/run.js`**, **`tests/stress.js`**, **`tests/method.test.js`**, etc.: motor, invariantes y lecturas.
+- **`tests/robustness.test.js`**: optimizaciones enormes (160.000 filas), tope de filas y errores con código.
+
+La interfaz se prueba en un navegador de verdad (Chromium con Playwright, que no es
+dependencia del proyecto: se usa el instalado; en CI lo instala el workflow):
+
+```bash
+npm run test:e2e
+```
+
+Carga archivos XML como los de MT5, recorre el informe, cambia de idioma, descarga el `.set`,
+prueba un archivo que no sirve, cancela un análisis y comprueba la navegación en el móvil.
+
+La imagen para redes (`og-image.jpg`, `og-image-es.jpg`) se genera con
+`node tools/og-image.mjs`, a partir del relieve de la portada.
 
 Para incluir archivos reales, colócalos como `IS(1).xls` y `OOS(1).xls` en tu carpeta de
 descargas, o indica la ruta:

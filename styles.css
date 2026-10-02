@@ -1057,6 +1057,12 @@ tr.sel td{color:var(--text-2)}
   /* Con la barra lateral puesta ya no caben dos cajas sin desbordar. */
   .upload-grid{grid-template-columns:minmax(0,1fr)}
 }
+/* Al final de cada pestaña del informe: la siguiente, en orden de lectura. */
+.tab-next{display:flex;justify-content:flex-end;margin-top:34px;padding-top:18px;border-top:1px solid var(--line-soft)}
+.tab-next-btn{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:10px 16px;text-align:right}
+.tab-next-k{font-size:12px;color:var(--muted)}
+.tab-next-name{font-size:15px;font-weight:600;color:var(--text-hi)}
+
 @media (max-width:720px){
   .shell{display:block}
   /*
@@ -1066,8 +1072,11 @@ tr.sel td{color:var(--text-2)}
    * con ellas el boton de volver a la portada, el selector de tema y el enlace legal
    * quedaban completamente inaccesibles en movil, no solo feos.
    */
+  /* Fija, pero con la fila de la marca por encima del borde: al bajar, la marca se va y
+     solo quedan las pestañas (--sidebar-head-h lo mide ui-chrome.js). Las dos filas fijas
+     se comían un 18 % de la pantalla de un móvil. */
   .sidebar{
-    position:sticky;top:0;height:auto;flex-direction:column;align-items:stretch;
+    position:sticky;top:calc(-1 * var(--sidebar-head-h, 0px));height:auto;flex-direction:column;align-items:stretch;
     padding:0;border-right:0;border-bottom:1px solid var(--line);
     z-index:30;gap:0;
   }
@@ -1146,6 +1155,8 @@ tr.sel td{color:var(--text-2)}
   .text-btn{min-height:44px;display:inline-flex;align-items:center}
   .hero-back{gap:6px}
   .topbar h1{font-size:27px}
+  .tab-next{justify-content:stretch}
+  .tab-next-btn{width:100%}
   .verdict-banner{grid-template-columns:1fr;gap:14px}
   /* En columna, la configuracion elegida y su .set van antes que la explicacion: es lo
      que se viene a buscar. */
@@ -1186,7 +1197,7 @@ tr.sel td{color:var(--text-2)}
   @page{margin:10mm}
   html,body{background:#fff !important;color:#111 !important;font-size:10pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .shell{display:block}
-  .sidebar,.intake,.top-actions,.export-menu,.drop-overlay,.text-btn,.ghost-btn,.primary-btn,.link-btn{display:none !important}
+  .sidebar,.intake,.top-actions,.export-menu,.drop-overlay,.text-btn,.ghost-btn,.primary-btn,.link-btn,.tab-next{display:none !important}
   .main{padding:0}
   .topbar{margin-bottom:5mm;border-bottom:1px solid var(--line-strong);padding-bottom:3mm}
   .topbar h1{font-size:17pt;color:#000}
@@ -1636,12 +1647,41 @@ html.i18n-pending body{visibility:hidden}
   .hm-final{padding:40px 20px}
 }
 
-/* Cabecera en movil: una sola fila (Metodologia sigue en el pie). */
+/* Menú del móvil (lo monta landing.js): en escritorio no existe. */
+.lp-top{position:relative}
+.lp-menu-btn{display:none}
+.lp-menu[hidden]{display:none}
+
+/* Cabecera en movil: una sola fila con la marca, el idioma y el botón de menú. */
 @media (max-width:720px){
   .lp-top .lp-shell{flex-wrap:nowrap;gap:12px}
   .lp-top-actions{flex-wrap:nowrap;gap:8px}
   .lp-top-actions .lp-nav-link{display:none}
   .lp-top-actions .lang-btn,.header-controls .lang-btn{padding:5px 7px;min-width:34px}
+  .lp-menu-btn{
+    display:inline-flex;align-items:center;gap:8px;min-height:var(--control-h);padding:0 12px;
+    border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text-hi);
+    font:inherit;font-size:var(--fs-sm);font-weight:600;cursor:pointer;
+  }
+  .lp-menu-btn[aria-expanded="true"]{background:var(--surface-2);border-color:var(--line-strong)}
+  .lp-menu-icon,.lp-menu-icon::before,.lp-menu-icon::after{display:block;width:14px;height:1.5px;background:currentColor;border-radius:1px}
+  .lp-menu-icon{position:relative}
+  .lp-menu-icon::before,.lp-menu-icon::after{content:'';position:absolute;left:0}
+  .lp-menu-icon::before{top:-4.5px}
+  .lp-menu-icon::after{top:4.5px}
+  .lp-menu{
+    position:absolute;left:0;right:0;top:100%;z-index:40;display:flex;flex-direction:column;gap:6px;
+    padding:14px var(--header-pad) 18px;background:var(--surface);border-bottom:1px solid var(--line);
+    box-shadow:0 18px 30px -18px rgba(0,0,0,.55);
+  }
+  .lp-menu-cta{justify-content:center;margin-bottom:6px;min-height:44px}
+  .lp-menu-nav{display:flex;flex-direction:column}
+  .lp-menu-nav a{
+    display:flex;align-items:center;min-height:46px;padding:0 4px;border-bottom:1px solid var(--line-soft);
+    color:var(--text);font-size:16px;text-decoration:none;
+  }
+  .lp-menu-nav a:hover{color:var(--ok-text)}
+  .lp-menu-theme{display:flex;justify-content:flex-start;padding-top:12px}
 }
 
 /* Portada: el motor por dentro. Sin cajas, para no repetir el aspecto de las tarjetas. */
