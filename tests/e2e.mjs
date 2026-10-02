@@ -81,6 +81,24 @@ try {
     check('el titular está en español', (await page.textContent('h1')).includes('suerte'));
     const og = await page.getAttribute('meta[property="og:image"]', 'content');
     check('la imagen para redes es la de la versión en español', /og-image-es\.jpg/.test(og), og);
+    // Las páginas públicas ya vienen en su idioma: no descargan los textos de la app.
+    await page.waitForFunction(() => document.querySelector('#heroSurfaceHost[data-surface-state]'), null, { timeout: 15000 }).catch(() => {});
+    const loaded = (re) => page.evaluate((src) => performance.getEntriesByType('resource').some((e) => new RegExp(src).test(e.name)), re.source);
+    check('la portada no descarga i18n.js', !(await loaded(/\/js\/i18n\.js/)));
+    check('y el relieve 3D se monta', Boolean(await page.$('#heroSurfaceHost[data-surface-state]')));
+    await page.goto(`${BASE}/es/guias/sobreoptimizacion-mt5/`);
+    await page.waitForSelector('.guide-rail, .lp-menu-btn', { timeout: 10000 }).catch(() => {});
+    check('una guía no descarga el relieve 3D', !(await loaded(/hero-surface/)));
+    check('ni i18n.js', !(await loaded(/\/js\/i18n\.js/)));
+    await page.context().close();
+  }
+  {
+    // La 404 es una sola página para los dos idiomas: se traduce con el paquete pequeño.
+    const page = await appPage('es');
+    await page.goto(`${BASE}/404.html`);
+    await page.waitForFunction(() => document.documentElement.lang === 'es', null, { timeout: 10000 }).catch(() => {});
+    const h1 = await page.textContent('h1');
+    check('la 404 sale en el idioma del visitante', /no existe/.test(h1), h1);
     await page.context().close();
   }
   {

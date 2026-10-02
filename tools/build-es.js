@@ -176,17 +176,69 @@ function build(file, enPath, esPath, page) {
   return { out: path.join(ROOT, path.relative('/', esPath), 'index.html'), html };
 }
 
+/**
+ * La pagina inglesa, con los textos de js/i18n.js. Las paginas publicas ya no cargan las
+ * traducciones (ver js/i18n-site.js): lo que se ve es el HTML tal cual, asi que tiene que
+ * coincidir con i18n.js, que sigue siendo la fuente de los dos idiomas.
+ */
+function syncEnglish(html, page) {
+  html = translate(html);
+  const title = t(`meta.title.${page}`);
+  const desc = t(`meta.description.${page}`);
+  html = html.replace(/<title>[^<]*<\/title>/, `<title>${escText(title)}</title>`);
+  html = setMeta(html, /<meta name="description"[^>]*>/, desc);
+  // og:/twitter: no se tocan: los leen los rastreadores de redes, que no ejecutan
+  // JavaScript, y en ingles llevan un texto propio mas corto.
+  return html;
+}
+
+/**
+ * js/i18n-site.js: los únicos textos que necesitan las páginas públicas. Ya vienen
+ * escritas en su idioma, así que solo hacen falta los que pinta js/landing.js (menú del
+ * móvil, índice de las guías, relieve de la portada) y los de la 404, que es una sola
+ * página para los dos idiomas. Antes cargaban js/i18n.js entero: 1.270 textos, 39 KB
+ * comprimidos, para usar una veintena.
+ */
+function siteStrings() {
+  const landing = fs.readFileSync(path.join(ROOT, 'js/landing.js'), 'utf8');
+  const notFound = fs.readFileSync(path.join(ROOT, '404.html'), 'utf8');
+  const keys = new Set(['meta.title.notfound', 'meta.description.notfound']);
+  for (const m of landing.matchAll(/(?<![\w$.])t\('([a-z][\w-]*(?:\.[\w-]+)+)'/g)) keys.add(m[1]);
+  for (const m of notFound.matchAll(/data-i18n(?:-html)?="([^"]+)"/g)) keys.add(m[1]);
+  const pack = {};
+  for (const lang of ['en', 'es']) {
+    setLocale(lang);
+    pack[lang] = Object.fromEntries([...keys].sort().map((k) => {
+      const v = t(k);
+      if (v === k) throw new Error(`js/i18n.js no tiene la clave ${k} (${lang})`);
+      return [k, v];
+    }));
+  }
+  return `// GENERADO por tools/build-es.js a partir de js/i18n.js. No editar a mano.\n`
+    + `// Textos que pinta JavaScript en las páginas públicas (el resto ya va en su HTML).\n`
+    + `import { addStrings } from './i18n-core.js';\n\naddStrings(${JSON.stringify(pack, null, 2)});\n`;
+}
+
 const check = process.argv.includes('--check');
 let stale = 0;
+{
+  const out = path.join(ROOT, 'js/i18n-site.js');
+  const next = siteStrings();
+  const current = fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : null;
+  if (current !== next) {
+    if (check) { stale++; console.log('  FAIL js/i18n-site.js no esta al dia (node tools/build-es.js)'); }
+    else { fs.writeFileSync(out, next); console.log('escrito js/i18n-site.js'); }
+  } else if (check) console.log('  ok   js/i18n-site.js');
+}
 // Primero, los datos estructurados de la pagina inglesa (fuente) al dia.
 for (const [file, en, , page] of PAGES) {
   const src = path.join(ROOT, file);
   const current = fs.readFileSync(src, 'utf8');
   setLocale('en');
-  const next = fillJsonLd(current, page, 'en', en);
+  const next = syncEnglish(fillJsonLd(current, page, 'en', en), page);
   if (next !== current) {
-    if (check) { stale++; console.log(`  FAIL ${file}: datos estructurados desactualizados (node tools/build-es.js)`); }
-    else { fs.writeFileSync(src, next); console.log(`actualizado JSON-LD de ${file}`); }
+    if (check) { stale++; console.log(`  FAIL ${file}: textos o datos estructurados desactualizados respecto a js/i18n.js (node tools/build-es.js)`); }
+    else { fs.writeFileSync(src, next); console.log(`actualizado ${file}`); }
   }
 }
 for (const [file, en, es, page] of PAGES) {
