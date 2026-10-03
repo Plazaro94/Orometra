@@ -1,5 +1,4 @@
 // Portada de marketing. Comparte tema e idioma con la app.
-import { mountBrandMark } from './brandmark.js';
 import { enhanceRadioGroups } from './radiogroup.js';
 import { setLocale, getLocale, applyStaticI18n, t } from './i18n-core.js';
 import './i18n-site.js';
@@ -275,5 +274,3 @@ if (!document.documentElement.hasAttribute('data-lang-fixed')) applyStaticI18n()
 syncNotFoundLinks();
 enhanceRadioGroups();
 
-const mark = $('#brandMark');
-if (mark) mountBrandMark(mark);
