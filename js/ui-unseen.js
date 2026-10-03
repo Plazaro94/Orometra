@@ -116,16 +116,16 @@ export function renderReportCard(a, plateau) {
   const rep = state.report;
   if (!rep) {
     return `<section class="panel report-drop" id="reportDrop">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Atajo', 'Shortcut')}</div><h2>${L('Suelta aquí el informe del backtest', 'Drop the backtest report here')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Atajo', 'Shortcut')}</div><h2>${L('Carga aquí el informe del backtest', 'Load the backtest report here')}</h2></div></div>
       ${state.unseen.reportError ? `<div class="inline-warn">${esc(state.unseen.reportError)}</div>` : ''}
       <p class="panel-intro">
         ${L(
           `En el probador, clic derecho sobre los resultados → <em>Informe</em> → <em>HTML</em> u <em>Open XML</em> (vale cualquiera de los dos). Si lo
-        sueltas aquí (o en cualquier parte de la página) se rellenan solas las seis cifras, se
+        sueltas aquí (o en cualquier parte de la página), o lo eliges con el botón, se rellenan solas las seis cifras, se
         usan las fechas reales del periodo y se comprueba que el backtest se lanzó con la
         configuración correcta.`,
           `In the tester, right-click the results → <em>Report</em> → <em>HTML</em> or <em>Open XML</em> (either works). If you
-        drop it here (or anywhere on the page) the six figures fill in automatically,
+        drop it here (or anywhere on the page), or choose it with the button, the six figures fill in automatically,
         the real period dates are used, and it checks that the backtest was run with the
         correct configuration.`,
         )}
@@ -142,6 +142,7 @@ export function renderReportCard(a, plateau) {
         below — nothing else to install.`,
         )}
       </p>
+      <button class="ghost-btn report-pick" type="button" data-pick-report>${L('Elegir el informe', 'Choose the report')}</button>
     </section>`;
   }
 
