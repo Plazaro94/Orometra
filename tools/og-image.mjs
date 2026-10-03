@@ -43,7 +43,7 @@ body{width:1200px;height:630px;overflow:hidden;font-family:Plex,sans-serif;color
 h1{font-weight:700;font-size:68px;line-height:1.02;letter-spacing:-.02em;max-width:620px}
 h1 em{display:block;font-family:Serif,serif;font-style:italic;font-weight:600}
 p{margin-top:26px;font-size:25px;line-height:1.4;color:#ccd2e0;max-width:560px}
-.url{margin-top:36px;font-weight:700;font-size:22px;color:#9ec3fa;letter-spacing:.02em}
+.url{margin-top:36px;font-weight:700;font-size:22px;color:#d4f25c;letter-spacing:.02em}
 </style></head><body>
 <div class="brand"><img src="${inline('favicon.svg', 'image/svg+xml')}" alt="">Orometra</div>
 <h1>${c.title}</h1><p>${c.lead}</p><div class="url">orometra.com</div></body></html>`;

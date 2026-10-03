@@ -261,10 +261,24 @@ document.addEventListener('click', (e) => {
   if (el) track(el.dataset.track);
 });
 
+// Portada: el botón de la cabecera solo aparece cuando el de la tarjeta principal ya no se ve,
+// para que nunca haya dos «Analizar mis resultados» a la vez en pantalla.
+function syncHeaderCta() {
+  const top = $('.lp-cta-top');
+  const hero = $('.hm-hero .hm-cta');
+  if (!top || !hero || !('IntersectionObserver' in window)) { if (top) top.classList.add('is-shown'); return; }
+  new IntersectionObserver(([e]) => {
+    const show = !e.isIntersecting;
+    top.classList.toggle('is-shown', show);
+    if (show) top.removeAttribute('tabindex'); else top.setAttribute('tabindex', '-1');
+  }).observe(hero);
+}
+
 mountMobileMenu();
 markCurrentSection();
 mountGuideRail();
 mountTabs();
+syncHeaderCta();
 openAiDetails();
 window.addEventListener('hashchange', openAiDetails);
 syncLang();
