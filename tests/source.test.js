@@ -221,5 +221,24 @@ for (const rel of sources.filter((f) => f.endsWith('.js'))) {
 }
 check('sin debugger ni console sueltos', debugLeftovers.length === 0, debugLeftovers.join(', '));
 
+console.log('\n5. Todo lo que pide styles.css se publica');
+// El despliegue (static.yml) copia una lista cerrada de archivos y carpetas. Las fotos de
+// paisaje se quedaron fuera una vez porque img/ no estaba en esa lista.
+{
+  const wf = fs.readFileSync(path.join(ROOT, '.github/workflows/static.yml'), 'utf8');
+  const staged = new Set();
+  for (const m of wf.matchAll(/^\s*cp (?:-r )?(.+?) site\/\s*$/gm)) for (const f of m[1].split(/\s+/)) staged.add(f);
+  const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
+  const missing = [];
+  for (const m of css.matchAll(/url\("?([^")]+)"?\)/g)) {
+    const u = m[1];
+    if (/^(data:|https?:|#)/.test(u)) continue;
+    const rel = u.replace(/^\//, '');
+    if (!staged.has(rel.split('/')[0])) missing.push(rel + ' (no se copia)');
+    else if (!fs.existsSync(path.join(ROOT, rel))) missing.push(rel + ' (no existe)');
+  }
+  check('cada url() de styles.css existe y está en el despliegue', missing.length === 0, [...new Set(missing)].slice(0, 5).join(', '));
+}
+
 console.log(`\n${failures ? `RESULTADO: ${checks - failures}/${checks} — ${failures} FALLO(S)` : `RESULTADO: ${checks}/${checks} correctas`}`);
 process.exit(failures ? 1 : 0);
