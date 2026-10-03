@@ -308,7 +308,7 @@ const STRINGS = {
     'drop.overlay.body': 'Anywhere on the page. The app detects which file is the optimization and which is the forward.',
 
     'empty.h2': 'How to get the files',
-    'empty.s1': 'In MT5, Optimization results tab: right-click → <em>export to XML</em>. If you used Forward, export that tab too.',
+    'empty.s1': 'In MT5, Optimization results tab: right-click → <em>export to XML</em>. If you used Forward, export that tab too. <a href="/guides/export-mt5-optimization-xml/">Step-by-step guide →</a>',
     'empty.s2': 'Drop them in the box above: the optimization export and, if you have it, the forward. Both from the <em>same</em> optimization.',
     'empty.s3': 'Press <em>Analyze</em>. In seconds you get the recommended configuration and its .set.',
 
@@ -333,6 +333,12 @@ const STRINGS = {
     'lp.cta': 'Analyze my results',
     'lp.cta.footer': 'App',
     'contact.feedback': 'Send feedback',
+    'help.title': 'Help',
+    'help.export': 'How to export from MT5',
+    'help.export.href': '/guides/export-mt5-optimization-xml/',
+    'help.guides.href': '/guides/',
+    'help.home': 'Home',
+    'help.home.href': '/',
     'doc.privacy.sC.title': 'If you write to us',
     'doc.privacy.sC.body': 'You can reach us at <a href="mailto:hello@orometra.com">hello@orometra.com</a>. If you write, we only use your address to reply. Please do not attach your optimization files unless you want us to look at a specific problem.',
     'doc.privacy.sR.title': 'Who is responsible and your rights',
@@ -890,7 +896,7 @@ const STRINGS = {
     'drop.overlay.body': 'Da igual en qué parte de la página. La app reconoce cuál es la optimización y cuál el forward.',
 
     'empty.h2': 'Cómo conseguir los archivos',
-    'empty.s1': 'En MT5, pestaña de resultados de la optimización: clic derecho → <em>exportar a XML</em>. Si usaste forward, exporta también esa pestaña.',
+    'empty.s1': 'En MT5, pestaña de resultados de la optimización: clic derecho → <em>exportar a XML</em>. Si usaste forward, exporta también esa pestaña. <a href="/es/guias/exportar-optimizacion-mt5-xml/">Guía paso a paso →</a>',
     'empty.s2': 'Suéltalos en el recuadro de arriba: el export de la optimización y, si lo tienes, el del forward. Los dos de la <em>misma</em> optimización.',
     'empty.s3': 'Pulsa <em>Analizar</em>. En segundos tendrás la configuración recomendada y su .set.',
 
@@ -915,6 +921,12 @@ const STRINGS = {
     'lp.cta': 'Analizar mis resultados',
     'lp.cta.footer': 'App',
     'contact.feedback': 'Enviar comentarios',
+    'help.title': 'Ayuda',
+    'help.export': 'Cómo exportar desde MT5',
+    'help.export.href': '/es/guias/exportar-optimizacion-mt5-xml/',
+    'help.guides.href': '/es/guias/',
+    'help.home': 'Inicio',
+    'help.home.href': '/es/',
     'doc.privacy.sC.title': 'Si nos escribes',
     'doc.privacy.sC.body': 'Puedes escribirnos a <a href="mailto:hello@orometra.com">hello@orometra.com</a>. Si lo haces, solo usamos tu dirección para responderte. No adjuntes tus archivos de optimización salvo que quieras que revisemos un problema concreto.',
     'doc.privacy.sR.title': 'Responsable y tus derechos',

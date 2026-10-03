@@ -136,7 +136,7 @@ $$('.nav-item').forEach((b) => b.addEventListener('click', () => {
   if (!b.disabled) setTab(b.dataset.tab);
 }));
 // El enlace legal del pie no es una pestaña numerada, pero navega igual.
-$$('.legal-links [data-tab]').forEach((b) => b.addEventListener('click', () => {
+$$('.legal-links [data-tab], .lp-menu [data-tab]').forEach((b) => b.addEventListener('click', () => {
   setTab(b.dataset.tab);
 }));
 
