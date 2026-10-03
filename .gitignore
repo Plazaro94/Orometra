@@ -17,3 +17,6 @@ Thumbs.db
 dist/
 .vercel/
 .netlify/
+
+# Fotos originales (pesadas): solo se suben las versiones optimizadas de img/fotos/
+fotos-originales/

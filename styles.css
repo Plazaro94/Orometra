@@ -1992,3 +1992,101 @@ html{zoom:var(--z)}
   .hm-actions .hm-go-group{flex:1 1 100%}
   .hm-actions .hm-go-group .hm-cta{flex:1}
 }
+
+/* ======================================================================
+   Fotos de paisaje (2026-10): portada, cierre, cabecera de guías y 404.
+   Se cargan como fondo con image-set (AVIF, WebP o JPG, lo que entienda el
+   navegador) y en tres tamaños: móvil (recorte vertical), escritorio y
+   escritorio grande o de alta densidad. Solo se descarga la que se ve.
+   Originales y recortes: tools/fotos.mjs.
+   ====================================================================== */
+:root{
+  --hero-img:image-set(url("img/fotos/portada-oscuro-esc-1400.avif") type("image/avif"),url("img/fotos/portada-oscuro-esc-1400.webp") type("image/webp"),url("img/fotos/portada-oscuro-esc-1400.jpg") type("image/jpeg"));
+  --final-img:image-set(url("img/fotos/cierre-esc-1400.avif") type("image/avif"),url("img/fotos/cierre-esc-1400.webp") type("image/webp"),url("img/fotos/cierre-esc-1400.jpg") type("image/jpeg"));
+}
+:root[data-theme="light"]{
+  --hero-img:image-set(url("img/fotos/portada-claro-esc-1400.avif") type("image/avif"),url("img/fotos/portada-claro-esc-1400.webp") type("image/webp"),url("img/fotos/portada-claro-esc-1400.jpg") type("image/jpeg"));
+}
+[data-photo="guias"]{
+  --ph-img:image-set(url("img/fotos/guias-esc-1400.avif") type("image/avif"),url("img/fotos/guias-esc-1400.webp") type("image/webp"),url("img/fotos/guias-esc-1400.jpg") type("image/jpeg"));
+}
+[data-photo="404"]{
+  --ph-img:image-set(url("img/fotos/404-esc-1400.avif") type("image/avif"),url("img/fotos/404-esc-1400.webp") type("image/webp"),url("img/fotos/404-esc-1400.jpg") type("image/jpeg"));
+}
+@media (min-width:1500px),(min-width:1000px) and (min-resolution:1.5dppx){
+  :root{
+    --hero-img:image-set(url("img/fotos/portada-oscuro-esc-2200.avif") type("image/avif"),url("img/fotos/portada-oscuro-esc-2200.webp") type("image/webp"),url("img/fotos/portada-oscuro-esc-2200.jpg") type("image/jpeg"));
+    --final-img:image-set(url("img/fotos/cierre-esc-2200.avif") type("image/avif"),url("img/fotos/cierre-esc-2200.webp") type("image/webp"),url("img/fotos/cierre-esc-2200.jpg") type("image/jpeg"));
+  }
+  :root[data-theme="light"]{
+    --hero-img:image-set(url("img/fotos/portada-claro-esc-1932.avif") type("image/avif"),url("img/fotos/portada-claro-esc-1932.webp") type("image/webp"),url("img/fotos/portada-claro-esc-1932.jpg") type("image/jpeg"));
+  }
+  [data-photo="guias"]{
+    --ph-img:image-set(url("img/fotos/guias-esc-2200.avif") type("image/avif"),url("img/fotos/guias-esc-2200.webp") type("image/webp"),url("img/fotos/guias-esc-2200.jpg") type("image/jpeg"));
+  }
+  [data-photo="404"]{
+    --ph-img:image-set(url("img/fotos/404-esc-1717.avif") type("image/avif"),url("img/fotos/404-esc-1717.webp") type("image/webp"),url("img/fotos/404-esc-1717.jpg") type("image/jpeg"));
+  }
+}
+@media (max-width:720px){
+  :root{
+    --hero-img:image-set(url("img/fotos/portada-oscuro-mov-900.avif") type("image/avif"),url("img/fotos/portada-oscuro-mov-900.webp") type("image/webp"),url("img/fotos/portada-oscuro-mov-900.jpg") type("image/jpeg"));
+    --final-img:image-set(url("img/fotos/cierre-mov-900.avif") type("image/avif"),url("img/fotos/cierre-mov-900.webp") type("image/webp"),url("img/fotos/cierre-mov-900.jpg") type("image/jpeg"));
+  }
+  :root[data-theme="light"]{
+    --hero-img:image-set(url("img/fotos/portada-claro-mov-900.avif") type("image/avif"),url("img/fotos/portada-claro-mov-900.webp") type("image/webp"),url("img/fotos/portada-claro-mov-900.jpg") type("image/jpeg"));
+  }
+  [data-photo="guias"]{
+    --ph-img:image-set(url("img/fotos/guias-mov-900.avif") type("image/avif"),url("img/fotos/guias-mov-900.webp") type("image/webp"),url("img/fotos/guias-mov-900.jpg") type("image/jpeg"));
+  }
+  [data-photo="404"]{
+    --ph-img:image-set(url("img/fotos/404-mov-900.avif") type("image/avif"),url("img/fotos/404-mov-900.webp") type("image/webp"),url("img/fotos/404-mov-900.jpg") type("image/jpeg"));
+  }
+}
+
+/* Velos: oscuro a la izquierda (donde va el texto) y transparente donde está la cumbre */
+:root{
+  --hero-veil:linear-gradient(90deg,rgba(12,16,26,.9) 0%,rgba(12,16,26,.62) 42%,rgba(12,16,26,.12) 78%,rgba(12,16,26,0) 100%);
+  --final-veil:linear-gradient(180deg,rgba(17,26,46,.78) 0%,rgba(17,26,46,.9) 100%);
+}
+:root[data-theme="light"]{
+  --hero-veil:linear-gradient(90deg,rgba(246,245,241,.9) 0%,rgba(246,245,241,.55) 42%,rgba(246,245,241,0) 75%);
+  --final-veil:linear-gradient(180deg,rgba(236,239,246,.84) 0%,rgba(236,239,246,.94) 100%);
+}
+@media (max-width:720px){
+  :root{--hero-veil:linear-gradient(180deg,rgba(12,16,26,.5) 0%,rgba(12,16,26,.74) 50%,rgba(12,16,26,.86) 100%)}
+  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(246,245,241,.5) 0%,rgba(246,245,241,.8) 50%,rgba(246,245,241,.9) 100%)}
+  .hm-hero.has-photo{min-height:0}
+}
+
+/* Portada: la foto ocupa la tarjeta; el relieve 3D pasa a la sección siguiente */
+.hm-hero.has-photo{
+  display:grid;grid-template-columns:minmax(0,620px);align-content:center;
+  min-height:clamp(520px,64vh,680px);
+  background:var(--hero-veil),var(--hero-img) center 40%/cover no-repeat,var(--hero-b);
+}
+@media (min-width:861px){.hm-hero.has-photo{grid-template-columns:minmax(0,620px)}}
+.hm-hero.has-photo .hm-lead{color:var(--text)}
+.hm-problem-visual{max-width:900px;margin:0 auto 40px}
+
+/* Cierre: la foto a todo el ancho, bajo un velo azul noche */
+html,body{overflow-x:clip}
+.hm-final.has-photo{position:relative;isolation:isolate;background:none;box-shadow:none;clip-path:none}
+.hm-final.has-photo::before{
+  content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);
+  background:var(--final-veil),var(--final-img) center 30%/cover no-repeat,var(--navy);
+}
+
+/* Cabeceras con foto (índice de guías y 404): siempre con velo oscuro y texto claro */
+.photo-head{
+  position:relative;border-radius:var(--radius-xl);overflow:hidden;
+  padding:clamp(28px,5vw,64px);margin:0 0 48px;min-height:clamp(300px,40vh,420px);
+  display:grid;align-content:end;gap:8px;color:#f4f1ea;
+  background:linear-gradient(180deg,rgba(12,16,26,.15) 0%,rgba(12,16,26,.55) 55%,rgba(12,16,26,.88) 100%),var(--ph-img) center/cover no-repeat,#111a2e;
+}
+.photo-head .lp-eyebrow{color:#cde65c;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.photo-head h1{color:#ffffff;margin:0}
+.photo-head .lp-lead{color:#e6e2dc;max-width:62ch;margin:0}
+.photo-head .lp-doc-cta{margin-top:16px}
+.photo-head .ghost-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28);color:#f4f1ea}
+@media (max-width:640px){.photo-head{border-radius:24px;min-height:360px}}
