@@ -20,7 +20,7 @@
    * El oliva del veredicto es amarillento y apagado; el verde del dinero, más azulado. Que
    * no se confundan: el oliva nunca va en una cifra de dinero.
    */
-  --bg:#151a26;          --surface:#1b212f;     --surface-2:#212838;   --surface-3:#2a3243;
+  --bg:#0b1019;          --surface:#1b212f;     --surface-2:#212838;   --surface-3:#2a3243;
   --line-soft:#202635;   --line:#31394c;        --line-strong:#475066;
   /* Los tres "muted" pasaban el mínimo de WCAG AA (4.5:1) sobre --surface, pero caían
    * por debajo sobre --surface-3 (donde vive una insignia o una pestaña activa) y se
@@ -29,14 +29,16 @@
    * muted > muted-2 > muted-3. */
   --muted-3:#a9b2c6;     --muted-2:#b4bccf;     --muted:#c0c7d8;
   --text-2:#dbe0eb;      --text:#f1f3f8;        --text-hi:#ffffff;
-  --ok-bg:#18223a;       --ok-line:#314572;     --ok:#74a6f1;     --ok-text:#9ec3fa;     --ok-hi:#d8e7fd;
+  --ok-bg:#1f2840;       --ok-line:#3a4870;     --ok:#a9b8da;     --ok-text:#c3cfea;     --ok-hi:#e6ecf8;
+  /* Lima: solo la acción y la respuesta (botón principal, configuración recomendada, evidencia sólida). */
+  --lime:#d4f25c;        --lime-fill:#d4f25c;   --lime-text:#d4f25c;   --lime-bg:#232a12;     --lime-line:#4a5a1c;
   --warn-bg:#2b2410;     --warn-line:#5a4a18;   --warn:#f2c230;   --warn-text:#f6d66a;   --warn-hi:#fbe9b0;
   --danger-bg:#2a1a1a;   --danger-line:#4f2b2a; --danger:#e0706a; --danger-text:#f0a8a3; --danger-hi:#f8d4d1;
-  --info-bg:#1d2435;     --info-line:#394560;   --info:#8e9ec2;   --info-text:#b4bfda;   --info-hi:#dbe1f0;
+  --info-bg:#1f2840;     --info-line:#3a4870;   --info:#a9b8da;   --info-text:#c3cfea;   --info-hi:#e6ecf8;
   --profit:#63c08c;      --loss:#ff5a52;
 
   /* Tokens semánticos del producto (capa de significado, no solo color) */
-  --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
+  --evidence-strong:var(--lime);   --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
   --evidence-weak:#9fa8bc; --evidence-weak-bg:#1d2332; --evidence-weak-line:#30384b; --evidence-weak-text:#ccd2e0;
   --evidence-none:#848a9a; --evidence-none-bg:#1b212f; --evidence-none-line:#30384b; --evidence-none-text:#ccd2e0;
@@ -70,7 +72,7 @@
   --control-h:36px;
   --brand-gap:10px;
   /* Botón principal y banda de cabecera (estilo «musgo»): oliva con borde vivo, azul noche */
-  --cta-bg:#9dc3fb; --cta-line:#c4dbfd; --cta-text:#0a1329; --cta-hover:#bad5fc; --band:#0a0f1a; --navy:#0a0f1a; --navy-line:#1d2639;
+  --cta-bg:#d4f25c; --cta-line:#e6fa9a; --cta-text:#141a08; --cta-hover:#e0f87e; --band:#0b1019; --navy:#0b1019; --navy-line:#1f2638;
   --hero-a:#1f2b47; --hero-b:#0f1524;
   color-scheme:dark;
 }
@@ -99,18 +101,19 @@
   --line-soft:#e7ebf3;   --line:#d5dae7;        --line-strong:#afb7ca;
   --muted-3:#404c68;     --muted-2:#37425d;     --muted:#2d3853;
   --text-2:#1d273e;      --text:#11192d;        --text-hi:#050a14;
-  --ok-bg:#e9f0fb;       --ok-line:#b6cced;     --ok:#1f58ad;     --ok-text:#194c9a;     --ok-hi:#0f346c;
+  --ok-bg:#e9eef8;       --ok-line:#c3cfe8;     --ok:#2b4a8c;     --ok-text:#24407c;     --ok-hi:#17295a;
+  --lime:#4c6000;        --lime-fill:#c6ec3c;   --lime-text:#4c6000;   --lime-bg:#f1f8d6;     --lime-line:#cfe39a;
   --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;   --warn-hi:#5a4200;
   --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c; --danger-hi:#66231f;
-  --info-bg:#edf0f7;     --info-line:#c8d1e4;   --info:#4b5e8b;   --info-text:#3d4f7b;   --info-hi:#253356;
+  --info-bg:#e9eef8;     --info-line:#c3cfe8;   --info:#2b4a8c;   --info-text:#24407c;   --info-hi:#17295a;
   --profit:#1d7a4c;      --loss:#b23a2f;
-  --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
+  --evidence-strong:var(--lime);   --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
   --evidence-weak:#4e5974; --evidence-weak-bg:#eef0f7; --evidence-weak-line:#d3d8e3; --evidence-weak-text:#394560;
   --evidence-none:#6a7181; --evidence-none-bg:#eef0f7; --evidence-none-line:#d5dae7; --evidence-none-text:#444f6a;
   --peak:#6a7181;            --peak-bg:#e7ebf3;            --peak-text:#394560;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
-  --cta-bg:#16213c; --cta-line:#0d1426; --cta-text:#ffffff; --cta-hover:#1f2e51; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
+  --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
   --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
 }
@@ -607,16 +610,16 @@ details.panel > .panel-body{padding:0 20px 20px}
    de barra (--s) y uno más claro para su nombre (--t), legible sobre el fondo. */
 /* Los cuatro niveles de evidencia, de insuficiente (1) a sólida (4): el mismo teal que se
    intensifica en el medidor del informe y en la lista de niveles de la metodología. */
-:root{--lv-1:#30384b;--lv-2:#4b556c;--lv-3:#e0b33a;--lv-4:#7dacf2}
-:root[data-theme="light"]{--lv-1:#d3d8e3;--lv-2:#a6aebf;--lv-3:#b98a10;--lv-4:#1f58ad}
+:root{--lv-1:#30384b;--lv-2:#4b556c;--lv-3:#e0b33a;--lv-4:#d4f25c}
+:root[data-theme="light"]{--lv-1:#d3d8e3;--lv-2:#a6aebf;--lv-3:#b98a10;--lv-4:#9cc414}
 .vx-seg:nth-child(1){--s:var(--lv-1);--t:#acb5c8}
 .vx-seg:nth-child(2){--s:var(--lv-2);--t:#ccd2e0}
 .vx-seg:nth-child(3){--s:var(--lv-3);--t:#f6d66a}
-.vx-seg:nth-child(4){--s:var(--lv-4);--t:#9ec3fa}
+.vx-seg:nth-child(4){--s:var(--lv-4);--t:#d4f25c}
 :root[data-theme="light"] .vx-seg:nth-child(1){--t:#4e5974}
 :root[data-theme="light"] .vx-seg:nth-child(2){--t:#394560}
 :root[data-theme="light"] .vx-seg:nth-child(3){--t:#664a00}
-:root[data-theme="light"] .vx-seg:nth-child(4){--t:#194c9a}
+:root[data-theme="light"] .vx-seg:nth-child(4){--t:#4c6000}
 .vx-seg-bar{display:block;height:8px;border-radius:4px;background:var(--line)}
 .vx-seg.is-on .vx-seg-bar{background:var(--s)}
 .vx-seg-name{display:block;margin-top:7px;font-size:13px;line-height:1.3;color:var(--muted-2)}
@@ -1235,18 +1238,19 @@ tr.sel td{color:var(--text-2)}
   --line-soft:#e7ebf3;   --line:#d5dae7;        --line-strong:#afb7ca;
   --muted-3:#404c68;     --muted-2:#37425d;     --muted:#2d3853;
   --text-2:#1d273e;      --text:#11192d;        --text-hi:#050a14;
-  --ok-bg:#e9f0fb;       --ok-line:#b6cced;     --ok:#1f58ad;     --ok-text:#194c9a;     --ok-hi:#0f346c;
+  --ok-bg:#e9eef8;       --ok-line:#c3cfe8;     --ok:#2b4a8c;     --ok-text:#24407c;     --ok-hi:#17295a;
+  --lime:#4c6000;        --lime-fill:#c6ec3c;   --lime-text:#4c6000;   --lime-bg:#f1f8d6;     --lime-line:#cfe39a;
   --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;   --warn-hi:#5a4200;
   --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c; --danger-hi:#66231f;
-  --info-bg:#edf0f7;     --info-line:#c8d1e4;   --info:#4b5e8b;   --info-text:#3d4f7b;   --info-hi:#253356;
+  --info-bg:#e9eef8;     --info-line:#c3cfe8;   --info:#2b4a8c;   --info-text:#24407c;   --info-hi:#17295a;
   --profit:#1d7a4c;      --loss:#b23a2f;
-  --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
+  --evidence-strong:var(--lime);   --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
   --evidence-weak:#4e5974; --evidence-weak-bg:#eef0f7; --evidence-weak-line:#d3d8e3; --evidence-weak-text:#394560;
   --evidence-none:#6a7181; --evidence-none-bg:#eef0f7; --evidence-none-line:#d5dae7; --evidence-none-text:#444f6a;
   --peak:#6a7181;            --peak-bg:#e7ebf3;            --peak-text:#394560;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
-  --cta-bg:#16213c; --cta-line:#0d1426; --cta-text:#ffffff; --cta-hover:#1f2e51; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
+  --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
   --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
 }
@@ -1588,12 +1592,12 @@ html.i18n-pending body{visibility:hidden}
 .hm-table th{text-align:left;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--line)}
 .hm-table td{padding:8px 10px;border-bottom:1px solid var(--line-soft);color:var(--text-2)}
 .hm-table tr.is-peak td{color:var(--peak-text)}
-.hm-table tr.is-pick td{color:var(--ok-text)}
+.hm-table tr.is-pick td{color:var(--lime-text)}
 .hm-pick{
   display:flex;flex-direction:column;gap:4px;margin:0 0 16px !important;padding:14px 16px;
   border-radius:var(--radius-sm);background:var(--ok-bg);
 }
-.hm-pick > span:first-child{font-weight:700;color:var(--ok-hi);font-size:16px}
+.hm-pick > span:first-child{font-weight:700;color:var(--lime-text);font-size:16px}
 .hm-pick-note{font-size:var(--fs-sm);color:var(--muted)}
 
 .hm-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
@@ -1843,7 +1847,7 @@ html{zoom:var(--z)}
    grandes con flecha y títulos centrados. Mismo lenguaje que la referencia
    que eligió el usuario (franja azul noche arriba, carbón, oliva y lima).
    ====================================================================== */
-:root{--strip:#0a0f1a;--strip-text:#ccd2e0;--strip-hi:#9ec3fa;--radius-xl:40px;--radius-lg:24px}
+:root{--strip:#060a12;--strip-text:#ccd2e0;--strip-hi:#c3cfea;--radius-xl:40px;--radius-lg:24px}
 .lp-strip{background:var(--strip);color:var(--strip-text);font-size:14.5px;line-height:1.4;text-align:center;padding:9px 16px}
 .lp-strip p{margin:0}
 .lp-strip b{color:var(--strip-hi);font-weight:700;margin-right:6px}
@@ -2057,7 +2061,7 @@ html,body{overflow-x:clip}
   display:grid;align-content:end;gap:8px;color:#e7ebf3;
   background:linear-gradient(180deg,rgba(10,15,26,.04) 0%,rgba(10,15,26,.38) 50%,rgba(10,15,26,.82) 100%),var(--ph-img) center/cover no-repeat,#0a0f1a;
 }
-.photo-head .lp-eyebrow{color:#9ec3fa;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.photo-head .lp-eyebrow{color:#c3cfea;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
 .photo-head h1{color:#ffffff;margin:0}
 .photo-head :is(h1,.lp-lead,.lp-eyebrow){text-shadow:0 1px 16px rgba(8,12,20,.6)}
 .photo-head .lp-lead{color:#ccd2e0;max-width:62ch;margin:0}
@@ -2173,8 +2177,8 @@ html,body{overflow-x:clip}
 
 /* Marca: la misma figura que el icono (meseta de curvas de nivel), con los colores del tema. */
 svg.brand-mark .bm-ring{stroke:var(--ok)}
-svg.brand-mark .bm-top{fill:var(--ok-text)}
-[data-theme="light"] svg.brand-mark .bm-top{fill:var(--ok)}
+svg.brand-mark .bm-top{fill:var(--lime-fill)}
+[data-theme="light"] svg.brand-mark .bm-top{fill:#86ab0c}
 
 /* Armonía entre dispositivos (2026-10) */
 .lp-foot-nav a{padding-inline:0}
@@ -2200,3 +2204,10 @@ svg.brand-mark .bm-top{fill:var(--ok-text)}
   .hm-faq-head{text-align:center}
   .hm-faq-head h2{margin-left:auto;margin-right:auto}
 }
+
+
+/* Cabecera de la portada: el botón «Analizar mis resultados» no se repite mientras el de la
+   tarjeta principal está a la vista; aparece al bajar (landing.js añade .is-shown). */
+body:has(.hm-hero) .lp-cta-top{transition:opacity .2s ease,visibility .2s}
+body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointer-events:none}
+@media (prefers-reduced-motion:reduce){body:has(.hm-hero) .lp-cta-top{transition:none}}
