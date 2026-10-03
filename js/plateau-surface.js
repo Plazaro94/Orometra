@@ -65,7 +65,7 @@ export function mountPlateauSurface(canvas, grid, { onHover, label } = {}) {
   // se intensifica con la calidad; el resto es neutro.
   function theme() {
     const isLight = root.dataset.theme === 'light';
-    const bg = parse(cssColor(root, '--surface', isLight ? '#ffffff' : '#161c29'), isLight ? [255, 255, 255] : [22, 28, 41]);
+    const bg = parse(cssColor(root, '--surface', isLight ? '#ffffff' : '#1b212f'), isLight ? [255, 255, 255] : [27, 33, 47]);
     const ok = parse(cssColor(root, '--ok', isLight ? '#1f58ad' : '#74a6f1'), isLight ? [31, 88, 173] : [116, 166, 241]);
     const muted = parse(cssColor(root, '--muted-3', isLight ? '#51565d' : '#96a2b4'), [150, 162, 180]);
     const text = parse(cssColor(root, '--text', isLight ? '#14181d' : '#eaf1f9'), [234, 241, 249]);

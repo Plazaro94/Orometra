@@ -25,9 +25,9 @@ function loadSharp() {
 
 // hueco -> original, y los recortes de escritorio (horizontal) y móvil (vertical)
 const FOTOS = {
-  'portada-oscuro': { src: 'portada-oscuro.jpg', desk: [0, 200, 2576, 1472], mob: [605, 0, 1370, 1827], grado: 'luz' },
+  'portada-oscuro': { src: 'portada-oscuro.jpg', desk: [0, 200, 2576, 1472], mob: [605, 0, 1370, 1827] },
   'portada-claro': { src: 'portada-claro.jpg', desk: [0, 520, 1932, 1104], mob: [0, 0, 1932, 2576] },
-  cierre: { src: 'cierre.jpg', desk: [0, 110, 2576, 1220], mob: [795, 0, 915, 1511], grado: 'contraste' },
+  cierre: { src: 'cierre.jpg', desk: [0, 110, 2576, 1220], mob: [795, 0, 915, 1511] },
   guias: { src: 'guias.jpg', desk: [0, 330, 2576, 890], mob: [380, 250, 1700, 1100] },
   404: { src: '404.jpg', desk: [0, 820, 1717, 900], mob: [0, 0, 1717, 2576] },
   // Fotos de contenido (<img> con srcset en la portada), no de fondo: un solo recorte y dos
@@ -37,18 +37,15 @@ const FOTOS = {
   'estorninos-dia': { src: 'estorninos.jpg', desk: [0, 200, 2576, 1100], mob: [0, 60, 2576, 1440], anchos: { desk: [1000, 1400, 2000], mob: [1200] }, grado: 'dia', calidad: 48 },
 };
 
-// Etalonado: menos saturación y el tono de la paleta encima.
+// Etalonado de los estorninos: el original es un atardecer rosa sobre un carrizal anaranjado,
+// lo único cálido de la web. Se le quita parte del color y se enfría con una capa suave
+// (luz suave, no multiplicar: no oscurece), para que siga pareciendo una foto y no un filtro.
+// Las fotos de montaña van tal cual: ya son frías, y subirles el contraste las endurecía.
 async function etalonar(img, grado, width, height) {
-  if (grado === 'noche') {
-    const capa = await sharp({ create: { width, height, channels: 4, background: { r: 120, g: 140, b: 185, alpha: 1 } } }).png().toBuffer();
-    return img.modulate({ saturation: 0.2 }).composite([{ input: capa, blend: 'multiply' }]);
-  }
-  if (grado === 'dia') return img.modulate({ saturation: 0.15 }).tint({ r: 150, g: 165, b: 200 });
-  // La foto nocturna de la portada, un punto más de luz; el cierre (blanco y negro), más contraste
-  // para que la roca se lea bajo el velo.
-  if (grado === 'luz') return img.modulate({ brightness: 1.14 }).linear(1.08, -8);
-  if (grado === 'contraste') return img.linear(1.18, -18);
-  return img;
+  if (!grado) return img;
+  const tono = grado === 'noche' ? { r: 96, g: 122, b: 176, alpha: 0.55 } : { r: 176, g: 192, b: 222, alpha: 0.5 };
+  const capa = await sharp({ create: { width, height, channels: 4, background: tono } }).png().toBuffer();
+  return sharp(await img.modulate({ saturation: 0.32 }).composite([{ input: capa, blend: 'soft-light' }]).toBuffer());
 }
 // SOLO=nombre regenera solo las fotos cuyo nombre empieza así (la exportación entera tarda).
 const SOLO = process.env.SOLO || '';

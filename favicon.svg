@@ -12,7 +12,7 @@
     El cuadrado oscuro no es decorativo: garantiza contraste tanto en pestanas blancas
     como negras, que es donde de verdad se va a ver.
   -->
-  <rect width="64" height="64" rx="13" fill="#101520"/>
+  <rect width="64" height="64" rx="13" fill="#151a26"/>
 
   <!-- Centrado en vertical: la figura va de y=22,3 (cima) a y=58,3 (borde del anillo
        grande, trazo incluido), asi que su centro caia en 40,3 y el logo se veia bajo en
