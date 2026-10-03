@@ -64,6 +64,9 @@ try {
     await page.waitForSelector('#heroSurfaceHost[data-surface-state]', { timeout: 20000 }).catch(() => {});
     await page.waitForTimeout(1500);
     const canvas = await page.$('#heroSurface');
+    // El relieve está bajo la foto de portada: se lleva a la vista antes de recortarlo.
+    await canvas.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(1200);
     const box = await canvas.boundingBox();
     // Solo el relieve: fuera la leyenda y la pista de abajo, y algo de margen vacío a los lados.
     const shot = await page.screenshot({ type: 'png', clip: { x: box.x + box.width * 0.02, y: box.y + box.height * 0.02, width: box.width * 0.95, height: box.height * 0.74 } });
