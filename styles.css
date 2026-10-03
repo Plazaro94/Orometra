@@ -1460,6 +1460,15 @@ tr.sel td{color:var(--text-2)}
   overflow:hidden;
 }
 .lp-method-step-media svg{width:100%;height:100%;display:block}
+/* Los diagramas se dibujan a 480 de ancho y se encogen con su caja (en el móvil, y en
+   tableta junto al texto): su letra llegaba a quedar en 7-9 px. Según el ancho real del
+   diagrama, se agranda en unidades del dibujo para que nunca se lea por debajo de 12 px. */
+.lp-method-step-media{container-type:inline-size;container-name:fig}
+@container fig (max-width:540px){.lp-method-step-media svg text{font-size:12.5px}}
+@container fig (max-width:470px){.lp-method-step-media svg text{font-size:14px}}
+@container fig (max-width:420px){.lp-method-step-media svg text{font-size:15.5px}}
+@container fig (max-width:380px){.lp-method-step-media svg text{font-size:16.5px}}
+@container fig (max-width:345px){.lp-method-step-media svg text{font-size:18px}}
 .lp-method-step.has-media:nth-child(even) .lp-method-step-media{order:0;margin-left:0;margin-right:52px}
 @media (max-width:720px){
   .lp-method-step,.lp-method-step:nth-child(even){flex-direction:row;align-self:stretch;max-width:none;flex-wrap:wrap}
@@ -1728,7 +1737,7 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
 .hm-take-card a.primary-btn,.hm-take-card a.ghost-btn{text-decoration:none;display:inline-flex;align-items:center}
 .hm-take-n{
   flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
-  background:var(--info);color:var(--bg);font-size:11.5px;font-weight:800;line-height:1;
+  background:var(--info);color:var(--bg);font-size:12px;font-weight:800;line-height:1;
 }
 @media (max-width:720px){
   .hm-take-card .vx-steps{grid-template-columns:1fr;gap:10px}
