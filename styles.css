@@ -2029,7 +2029,7 @@ html{zoom:var(--z)}
   :root{--hero-veil:linear-gradient(180deg,rgba(12,16,26,.5) 0%,rgba(12,16,26,.36) 45%,rgba(12,16,26,.55) 100%)}
   .hm-hero.has-photo :is(h1,.hm-lead,.hm-eyebrow){text-shadow:0 1px 14px rgba(8,12,20,.55)}
   :root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead,.hm-eyebrow){text-shadow:0 1px 14px rgba(246,245,241,.7)}
-  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(246,245,241,.62) 0%,rgba(246,245,241,.42) 45%,rgba(246,245,241,.62) 100%)}
+  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(246,245,241,.6) 0%,rgba(246,245,241,.4) 42%,rgba(246,245,241,.86) 78%,rgba(246,245,241,.92) 100%)}
   .hm-hero.has-photo{min-height:0}
 }
 
@@ -2169,4 +2169,34 @@ html,body{overflow-x:clip}
 @media (max-width:860px){
   .hm-hero .hm-lead{max-width:none;margin-bottom:28px}
   .hm-hero-meta{max-width:none;margin-top:26px;padding-top:18px}
+}
+
+/* Marca: la misma figura que el icono (meseta de curvas de nivel), con los colores del tema. */
+svg.brand-mark .bm-ring{stroke:var(--ok)}
+svg.brand-mark .bm-top{fill:var(--ok-text)}
+[data-theme="light"] svg.brand-mark .bm-top{fill:var(--ok)}
+
+/* Armonía entre dispositivos (2026-10) */
+.lp-foot-nav a{padding-inline:0}
+/* Títulos de sección: en una línea en escritorio cuando caben; equilibrados en móvil. */
+@media (min-width:861px){.hm-section > h2,.hm-final h2{max-width:none}}
+/* Tableta: la frase no pisa la cumbre y la tarjeta no deja aire vacío arriba. */
+@media (min-width:721px) and (max-width:1000px){
+  :root{--hero-veil:linear-gradient(90deg,rgba(12,16,26,.86) 0%,rgba(12,16,26,.66) 55%,rgba(12,16,26,.1) 92%)}
+  :root[data-theme="light"]{--hero-veil:linear-gradient(90deg,rgba(246,245,241,.9) 0%,rgba(246,245,241,.7) 55%,rgba(246,245,241,.1) 92%)}
+  .hm-hero.has-photo{min-height:0;padding:56px 48px}
+  .hm-hero.has-photo .hm-hero-copy{max-width:440px}
+  .hm-hero .hm-lead{max-width:none}
+}
+/* Móvil: botón principal a su tamaño natural, sin el círculo de la flecha; títulos y
+   textos de sección centrados como en escritorio. */
+@media (max-width:640px){
+  .hm-actions .hm-go-group,.hm-final .hm-go-group{flex:0 0 auto}
+  .hm-actions .hm-go-group .hm-cta,.hm-final .hm-cta{flex:0 0 auto}
+  .hm .hm-cta{min-height:48px;padding:12px 24px;font-size:16px}
+  .hm .hm-go{display:none}
+  .hm-nature-copy{text-align:center}
+  .hm-nature-copy p{margin:0 auto}
+  .hm-faq-head{text-align:center}
+  .hm-faq-head h2{margin-left:auto;margin-right:auto}
 }

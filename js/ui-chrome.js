@@ -1,7 +1,6 @@
 // Tema, idioma, prefs, policy preview, tabs, empty/legal/method.
 
 import { DEFAULT_POLICY, gateFailures } from '../core/metrics.js';
-import { mountBrandMark } from './brandmark.js';
 import { enhanceRadioGroups } from './radiogroup.js';
 import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
@@ -14,7 +13,6 @@ export const PREFS_KEY = 'orometra.gates';
 /** Los mínimos son una decisión del usuario: no debería repetirla cada sesión. */
 export const THEME_KEY = 'orometra.theme';
 export const TEMAS = ['dark', 'light'];
-export let repaintMark = () => {};
 
 /**
  * Tema de color. Se aplica en `documentElement` porque el `<head>` ya lo lee antes de
@@ -30,8 +28,6 @@ export function setTheme(name, persist = true) {
     try { localStorage.setItem(THEME_KEY, t); } catch { /* modo privado */ }
   }
   if (typeof window.__orometraSyncThemeColor === 'function') window.__orometraSyncThemeColor();
-  // La figura de la marca se dibuja con los colores del tema: hay que repintarla.
-  repaintMark();
 }
 
 export function initChrome() {
@@ -47,9 +43,6 @@ export function initChrome() {
   enhanceRadioGroups();
   initTabsFade();
   trackHeadHeight();
-
-  const mark = $('#brandMark');
-  if (mark) repaintMark = mountBrandMark(mark);
 
   // La marca es un enlace a la landing; no conviene interceptarlo.
   const reiniciar = $('#resetAll');
