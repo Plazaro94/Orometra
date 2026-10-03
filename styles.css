@@ -311,7 +311,7 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .ghost-btn:hover,.back-btn:hover{background:var(--surface-2);color:var(--text-hi);border-color:var(--line)}
 .primary-btn{background:var(--cta-bg);color:var(--cta-text);border-color:var(--cta-line);font-weight:700}
 .primary-btn:hover:not(:disabled){background:var(--cta-hover)}
-.primary-btn:disabled{opacity:.32;cursor:default}
+.primary-btn:disabled{background:var(--surface-2);border-color:var(--line);color:var(--muted-2);cursor:default}
 .text-btn{border:0;padding:0;background:none;color:var(--info-text);font-size:13px}
 .text-btn:hover{color:var(--text);text-decoration:underline}
 .link-btn{border:0;background:none;color:var(--accent);font-weight:700;padding:0;font-size:13.5px}
@@ -350,7 +350,6 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .dropzone-main .file-icon{width:46px;height:46px;font-size:20px;font-weight:700}
 .dropzone-main .drop-copy strong{font-size:15.5px}
 .dropzone-main .drop-copy span{font-size:13px;line-height:1.45}
-.dropzone-main .drop-action{font-size:13px;padding:8px 12px;color:var(--text-2)}
 .has-analysis .dropzone-main .file-icon{width:28px;height:28px;font-size:13px}
 .has-analysis .dropzone-main .drop-copy strong{font-size:13px}
 /* Ajustes (minimos): plegados hasta que se piden. Tras un analisis mandan las reglas
@@ -371,14 +370,18 @@ body:not(.has-analysis) #exportBtn{display:none}
 .has-analysis .policy-toggle{display:none}
 body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .dropzone,.analyze-card{
-  min-height:82px;border:1px dashed var(--line);background:var(--surface);border-radius:var(--radius);
+  min-height:82px;border:1.5px dashed var(--line-strong);background:var(--surface);border-radius:var(--radius);
   padding:14px;display:flex;align-items:center;gap:13px;transition:border-color .15s,background .15s;
 }
 .dropzone{cursor:pointer}
-.dropzone:hover,.dropzone.drag,.dropzone:focus-visible{border-color:var(--muted-3);background:var(--surface-2)}
+.dropzone:hover,.dropzone.drag,.dropzone:focus-visible{border-color:var(--accent);background:var(--surface-2)}
 .dropzone.ready{border-style:solid;border-color:var(--ok-line);background:var(--ok-bg)}
 .dropzone.error{border-color:var(--danger);border-style:solid}
-.dropzone.locked{opacity:.5;pointer-events:none}
+/* Bloqueada mientras se analiza: sin opacidad sobre el texto (bajaba a 2,5:1); se apagan
+   solo el icono y el botón. */
+.dropzone.locked{pointer-events:none;border-color:var(--line)}
+.dropzone.locked .file-icon{opacity:.45}
+.dropzone.locked .drop-action{color:var(--muted);border-color:var(--line)}
 .set-hint{
   margin:8px 2px 0;font-size:13px;color:var(--muted-2);line-height:1.45;
 }
@@ -393,18 +396,24 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .req,.opt{font-size:13px;letter-spacing:0;text-transform:none;padding:2px 6px;border-radius:999px;font-weight:700}
 .req{background:var(--danger-bg);color:var(--danger-text);border:1px solid var(--danger-line)}
 .opt{background:var(--surface-3);color:var(--info);border:1px solid var(--line-strong)}
-.drop-action{margin-left:auto;color:var(--muted);font-size:13px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:6px 9px;flex:none}
+.drop-action{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 18px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--text-hi);font-size:14px;font-weight:600;flex:none}
+.dropzone:hover .drop-action{border-color:var(--accent)}
 .analyze-card{
-  border-style:solid;border-color:var(--line);text-align:left;color:var(--text);width:100%;
-  background:var(--surface-2);
+  border-style:solid;border-color:var(--line);text-align:left;color:var(--text-2);width:100%;
+  background:var(--surface-2);cursor:default;
 }
-.analyze-card:disabled{opacity:.42;cursor:default}
-.analyze-card:not(:disabled):hover{border-color:var(--muted-3);background:var(--surface-3)}
-.analyze-card.busy{opacity:.7;cursor:progress}
-.analyze-icon{width:40px;height:40px;border-radius:var(--radius);flex:none;background:var(--text);color:var(--ok-bg);display:grid;place-items:center;font-size:20px}
-.analyze-card strong{display:block;font-size:13px}
-.analyze-card span{display:block;color:var(--muted-2);font-size:13px;margin-top:3px}
-.analyze-arrow{margin-left:auto;color:var(--muted)}
+/* «Analizar» es la acción principal: en lima en cuanto se puede pulsar (el color de la
+   acción, como «Analizar mis resultados» en la portada). Desactivado, sin opacidad: el
+   texto que dice qué falta tiene que leerse (con opacidad quedaba a 2,45:1). */
+.analyze-card strong{display:block;font-size:16px;font-weight:700;color:var(--text-hi)}
+.analyze-card span{display:block;color:var(--muted-2);font-size:13.5px;margin-top:3px;line-height:1.4}
+.analyze-card:disabled strong{color:var(--muted)}
+.analyze-card:not(:disabled){background:var(--cta-bg);border-color:var(--cta-line);color:var(--cta-text);cursor:pointer}
+.analyze-card:not(:disabled) strong,.analyze-card:not(:disabled) span,.analyze-card:not(:disabled) .analyze-arrow{color:var(--cta-text)}
+.analyze-card:not(:disabled):hover{background:var(--cta-hover);border-color:var(--cta-line)}
+.analyze-card.busy{cursor:progress}
+.analyze-arrow{margin-left:auto;color:var(--muted-3);font-size:20px}
+.analyze-card:disabled .analyze-arrow{display:none}
 
 .policy-panel{margin-top:11px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:18px}
 .policy-head h2{font-size:15px;margin-bottom:5px}
@@ -887,7 +896,8 @@ th.t3-label{padding-left:2px}
 .ub-obs.ub-warn{fill:var(--warn)}
 .ub-obs.ub-bad{fill:var(--danger)}
 
-.report-drop{border-style:dashed;border-color:var(--line)}
+.report-drop{border:1.5px dashed var(--line-strong)}
+.report-pick{margin-top:6px}
 .report-ok{
   margin-top:12px;border:1px solid var(--ok-line);background:var(--ok-bg);border-radius:9px;
   padding:10px 12px;font-size:13.5px;color:var(--ok);
@@ -1193,6 +1203,9 @@ tr.sel td{color:var(--text-2)}
      identifica en la tira horizontal, y ocultar los dos span dejaba pildoras sin texto. */
   .nav-item span:first-child{display:none}
   .sidebar-sep{display:none}
+  /* Antes de analizar, en la tira solo lo que se puede abrir: seis pestañas apagadas
+     ocupaban la fila más valiosa de la pantalla. */
+  body:not(.has-analysis) .nav-item:disabled{display:none}
   /* `.sidebar-section` de mas en el selector (no solo `.nav-item.active`): con la misma
      especificidad que la regla de escritorio (linea ~262), cual gana dependia de en que
      pestana se entraba primero -- en la carga inicial ganaba esta, pero tras un click

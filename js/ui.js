@@ -11,6 +11,7 @@ import {
   bindGlobalDrop,
   loadDemo,
   updateDropStatus,
+  acceptFiles,
 } from './ui-files.js';
 
 import {
@@ -139,6 +140,17 @@ $$('.nav-item').forEach((b) => b.addEventListener('click', () => {
 $$('.legal-links [data-tab], .lp-menu [data-tab]').forEach((b) => b.addEventListener('click', () => {
   setTab(b.dataset.tab);
 }));
+
+// Atajo del informe del backtest (pestaña Periodo no visto): además de soltarlo, se
+// puede elegir con un botón. Sin esto, en el móvil y con teclado no había forma.
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('[data-pick-report]')) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.htm,.html,.xml,.xlsx';
+  input.addEventListener('change', () => acceptFiles(Array.from(input.files || []), null));
+  input.click();
+});
 
 render();
 
