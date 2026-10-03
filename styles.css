@@ -2215,3 +2215,15 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
   .hm-hero .hm-need-sep{display:none}
   .hm-hero .hm-need a{display:block;width:fit-content;margin-top:4px}
 }
+
+/* Menú del móvil al alcance del pulgar: el texto a la izquierda (se lee mejor) y, a la
+   derecha, una flecha que indica que toda la fila se puede pulsar. */
+@media (max-width:720px){
+  .lp-menu-nav a{min-height:52px;justify-content:space-between;padding:0 6px 0 4px;border-bottom-color:var(--line)}
+  .lp-menu-nav a::after{
+    content:"";flex:none;width:8px;height:8px;margin-left:12px;
+    border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg);
+  }
+  .lp-menu-theme .theme-row{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .lp-menu-theme .theme-row button{min-height:46px;justify-content:center}
+}
