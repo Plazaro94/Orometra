@@ -1563,7 +1563,6 @@ html.i18n-pending body{visibility:hidden}
   gap:32px 48px;align-items:center;margin-bottom:112px;
 }
 .hm-hero-copy{min-width:0}
-.hm-eyebrow{margin:0 0 14px;font-size:var(--fs-sm);color:var(--muted);font-weight:600}
 .hm-hero h1{
   margin:0 0 18px;font-size:clamp(34px,4.6vw,54px);line-height:1.06;letter-spacing:-.035em;
   color:var(--text-hi);max-width:18ch;text-wrap:balance;
@@ -1860,7 +1859,6 @@ html{zoom:var(--z)}
   background:linear-gradient(160deg,var(--hero-a) 0%,var(--hero-b) 100%);
   border-radius:var(--radius-xl);padding:clamp(28px,5vw,64px);margin-bottom:104px;
 }
-.hm-eyebrow{color:var(--ok-text);text-transform:uppercase;letter-spacing:.07em;font-size:13px;font-weight:700}
 @media (min-width:861px){.hm-hero{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}}
 .hm-hero h1{font-size:clamp(38px,4.9vw,62px);line-height:1.03;letter-spacing:-.02em;max-width:none}
 .hm-hero h1 em{display:block;font-family:var(--serif);font-style:italic;font-weight:600;letter-spacing:-.015em}
@@ -1915,7 +1913,6 @@ html{zoom:var(--z)}
   .hm-checks{grid-template-columns:1fr;gap:14px}
   .hm-checks li{font-size:17px}
   .hm-hero{border-radius:24px;padding:28px 22px}
-  .hm-eyebrow{font-size:13px}
   .lp-strip{font-size:13px}
   .hm-actions .hm-go-group{flex:1 1 100%}
   .hm-actions .hm-go-group .hm-cta{flex:1}
@@ -2031,8 +2028,8 @@ html{zoom:var(--z)}
 }
 @media (max-width:720px){
   :root{--hero-veil:linear-gradient(180deg,rgba(10,15,26,.5) 0%,rgba(10,15,26,.36) 45%,rgba(10,15,26,.55) 100%)}
-  .hm-hero.has-photo :is(h1,.hm-lead,.hm-eyebrow){text-shadow:0 1px 14px rgba(8,12,20,.55)}
-  :root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead,.hm-eyebrow){text-shadow:0 1px 14px rgba(244,246,250,.7)}
+  .hm-hero.has-photo :is(h1,.hm-lead){text-shadow:0 1px 14px rgba(8,12,20,.55)}
+  :root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead){text-shadow:0 1px 14px rgba(244,246,250,.7)}
   :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(244,246,250,.6) 0%,rgba(244,246,250,.4) 42%,rgba(244,246,250,.86) 78%,rgba(244,246,250,.92) 100%)}
   .hm-hero.has-photo{min-height:0}
 }
@@ -2150,7 +2147,7 @@ html,body{overflow-x:clip}
 .hm-cta{white-space:nowrap}
 .lp-strip-short{display:none}
 @media (max-width:560px){
-  .lp-strip-long,.hm-eyebrow-more{display:none}
+  .lp-strip-long{display:none}
   .lp-strip-short{display:inline}
 }
 @media (max-width:380px){
@@ -2164,15 +2161,8 @@ html,body{overflow-x:clip}
 .hm-hero h1{margin:0 0 22px}
 .hm-hero .hm-lead{margin:0 0 34px;max-width:39ch}
 .hm-hero .hm-actions{margin:0}
-.hm-hero-meta{margin-top:32px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);max-width:420px;display:grid;gap:6px}
-[data-theme="light"] .hm-hero-meta{border-top-color:rgba(10,15,26,.16)}
-.hm-hero-meta .hm-eyebrow{margin:0;font-size:13px;letter-spacing:.09em}
-.hm-hero-meta .hm-need{margin:0;font-size:14.5px}
-.hm-hero.has-photo .hm-hero-meta .hm-eyebrow{text-shadow:0 1px 10px rgba(8,12,20,.5)}
-[data-theme="light"] .hm-hero.has-photo .hm-hero-meta .hm-eyebrow{text-shadow:none}
 @media (max-width:860px){
   .hm-hero .hm-lead{max-width:none;margin-bottom:28px}
-  .hm-hero-meta{max-width:none;margin-top:26px;padding-top:18px}
 }
 
 /* Marca: la misma figura que el icono (meseta de curvas de nivel), con los colores del tema. */
@@ -2211,3 +2201,17 @@ svg.brand-mark .bm-top{fill:var(--lime-fill)}
 body:has(.hm-hero) .lp-cta-top{transition:opacity .2s ease,visibility .2s}
 body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointer-events:none}
 @media (prefers-reduced-motion:reduce){body:has(.hm-hero) .lp-cta-top{transition:none}}
+
+/* Bajo el botón de la portada, una sola línea: qué hace falta para empezar. */
+.hm-hero .hm-need{position:relative;padding-left:22px;margin:22px 0 0;font-size:14.5px;line-height:1.5;color:var(--text-2);max-width:none}
+.hm-hero .hm-need::before{
+  content:"";position:absolute;left:0;top:.2em;width:14px;height:16px;background:currentColor;opacity:.75;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M1.75 1.75h6.5l4 4v8.5h-10.5z'/%3E%3Cpath d='M8.25 1.75v4h4'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M1.75 1.75h6.5l4 4v8.5h-10.5z'/%3E%3Cpath d='M8.25 1.75v4h4'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+@media (max-width:860px){.hm-hero .hm-need{margin-top:20px}}
+@media (max-width:640px){
+  .hm-hero .hm-need{font-size:14px}
+  .hm-hero .hm-need-sep{display:none}
+  .hm-hero .hm-need a{display:block;width:fit-content;margin-top:4px}
+}
