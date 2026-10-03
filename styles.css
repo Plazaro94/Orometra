@@ -2166,3 +2166,14 @@ html,body{overflow-x:clip}
   .hm-nature{grid-template-columns:1fr;gap:24px}
   .hm-nature-photo{border-radius:24px}
 }
+
+/* Móvil: la portada en unas 7 pantallas. Lo que se quita aquí sigue en escritorio,
+   en el informe de ejemplo o en Metodología. */
+@media (max-width:640px){
+  .hm-hero.has-photo{min-height:0}
+  .hm-compare .hm-table{display:none}
+  .hm-take-card .vx-stats{display:none}
+  .hm-final .hm-checks li:nth-child(n+5){display:none}
+  .hm-hero.has-photo,.hm-section{margin-bottom:52px}
+  .hm-take,.hm-final{padding-block:48px}
+}
