@@ -36,7 +36,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=20261003b">
+<link rel="stylesheet" href="styles.css?v=20261003c">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","description":"Separate the fragile from the stable in your MT5 optimization: Orometra tells you which configuration of your EA is stable — the plateau, not the isolated peak — and how much evidence backs it, right in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js"></script>
 <!-- El relieve 3D se importa bajo demanda desde landing.js; aquí se adelanta su descarga. -->
@@ -164,74 +164,64 @@
           </div>
         </div>
       </figure>
-      <div class="hm-take-side">
-        <ol class="hm-take-legend">
-          <li><b class="hm-take-n" aria-hidden="true">A</b><div><strong data-i18n="home.take.leg.1.t">One configuration, not a ranking</strong><p data-i18n="home.take.leg.1.b">The center of a zone where the neighboring values also work, with a .set ready to load in MT5.</p></div></li>
-          <li><b class="hm-take-n" aria-hidden="true">B</b><div><strong data-i18n="home.take.leg.2.t">How much to trust it, in plain words</strong><p data-i18n="home.take.leg.2.b">Four evidence levels. It never says more than your data can support.</p></div></li>
-          <li><b class="hm-take-n" aria-hidden="true">C</b><div><strong data-i18n="home.take.leg.3.t">The next step</strong><p data-i18n="home.take.leg.3.b">How to confirm it before risking money, and a check of that backtest when you bring it back.</p></div></li>
-        </ol>
-        <pre class="hm-take-set" data-i18n="home.take.aria.set" data-i18n-attr="aria-label" aria-label="Example .set file"><span class="hm-take-set-name">Orometra-4283.set</span>FastMA=14
-SlowMA=70
-ATR_SL=2
-ATR_TP=4</pre>
-        <p class="hm-more"><a href="app/?demo=1" data-i18n="home.take.more">See the full sample report →</a></p>
-      </div>
+      <p class="hm-more"><a href="app/?demo=1" data-i18n="home.take.more">See the full sample report →</a></p>
     </div>
   </section>
 
-  <!-- 2b. El motor por dentro -->
-  <section class="hm-section" aria-labelledby="hm-engine-title">
-    <h2 id="hm-engine-title" data-i18n="home.engine.title">What the engine does for you</h2>
-    <p class="hm-sub" data-i18n="home.engine.sub">What would take you hours in a spreadsheet and a lot of judgment — done in seconds, the same way every time.</p>
-    <ol class="hm-engine">
-      <li><span class="hm-engine-num" aria-hidden="true">01</span><h3 data-i18n="home.engine.1.title">Drops what doesn't qualify</h3><p data-i18n="home.engine.1.body">Out go the passes that miss your minimums for profit, drawdown and trades.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">02</span><h3 data-i18n="home.engine.2.title">Doesn't trust the Result column</h3><p data-i18n="home.engine.2.body">It measures quality with objective metrics, not with what you optimized for.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">03</span><h3 data-i18n="home.engine.3.title">Checks the neighbors</h3><p data-i18n="home.engine.3.body">Inside the plateau it picks what holds in both periods alongside its neighbors, not the peak.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">04</span><h3 data-i18n="home.engine.4.title">Checks it against the forward</h3><p data-i18n="home.engine.4.body">What holds up in the forward moves up; what falls apart moves down.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">05</span><h3 data-i18n="home.engine.5.title">Estimates how much could be chance</h3><p data-i18n="home.engine.5.body">It warns you if your result doesn't beat what pure chance would produce.</p></li>
-      <li><span class="hm-engine-num" aria-hidden="true">06</span><h3 data-i18n="home.engine.6.title">Tests itself</h3><p data-i18n="home.engine.6.body">It checks that the recommendation doesn't depend on its own settings.</p></li>
-    </ol>
-    <p class="hm-more"><a href="methodology/" data-i18n="home.engine.more">Read more: the method step by step →</a></p>
-  </section>
-
-  <!-- 2b'. Confianza: comprobable, no decorativa -->
-  <section class="hm-section hm-proof" aria-labelledby="hm-proof-title">
-    <h2 id="hm-proof-title" data-i18n="home.proof.title">Built to tell you the truth, even when it is “no”</h2>
-    <p class="hm-sub" data-i18n="home.proof.lead">MT5 sorts thousands of configurations by the criterion you chose and leaves you alone with the top row. Orometra exists to referee between the optimizer and your decision to put real money in. Sometimes its most valuable answer is “there is nothing here”, and it is built to say so. You do not have to take our word for it:</p>
-    <ul class="hm-proof-grid">
-      <li><h3 data-i18n="home.proof.1.title">The code is public</h3><p data-i18n="home.proof.1.body">Every calculation the engine makes can be read on GitHub. No black box.</p><a href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" data-i18n="home.proof.1.link">See the code →</a></li>
-      <li><h3 data-i18n="home.proof.2.title">The method is published</h3><p data-i18n="home.proof.2.body">Step by step and with its limits: what it does and what it does not do.</p><a href="methodology/" data-i18n="home.proof.2.link">Read the method →</a></li>
-      <li><h3 data-i18n="home.proof.3.title">Check that your files stay with you</h3><p data-i18n="home.proof.3.body">Open your browser’s developer tools, Network tab, while you analyze: you will only see the site’s own files and an anonymous usage count. Your files are not sent anywhere.</p><a href="privacy/" data-i18n="home.proof.3.link">Privacy →</a></li>
-      <li><h3 data-i18n="home.proof.4.title">Tested before every release</h3><p data-i18n="home.proof.4.body">Before going live, each version passes hundreds of automated checks, including runs on data where the right answer is known in advance.</p></li>
-    </ul>
-  </section>
-
-  <!-- 2c. Por que no una IA -->
-  <section class="hm-section hm-ai" aria-labelledby="hm-ai-title">
-    <h2 id="hm-ai-title" data-i18n="home.ai.title">Why not just ask an AI?</h2>
-    <p class="hm-ai-lead" data-i18n="home.ai.lead">An AI always has an answer. Orometra only gives you the one your data can defend.</p>
-    <table class="hm-vs">
-      <thead><tr><td></td><th scope="col" class="hm-vs-ai" data-i18n="home.ai.col.ai">An AI chat</th><th scope="col" class="hm-vs-oro" data-i18n="home.ai.col.oro">Orometra</th></tr></thead>
-      <tbody>
-        <tr><th scope="row" data-i18n="home.ai.1.k">Same table, another day</th><td class="hm-vs-ai" data-i18n="home.ai.1.ai">It can change its answer depending on how you ask</td><td class="hm-vs-oro" data-i18n="home.ai.1.oro">Always the same answer</td></tr>
-        <tr><th scope="row" data-i18n="home.ai.2.k">The method</th><td class="hm-vs-ai" data-i18n="home.ai.2.ai">Improvised in each conversation</td><td class="hm-vs-oro" data-i18n="home.ai.2.oro">Fixed, published and tested</td></tr>
-        <tr><th scope="row" data-i18n="home.ai.3.k">The numbers</th><td class="hm-vs-ai" data-i18n="home.ai.3.ai">It can make up a figure without warning you</td><td class="hm-vs-oro" data-i18n="home.ai.3.oro">Every figure comes from your data and can be checked</td></tr>
-        <tr><th scope="row" data-i18n="home.ai.4.k">When the data can't support a conclusion</th><td class="hm-vs-ai" data-i18n="home.ai.4.ai">It answers anyway, with full confidence</td><td class="hm-vs-oro" data-i18n="home.ai.4.oro">It tells you: insufficient evidence</td></tr>
-        <tr><th scope="row" data-i18n="home.ai.5.k">Your strategy</th><td class="hm-vs-ai" data-i18n="home.ai.5.ai">Uploaded to another company's servers</td><td class="hm-vs-oro" data-i18n="home.ai.5.oro">Never leaves your computer</td></tr>
-        <tr><th scope="row" data-i18n="home.ai.6.k">What you get</th><td class="hm-vs-ai" data-i18n="home.ai.6.ai">Text</td><td class="hm-vs-oro" data-i18n="home.ai.6.oro">A configuration, its evidence level and a .set for MT5</td></tr>
-      </tbody>
-    </table>
-    <p class="hm-ai-close"><span data-i18n="home.ai.close">Use AI to understand the report. To decide which configuration you risk your money on, use a criterion that doesn't change.</span> <a href="methodology/#ia" data-i18n="home.ai.more">Read the full explanation →</a></p>
-  </section>
-
-  <!-- 3. Como funciona -->
-  <section class="hm-section" aria-labelledby="hm-how-title">
-    <h2 id="hm-how-title" data-i18n="lp.how.title">How it works</h2>
-    <ol class="hm-steps">
-      <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Export</h3><p data-i18n="home.how.1.body">Export your MT5 optimization results to XML — and the forward tab, if you used it.</p></li>
-      <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Drop them here</h3><p data-i18n="home.how.2.body">They are analyzed in your browser, in seconds.</p></li>
-      <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Take away your configuration</h3><p data-i18n="home.how.3.body">The recommended one with its reasons, how much to trust it, a .set ready for MT5 and the range to re-optimize around it.</p></li>
-    </ol>
+  <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->
+  <section class="hm-section hm-more-sec" aria-labelledby="hm-more-title">
+    <h2 id="hm-more-title" data-i18n="home.more.title">What’s behind the result</h2>
+    <div class="hm-tabs" data-tabs>
+      <div class="hm-tablist" role="tablist" aria-labelledby="hm-more-title">
+        <button type="button" role="tab" id="hm-tab-how" aria-controls="hm-pane-how" aria-selected="true" data-i18n="home.tab.how">How it works</button>
+        <button type="button" role="tab" id="hm-tab-engine" aria-controls="hm-pane-engine" aria-selected="false" tabindex="-1" data-i18n="home.tab.engine">The engine</button>
+        <button type="button" role="tab" id="hm-tab-proof" aria-controls="hm-pane-proof" aria-selected="false" tabindex="-1" data-i18n="home.tab.proof">Why trust it</button>
+        <button type="button" role="tab" id="hm-tab-ai" aria-controls="hm-pane-ai" aria-selected="false" tabindex="-1" data-i18n="home.tab.ai">And an AI?</button>
+      </div>
+      <div class="hm-pane" role="tabpanel" id="hm-pane-how" aria-labelledby="hm-tab-how" tabindex="0">
+        <ol class="hm-steps">
+          <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Export</h3><p data-i18n="home.how.1.body">Export your MT5 optimization results to XML — and the forward tab, if you used it.</p></li>
+          <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Drop them here</h3><p data-i18n="home.how.2.body">They are analyzed in your browser, in seconds.</p></li>
+          <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Take away your configuration</h3><p data-i18n="home.how.3.body">The recommended one with its reasons, how much to trust it, a .set ready for MT5 and the range to re-optimize around it.</p></li>
+        </ol>
+      </div>
+      <div class="hm-pane" role="tabpanel" id="hm-pane-engine" aria-labelledby="hm-tab-engine" tabindex="0">
+        <p class="hm-sub" data-i18n="home.engine.sub">What would take you hours in a spreadsheet and a lot of judgment — done in seconds, the same way every time.</p>
+        <ol class="hm-engine">
+          <li><span class="hm-engine-num" aria-hidden="true">01</span><h3 data-i18n="home.engine.1.title">Drops what doesn't qualify</h3><p data-i18n="home.engine.1.body">Out go the passes that miss your minimums for profit, drawdown and trades.</p></li>
+          <li><span class="hm-engine-num" aria-hidden="true">02</span><h3 data-i18n="home.engine.2.title">Doesn't trust the Result column</h3><p data-i18n="home.engine.2.body">It measures quality with objective metrics, not with what you optimized for.</p></li>
+          <li><span class="hm-engine-num" aria-hidden="true">03</span><h3 data-i18n="home.engine.3.title">Checks the neighbors</h3><p data-i18n="home.engine.3.body">Inside the plateau it picks what holds in both periods alongside its neighbors, not the peak.</p></li>
+          <li><span class="hm-engine-num" aria-hidden="true">04</span><h3 data-i18n="home.engine.4.title">Checks it against the forward</h3><p data-i18n="home.engine.4.body">What holds up in the forward moves up; what falls apart moves down.</p></li>
+          <li><span class="hm-engine-num" aria-hidden="true">05</span><h3 data-i18n="home.engine.5.title">Estimates how much could be chance</h3><p data-i18n="home.engine.5.body">It warns you if your result doesn't beat what pure chance would produce.</p></li>
+          <li><span class="hm-engine-num" aria-hidden="true">06</span><h3 data-i18n="home.engine.6.title">Tests itself</h3><p data-i18n="home.engine.6.body">It checks that the recommendation doesn't depend on its own settings.</p></li>
+        </ol>
+        <p class="hm-more"><a href="methodology/" data-i18n="home.engine.more">Read more: the method step by step →</a></p>
+      </div>
+      <div class="hm-pane" role="tabpanel" id="hm-pane-proof" aria-labelledby="hm-tab-proof" tabindex="0">
+        <p class="hm-sub" data-i18n="home.proof.short">Sometimes its most valuable answer is “there is nothing here”. You do not have to take our word for it:</p>
+        <ul class="hm-proof-grid">
+          <li><h3 data-i18n="home.proof.1.title">The code is public</h3><p data-i18n="home.proof.1.body">Every calculation the engine makes can be read on GitHub. No black box.</p><a href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" data-i18n="home.proof.1.link">See the code →</a></li>
+          <li><h3 data-i18n="home.proof.2.title">The method is published</h3><p data-i18n="home.proof.2.body">Step by step and with its limits: what it does and what it does not do.</p><a href="methodology/" data-i18n="home.proof.2.link">Read the method →</a></li>
+          <li><h3 data-i18n="home.proof.3.title">Check that your files stay with you</h3><p data-i18n="home.proof.3.body">Open your browser’s developer tools, Network tab, while you analyze: you will only see the site’s own files and an anonymous usage count. Your files are not sent anywhere.</p><a href="privacy/" data-i18n="home.proof.3.link">Privacy →</a></li>
+          <li><h3 data-i18n="home.proof.4.title">Tested before every release</h3><p data-i18n="home.proof.4.body">Before going live, each version passes hundreds of automated checks, including runs on data where the right answer is known in advance.</p></li>
+        </ul>
+      </div>
+      <div class="hm-pane hm-ai" role="tabpanel" id="hm-pane-ai" aria-labelledby="hm-tab-ai" tabindex="0">
+        <p class="hm-ai-lead" data-i18n="home.ai.lead">An AI always has an answer. Orometra only gives you the one your data can defend.</p>
+        <table class="hm-vs">
+          <thead><tr><td></td><th scope="col" class="hm-vs-ai" data-i18n="home.ai.col.ai">An AI chat</th><th scope="col" class="hm-vs-oro" data-i18n="home.ai.col.oro">Orometra</th></tr></thead>
+          <tbody>
+            <tr><th scope="row" data-i18n="home.ai.1.k">Same table, another day</th><td class="hm-vs-ai" data-i18n="home.ai.1.ai">It can change its answer depending on how you ask</td><td class="hm-vs-oro" data-i18n="home.ai.1.oro">Always the same answer</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.2.k">The method</th><td class="hm-vs-ai" data-i18n="home.ai.2.ai">Improvised in each conversation</td><td class="hm-vs-oro" data-i18n="home.ai.2.oro">Fixed, published and tested</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.3.k">The numbers</th><td class="hm-vs-ai" data-i18n="home.ai.3.ai">It can make up a figure without warning you</td><td class="hm-vs-oro" data-i18n="home.ai.3.oro">Every figure comes from your data and can be checked</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.4.k">When the data can't support a conclusion</th><td class="hm-vs-ai" data-i18n="home.ai.4.ai">It answers anyway, with full confidence</td><td class="hm-vs-oro" data-i18n="home.ai.4.oro">It tells you: insufficient evidence</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.5.k">Your strategy</th><td class="hm-vs-ai" data-i18n="home.ai.5.ai">Uploaded to another company's servers</td><td class="hm-vs-oro" data-i18n="home.ai.5.oro">Never leaves your computer</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.6.k">What you get</th><td class="hm-vs-ai" data-i18n="home.ai.6.ai">Text</td><td class="hm-vs-oro" data-i18n="home.ai.6.oro">A configuration, its evidence level and a .set for MT5</td></tr>
+          </tbody>
+        </table>
+        <p class="hm-ai-close"><span data-i18n="home.ai.close">Use AI to understand the report. To decide which configuration you risk your money on, use a criterion that doesn't change.</span> <a href="methodology/#ia" data-i18n="home.ai.more">Read the full explanation →</a></p>
+      </div>
+    </div>
   </section>
 
   <!-- 4. Preguntas frecuentes -->
@@ -242,11 +232,9 @@ ATR_TP=4</pre>
     </div>
     <div class="hm-faq" aria-labelledby="hm-faq-title">
       <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n-html="home.faq.1.a">The XML exports of your MT5 optimization: the results tab (in-sample) and, if you enabled forward, the forward tab too. The .opt file does not work. <a href="/guides/export-mt5-optimization-xml/">Step-by-step guide</a>.</p></details>
-      <details><summary data-i18n="home.faq.2.q">Do I need the forward period?</summary><p data-i18n="home.faq.2.a">No, but it is highly recommended. Without it, Orometra analyzes the in-sample only and the evidence cannot go beyond weak.</p></details>
       <details><summary data-i18n="home.faq.8.q">How much does it cost?</summary><p data-i18n="home.faq.8.a">Right now, nothing: in this phase Orometra is free, with no sign-up and no card. If paid features come later, they will be announced in advance.</p></details>
       <details><summary data-i18n="home.faq.4.q">What happens to my data?</summary><p data-i18n-html="home.faq.4.a">Nothing leaves your computer: the analysis runs in your browser. We only count, anonymously, visits and how often each feature is used. Details in the <a href="privacy/">privacy page</a>.</p></details>
       <details><summary data-i18n="home.faq.6.q">What does it not do?</summary><p data-i18n="home.faq.6.a">It does not predict the market, guarantee returns or turn a weak EA into a good one. With genetic optimization it is more cautious, and tells you so.</p></details>
-      <details><summary data-i18n="home.faq.7.q">And after that?</summary><p data-i18n="home.faq.7.a">Test the configuration on a period you have not used. Orometra reads that backtest report and tells you whether the result is normal for your EA, with a Monte Carlo on your own trades.</p></details>
     </div>
   </section>
 

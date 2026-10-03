@@ -1775,25 +1775,7 @@ html.i18n-pending body{visibility:hidden}
   flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
   background:var(--info);color:var(--bg);font-size:11.5px;font-weight:800;line-height:1;
 }
-/* Debajo de la tarjeta: las tres explicaciones y el .set, en una fila. */
-.hm-take-side{display:grid;grid-template-columns:minmax(0,3fr) minmax(220px,1fr);gap:28px;align-items:start}
-.hm-take-legend{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
-.hm-take-legend li{display:flex;gap:12px;align-items:flex-start;min-width:0}
-.hm-take-legend .hm-take-n{width:24px;height:24px;font-size:12.5px;margin-top:1px}
-.hm-take-legend strong{display:block;color:var(--text-hi);font-size:16px;letter-spacing:-.01em}
-.hm-take-legend p{margin:4px 0 0;color:var(--text-2);line-height:1.55;font-size:14.5px}
-.hm-take-set{
-  margin:0;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);
-  font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--text-hi);white-space:pre;overflow:auto;
-}
-.hm-take-set-name{display:block;margin-bottom:6px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--muted-2)}
-.hm-take-side .hm-more{grid-column:1 / -1;margin-top:0}
-@media (max-width:980px){
-  .hm-take-side{grid-template-columns:1fr}
-  .hm-take-set{max-width:360px}
-}
 @media (max-width:720px){
-  .hm-take-legend{grid-template-columns:1fr;gap:18px}
   .hm-take-card .vx-steps{grid-template-columns:1fr;gap:10px}
 }
 
@@ -2142,3 +2124,34 @@ html,body{overflow-x:clip}
 .photo-head .ghost-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28);color:#f4f1ea}
 @media (max-width:640px){.photo-head{border-radius:24px;min-height:360px}}
 :root:not([data-theme="light"]) .hm-final.has-photo :is(h2,p,li){text-shadow:0 1px 12px rgba(8,12,20,.6)}
+
+/* ======================================================================
+   Portada corta (2026-10): «Lo que hay detrás del resultado» en pestañas.
+   Sin JS no hay barra y se ven los cuatro paneles seguidos.
+   ====================================================================== */
+.hm-tablist{
+  display:flex;gap:4px;width:fit-content;max-width:100%;margin:0 auto 36px;padding:5px;
+  border:1px solid var(--line);border-radius:999px;background:var(--surface);
+}
+[data-tabs]:not(.is-ready) .hm-tablist{display:none}
+.hm-tablist [role="tab"]{
+  appearance:none;border:0;background:none;cursor:pointer;min-height:44px;padding:0 20px;
+  border-radius:999px;font:600 15px/1 var(--font);color:var(--text-2);white-space:nowrap;
+}
+.hm-tablist [role="tab"]:hover{color:var(--text-hi)}
+.hm-tablist [role="tab"][aria-selected="true"]{background:var(--navy);color:var(--text-hi);box-shadow:inset 0 0 0 1px var(--navy-line)}
+.hm-tablist [role="tab"]:focus-visible,.hm-pane:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.hm-tabs{max-width:1056px;margin:0 auto}
+.hm-pane{min-width:0}
+[data-tabs]:not(.is-ready) .hm-pane + .hm-pane{margin-top:56px}
+.hm-pane > .hm-sub:first-child{margin-top:0}
+.hm-more-sec .hm-more{text-align:center}
+@media (max-width:640px){
+  .hm-tablist{display:grid;grid-template-columns:1fr 1fr;width:100%;border-radius:22px}
+  .hm-tablist [role="tab"]{border-radius:17px;padding:0 10px;font-size:14.5px}
+}
+@media (max-width:640px){
+  .hm-pane .hm-steps{gap:20px}
+  .hm-pane .hm-steps li{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:12px;align-items:start}
+  .hm-pane .hm-steps .hm-num{grid-row:span 2;margin:0}
+}

@@ -224,9 +224,41 @@ function openAiDetails() {
   if (d && location.hash === '#ia') d.open = true;
 }
 
+// Portada: «Lo que hay detrás del resultado» en pestañas. Sin JS se ven los cuatro paneles
+// seguidos; con JS, uno cada vez. Teclado como en el patrón de pestañas de la WAI: flechas,
+// Inicio y Fin mueven y activan.
+function mountTabs() {
+  $$('[data-tabs]').forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll('[role="tab"]'));
+    const panes = tabs.map((tb) => document.getElementById(tb.getAttribute('aria-controls')));
+    function select(i, focus) {
+      tabs.forEach((tb, j) => {
+        const on = i === j;
+        tb.setAttribute('aria-selected', String(on));
+        tb.tabIndex = on ? 0 : -1;
+        panes[j].hidden = !on;
+      });
+      if (focus) tabs[i].focus();
+    }
+    tabs.forEach((tb, i) => {
+      tb.addEventListener('click', () => select(i, false));
+      tb.addEventListener('keydown', (e) => {
+        const last = tabs.length - 1;
+        const to = { ArrowRight: i === last ? 0 : i + 1, ArrowLeft: i === 0 ? last : i - 1, Home: 0, End: last }[e.key];
+        if (to === undefined) return;
+        e.preventDefault();
+        select(to, true);
+      });
+    });
+    select(Math.max(0, tabs.findIndex((tb) => tb.getAttribute('aria-selected') === 'true')), false);
+    root.classList.add('is-ready');
+  });
+}
+
 mountMobileMenu();
 markCurrentSection();
 mountGuideRail();
+mountTabs();
 openAiDetails();
 window.addEventListener('hashchange', openAiDetails);
 syncLang();
