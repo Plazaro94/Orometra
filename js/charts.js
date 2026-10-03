@@ -255,6 +255,13 @@ export function plateauHeatmap(analysis, dimA, dimB) {
   // el ancho de referencia, el texto sale al mismo tamano fisico en toda la pestana.
   const W = Math.max(620, pad.l + la.length * cw + pad.r);
   const H = pad.t + lb.length * ch + pad.b;
+  // Color por tramos del rango observado (no por opacidad del valor bruto): con calidades
+  // de 0,23 a 0,62 todo salía del mismo gris y las cifras no se leían. Seis tonos reales,
+  // y la cifra en claro u oscuro según el tono de su celda.
+  const meds = cells.flat().filter((v) => v.length).map((v) => median(v));
+  const lo = meds.length ? Math.min(...meds) : 0;
+  const hi = meds.length ? Math.max(...meds) : 1;
+  const step = (m) => (hi > lo ? Math.min(5, Math.floor(((m - lo) / (hi - lo)) * 6)) : 5);
   let body = '';
   for (let a = 0; a < la.length; a++) {
     for (let b = 0; b < lb.length; b++) {
@@ -266,14 +273,15 @@ export function plateauHeatmap(analysis, dimA, dimB) {
         continue;
       }
       const m = median(vals);
-      const opacity = Math.max(0.06, Math.min(1, m));
-      body += `<rect class="hm-cell" style="opacity:${opacity.toFixed(3)}" x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2"><title>${esc(analysis.meta.paramNames[dimA])}=${esc(String(la[a]))}, ${esc(analysis.meta.paramNames[dimB])}=${esc(String(lb[b]))}\ncalidad mediana ${m.toFixed(3)} (${vals.length} configs)</title></rect>`;
-      if (cw >= 40) body += `<text class="hm-text" x="${x + (cw - 2) / 2}" y="${y + ch / 2 + 4}" text-anchor="middle">${fmt2(m)}</text>`;
+      const k = step(m);
+      body += `<rect class="hm-cell hm-c${k}" x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2"><title>${esc(analysis.meta.paramNames[dimA])}=${esc(String(la[a]))}, ${esc(analysis.meta.paramNames[dimB])}=${esc(String(lb[b]))}\ncalidad mediana ${m.toFixed(3)} (${vals.length} configs)</title></rect>`;
+      if (cw >= 40) body += `<text class="hm-text${k >= 4 ? ' hm-text-on' : ''}" x="${x + (cw - 2) / 2}" y="${y + ch / 2 + 4}" text-anchor="middle">${fmt2(m)}</text>`;
     }
   }
   const xl = la.map((v, a) => `<text class="ch-tick" x="${pad.l + a * cw + (cw - 2) / 2}" y="${H - pad.b + 14}" text-anchor="middle">${esc(formatTick(v))}</text>`).join('');
   const yl = lb.map((v, b) => `<text class="ch-tick" x="${pad.l - 8}" y="${pad.t + (lb.length - 1 - b) * ch + ch / 2 + 3}" text-anchor="end">${esc(formatTick(v))}</text>`).join('');
-  return `${svgOpen(W, H, L(`Calidad mediana de cada par de valores de ${analysis.meta.paramNames[dimA]} y ${analysis.meta.paramNames[dimB]}.`, `Median quality of each pair of values of ${analysis.meta.paramNames[dimA]} and ${analysis.meta.paramNames[dimB]}.`))}
+  const scale = `<div class="hm-legend" aria-hidden="true"><span>${esc(L('Calidad mediana', 'Median quality'))}</span><span>${fmt2(lo)}</span><span class="hm-ramp">${[0, 1, 2, 3, 4, 5].map((i) => `<i class="hm-c${i}"></i>`).join('')}</span><span>${fmt2(hi)}</span></div>`;
+  return `${scale}${svgOpen(W, H, L(`Calidad mediana de cada par de valores de ${analysis.meta.paramNames[dimA]} y ${analysis.meta.paramNames[dimB]}.`, `Median quality of each pair of values of ${analysis.meta.paramNames[dimA]} and ${analysis.meta.paramNames[dimB]}.`))}
     ${body}${xl}${yl}
     <text class="ch-axis-label" x="${pad.l + (la.length * cw) / 2}" y="${H - 6}" text-anchor="middle">${esc(analysis.meta.paramNames[dimA])}</text>
     <text class="ch-axis-label" x="14" y="${pad.t + (lb.length * ch) / 2}" text-anchor="middle" transform="rotate(-90 14 ${pad.t + (lb.length * ch) / 2})">${esc(analysis.meta.paramNames[dimB])}</text>

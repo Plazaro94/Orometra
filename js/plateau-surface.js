@@ -61,21 +61,24 @@ export function mountPlateauSurface(canvas, grid, { onHover, label } = {}) {
   const BLACK = [0, 0, 0];
   const SANS = '"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif';
 
-  // La misma paleta que el relieve de la portada: el turquesa es solo de la meseta y
-  // se intensifica con la calidad; el resto es neutro.
+  // El color es solo de la meseta y se intensifica con la calidad; el resto es un gris
+  // oscuro neutro, para que la meseta se distinga de un vistazo también en el tema
+  // oscuro (antes las dos eran gris azulado). La pasada elegida, en lima: es la
+  // configuración recomendada.
   function theme() {
     const isLight = root.dataset.theme === 'light';
     const bg = parse(cssColor(root, '--surface', isLight ? '#ffffff' : '#1b212f'), isLight ? [255, 255, 255] : [27, 33, 47]);
     const ok = parse(cssColor(root, '--ok', isLight ? '#1f58ad' : '#74a6f1'), isLight ? [31, 88, 173] : [116, 166, 241]);
     const muted = parse(cssColor(root, '--muted-3', isLight ? '#51565d' : '#96a2b4'), [150, 162, 180]);
     const text = parse(cssColor(root, '--text', isLight ? '#14181d' : '#eaf1f9'), [234, 241, 249]);
+    const pick = parse(cssColor(root, '--lime-fill', isLight ? '#c6ec3c' : '#d4f25c'), isLight ? [198, 236, 60] : [212, 242, 92]);
     return {
-      isLight, bg, ok, muted, text,
+      isLight, bg, ok, muted, text, pick,
       bg2: parse(cssColor(root, '--surface-2', isLight ? '#eef1f5' : '#131c2f'), [19, 28, 47]),
       line: parse(cssColor(root, '--line', isLight ? '#d9dee5' : '#24314a'), [36, 49, 74]),
       // Tono de la cara superior según la calidad (t de 0 a 1).
-      plateauTop: (t) => (isLight ? mix(mix(bg, ok, 0.35), ok, t) : mix(mix(bg, ok, 0.4), mix(ok, WHITE, 0.15), t)),
-      groundTop: (t) => (isLight ? mix(mix(bg, muted, 0.16), mix(bg, muted, 0.42), t) : mix(mix(bg, [120, 138, 168], 0.22), mix(bg, [150, 168, 196], 0.5), t)),
+      plateauTop: (t) => (isLight ? mix(mix(bg, ok, 0.35), ok, t) : mix(mix(bg, ok, 0.62), mix(ok, WHITE, 0.3), t)),
+      groundTop: (t) => (isLight ? mix(mix(bg, muted, 0.16), mix(bg, muted, 0.42), t) : mix(mix(bg, [128, 136, 152], 0.12), mix(bg, [128, 136, 152], 0.3), t)),
     };
   }
 
@@ -186,7 +189,8 @@ export function mountPlateauSurface(canvas, grid, { onHover, label } = {}) {
       const base = c.map(([u, v]) => P(u, v, 0));
       const top = c.map(([u, v]) => P(u, v, h));
       const t = cell.inPlateau ? (qSpan ? (cell.quality - qMin) / qSpan : 1) : (cell.quality - allMin) / allSpan;
-      const topCol = cell.inPlateau ? th.plateauTop(t) : th.groundTop(t);
+      const isPick = repCell[0] === a && repCell[1] === b;
+      const topCol = isPick ? th.pick : cell.inPlateau ? th.plateauTop(t) : th.groundTop(t);
       // Caras laterales visibles: la normal exterior apunta hacia quien mira.
       const sides = [
         { k: [1, 2], nx: cos, nz: sin }, // +u

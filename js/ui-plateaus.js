@@ -234,9 +234,14 @@ function renderPlateauSurfacePanel(a, plateau) {
       </div>
     </div>
     <p class="panel-intro">${L(
-      `La altura es la calidad real de cada pasada en el periodo optimizado. En <strong>turquesa</strong>, las configuraciones que pertenecen a esta meseta (se descubre en el periodo optimizado; el forward solo la valida). El resto de parámetros queda fijo en los valores de la pasada ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
-      `Height is the real quality of each pass on the optimized period. In <strong>teal</strong>, the configurations that belong to this plateau (found on the optimized period; the forward only validates it). The rest of the parameters stay fixed at pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
+      `La altura es la calidad real de cada pasada en el periodo optimizado. En azul, las configuraciones que pertenecen a esta meseta (se descubre en el periodo optimizado; el forward solo la valida), y en lima, la pasada elegida. El resto de parámetros queda fijo en los valores de la pasada ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
+      `Height is the real quality of each pass on the optimized period. In blue, the configurations that belong to this plateau (found on the optimized period; the forward only validates it), and in lime, the chosen pass. The rest of the parameters stay fixed at pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
     )}</p>
+    <div class="chart-legend" role="list">
+      <span class="chart-legend-item" role="listitem"><span class="chart-swatch chart-swatch-plateau" aria-hidden="true"></span>${L('Meseta', 'Plateau')}</span>
+      <span class="chart-legend-item" role="listitem"><span class="chart-swatch chart-swatch-ground" aria-hidden="true"></span>${L('Fuera de la meseta', 'Outside the plateau')}</span>
+      <span class="chart-legend-item" role="listitem"><span class="chart-swatch chart-swatch-pick" aria-hidden="true"></span>${L('Pasada elegida', 'Chosen pass')} ${esc(plateau.record.id)}</span>
+    </div>
     <div class="surface-wrap">
       <canvas id="plateauSurfaceCanvas" role="img" aria-label="${esc(L('Superficie 3D de calidad real para dos parámetros', '3D surface of real quality for two parameters'))}"></canvas>
       <div class="surface-detail" id="surfaceDetail">${renderSurfaceDetail(a, grid, null)}</div>
@@ -424,8 +429,8 @@ export function renderParams(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Mapa', 'Map')}</div><h2>${L('Los dos parámetros más influyentes', 'The two most influential parameters')}</h2></div></div>
       ${plateauHeatmap(a, dimA, dimB)}
       <p class="chart-note">${L(
-        'Calidad mediana de cada par de valores. Las manchas claras contiguas son mesetas; una celda clara rodeada de oscuras es un pico.',
-        'Median quality of each pair of values. Contiguous light areas are plateaus; a light cell surrounded by dark ones is a peak.',
+        'Calidad mediana de cada par de valores, del tono más suave (peor) al más intenso (mejor). Una zona contigua de valores altos es una meseta; una celda alta rodeada de bajas es un pico.',
+        'Median quality of each pair of values, from the softest shade (worst) to the strongest (best). A contiguous zone of high values is a plateau; a high cell surrounded by low ones is a peak.',
       )}</p>
     </section>
     <section class="panel">
@@ -733,9 +738,10 @@ export function renderSensitivityPanel(a) {
   if (!rows.length) return '';
   const floor = 0.12;
   const sorted = [...rows].sort((x, y) => (y.effective || 0) - (x.effective || 0));
-  const role = (j) => (a.meta.activeDims.includes(j) ? `<span class="role dist">${L('distancia', 'distance')}</span>`
-    : a.meta.blockDims.includes(j) ? `<span class="role block">${L('partición', 'partition')}</span>`
-      : `<span class="role flat">${L('ignorado', 'ignored')}</span>`);
+  // Mismas palabras que la tabla de parámetros (roleBadge): un concepto, un nombre.
+  const role = (j) => (a.meta.activeDims.includes(j) ? `<span class="role dist">${L('cuenta para buscar vecinos', 'counts when finding neighbors')}</span>`
+    : a.meta.blockDims.includes(j) ? `<span class="role block">${L('solo vecinos si coincide', 'neighbors only if equal')}</span>`
+      : `<span class="role flat">${L('se ignora', 'ignored')}</span>`);
   return `<section class="panel">
     <div class="panel-head compact">
       <div><div class="panel-kicker">${L('Diagnóstico', 'Diagnostics')}</div><h2>${L('Cuánto influye cada parámetro', 'How much each parameter influences')}</h2></div>

@@ -380,7 +380,10 @@ export function renderPreflight() {
         'Key columns are missing: the corresponding minimums will not be applied and the verdict will not be reliable. See the notice on the card.',
       );
     }
-    note.classList.toggle('is-warn', hasError || hasMissing);
+    // Un archivo que no se puede leer es un error (rojo, como su ficha); unas columnas
+    // que faltan, un aviso (ámbar).
+    note.classList.toggle('is-danger', hasError);
+    note.classList.toggle('is-warn', !hasError && hasMissing);
   }
 }
 
@@ -400,7 +403,7 @@ export function refreshAnalyzeButton() {
     : reading
       ? t('preflight.title.reading')
       : preflightBlocked
-      ? t('preflight.note.warn')
+      ? t('analyze.blocked')
       : !hasOos
         ? t('analyze.needOos')
         : t('analyze.ready');
