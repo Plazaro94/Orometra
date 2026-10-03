@@ -24,23 +24,24 @@ async function loadPlaywright() {
 }
 
 const COPY = {
-  en: { url: '/', file: 'og-image.jpg', title: 'Separate the fragile from the stable in your MT5 optimization.', lead: 'Orometra tells you which configuration of your EA is stable and how much evidence backs it.' },
-  es: { url: '/es/', file: 'og-image-es.jpg', title: 'Separa lo frágil de lo estable en tu optimización de MT5.', lead: 'Orometra te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.' },
+  en: { url: '/', file: 'og-image.jpg', title: 'Separate the fragile <em>from the stable.</em>', lead: 'Orometra analyzes your MT5 optimization and tells you which configuration of your EA is stable and how much evidence backs it.' },
+  es: { url: '/es/', file: 'og-image-es.jpg', title: 'Separa lo frágil <em>de lo estable.</em>', lead: 'Orometra analiza tu optimización de MT5 y te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.' },
 };
 
 // Fuentes e icono incrustados: la tarjeta se monta en una página en blanco, y desde ahí el
 // navegador no carga fuentes de otro origen.
 const inline = (file, type) => `data:${type};base64,${fs.readFileSync(path.join(ROOT, file)).toString('base64')}`;
-const font = (w) => `@font-face{font-family:Plex;font-weight:${w};src:url(${inline(`fonts/ibm-plex-sans-${w}.woff2`, 'font/woff2')})}`;
+const font = (w) => `@font-face{font-family:Plex;font-weight:${w};src:url(${inline(`fonts/source-sans-3-${w}.woff2`, 'font/woff2')})}`;
 
 const card = (c, img) => `<!doctype html><html><head><meta charset="utf-8"><style>
-${font(400)}${font(600)}${font(700)}
+${font(400)}${font(600)}${font(700)}@font-face{font-family:Serif;font-style:italic;font-weight:600;src:url(${inline('fonts/source-serif-4-600-italic.woff2', 'font/woff2')})}
 *{box-sizing:border-box;margin:0}
 body{width:1200px;height:630px;overflow:hidden;background:#1b1c1f;font-family:Plex,sans-serif;color:#e8e4dd;
   display:grid;grid-template-columns:500px 1fr;align-items:center;padding:0 44px 0 64px;gap:30px}
 .brand{display:flex;align-items:center;gap:14px;font-weight:600;font-size:28px;margin-bottom:34px}
 .brand img{width:52px;height:52px;border-radius:12px;background:#2a2b30;padding:6px}
-h1{font-weight:700;font-size:48px;line-height:1.1;letter-spacing:-.01em}
+h1{font-weight:700;font-size:58px;line-height:1.04;letter-spacing:-.02em}
+h1 em{display:block;font-family:Serif,serif;font-style:italic;font-weight:600}
 p{margin-top:24px;font-size:24px;line-height:1.4;color:#aba7a0}
 .url{margin-top:34px;font-weight:600;font-size:22px;color:#cfe06a}
 .art{display:block;width:100%;border-radius:22px;box-shadow:0 0 0 1px rgba(255,255,255,.08)}

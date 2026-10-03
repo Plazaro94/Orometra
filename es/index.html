@@ -25,18 +25,18 @@
 <meta property="og:title" content="Orometra · Detecta la sobreoptimización de tu EA en MT5">
 <meta property="og:description" content="Separa lo frágil de lo estable en tu optimización de MT5: Orometra te dice qué configuración de tu EA es estable —la meseta, no el pico aislado— y cuánta evidencia la respalda, directamente en tu navegador.">
 <meta property="og:locale" content="es_ES">
-<meta property="og:image" content="https://orometra.com/og-image-es.jpg?v=5">
+<meta property="og:image" content="https://orometra.com/og-image-es.jpg?v=6">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Orometra · Detecta la sobreoptimización de tu EA en MT5">
 <meta name="twitter:description" content="Separa lo frágil de lo estable en tu optimización de MT5: Orometra te dice qué configuración de tu EA es estable —la meseta, no el pico aislado— y cuánta evidencia la respalda, directamente en tu navegador.">
-<meta name="twitter:image" content="https://orometra.com/og-image-es.jpg?v=5">
+<meta name="twitter:image" content="https://orometra.com/og-image-es.jpg?v=6">
 <meta name="color-scheme" content="dark">
-<link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/ibm-plex-sans-600.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/ibm-plex-sans-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles.css">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","description":"Separa lo frágil de lo estable en tu optimización de MT5: Orometra te dice qué configuración de tu EA es estable —la meseta, no el pico aislado— y cuánta evidencia la respalda, directamente en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js"></script>
@@ -48,6 +48,7 @@
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
 
+<div class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> Tus archivos no salen de tu ordenador · Gratis y sin registro</p></div>
 <header class="lp-top">
   <div class="lp-shell">
     <a class="lp-brand" href="/es/">
@@ -79,13 +80,12 @@
   <section class="hm-hero" aria-labelledby="hm-title">
     <div class="hm-hero-copy">
       <p class="hm-eyebrow" data-i18n="home.eyebrow">Análisis de sobreoptimización · MetaTrader 5</p>
-      <h1 id="hm-title" data-i18n="home.h1">Separa lo frágil de lo estable en tu optimización de MT5.</h1>
-      <p class="hm-lead" data-i18n="home.lead">Orometra te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.</p>
+      <h1 id="hm-title" data-i18n-html="home.h1">Separa lo frágil <em>de lo estable.</em></h1>
+      <p class="hm-lead" data-i18n="home.lead">Orometra analiza tu optimización de MT5 y te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.</p>
       <div class="hm-actions">
-        <a class="primary-btn hm-cta" href="/app/" data-i18n="lp.cta">Analizar mis resultados</a>
+        <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-i18n="lp.cta">Analizar mis resultados</a><a class="hm-go" href="/app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
         <a class="ghost-btn hm-cta" href="/app/?demo=1" data-i18n="home.demo">Ver un informe de ejemplo</a>
       </div>
-      <p class="hm-trust" data-i18n="home.trust">Gratis · Sin registro · Tus archivos no salen de tu ordenador</p>
     </div>
     <div class="hm-hero-visual">
       <div class="lp-surface" id="heroSurfaceHost" tabindex="0" role="button" data-i18n="lp.surface.aria" data-i18n-attr="aria-label" aria-label="Superficie de parámetros: en un periodo de mercado nuevo cae el pico que MT5 pone primero y la meseta estable aguanta">
@@ -254,7 +254,15 @@ ATR_TP=4</pre>
   <section class="hm-final">
     <h2 data-i18n="home.final.title">¿Lo pruebas?</h2>
     <p data-i18n="home.final.body">Suelta aquí tu optimización y míralo en un minuto. No se sube nada.</p>
-    <a class="primary-btn hm-cta" href="/app/" data-i18n="lp.cta">Analizar mis resultados</a>
+    <ul class="hm-checks">
+      <li data-i18n="home.final.c1">Gratis y sin registro</li>
+      <li data-i18n="home.final.c2">Tus archivos no salen de tu ordenador</li>
+      <li data-i18n="home.final.c3">Un .set listo para cargar en MT5</li>
+      <li data-i18n="home.final.c4">Cuatro niveles de evidencia, explicados</li>
+      <li data-i18n="home.final.c5">Optimizaciones completas y genéticas</li>
+      <li data-i18n="home.final.c6">Comprueba tu backtest en un periodo no visto</li>
+    </ul>
+    <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-i18n="lp.cta">Analizar mis resultados</a><a class="hm-go" href="/app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
   </section>
 </main>
 
