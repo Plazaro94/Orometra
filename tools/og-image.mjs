@@ -36,13 +36,13 @@ const font = (w) => `@font-face{font-family:Plex;font-weight:${w};src:url(${inli
 const card = (c, img) => `<!doctype html><html><head><meta charset="utf-8"><style>
 ${font(400)}${font(600)}${font(700)}
 *{box-sizing:border-box;margin:0}
-body{width:1200px;height:630px;overflow:hidden;background:#0c0d0f;font-family:Plex,sans-serif;color:#e6e7e9;
+body{width:1200px;height:630px;overflow:hidden;background:#1b1c1f;font-family:Plex,sans-serif;color:#e8e4dd;
   display:grid;grid-template-columns:500px 1fr;align-items:center;padding:0 44px 0 64px;gap:30px}
 .brand{display:flex;align-items:center;gap:14px;font-weight:600;font-size:28px;margin-bottom:34px}
-.brand img{width:52px;height:52px;border-radius:12px;background:#191a1d;padding:6px}
+.brand img{width:52px;height:52px;border-radius:12px;background:#2a2b30;padding:6px}
 h1{font-weight:700;font-size:48px;line-height:1.1;letter-spacing:-.01em}
-p{margin-top:24px;font-size:24px;line-height:1.4;color:#a6a9ae}
-.url{margin-top:34px;font-weight:600;font-size:22px;color:#7fc4bd}
+p{margin-top:24px;font-size:24px;line-height:1.4;color:#aba7a0}
+.url{margin-top:34px;font-weight:600;font-size:22px;color:#cfe06a}
 .art{display:block;width:100%;border-radius:22px;box-shadow:0 0 0 1px rgba(255,255,255,.08)}
 </style></head><body>
 <div><div class="brand"><img src="${inline('favicon.svg', 'image/svg+xml')}" alt="">Orometra</div>
