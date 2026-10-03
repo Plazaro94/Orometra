@@ -20,27 +20,27 @@
    * El oliva del veredicto es amarillento y apagado; el verde del dinero, más azulado. Que
    * no se confundan: el oliva nunca va en una cifra de dinero.
    */
-  --bg:#1b1c1f;          --surface:#222327;     --surface-2:#2a2b30;   --surface-3:#313238;
-  --line-soft:#26272b;   --line:#34363b;        --line-strong:#45474d;
+  --bg:#101520;          --surface:#161c29;     --surface-2:#1d2332;   --surface-3:#252d3e;
+  --line-soft:#1b212f;   --line:#2c3344;        --line-strong:#41495d;
   /* Los tres "muted" pasaban el mínimo de WCAG AA (4.5:1) sobre --surface, pero caían
    * por debajo sobre --surface-3 (donde vive una insignia o una pestaña activa) y se
    * notaba a poco brillo de pantalla. Recalibrados por contraste, no a ojo: 8/7/6:1
    * sobre el fondo más claro que realmente usan, conservando el matiz y el orden
    * muted > muted-2 > muted-3. */
-  --muted-3:#a19d96;     --muted-2:#aba7a0;     --muted:#b7b3ac;
-  --text-2:#cfcbc4;      --text:#e8e4dd;        --text-hi:#ffffff;
-  --ok-bg:#10262c;       --ok-line:#1d4a55;     --ok:#5ccbe2;     --ok-text:#8fe3f2;     --ok-hi:#d4f6fb;
+  --muted-3:#959db2;     --muted-2:#9fa8bc;     --muted:#acb5c8;
+  --text-2:#ccd2e0;      --text:#e7ebf3;        --text-hi:#ffffff;
+  --ok-bg:#18223a;       --ok-line:#314572;     --ok:#74a6f1;     --ok-text:#9ec3fa;     --ok-hi:#d8e7fd;
   --warn-bg:#2b2410;     --warn-line:#5a4a18;   --warn:#f2c230;   --warn-text:#f6d66a;   --warn-hi:#fbe9b0;
   --danger-bg:#2a1a1a;   --danger-line:#4f2b2a; --danger:#e0706a; --danger-text:#f0a8a3; --danger-hi:#f8d4d1;
-  --info-bg:#161d33;     --info-line:#2f3a5c;   --info:#8fa3e0;   --info-text:#aebcf0;   --info-hi:#d6defa;
+  --info-bg:#1d2435;     --info-line:#394560;   --info:#8e9ec2;   --info-text:#b4bfda;   --info-hi:#dbe1f0;
   --profit:#63c08c;      --loss:#ff5a52;
 
   /* Tokens semánticos del producto (capa de significado, no solo color) */
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#aba7a0; --evidence-weak-bg:#2a2b30; --evidence-weak-line:#3a3c41; --evidence-weak-text:#cfcbc4;
-  --evidence-none:#85888e; --evidence-none-bg:#26272b; --evidence-none-line:#3a3c41; --evidence-none-text:#cfcbc4;
-  --peak:#8a8d93;            --peak-bg:#26272b;            --peak-text:#cfcbc4;
+  --evidence-weak:#9fa8bc; --evidence-weak-bg:#1d2332; --evidence-weak-line:#30384b; --evidence-weak-text:#ccd2e0;
+  --evidence-none:#848a9a; --evidence-none-bg:#1b212f; --evidence-none-line:#30384b; --evidence-none-text:#ccd2e0;
+  --peak:#848a9a;            --peak-bg:#1c212e;            --peak-text:#ccd2e0;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
 
   --accent:var(--ok);    --accent2:var(--info);
@@ -70,8 +70,8 @@
   --control-h:36px;
   --brand-gap:10px;
   /* Botón principal y banda de cabecera (estilo «musgo»): oliva con borde vivo, azul noche */
-  --cta-bg:#8fe3f2; --cta-line:#b5eef7; --cta-text:#06202a; --cta-hover:#aeecf6; --band:#101a2c; --navy:#111a2e; --navy-line:#22304d;
-  --hero-a:#1a2a42; --hero-b:#0f1625;
+  --cta-bg:#9dc3fb; --cta-line:#c4dbfd; --cta-text:#0a1329; --cta-hover:#bad5fc; --band:#0a0f1a; --navy:#0a0f1a; --navy-line:#1d2639;
+  --hero-a:#1f2b47; --hero-b:#0f1524;
   color-scheme:dark;
 }
 
@@ -95,23 +95,23 @@
  * Blanco roto cálido, negro casi puro y el mismo acento en oliva oscuro. Mismas reglas
  * de color que el tema oscuro. */
 [data-theme="light"]{
-  --bg:#f6f5f1;          --surface:#ffffff;     --surface-2:#f0efea;   --surface-3:#e7e5df;
-  --line-soft:#ecebe6;   --line:#dddbd4;        --line-strong:#bdbab2;
-  --muted-3:#57544e;     --muted-2:#4d4a45;     --muted:#44423d;
-  --text-2:#35332f;      --text:#1b1c1f;        --text-hi:#000000;
-  --ok-bg:#e3f2f5;       --ok-line:#b3dbe4;     --ok:#0e6a7e;     --ok-text:#0c5d6f;     --ok-hi:#073f4b;
+  --bg:#f4f6fa;          --surface:#ffffff;     --surface-2:#eef0f7;   --surface-3:#e1e5ef;
+  --line-soft:#e7ebf3;   --line:#d5dae7;        --line-strong:#afb7ca;
+  --muted-3:#4e5974;     --muted-2:#444f6a;     --muted:#394560;
+  --text-2:#26314a;      --text:#11192d;        --text-hi:#050a14;
+  --ok-bg:#e9f0fb;       --ok-line:#b6cced;     --ok:#1f58ad;     --ok-text:#194c9a;     --ok-hi:#0f346c;
   --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;   --warn-hi:#5a4200;
   --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c; --danger-hi:#66231f;
-  --info-bg:#eef0fa;     --info-line:#c8d0ec;   --info:#3d55a8;   --info-text:#33489a;   --info-hi:#22336f;
+  --info-bg:#edf0f7;     --info-line:#c8d1e4;   --info:#4b5e8b;   --info-text:#3d4f7b;   --info-hi:#253356;
   --profit:#1d7a4c;      --loss:#b23a2f;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#5f5c56; --evidence-weak-bg:#f0efea; --evidence-weak-line:#d6d4cd; --evidence-weak-text:#44423d;
-  --evidence-none:#7c7973; --evidence-none-bg:#f0efea; --evidence-none-line:#dbd9d2; --evidence-none-text:#4d4a45;
-  --peak:#74716b;            --peak-bg:#efeee9;            --peak-text:#44423d;
+  --evidence-weak:#4e5974; --evidence-weak-bg:#eef0f7; --evidence-weak-line:#d3d8e3; --evidence-weak-text:#394560;
+  --evidence-none:#6a7181; --evidence-none-bg:#eef0f7; --evidence-none-line:#d5dae7; --evidence-none-text:#444f6a;
+  --peak:#6a7181;            --peak-bg:#e7ebf3;            --peak-text:#394560;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
-  --cta-bg:#0e6a7e; --cta-line:#0b5869; --cta-text:#ffffff; --cta-hover:#0c5d6f; --band:#ffffff; --navy:#eceff6; --navy-line:#d5dae6;
-  --hero-a:#e6ecf5; --hero-b:#d9e1ed;
+  --cta-bg:#16213c; --cta-line:#0d1426; --cta-text:#ffffff; --cta-hover:#1f2e51; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
+  --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
 }
 
@@ -187,8 +187,8 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .lang-btn:focus-visible,.theme-btn:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
 .sidebar-bottom .lang-row{margin-bottom:8px}
 .swatch{width:11px;height:11px;border-radius:50%;border:1px solid var(--line-strong);flex:none}
-.swatch.dark{background:#1b1c1f}
-.swatch.light{background:#f6f5f1}
+.swatch.dark{background:#101520}
+.swatch.light{background:#f4f6fa}
 
 /* ------------------------------------------------------------ bloque de entrada */
 .hero{margin:0 0 30px}
@@ -607,16 +607,16 @@ details.panel > .panel-body{padding:0 20px 20px}
    de barra (--s) y uno más claro para su nombre (--t), legible sobre el fondo. */
 /* Los cuatro niveles de evidencia, de insuficiente (1) a sólida (4): el mismo teal que se
    intensifica en el medidor del informe y en la lista de niveles de la metodología. */
-:root{--lv-1:#3a3c41;--lv-2:#4d5056;--lv-3:#e0b33a;--lv-4:#6fd3e8}
-:root[data-theme="light"]{--lv-1:#d6d4cd;--lv-2:#b1aea6;--lv-3:#b98a10;--lv-4:#0e6a7e}
-.vx-seg:nth-child(1){--s:var(--lv-1);--t:#b7b3ac}
-.vx-seg:nth-child(2){--s:var(--lv-2);--t:#cfcbc4}
+:root{--lv-1:#30384b;--lv-2:#4b556c;--lv-3:#e0b33a;--lv-4:#7dacf2}
+:root[data-theme="light"]{--lv-1:#d3d8e3;--lv-2:#a6aebf;--lv-3:#b98a10;--lv-4:#1f58ad}
+.vx-seg:nth-child(1){--s:var(--lv-1);--t:#acb5c8}
+.vx-seg:nth-child(2){--s:var(--lv-2);--t:#ccd2e0}
 .vx-seg:nth-child(3){--s:var(--lv-3);--t:#f6d66a}
-.vx-seg:nth-child(4){--s:var(--lv-4);--t:#a9e9f4}
-:root[data-theme="light"] .vx-seg:nth-child(1){--t:#57544e}
-:root[data-theme="light"] .vx-seg:nth-child(2){--t:#44423d}
+.vx-seg:nth-child(4){--s:var(--lv-4);--t:#9ec3fa}
+:root[data-theme="light"] .vx-seg:nth-child(1){--t:#4e5974}
+:root[data-theme="light"] .vx-seg:nth-child(2){--t:#394560}
 :root[data-theme="light"] .vx-seg:nth-child(3){--t:#7a5a00}
-:root[data-theme="light"] .vx-seg:nth-child(4){--t:#0c5d6f}
+:root[data-theme="light"] .vx-seg:nth-child(4){--t:#194c9a}
 .vx-seg-bar{display:block;height:8px;border-radius:4px;background:var(--line)}
 .vx-seg.is-on .vx-seg-bar{background:var(--s)}
 .vx-seg-name{display:block;margin-top:7px;font-size:12px;line-height:1.3;color:var(--muted-2)}
@@ -1231,23 +1231,23 @@ tr.sel td{color:var(--text-2)}
      ni "--surface" con la esperanza de que valgan lo mismo en los dos temas (en el claro
      son negro y blanco: la página salía en negativo). */
   :root,[data-theme="dark"],[data-theme="light"]{
-  --bg:#f6f5f1;          --surface:#ffffff;     --surface-2:#f0efea;   --surface-3:#e7e5df;
-  --line-soft:#ecebe6;   --line:#dddbd4;        --line-strong:#bdbab2;
-  --muted-3:#57544e;     --muted-2:#4d4a45;     --muted:#44423d;
-  --text-2:#35332f;      --text:#1b1c1f;        --text-hi:#000000;
-  --ok-bg:#e3f2f5;       --ok-line:#b3dbe4;     --ok:#0e6a7e;     --ok-text:#0c5d6f;     --ok-hi:#073f4b;
+  --bg:#f4f6fa;          --surface:#ffffff;     --surface-2:#eef0f7;   --surface-3:#e1e5ef;
+  --line-soft:#e7ebf3;   --line:#d5dae7;        --line-strong:#afb7ca;
+  --muted-3:#4e5974;     --muted-2:#444f6a;     --muted:#394560;
+  --text-2:#26314a;      --text:#11192d;        --text-hi:#050a14;
+  --ok-bg:#e9f0fb;       --ok-line:#b6cced;     --ok:#1f58ad;     --ok-text:#194c9a;     --ok-hi:#0f346c;
   --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;   --warn-hi:#5a4200;
   --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c; --danger-hi:#66231f;
-  --info-bg:#eef0fa;     --info-line:#c8d0ec;   --info:#3d55a8;   --info-text:#33489a;   --info-hi:#22336f;
+  --info-bg:#edf0f7;     --info-line:#c8d1e4;   --info:#4b5e8b;   --info-text:#3d4f7b;   --info-hi:#253356;
   --profit:#1d7a4c;      --loss:#b23a2f;
   --evidence-strong:var(--ok);     --evidence-strong-bg:var(--ok-bg);     --evidence-strong-line:var(--ok-line);     --evidence-strong-text:var(--ok-text);
   --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#5f5c56; --evidence-weak-bg:#f0efea; --evidence-weak-line:#d6d4cd; --evidence-weak-text:#44423d;
-  --evidence-none:#7c7973; --evidence-none-bg:#f0efea; --evidence-none-line:#dbd9d2; --evidence-none-text:#4d4a45;
-  --peak:#74716b;            --peak-bg:#efeee9;            --peak-text:#44423d;
+  --evidence-weak:#4e5974; --evidence-weak-bg:#eef0f7; --evidence-weak-line:#d3d8e3; --evidence-weak-text:#394560;
+  --evidence-none:#6a7181; --evidence-none-bg:#eef0f7; --evidence-none-line:#d5dae7; --evidence-none-text:#444f6a;
+  --peak:#6a7181;            --peak-bg:#e7ebf3;            --peak-text:#394560;
   --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
-  --cta-bg:#0e6a7e; --cta-line:#0b5869; --cta-text:#ffffff; --cta-hover:#0c5d6f; --band:#ffffff; --navy:#eceff6; --navy-line:#d5dae6;
-  --hero-a:#e6ecf5; --hero-b:#d9e1ed;
+  --cta-bg:#16213c; --cta-line:#0d1426; --cta-text:#ffffff; --cta-hover:#1f2e51; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
+  --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
 }
   @page{margin:10mm}
@@ -1843,7 +1843,7 @@ html{zoom:var(--z)}
    grandes con flecha y títulos centrados. Mismo lenguaje que la referencia
    que eligió el usuario (franja azul noche arriba, carbón, oliva y lima).
    ====================================================================== */
-:root{--strip:#101a2c;--strip-text:#d9d6cf;--strip-hi:#8fe3f2;--radius-xl:40px;--radius-lg:24px}
+:root{--strip:#0a0f1a;--strip-text:#ccd2e0;--strip-hi:#9ec3fa;--radius-xl:40px;--radius-lg:24px}
 .lp-strip{background:var(--strip);color:var(--strip-text);font-size:14.5px;line-height:1.4;text-align:center;padding:9px 16px}
 .lp-strip p{margin:0}
 .lp-strip b{color:var(--strip-hi);font-weight:700;margin-right:6px}
@@ -2018,18 +2018,18 @@ html{zoom:var(--z)}
 
 /* Velos: oscuro a la izquierda (donde va el texto) y transparente donde está la cumbre */
 :root{
-  --hero-veil:linear-gradient(90deg,rgba(12,16,26,.82) 0%,rgba(12,16,26,.46) 38%,rgba(12,16,26,0) 66%);
-  --final-veil:radial-gradient(ellipse 52% 62% at 50% 48%,rgba(17,26,46,.8) 0%,rgba(17,26,46,.54) 60%,rgba(17,26,46,.3) 100%);
+  --hero-veil:linear-gradient(90deg,rgba(10,15,26,.82) 0%,rgba(10,15,26,.46) 38%,rgba(10,15,26,0) 66%);
+  --final-veil:radial-gradient(ellipse 52% 62% at 50% 48%,rgba(10,15,26,.8) 0%,rgba(10,15,26,.54) 60%,rgba(10,15,26,.3) 100%);
 }
 :root[data-theme="light"]{
-  --hero-veil:linear-gradient(90deg,rgba(246,245,241,.86) 0%,rgba(246,245,241,.5) 40%,rgba(246,245,241,0) 70%);
+  --hero-veil:linear-gradient(90deg,rgba(244,246,250,.86) 0%,rgba(244,246,250,.5) 40%,rgba(244,246,250,0) 70%);
   --final-veil:radial-gradient(ellipse 52% 62% at 50% 48%,rgba(236,239,246,.9) 0%,rgba(236,239,246,.64) 60%,rgba(236,239,246,.4) 100%);
 }
 @media (max-width:720px){
-  :root{--hero-veil:linear-gradient(180deg,rgba(12,16,26,.5) 0%,rgba(12,16,26,.36) 45%,rgba(12,16,26,.55) 100%)}
+  :root{--hero-veil:linear-gradient(180deg,rgba(10,15,26,.5) 0%,rgba(10,15,26,.36) 45%,rgba(10,15,26,.55) 100%)}
   .hm-hero.has-photo :is(h1,.hm-lead,.hm-eyebrow){text-shadow:0 1px 14px rgba(8,12,20,.55)}
-  :root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead,.hm-eyebrow){text-shadow:0 1px 14px rgba(246,245,241,.7)}
-  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(246,245,241,.6) 0%,rgba(246,245,241,.4) 42%,rgba(246,245,241,.86) 78%,rgba(246,245,241,.92) 100%)}
+  :root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead,.hm-eyebrow){text-shadow:0 1px 14px rgba(244,246,250,.7)}
+  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(244,246,250,.6) 0%,rgba(244,246,250,.4) 42%,rgba(244,246,250,.86) 78%,rgba(244,246,250,.92) 100%)}
   .hm-hero.has-photo{min-height:0}
 }
 
@@ -2054,15 +2054,15 @@ html,body{overflow-x:clip}
 .photo-head{
   position:relative;border-radius:var(--radius-xl);overflow:hidden;
   padding:clamp(28px,5vw,64px);margin:0 0 48px;min-height:clamp(300px,40vh,420px);
-  display:grid;align-content:end;gap:8px;color:#f4f1ea;
-  background:linear-gradient(180deg,rgba(12,16,26,.04) 0%,rgba(12,16,26,.38) 50%,rgba(12,16,26,.82) 100%),var(--ph-img) center/cover no-repeat,#111a2e;
+  display:grid;align-content:end;gap:8px;color:#e7ebf3;
+  background:linear-gradient(180deg,rgba(10,15,26,.04) 0%,rgba(10,15,26,.38) 50%,rgba(10,15,26,.82) 100%),var(--ph-img) center/cover no-repeat,#0a0f1a;
 }
-.photo-head .lp-eyebrow{color:#8fe3f2;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.photo-head .lp-eyebrow{color:#9ec3fa;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
 .photo-head h1{color:#ffffff;margin:0}
 .photo-head :is(h1,.lp-lead,.lp-eyebrow){text-shadow:0 1px 16px rgba(8,12,20,.6)}
-.photo-head .lp-lead{color:#e6e2dc;max-width:62ch;margin:0}
+.photo-head .lp-lead{color:#ccd2e0;max-width:62ch;margin:0}
 .photo-head .lp-doc-cta{margin-top:16px}
-.photo-head .ghost-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28);color:#f4f1ea}
+.photo-head .ghost-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28);color:#e7ebf3}
 @media (max-width:640px){.photo-head{border-radius:24px;min-height:360px}}
 :root:not([data-theme="light"]) .hm-final.has-photo :is(h2,p,li){text-shadow:0 1px 12px rgba(8,12,20,.6)}
 
@@ -2161,7 +2161,7 @@ html,body{overflow-x:clip}
 .hm-hero .hm-lead{margin:0 0 34px;max-width:39ch}
 .hm-hero .hm-actions{margin:0}
 .hm-hero-meta{margin-top:32px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);max-width:420px;display:grid;gap:6px}
-[data-theme="light"] .hm-hero-meta{border-top-color:rgba(17,26,46,.16)}
+[data-theme="light"] .hm-hero-meta{border-top-color:rgba(10,15,26,.16)}
 .hm-hero-meta .hm-eyebrow{margin:0;font-size:12px;letter-spacing:.09em}
 .hm-hero-meta .hm-need{margin:0;font-size:14.5px}
 .hm-hero.has-photo .hm-hero-meta .hm-eyebrow{text-shadow:0 1px 10px rgba(8,12,20,.5)}
@@ -2182,8 +2182,8 @@ svg.brand-mark .bm-top{fill:var(--ok-text)}
 @media (min-width:861px){.hm-section > h2,.hm-final h2{max-width:none}}
 /* Tableta: la frase no pisa la cumbre y la tarjeta no deja aire vacío arriba. */
 @media (min-width:721px) and (max-width:1000px){
-  :root{--hero-veil:linear-gradient(90deg,rgba(12,16,26,.86) 0%,rgba(12,16,26,.66) 55%,rgba(12,16,26,.1) 92%)}
-  :root[data-theme="light"]{--hero-veil:linear-gradient(90deg,rgba(246,245,241,.9) 0%,rgba(246,245,241,.7) 55%,rgba(246,245,241,.1) 92%)}
+  :root{--hero-veil:linear-gradient(90deg,rgba(10,15,26,.86) 0%,rgba(10,15,26,.66) 55%,rgba(10,15,26,.1) 92%)}
+  :root[data-theme="light"]{--hero-veil:linear-gradient(90deg,rgba(244,246,250,.9) 0%,rgba(244,246,250,.7) 55%,rgba(244,246,250,.1) 92%)}
   .hm-hero.has-photo{min-height:0;padding:56px 48px}
   .hm-hero.has-photo .hm-hero-copy{max-width:440px}
   .hm-hero .hm-lead{max-width:none}

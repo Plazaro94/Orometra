@@ -34,7 +34,7 @@ const font = (w) => `@font-face{font-family:Plex;font-weight:${w};src:url(${inli
 const card = (c) => `<!doctype html><html><head><meta charset="utf-8"><style>
 ${font(400)}${font(600)}${font(700)}@font-face{font-family:Serif;font-style:italic;font-weight:600;src:url(${inline('fonts/source-serif-4-600-italic.woff2', 'font/woff2')})}
 *{box-sizing:border-box;margin:0}
-body{width:1200px;height:630px;overflow:hidden;font-family:Plex,sans-serif;color:#f4f1ea;
+body{width:1200px;height:630px;overflow:hidden;font-family:Plex,sans-serif;color:#e7ebf3;
   display:flex;flex-direction:column;justify-content:center;padding:0 72px;
   background:linear-gradient(90deg,rgba(12,16,26,.92) 0%,rgba(12,16,26,.66) 42%,rgba(12,16,26,.08) 74%,rgba(12,16,26,0) 100%),
     url(${inline('img/fotos/portada-oscuro-esc-1400.webp', 'image/webp')}) center 40%/cover no-repeat,#0f1625}
@@ -42,8 +42,8 @@ body{width:1200px;height:630px;overflow:hidden;font-family:Plex,sans-serif;color
 .brand img{width:52px;height:52px;border-radius:12px;background:rgba(255,255,255,.08);padding:6px}
 h1{font-weight:700;font-size:68px;line-height:1.02;letter-spacing:-.02em;max-width:620px}
 h1 em{display:block;font-family:Serif,serif;font-style:italic;font-weight:600}
-p{margin-top:26px;font-size:25px;line-height:1.4;color:#e6e2dc;max-width:560px}
-.url{margin-top:36px;font-weight:700;font-size:22px;color:#8fe3f2;letter-spacing:.02em}
+p{margin-top:26px;font-size:25px;line-height:1.4;color:#ccd2e0;max-width:560px}
+.url{margin-top:36px;font-weight:700;font-size:22px;color:#9ec3fa;letter-spacing:.02em}
 </style></head><body>
 <div class="brand"><img src="${inline('favicon.svg', 'image/svg+xml')}" alt="">Orometra</div>
 <h1>${c.title}</h1><p>${c.lead}</p><div class="url">orometra.com</div></body></html>`;
