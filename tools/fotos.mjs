@@ -25,9 +25,9 @@ function loadSharp() {
 
 // hueco -> original, y los recortes de escritorio (horizontal) y móvil (vertical)
 const FOTOS = {
-  'portada-oscuro': { src: 'portada-oscuro.jpg', desk: [0, 200, 2576, 1472], mob: [605, 0, 1370, 1827] },
+  'portada-oscuro': { src: 'portada-oscuro.jpg', desk: [0, 200, 2576, 1472], mob: [605, 0, 1370, 1827], grado: 'luz' },
   'portada-claro': { src: 'portada-claro.jpg', desk: [0, 520, 1932, 1104], mob: [0, 0, 1932, 2576] },
-  cierre: { src: 'cierre.jpg', desk: [0, 110, 2576, 1220], mob: [795, 0, 915, 1511] },
+  cierre: { src: 'cierre.jpg', desk: [0, 110, 2576, 1220], mob: [795, 0, 915, 1511], grado: 'contraste' },
   guias: { src: 'guias.jpg', desk: [0, 330, 2576, 890], mob: [380, 250, 1700, 1100] },
   404: { src: '404.jpg', desk: [0, 820, 1717, 900], mob: [0, 0, 1717, 2576] },
   // Fotos de contenido (<img> con srcset en la portada), no de fondo: un solo recorte y dos
@@ -44,6 +44,10 @@ async function etalonar(img, grado, width, height) {
     return img.modulate({ saturation: 0.2 }).composite([{ input: capa, blend: 'multiply' }]);
   }
   if (grado === 'dia') return img.modulate({ saturation: 0.15 }).tint({ r: 150, g: 165, b: 200 });
+  // La foto nocturna de la portada, un punto más de luz; el cierre (blanco y negro), más contraste
+  // para que la roca se lea bajo el velo.
+  if (grado === 'luz') return img.modulate({ brightness: 1.14 }).linear(1.08, -8);
+  if (grado === 'contraste') return img.linear(1.18, -18);
   return img;
 }
 // SOLO=nombre regenera solo las fotos cuyo nombre empieza así (la exportación entera tarda).
