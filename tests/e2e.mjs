@@ -82,14 +82,13 @@ try {
     const og = await page.getAttribute('meta[property="og:image"]', 'content');
     check('la imagen para redes es la de la versión en español', /og-image-es\.jpg/.test(og), og);
     // Las páginas públicas ya vienen en su idioma: no descargan los textos de la app.
-    await page.waitForFunction(() => document.querySelector('#heroSurfaceHost[data-surface-state]'), null, { timeout: 15000 }).catch(() => {});
+    await page.waitForLoadState('load');
     const loaded = (re) => page.evaluate((src) => performance.getEntriesByType('resource').some((e) => new RegExp(src).test(e.name)), re.source);
     check('la portada no descarga i18n.js', !(await loaded(/\/js\/i18n\.js/)));
-    check('y el relieve 3D se monta', Boolean(await page.$('#heroSurfaceHost[data-surface-state]')));
+    check('ni código de gráficos 3D', !(await loaded(/hero-surface|hero-terrain|plateau-surface/)));
     await page.goto(`${BASE}/es/guias/sobreoptimizacion-mt5/`);
     await page.waitForSelector('.guide-rail, .lp-menu-btn', { timeout: 10000 }).catch(() => {});
-    check('una guía no descarga el relieve 3D', !(await loaded(/hero-surface/)));
-    check('ni i18n.js', !(await loaded(/\/js\/i18n\.js/)));
+    check('una guía no descarga i18n.js', !(await loaded(/\/js\/i18n\.js/)));
     await page.context().close();
   }
   {

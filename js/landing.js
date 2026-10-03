@@ -54,7 +54,6 @@ $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => {
   }
   setLocale(b.dataset.langSet);
   syncLang();
-  syncSurfaceHint();
   syncNotFoundLinks();
 }));
 // La 404 es una sola página para los dos idiomas: en español, sus enlaces llevan a la
@@ -268,40 +267,5 @@ if (!document.documentElement.hasAttribute('data-lang-fixed')) applyStaticI18n()
 syncNotFoundLinks();
 enhanceRadioGroups();
 
-const fineHover = matchMedia('(hover: hover) and (pointer: fine)');
-function syncSurfaceHint() {
-  const el = document.querySelector('.lp-surface-hint');
-  if (!el) return;
-  el.textContent = fineHover.matches ? t('lp.surface.hint') : t('lp.surface.hint.touch');
-}
-syncSurfaceHint();
-fineHover.addEventListener('change', syncSurfaceHint);
-
 const mark = $('#brandMark');
 if (mark) mountBrandMark(mark);
-const hero = $('#heroSurface');
-// El relieve solo está en la portada: el resto de páginas no descarga su código.
-if (hero) import('./hero-surface.js').then(({ mountHeroSurface }) => {
-  mountHeroSurface(hero, {
-    locale: () => getLocale(),
-    labels: () => ({
-      mt5: t('lp.surface.mt5'),
-      pick: t('lp.surface.pick'),
-      periodA: t('lp.surface.period.a'),
-      periodB: t('lp.surface.period.b'),
-      axisA: t('lp.surface.axis.a'),
-      axisB: t('lp.surface.axis.b'),
-      axisZ: t('lp.surface.axis.z'),
-      neighbors: t('lp.surface.neighbors'),
-    }),
-  });
-});
-
-const live = $('#surfaceLive');
-const host = $('#heroSurfaceHost');
-if (host && live) {
-  host.addEventListener('orometra-surface', (ev) => {
-    const state = ev.detail && ev.detail.state;
-    live.textContent = state === 'plateau' ? t('lp.surface.state.plateau') : t('lp.surface.state.peaks');
-  });
-}
