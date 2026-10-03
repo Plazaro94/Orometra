@@ -24,6 +24,28 @@
   } catch (e) { /* modo privado */ }
   syncThemeColor();
 
+  // Portada: la foto de la tarjeta principal es un fondo CSS, y el navegador no la pide
+  // hasta leer los estilos. Aquí ya se sabe el tema y el ancho, así que se adelanta la
+  // descarga de la versión exacta que va a usar styles.css (mismas consultas de medios y
+  // misma prueba de AVIF), con prioridad alta: es lo más grande de la primera pantalla.
+  try {
+    var me = document.currentScript;
+    if (me && me.hasAttribute('data-hero-photo') && window.matchMedia) {
+      var light = document.documentElement.getAttribute('data-theme') === 'light';
+      var name = light ? 'portada-claro' : 'portada-oscuro';
+      var size = matchMedia('(max-width:720px)').matches ? 'mov-1200'
+        : matchMedia('(min-width:1500px),(min-width:1000px) and (min-resolution:1.5dppx)').matches ? (light ? 'esc-1932' : 'esc-2200')
+        : 'esc-1400';
+      var avif = window.CSS && CSS.supports && CSS.supports('background-image', 'image-set(url("/img/fotos/404-mov-1200.avif") type("image/avif"))');
+      var link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = '/img/fotos/' + name + '-' + size + (avif ? '.avif' : '.webp');
+      link.setAttribute('fetchpriority', 'high');
+      document.head.appendChild(link);
+    }
+  } catch (eHero) { /* sin precarga: la foto llega igual con los estilos */ }
+
   try {
     var root = document.documentElement;
     var stored = null;

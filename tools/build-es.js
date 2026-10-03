@@ -118,6 +118,7 @@ function jsonLd(page, locale, pagePath) {
       org,
       { '@type': 'WebSite', '@id': `${home}#website`, url: home, name: 'Orometra', inLanguage: lang, publisher: { '@id': `${ORIGIN}/#org` } },
       { '@type': 'SoftwareApplication', name: 'Orometra', url: `${ORIGIN}/app/`, applicationCategory: 'FinanceApplication', operatingSystem: 'Web browser',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
         description: strip(t('meta.description.landing')), inLanguage: lang, publisher: { '@id': `${ORIGIN}/#org` } },
     ] };
   }

@@ -3,6 +3,7 @@ import { mountBrandMark } from './brandmark.js';
 import { enhanceRadioGroups } from './radiogroup.js';
 import { setLocale, getLocale, applyStaticI18n, t } from './i18n-core.js';
 import './i18n-site.js';
+import { track } from './track.js';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -253,6 +254,13 @@ function mountTabs() {
     root.classList.add('is-ready');
   });
 }
+
+// Qué se pulsa en las páginas públicas (botones, enlaces y pestañas con data-track). Solo
+// el nombre del evento, anónimo, como en la app: sirve para decidir el diseño con datos.
+document.addEventListener('click', (e) => {
+  const el = e.target.closest && e.target.closest('[data-track]');
+  if (el) track(el.dataset.track);
+});
 
 mountMobileMenu();
 markCurrentSection();

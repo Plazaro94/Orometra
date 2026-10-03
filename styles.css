@@ -2117,3 +2117,26 @@ html,body{overflow-x:clip}
   .hm-hero.has-photo,.hm-section{margin-bottom:52px}
   .hm-take,.hm-final{padding-block:48px}
 }
+
+/* Auditoría de la portada (2026-10) */
+.hm-need{margin:18px 0 0;font-size:15px;color:var(--text-2)}
+.hm-need a{color:var(--ok-text);font-weight:600;text-underline-offset:3px;white-space:nowrap}
+.hm-need a:hover{color:var(--ok-hi)}
+[data-theme="light"] .hm-hero.has-photo .hm-need{color:var(--text)}
+.hm-hero.has-photo .hm-need{text-shadow:0 1px 12px rgba(8,12,20,.5)}
+[data-theme="light"] .hm-hero.has-photo .hm-need{text-shadow:none}
+.hm-peak-tag{
+  display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;vertical-align:1px;
+  font:600 12px/1.4 var(--font);letter-spacing:.01em;color:var(--text-2);background:var(--surface-3);
+}
+.is-static{pointer-events:none;cursor:default}
+.hm-cta{white-space:nowrap}
+.lp-strip-short{display:none}
+@media (max-width:560px){
+  .lp-strip-long,.hm-eyebrow-more{display:none}
+  .lp-strip-short{display:inline}
+}
+@media (max-width:380px){
+  .hm-hero .hm-go{display:none}
+  .hm-hero .hm-cta{padding-inline:18px;font-size:16px}
+}
