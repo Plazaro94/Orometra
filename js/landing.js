@@ -271,10 +271,24 @@ function syncHeaderCta() {
     const show = !e.isIntersecting;
     top.classList.toggle('is-shown', show);
     if (show) top.removeAttribute('tabindex'); else top.setAttribute('tabindex', '-1');
-  }).observe(hero);
+  }, { rootMargin: `-${$('.lp-top')?.offsetHeight || 0}px 0px 0px 0px` }).observe(hero);
+}
+
+// Cabecera fija: su alto (para anclas y elementos pegajosos) y una sombra al bajar.
+function stickyHeader() {
+  const top = $('.lp-top');
+  if (!top) return;
+  const root = document.documentElement;
+  const measure = () => root.style.setProperty('--top-h', `${top.offsetHeight}px`);
+  measure();
+  if ('ResizeObserver' in window) new ResizeObserver(measure).observe(top);
+  const stuck = () => top.classList.toggle('is-stuck', window.scrollY > 4);
+  stuck();
+  window.addEventListener('scroll', stuck, { passive: true });
 }
 
 mountMobileMenu();
+stickyHeader();
 markCurrentSection();
 mountGuideRail();
 mountTabs();

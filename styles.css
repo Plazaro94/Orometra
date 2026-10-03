@@ -1229,6 +1229,7 @@ tr.sel td{color:var(--text-2)}
 }
 
 @media print{
+  .lp-top{position:static;box-shadow:none}
   /* Papel: siempre con la paleta clara, sea cual sea el tema de la pantalla. Los colores
      de las reglas de abajo salen de estos tokens o son literales; nunca de "--text-hi"
      ni "--surface" con la esperanza de que valgan lo mismo en los dos temas (en el claro
@@ -1650,12 +1651,18 @@ html.i18n-pending body{visibility:hidden}
 }
 
 /* Menú del móvil (lo monta landing.js): en escritorio no existe. */
-.lp-top{position:relative}
+.lp-top{position:sticky;top:0;z-index:50;transition:box-shadow .2s ease}
+.lp-top.is-stuck{box-shadow:0 10px 24px -14px rgba(0,0,0,.6)}
+[data-theme="light"] .lp-top.is-stuck{box-shadow:0 10px 24px -16px rgba(20,30,60,.28)}
+/* La cabecera fija tapa lo de arriba: los saltos a #ancla y lo pegajoso empiezan debajo
+   (landing.js mide la cabecera en --top-h). */
+html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
 .lp-menu-btn{display:none}
 .lp-menu[hidden]{display:none}
 
 /* Cabecera en movil: una sola fila con la marca, el idioma y el botón de menú. */
 @media (max-width:720px){
+  .lp-top{padding:10px 0}
   .lp-top .lp-shell{flex-wrap:nowrap;gap:12px}
   .lp-top-actions{flex-wrap:nowrap;gap:8px}
   .lp-top-actions .lp-nav-link{display:none}
@@ -1675,6 +1682,7 @@ html.i18n-pending body{visibility:hidden}
     position:absolute;left:0;right:0;top:100%;z-index:40;display:flex;flex-direction:column;gap:6px;
     padding:14px var(--header-pad) 18px;background:var(--surface);border-bottom:1px solid var(--line);
     box-shadow:0 18px 30px -18px rgba(0,0,0,.55);
+    max-height:calc(100dvh - var(--top-h,60px));overflow-y:auto;overscroll-behavior:contain;
   }
   .lp-menu-cta{justify-content:center;margin-bottom:6px;min-height:44px}
   .lp-menu-nav{display:flex;flex-direction:column}
@@ -1804,7 +1812,7 @@ html{zoom:var(--z)}
   .lp-doc.guide{display:grid;grid-template-columns:minmax(0,1fr) 264px;column-gap:56px;align-items:start}
   .lp-doc.guide > *{grid-column:1}
   .lp-doc.guide > .guide-rail{display:block;grid-column:2;grid-row:1 / span 60;align-self:stretch}
-  .guide-rail-inner{position:sticky;top:24px;padding:20px 0 0;border-top:1px solid var(--line)}
+  .guide-rail-inner{position:sticky;top:calc(var(--top-h,68px) + 24px);padding:20px 0 0;border-top:1px solid var(--line)}
   .guide-rail-k{margin:0 0 10px;font-size:var(--fs-sm);font-weight:700;color:var(--text-2)}
   .guide-rail ol{margin:0;padding:0;list-style:none;counter-reset:rail}
   .guide-rail li{counter-increment:rail}
@@ -1828,7 +1836,7 @@ html{zoom:var(--z)}
 @media (min-width:900px){
   .hm-faq-section{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);column-gap:64px;align-items:start}
   .hm-faq-section .hm-faq{max-width:none}
-  .hm-faq-head{position:sticky;top:24px}
+  .hm-faq-head{position:sticky;top:calc(var(--top-h,68px) + 24px)}
 }
 @media (max-width:899px){
   .hm-faq-head p{margin:-12px 0 24px}
