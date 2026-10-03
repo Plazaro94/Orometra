@@ -1995,52 +1995,100 @@ html{zoom:var(--z)}
 
 /* ======================================================================
    Fotos de paisaje (2026-10): portada, cierre, cabecera de guías y 404.
-   Se cargan como fondo con image-set (AVIF, WebP o JPG, lo que entienda el
-   navegador) y en tres tamaños: móvil (recorte vertical), escritorio y
+   Se cargan como fondo (AVIF donde se entiende, si no WebP) y en tres tamaños: móvil (recorte vertical), escritorio y
    escritorio grande o de alta densidad. Solo se descarga la que se ve.
    Originales y recortes: tools/fotos.mjs.
    ====================================================================== */
+/* Base: WebP, que entiende cualquier navegador actual. Rutas absolutas: Safari resuelve
+   las url() de las variables respecto a la página, no a la hoja de estilos. */
 :root{
-  --hero-img:image-set(url("img/fotos/portada-oscuro-esc-1400.avif") type("image/avif"),url("img/fotos/portada-oscuro-esc-1400.webp") type("image/webp"),url("img/fotos/portada-oscuro-esc-1400.jpg") type("image/jpeg"));
-  --final-img:image-set(url("img/fotos/cierre-esc-1400.avif") type("image/avif"),url("img/fotos/cierre-esc-1400.webp") type("image/webp"),url("img/fotos/cierre-esc-1400.jpg") type("image/jpeg"));
+  --hero-img:url("/img/fotos/portada-oscuro-esc-1400.webp");
+  --final-img:url("/img/fotos/cierre-esc-1400.webp");
 }
 :root[data-theme="light"]{
-  --hero-img:image-set(url("img/fotos/portada-claro-esc-1400.avif") type("image/avif"),url("img/fotos/portada-claro-esc-1400.webp") type("image/webp"),url("img/fotos/portada-claro-esc-1400.jpg") type("image/jpeg"));
+  --hero-img:url("/img/fotos/portada-claro-esc-1400.webp");
 }
 [data-photo="guias"]{
-  --ph-img:image-set(url("img/fotos/guias-esc-1400.avif") type("image/avif"),url("img/fotos/guias-esc-1400.webp") type("image/webp"),url("img/fotos/guias-esc-1400.jpg") type("image/jpeg"));
+  --ph-img:url("/img/fotos/guias-esc-1400.webp");
 }
 [data-photo="404"]{
-  --ph-img:image-set(url("img/fotos/404-esc-1400.avif") type("image/avif"),url("img/fotos/404-esc-1400.webp") type("image/webp"),url("img/fotos/404-esc-1400.jpg") type("image/jpeg"));
+  --ph-img:url("/img/fotos/404-esc-1400.webp");
 }
 @media (min-width:1500px),(min-width:1000px) and (min-resolution:1.5dppx){
   :root{
-    --hero-img:image-set(url("img/fotos/portada-oscuro-esc-2200.avif") type("image/avif"),url("img/fotos/portada-oscuro-esc-2200.webp") type("image/webp"),url("img/fotos/portada-oscuro-esc-2200.jpg") type("image/jpeg"));
-    --final-img:image-set(url("img/fotos/cierre-esc-2200.avif") type("image/avif"),url("img/fotos/cierre-esc-2200.webp") type("image/webp"),url("img/fotos/cierre-esc-2200.jpg") type("image/jpeg"));
+    --hero-img:url("/img/fotos/portada-oscuro-esc-2200.webp");
+    --final-img:url("/img/fotos/cierre-esc-2200.webp");
   }
   :root[data-theme="light"]{
-    --hero-img:image-set(url("img/fotos/portada-claro-esc-1932.avif") type("image/avif"),url("img/fotos/portada-claro-esc-1932.webp") type("image/webp"),url("img/fotos/portada-claro-esc-1932.jpg") type("image/jpeg"));
+    --hero-img:url("/img/fotos/portada-claro-esc-1932.webp");
   }
   [data-photo="guias"]{
-    --ph-img:image-set(url("img/fotos/guias-esc-2200.avif") type("image/avif"),url("img/fotos/guias-esc-2200.webp") type("image/webp"),url("img/fotos/guias-esc-2200.jpg") type("image/jpeg"));
+    --ph-img:url("/img/fotos/guias-esc-2200.webp");
   }
   [data-photo="404"]{
-    --ph-img:image-set(url("img/fotos/404-esc-1717.avif") type("image/avif"),url("img/fotos/404-esc-1717.webp") type("image/webp"),url("img/fotos/404-esc-1717.jpg") type("image/jpeg"));
+    --ph-img:url("/img/fotos/404-esc-1717.webp");
   }
 }
 @media (max-width:720px){
   :root{
-    --hero-img:image-set(url("img/fotos/portada-oscuro-mov-900.avif") type("image/avif"),url("img/fotos/portada-oscuro-mov-900.webp") type("image/webp"),url("img/fotos/portada-oscuro-mov-900.jpg") type("image/jpeg"));
-    --final-img:image-set(url("img/fotos/cierre-mov-900.avif") type("image/avif"),url("img/fotos/cierre-mov-900.webp") type("image/webp"),url("img/fotos/cierre-mov-900.jpg") type("image/jpeg"));
+    --hero-img:url("/img/fotos/portada-oscuro-mov-900.webp");
+    --final-img:url("/img/fotos/cierre-mov-900.webp");
   }
   :root[data-theme="light"]{
-    --hero-img:image-set(url("img/fotos/portada-claro-mov-900.avif") type("image/avif"),url("img/fotos/portada-claro-mov-900.webp") type("image/webp"),url("img/fotos/portada-claro-mov-900.jpg") type("image/jpeg"));
+    --hero-img:url("/img/fotos/portada-claro-mov-900.webp");
   }
   [data-photo="guias"]{
-    --ph-img:image-set(url("img/fotos/guias-mov-900.avif") type("image/avif"),url("img/fotos/guias-mov-900.webp") type("image/webp"),url("img/fotos/guias-mov-900.jpg") type("image/jpeg"));
+    --ph-img:url("/img/fotos/guias-mov-900.webp");
   }
   [data-photo="404"]{
-    --ph-img:image-set(url("img/fotos/404-mov-900.avif") type("image/avif"),url("img/fotos/404-mov-900.webp") type("image/webp"),url("img/fotos/404-mov-900.jpg") type("image/jpeg"));
+    --ph-img:url("/img/fotos/404-mov-900.webp");
+  }
+}
+
+/* Donde se entiende image-set() con type(), AVIF (la mitad de peso) con WebP de reserva */
+@supports (background-image:image-set(url("/img/fotos/404-mov-900.avif") type("image/avif"))){
+  :root{
+    --hero-img:image-set(url("/img/fotos/portada-oscuro-esc-1400.avif") type("image/avif"),url("/img/fotos/portada-oscuro-esc-1400.webp") type("image/webp"));
+    --final-img:image-set(url("/img/fotos/cierre-esc-1400.avif") type("image/avif"),url("/img/fotos/cierre-esc-1400.webp") type("image/webp"));
+  }
+  :root[data-theme="light"]{
+    --hero-img:image-set(url("/img/fotos/portada-claro-esc-1400.avif") type("image/avif"),url("/img/fotos/portada-claro-esc-1400.webp") type("image/webp"));
+  }
+  [data-photo="guias"]{
+    --ph-img:image-set(url("/img/fotos/guias-esc-1400.avif") type("image/avif"),url("/img/fotos/guias-esc-1400.webp") type("image/webp"));
+  }
+  [data-photo="404"]{
+    --ph-img:image-set(url("/img/fotos/404-esc-1400.avif") type("image/avif"),url("/img/fotos/404-esc-1400.webp") type("image/webp"));
+  }
+  @media (min-width:1500px),(min-width:1000px) and (min-resolution:1.5dppx){
+    :root{
+      --hero-img:image-set(url("/img/fotos/portada-oscuro-esc-2200.avif") type("image/avif"),url("/img/fotos/portada-oscuro-esc-2200.webp") type("image/webp"));
+      --final-img:image-set(url("/img/fotos/cierre-esc-2200.avif") type("image/avif"),url("/img/fotos/cierre-esc-2200.webp") type("image/webp"));
+    }
+    :root[data-theme="light"]{
+      --hero-img:image-set(url("/img/fotos/portada-claro-esc-1932.avif") type("image/avif"),url("/img/fotos/portada-claro-esc-1932.webp") type("image/webp"));
+    }
+    [data-photo="guias"]{
+      --ph-img:image-set(url("/img/fotos/guias-esc-2200.avif") type("image/avif"),url("/img/fotos/guias-esc-2200.webp") type("image/webp"));
+    }
+    [data-photo="404"]{
+      --ph-img:image-set(url("/img/fotos/404-esc-1717.avif") type("image/avif"),url("/img/fotos/404-esc-1717.webp") type("image/webp"));
+    }
+  }
+  @media (max-width:720px){
+    :root{
+      --hero-img:image-set(url("/img/fotos/portada-oscuro-mov-900.avif") type("image/avif"),url("/img/fotos/portada-oscuro-mov-900.webp") type("image/webp"));
+      --final-img:image-set(url("/img/fotos/cierre-mov-900.avif") type("image/avif"),url("/img/fotos/cierre-mov-900.webp") type("image/webp"));
+    }
+    :root[data-theme="light"]{
+      --hero-img:image-set(url("/img/fotos/portada-claro-mov-900.avif") type("image/avif"),url("/img/fotos/portada-claro-mov-900.webp") type("image/webp"));
+    }
+    [data-photo="guias"]{
+      --ph-img:image-set(url("/img/fotos/guias-mov-900.avif") type("image/avif"),url("/img/fotos/guias-mov-900.webp") type("image/webp"));
+    }
+    [data-photo="404"]{
+      --ph-img:image-set(url("/img/fotos/404-mov-900.avif") type("image/avif"),url("/img/fotos/404-mov-900.webp") type("image/webp"));
+    }
   }
 }
 
@@ -2054,8 +2102,8 @@ html{zoom:var(--z)}
   --final-veil:linear-gradient(180deg,rgba(236,239,246,.84) 0%,rgba(236,239,246,.94) 100%);
 }
 @media (max-width:720px){
-  :root{--hero-veil:linear-gradient(180deg,rgba(12,16,26,.5) 0%,rgba(12,16,26,.74) 50%,rgba(12,16,26,.86) 100%)}
-  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(246,245,241,.5) 0%,rgba(246,245,241,.8) 50%,rgba(246,245,241,.9) 100%)}
+  :root{--hero-veil:linear-gradient(180deg,rgba(12,16,26,.62) 0%,rgba(12,16,26,.5) 45%,rgba(12,16,26,.66) 100%)}
+  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(246,245,241,.7) 0%,rgba(246,245,241,.55) 45%,rgba(246,245,241,.7) 100%)}
   .hm-hero.has-photo{min-height:0}
 }
 
