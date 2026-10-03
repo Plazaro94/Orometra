@@ -1,5 +1,5 @@
-// Fotos de paisaje de la web: recorte por hueco y por dispositivo, y exportación en AVIF,
-// WebP y JPG a varios anchos. Los originales no se suben al repositorio (pesan mucho):
+// Fotos de paisaje de la web: recorte por hueco y por dispositivo, y exportación en AVIF
+// y WebP a varios anchos. Los originales no se suben al repositorio (pesan mucho):
 // van en fotos-originales/, que está en .gitignore.
 //
 //   npm i --no-save sharp   (o SHARP_FROM=/ruta/a/un/node_modules/padre)
@@ -45,10 +45,9 @@ for (const [name, f] of Object.entries(FOTOS)) {
       const stem = path.join(OUT, `${name}-${kind === 'desk' ? 'esc' : 'mov'}-${target}`);
       await base.clone().avif({ quality: 52, effort: 6 }).toFile(`${stem}.avif`);
       await base.clone().webp({ quality: 74 }).toFile(`${stem}.webp`);
-      await base.clone().jpeg({ quality: 80, mozjpeg: true, progressive: true }).toFile(`${stem}.jpg`);
-      const kb = ['avif', 'webp', 'jpg'].map((e) => Math.round(fs.statSync(`${stem}.${e}`).size / 1024));
+      const kb = ['avif', 'webp'].map((e) => Math.round(fs.statSync(`${stem}.${e}`).size / 1024));
       total += kb[0];
-      console.log(`${path.basename(stem)}  avif ${kb[0]} KB · webp ${kb[1]} KB · jpg ${kb[2]} KB`);
+      console.log(`${path.basename(stem)}  avif ${kb[0]} KB · webp ${kb[1]} KB`);
     }
   }
 }
