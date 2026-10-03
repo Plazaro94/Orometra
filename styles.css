@@ -281,7 +281,9 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
    la siguiente pestana en la tira horizontal de movil. */
 .nav-item span:first-child{font-size:13px;color:var(--muted-3);width:20px;font-variant-numeric:tabular-nums}
 .nav-item:hover:not(:disabled){background:var(--surface-2);color:var(--text)}
-.nav-item.active{background:var(--surface-3);color:var(--text-hi);font-weight:600}
+.nav-item.active{background:var(--surface-3);color:var(--text-hi);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+/* Tema claro: el fondo de la pestaña activa casi no se distinguía del de la barra (1,05:1). */
+[data-theme="light"] .nav-item.active{background:#ffffff;box-shadow:inset 3px 0 0 var(--accent),inset 0 0 0 1px var(--line)}
 .nav-item.active span{color:var(--ok-text)}
 .nav-item:disabled{opacity:.34;cursor:default}
 /* margin-top:auto empuja esto al fondo cuando sobra alto, pero en ventanas bajas el
@@ -457,6 +459,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .preflight-reading em{color:var(--info-text)}
 .preflight-note{margin:10px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
 .preflight-note.is-warn{color:var(--warn-text)}
+.preflight-note.is-danger{color:var(--danger-text)}
 .outcome-banner{
   border:1px solid var(--warn-line);background:var(--warn-bg);border-radius:var(--radius);
   padding:14px 16px;margin-bottom:12px;
@@ -1055,17 +1058,20 @@ tr.sel td{color:var(--text-2)}
 .chart-swatch-pass{background:var(--info);opacity:.7}
 .chart-swatch-fail{background:var(--muted-3);opacity:.45}
 .chart-swatch-plateau{background:var(--ok)}
+.chart-swatch-ground{background:#3a4152;border-color:var(--line-strong)}
+[data-theme="light"] .chart-swatch-ground{background:#c9cdd6;border-color:#b3b9c6}
+.chart-swatch-pick{background:var(--lime-fill);border-color:var(--lime-line)}
 .chart-swatch-rep{background:var(--ok-hi);border:2px solid var(--ok);width:8px;height:8px}
 .chart-swatch-bar{width:14px;height:8px;border-radius:2px;background:var(--info)}
 .chart-swatch-bar-top{width:14px;height:8px;border-radius:2px;background:var(--ok)}
 .chart-swatch-q25{width:14px;height:0;border-top:2px dashed var(--warn);border-radius:0}
 .ch-grid{stroke:var(--surface-3);stroke-width:1}
 .ch-axis{stroke:var(--line);stroke-width:1}
-.ch-tick{fill:var(--muted-2);font-size:11.5px;font-family:var(--font)}
-.ch-count{fill:var(--muted-3);font-size:10.5px;font-family:var(--font)}
+.ch-tick{fill:var(--muted-2);font-size:12px;font-family:var(--font)}
+.ch-count{fill:var(--muted-3);font-size:12px;font-family:var(--font)}
 .ch-axis-label{fill:var(--muted-2);font-size:13px;font-family:var(--font)}
 .ch-row-label{fill:var(--muted);font-size:13px;font-family:var(--mono)}
-.ch-point-label{fill:var(--text-2);font-size:11.5px;font-weight:700;font-family:var(--font)}
+.ch-point-label{fill:var(--text-2);font-size:12px;font-weight:700;font-family:var(--font)}
 .ch-diagonal{stroke:var(--line-strong);stroke-width:1;stroke-dasharray:4 4}
 .pt-fail{fill:var(--muted-3);opacity:.4}
 .pt-pass{fill:var(--info);opacity:.55}
@@ -1086,9 +1092,21 @@ tr.sel td{color:var(--text-2)}
 .ch-sens-track{fill:var(--line);opacity:.55}
 .ch-sens-marginal{stroke:var(--text-hi);stroke-width:2;stroke-linecap:round}
 .ch-sens-marginal-swatch{display:inline-block;width:2px;height:12px;background:var(--text-hi);vertical-align:middle;margin:0 1px}
-.hm-cell{fill:var(--accent)}
 .hm-empty{fill:var(--surface-2)}
-.hm-text{fill:var(--ok-bg);font-size:11px;font-weight:700;font-family:var(--font);pointer-events:none}
+/* Rampa secuencial de 6 tonos (de fondo a lavanda) y cifra que conmuta de color con el tono. */
+.hm-c0{fill:#262d3d;background:#262d3d}.hm-c1{fill:#323b52;background:#323b52}.hm-c2{fill:#444f6c;background:#444f6c}
+.hm-c3{fill:#58648b;background:#58648b}.hm-c4{fill:#8796bf;background:#8796bf}.hm-c5{fill:#b4c2e4;background:#b4c2e4}
+.hm-text{fill:#e9edf6;font-size:12px;font-weight:700;font-family:var(--font);pointer-events:none}
+.hm-text-on{fill:#0b1019}
+[data-theme="light"] .hm-c0{fill:#eef1f8;background:#eef1f8}[data-theme="light"] .hm-c1{fill:#d5ddef;background:#d5ddef}
+[data-theme="light"] .hm-c2{fill:#b3c1e2;background:#b3c1e2}[data-theme="light"] .hm-c3{fill:#7f95c9;background:#7f95c9}
+[data-theme="light"] .hm-c4{fill:#4f69a8;background:#4f69a8}[data-theme="light"] .hm-c5{fill:#2b4a8c;background:#2b4a8c}
+[data-theme="light"] .hm-text{fill:#17295a}
+[data-theme="light"] .hm-text-on{fill:#ffffff}
+.hm-legend{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.hm-legend span:first-child{margin-right:4px}
+.hm-ramp{display:inline-flex;border-radius:3px;overflow:hidden}
+.hm-ramp i{width:18px;height:10px}
 
 /* ---------------------------------------------------------------- responsive */
 @media (max-width:1180px){
@@ -1107,9 +1125,11 @@ tr.sel td{color:var(--text-2)}
 }
 /* Al final de cada pestaña del informe: la siguiente, en orden de lectura. */
 .tab-next{display:flex;justify-content:flex-end;margin-top:34px;padding-top:18px;border-top:1px solid var(--line-soft)}
-.tab-next-btn{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding:10px 16px;text-align:right}
-.tab-next-k{font-size:13px;color:var(--muted)}
-.tab-next-name{font-size:15px;font-weight:600;color:var(--text-hi)}
+.tab-next-btn{display:inline-flex;align-items:center;gap:6px}
+/* Sin números en la navegación: 01-07 no cuadraba con el recorrido del informe (6
+   pestañas) y Metodología, que es documentación, no es un paso. Va aparte, abajo. */
+.nav-item > span:first-child{display:none}
+.sidebar-sep{margin:10px 8px;border-top:1px solid var(--line-soft)}
 
 @media (max-width:720px){
   /* Zonas táctiles de 44 px de alto sin agrandar los controles (la cabecera no cabría en
@@ -1172,6 +1192,7 @@ tr.sel td{color:var(--text-2)}
   /* Solo se oculta el numero ("01"): el nombre de la pestana es lo unico que la
      identifica en la tira horizontal, y ocultar los dos span dejaba pildoras sin texto. */
   .nav-item span:first-child{display:none}
+  .sidebar-sep{display:none}
   /* `.sidebar-section` de mas en el selector (no solo `.nav-item.active`): con la misma
      especificidad que la regla de escritorio (linea ~262), cual gana dependia de en que
      pestana se entraba primero -- en la carga inicial ganaba esta, pero tras un click
@@ -1213,7 +1234,7 @@ tr.sel td{color:var(--text-2)}
   .hero-back{gap:6px}
   .topbar h1{font-size:27px}
   .tab-next{justify-content:stretch}
-  .tab-next-btn{width:100%}
+  .tab-next-btn{width:100%;justify-content:center}
   .verdict-banner{grid-template-columns:1fr;gap:14px}
   /* En columna, la configuracion elegida y su .set van antes que la explicacion: es lo
      que se viene a buscar. */
@@ -1304,7 +1325,8 @@ tr.sel td{color:var(--text-2)}
   .pt-fail{fill:var(--line-strong)}
   .pt-pass{fill:var(--muted)}
   .pt-plateau{fill:var(--ok)}
-  .hm-cell{fill:var(--line-strong)}
+  .hm-c0{fill:#eef1f8}.hm-c1{fill:#d5ddef}.hm-c2{fill:#b3c1e2}.hm-c3{fill:#7f95c9}.hm-c4{fill:#4f69a8}.hm-c5{fill:#2b4a8c}
+  .hm-text{fill:#17295a}.hm-text-on{fill:#ffffff}
   .table-wrap{overflow:visible}
   /* Cada seccion del informe empieza en su pagina. */
   .detail-head{page-break-before:always}

@@ -331,10 +331,7 @@ function renderNextTab(tab) {
   const nameEl = document.querySelector(`.nav-item[data-tab="${next}"] span:last-child`);
   const name = nameEl ? nameEl.textContent.trim() : next;
   return `<nav class="tab-next" aria-label="${esc(L('Siguiente sección del informe', 'Next report section'))}">
-    <button class="ghost-btn tab-next-btn" type="button" data-goto="${next}">
-      <span class="tab-next-k">${esc(L('Siguiente', 'Next'))} · ${i + 2}/${REPORT_ORDER.length}</span>
-      <span class="tab-next-name">${esc(name)} <span aria-hidden="true">→</span></span>
-    </button>
+    <button class="ghost-btn tab-next-btn" type="button" data-goto="${next}">${esc(L('Siguiente', 'Next'))}: ${esc(name)} <span aria-hidden="true">→</span></button>
   </nav>`;
 }
 
