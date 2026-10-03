@@ -77,14 +77,14 @@ const mix = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b
 const WHITE = [255, 255, 255];
 const BLACK = [0, 0, 0];
 
-// Color con significado: el terreno es neutro, el acento petróleo es solo de la meseta y los
+// Color con significado: el terreno es neutro, el acento oliva es solo de la meseta y los
 // picos van en gris.
 function readPalette(root, light) {
-  const bg = parseColor(cssColor(root, '--surface', light ? '#ffffff' : '#131416'), light ? [255, 255, 255] : [19, 20, 22]);
-  const ok = parseColor(cssColor(root, '--ok', light ? '#0f6b6a' : '#3fa39b'), light ? [15, 107, 106] : [63, 163, 155]);
-  const peak = parseColor(cssColor(root, '--peak', light ? '#6f747b' : '#8b8f96'), light ? [111, 116, 123] : [139, 143, 150]);
-  const text = parseColor(cssColor(root, '--text', light ? '#16181b' : '#e6e7e9'), light ? [22, 24, 27] : [230, 231, 233]);
-  const muted = parseColor(cssColor(root, '--muted-3', light ? '#55595f' : '#9a9da3'), light ? [85, 89, 95] : [154, 157, 163]);
+  const bg = parseColor(cssColor(root, '--surface', light ? '#ffffff' : '#222327'), light ? [255, 255, 255] : [34, 35, 39]);
+  const ok = parseColor(cssColor(root, '--ok', light ? '#5b6b0c' : '#a9c23a'), light ? [91, 107, 12] : [169, 194, 58]);
+  const peak = parseColor(cssColor(root, '--peak', light ? '#74716b' : '#8a8d93'), light ? [116, 113, 107] : [138, 141, 147]);
+  const text = parseColor(cssColor(root, '--text', light ? '#1b1c1f' : '#e8e4dd'), light ? [27, 28, 31] : [232, 228, 221]);
+  const muted = parseColor(cssColor(root, '--muted-3', light ? '#57544e' : '#a19d96'), light ? [87, 84, 78] : [161, 157, 150]);
   if (light) {
     return {
       light, bg, ok, peak, text, muted,
