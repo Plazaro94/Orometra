@@ -43,6 +43,7 @@ export function initChrome() {
   enhanceRadioGroups();
   initTabsFade();
   trackHeadHeight();
+  mountAppMenu();
 
   // La marca es un enlace a la landing; no conviene interceptarlo.
   const reiniciar = $('#resetAll');
@@ -87,6 +88,31 @@ export function resetSession() {
   // El título de la pestaña llevaba el nombre del archivo analizado.
   applyStaticI18n();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/** Menú del móvil, igual que el de la portada: ayuda, guías, inicio y el tema. */
+function mountAppMenu() {
+  const btn = $('.header-controls .lp-menu-btn');
+  const panel = $('#appMenu');
+  if (!btn || !panel) return;
+  const open = () => {
+    panel.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    const first = panel.querySelector('a');
+    if (first) first.focus();
+  };
+  const close = (focusBtn = false) => {
+    if (panel.hidden) return;
+    panel.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    if (focusBtn) btn.focus();
+  };
+  btn.addEventListener('click', () => (panel.hidden ? open() : close()));
+  // Ir al aviso legal es una pestaña de la propia app: el menú se cierra al elegirla.
+  panel.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => close()));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(true); });
+  document.addEventListener('click', (e) => { if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) close(); });
+  window.matchMedia('(min-width:721px)').addEventListener('change', (e) => { if (e.matches) close(); });
 }
 
 export function syncLangButtons() {

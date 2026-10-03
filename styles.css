@@ -1686,11 +1686,12 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
   }
   .lp-menu-cta{justify-content:center;margin-bottom:6px;min-height:44px}
   .lp-menu-nav{display:flex;flex-direction:column}
-  .lp-menu-nav a{
+  .lp-menu-nav :is(a,button){
     display:flex;align-items:center;min-height:46px;padding:0 4px;border-bottom:1px solid var(--line-soft);
     color:var(--text);font-size:16px;text-decoration:none;
   }
-  .lp-menu-nav a:hover{color:var(--ok-text)}
+  .lp-menu-nav :is(a,button){width:100%;background:none;border-width:0 0 1px;border-style:solid;font:inherit;font-size:16px;text-align:left;cursor:pointer}
+  .lp-menu-nav :is(a,button):hover{color:var(--ok-text)}
   .lp-menu-theme{display:flex;justify-content:flex-start;padding-top:12px}
 }
 
@@ -2227,11 +2228,47 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
 /* Menú del móvil al alcance del pulgar: el texto a la izquierda (se lee mejor) y, a la
    derecha, una flecha que indica que toda la fila se puede pulsar. */
 @media (max-width:720px){
-  .lp-menu-nav a{min-height:52px;justify-content:space-between;padding:0 6px 0 4px;border-bottom-color:var(--line)}
-  .lp-menu-nav a::after{
+  .lp-menu-nav :is(a,button){min-height:52px;justify-content:space-between;padding:0 6px 0 4px;border-bottom-color:var(--line)}
+  .lp-menu-nav :is(a,button)::after{
     content:"";flex:none;width:8px;height:8px;margin-left:12px;
     border-right:2px solid var(--muted);border-top:2px solid var(--muted);transform:rotate(45deg);
   }
   .lp-menu-theme .theme-row{width:100%;display:grid;grid-template-columns:1fr 1fr}
   .lp-menu-theme .theme-row button{min-height:46px;justify-content:center}
+}
+
+/* App: ayuda a mano. En escritorio, un bloque discreto en la barra lateral; en móvil, la
+   cabecera es la misma que la de la portada (marca · idioma · Menú, 59 px). */
+.sidebar-help{display:flex;flex-direction:column;gap:2px;padding:0 6px 12px;margin-bottom:12px;border-bottom:1px solid var(--line-soft)}
+.sidebar-help-k{margin:0 0 4px;font-size:13px;font-weight:700;color:var(--text-2)}
+.sidebar-help a{padding:5px 0;font-size:14px;color:var(--muted);text-decoration:none}
+.sidebar-help a:hover{color:var(--ok-text)}
+@media (max-width:720px){
+  .sidebar-head{position:relative;padding:10px var(--header-pad)}
+  .sidebar-head .lp-menu{z-index:45}
+}
+@media print{.sidebar-help{display:none}}
+.empty-steps a{color:var(--ok-text);font-weight:600;text-underline-offset:3px;white-space:nowrap}
+.empty-steps a:hover{color:var(--ok-hi)}
+/* Portátiles con poca altura: la barra lateral se compacta y, si aun así no cabe, se
+   desplaza (antes el aviso legal y los comentarios quedaban fuera de la pantalla). */
+@media (min-width:721px){
+  .sidebar{overflow-y:auto;scrollbar-width:thin}
+}
+@media (min-width:721px) and (max-height:900px){
+  .sidebar{padding-top:18px;padding-bottom:14px}
+  .brand,.brand-link{padding-bottom:16px}
+  .nav-item{padding-top:6px;padding-bottom:6px}
+  .sidebar-label{padding-bottom:4px}
+  .sidebar-label-gap{margin-top:8px;padding-top:8px}
+  .sidebar-help{padding-bottom:8px;margin-bottom:8px}
+  .sidebar-help a{padding:3px 0}
+  .sidebar-bottom{padding-top:10px}
+  .sidebar-bottom .lang-row{margin-bottom:6px}
+  .legal-links{padding-top:6px}
+}
+@media (min-width:721px) and (max-height:800px){
+  .brand,.brand-link{padding-bottom:12px}
+  .nav-item{padding-top:5px;padding-bottom:5px}
+  .version{padding-top:4px}
 }

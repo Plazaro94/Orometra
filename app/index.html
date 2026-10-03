@@ -21,7 +21,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261003s">
+<link rel="stylesheet" href="../styles.css?v=20261003t">
 <script src="../js/theme-init.js"></script>
 </head>
 <body>
@@ -41,13 +41,25 @@
           <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
           <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
         </div>
-        <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
-          <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" title="Dark" data-i18n="theme.dark" data-i18n-attr="title">
-            <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Dark</span>
-          </button>
-          <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" title="Light" data-i18n="theme.light" data-i18n-attr="title">
-            <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
-          </button>
+        <button class="lp-menu-btn" type="button" aria-expanded="false" aria-controls="appMenu"><span class="lp-menu-icon" aria-hidden="true"></span><span data-i18n="nav.menu">Menu</span></button>
+      </div>
+      <div class="lp-menu" id="appMenu" hidden>
+        <nav class="lp-menu-nav" aria-label="Menu" data-i18n="nav.menu" data-i18n-attr="aria-label">
+          <a href="/guides/export-mt5-optimization-xml/" data-i18n="help.export.href" data-i18n-attr="href"><span data-i18n="help.export">How to export from MT5</span></a>
+          <a href="/guides/" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
+          <a href="/" data-i18n="help.home.href" data-i18n-attr="href"><span data-i18n="help.home">Home</span></a>
+          <a href="mailto:hello@orometra.com?subject=Orometra"><span data-i18n="contact.feedback">Send feedback</span></a>
+          <button type="button" data-tab="legal"><span data-i18n="legal.link">Legal notice &amp; privacy</span></button>
+        </nav>
+        <div class="lp-menu-theme">
+          <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
+            <button class="theme-btn" data-theme-set="dark" role="radio" aria-checked="true" title="Dark" data-i18n="theme.dark" data-i18n-attr="title">
+              <span class="swatch dark" aria-hidden="true"></span><span data-i18n="theme.dark">Dark</span>
+            </button>
+            <button class="theme-btn" data-theme-set="light" role="radio" aria-checked="false" title="Light" data-i18n="theme.light" data-i18n-attr="title">
+              <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -72,6 +84,11 @@
     </div>
 
     <div class="sidebar-bottom">
+      <div class="sidebar-help">
+        <div class="sidebar-help-k" data-i18n="help.title">Help</div>
+        <a href="/guides/export-mt5-optimization-xml/" data-i18n="help.export.href" data-i18n-attr="href"><span data-i18n="help.export">How to export from MT5</span></a>
+        <a href="/guides/" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
+      </div>
       <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
         <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
         <button class="lang-btn" data-lang-set="es" role="radio" aria-checked="false" type="button">ES</button>
