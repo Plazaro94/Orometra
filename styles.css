@@ -2018,12 +2018,12 @@ html{zoom:var(--z)}
 
 /* Velos: oscuro a la izquierda (donde va el texto) y transparente donde está la cumbre */
 :root{
-  --hero-veil:linear-gradient(90deg,rgba(12,16,26,.84) 0%,rgba(12,16,26,.5) 40%,rgba(12,16,26,.04) 72%,rgba(12,16,26,0) 100%);
-  --final-veil:radial-gradient(ellipse 60% 75% at 50% 50%,rgba(17,26,46,.8) 0%,rgba(17,26,46,.66) 55%,rgba(17,26,46,.38) 100%);
+  --hero-veil:linear-gradient(90deg,rgba(12,16,26,.82) 0%,rgba(12,16,26,.46) 38%,rgba(12,16,26,0) 66%);
+  --final-veil:radial-gradient(ellipse 52% 62% at 50% 48%,rgba(17,26,46,.8) 0%,rgba(17,26,46,.54) 60%,rgba(17,26,46,.3) 100%);
 }
 :root[data-theme="light"]{
   --hero-veil:linear-gradient(90deg,rgba(246,245,241,.86) 0%,rgba(246,245,241,.5) 40%,rgba(246,245,241,0) 70%);
-  --final-veil:radial-gradient(ellipse 60% 75% at 50% 50%,rgba(236,239,246,.86) 0%,rgba(236,239,246,.72) 55%,rgba(236,239,246,.4) 100%);
+  --final-veil:radial-gradient(ellipse 52% 62% at 50% 48%,rgba(236,239,246,.9) 0%,rgba(236,239,246,.64) 60%,rgba(236,239,246,.4) 100%);
 }
 @media (max-width:720px){
   :root{--hero-veil:linear-gradient(180deg,rgba(12,16,26,.5) 0%,rgba(12,16,26,.36) 45%,rgba(12,16,26,.55) 100%)}
