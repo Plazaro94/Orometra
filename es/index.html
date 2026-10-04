@@ -37,7 +37,7 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261004c">
+<link rel="stylesheet" href="/styles.css?v=20261004d">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separa lo frágil de lo estable en tu optimización de MT5: qué configuración de tu EA es estable y cuánta evidencia la respalda. Gratis y en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js" data-hero-photo></script>
 </head>
@@ -111,10 +111,10 @@
   <!-- 2a. Una decisión, no una tabla: la misma tarjeta del informe -->
   <section class="hm-section hm-take" aria-labelledby="hm-take-title">
     <h2 id="hm-take-title" data-i18n="home.take.title">Una decisión, no una tabla</h2>
-    <p class="hm-sub" data-i18n="home.take.sub">Es lo primero que muestra el informe: qué configuración elegir, cuánto fiarte de ella y qué hacer después (datos de ejemplo).</p>
+    <p class="hm-sub" data-i18n="home.take.sub">Es lo primero que muestra el informe: qué configuración elegir, qué fiabilidad tiene y qué hacer después (datos de ejemplo).</p>
     <div class="hm-take-grid">
       <figure class="hm-take-card">
-        <div class="vx v-warn" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Tarjeta de veredicto de ejemplo">
+        <div class="vx v-go" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Tarjeta de veredicto de ejemplo">
           <div class="vx-main">
             <div class="vx-pick">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">A</b><span data-i18n="home.take.pick.label">Qué configuración usar</span></span>
@@ -124,12 +124,13 @@
               <div class="vx-actions"><span class="primary-btn is-static" data-i18n="home.take.pick.download">Descargar .set</span><span class="ghost-btn is-static" data-i18n="home.take.pick.copy">Copiar parámetros</span></div>
             </div>
             <div class="vx-trust">
-              <span class="vx-label"><b class="hm-take-n" aria-hidden="true">B</b><span data-i18n="home.take.trust.label">Cuánto fiarte</span></span>
-              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Evidencia: moderada (3 de 4)">
+              <span class="vx-label"><b class="hm-take-n" aria-hidden="true">B</b><span data-i18n="home.take.trust.label">Fiabilidad</span></span>
+              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Fiabilidad: buena (4 de 5)">
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.1">Insuficiente</span></div>
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.2">Débil</span></div>
-                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.3">Moderada</span></div>
-                <div class="vx-seg"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Sólida</span></div>
+                <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.3">Moderada</span></div>
+                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Buena</span></div>
+                <div class="vx-seg"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Sólida</span></div>
               </div>
               <p class="vx-trust-line" data-i18n="home.take.trust.line">Meseta validada. Para llegar a sólida falta probarla en un periodo que no hayas usado.</p>
               <div class="vx-stats">
@@ -190,7 +191,7 @@
         <ol class="hm-steps">
           <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Exporta</h3><p data-i18n="home.how.1.body">Exporta a XML los resultados de tu optimización de MT5, y la pestaña forward si la usaste.</p></li>
           <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Suéltalos aquí</h3><p data-i18n="home.how.2.body">Se analizan en tu navegador, en segundos.</p></li>
-          <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Llévate tu configuración</h3><p data-i18n="home.how.3.body">La recomendada con sus motivos, cuánto fiarte de ella, un .set listo para MT5 y el rango para volver a optimizar a su alrededor.</p></li>
+          <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Llévate tu configuración</h3><p data-i18n="home.how.3.body">La recomendada con sus motivos, su fiabilidad, un .set listo para MT5 y el rango para volver a optimizar a su alrededor.</p></li>
         </ol>
       </div>
       <div class="hm-pane" role="tabpanel" id="hm-pane-engine" aria-labelledby="hm-tab-engine" tabindex="0">
@@ -257,7 +258,7 @@
       <li data-i18n="home.final.c1">Gratis y sin registro</li>
       <li data-i18n="home.final.c2">Tus archivos no salen de tu ordenador</li>
       <li data-i18n="home.final.c3">Un .set listo para cargar en MT5</li>
-      <li data-i18n="home.final.c4">Cuatro niveles de evidencia, explicados</li>
+      <li data-i18n="home.final.c4">Cinco niveles de evidencia, explicados</li>
       <li data-i18n="home.final.c5">Optimizaciones completas y genéticas</li>
       <li data-i18n="home.final.c6">Comprueba tu backtest en un periodo no visto</li>
     </ul>

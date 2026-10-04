@@ -59,11 +59,11 @@ section('AUD-05: un solo nivel de evidencia en pantalla y en el export');
   const { buildReport } = await import('../js/export.js');
   const a = runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable });
   const shown = displayVerdictCopy(a);
-  check('sin periodo no visto se muestra moderada', shown.level === 'moderate', shown.level);
-  check('el titular empieza por el nivel mostrado', /^Evidencia moderada/.test(shown.headline), shown.headline);
+  check('sin periodo no visto se muestra buena', shown.level === 'good', shown.level);
+  check('el titular empieza por el nivel mostrado', /^Evidencia buena/.test(shown.headline), shown.headline);
   check('el titular no dice "sólida" antes que el nivel', !/^Evidencia sólida/.test(shown.headline));
   const report = buildReport(a, { shownVerdict: shown });
-  check('el JSON exporta el nivel mostrado', report.verdict.level === 'moderate', report.verdict.level);
+  check('el JSON exporta el nivel mostrado', report.verdict.level === 'good', report.verdict.level);
   check('el JSON conserva el nivel del motor aparte', report.verdict.engineLevel === a.verdict.level);
 }
 

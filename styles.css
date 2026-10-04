@@ -576,11 +576,12 @@ details.panel > .panel-body{padding:0 20px 20px}
 .verdict-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .verdict-actions button{padding:9px 14px;font-size:13.5px}
 /* ---------------------------------------------------------------- decisión (veredicto)
-   Lo primero del informe: qué configuración usar, cuánto fiarte y qué hacer ahora. El
+   Lo primero del informe: qué configuración usar, su fiabilidad y qué hacer ahora. El
    nivel se lee en el medidor y en su color; la tarjeta es neutra, como el resto. */
 .vx{
   border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
   padding:24px 26px 22px;margin-bottom:12px;
+  container:vx/inline-size;
 }
 .vx-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
 .vx-trust{padding-left:28px;border-left:1px solid var(--line);min-width:0}
@@ -595,29 +596,42 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-actions{display:flex;flex-wrap:wrap;gap:8px}
 .vx-actions button{padding:11px 18px;font-size:14px}
 .vx-fine{margin:12px 0 0;font-size:13px;line-height:1.45;color:var(--muted-2);max-width:56ch}
-.vx-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:2px 0 14px}
-/* El medidor se llena tramo a tramo (gris, gris, oro, lima): el nivel se lee por cuánto
-   se llena y por el color del último tramo. No se usan los colores de aviso: el nivel
-   califica la evidencia, no la estrategia. Cada tramo tiene su tono
-   de barra (--s) y uno más claro para su nombre (--t), legible sobre el fondo. */
-/* Los cuatro niveles de evidencia, de insuficiente (1) a sólida (4): los mismos tonos en
-   el medidor del informe y en la lista de niveles de la metodología. */
-:root{--lv-1:#30384b;--lv-2:#4b556c;--lv-3:#e0b33a;--lv-4:#d4f25c}
-:root[data-theme="light"]{--lv-1:#d3d8e3;--lv-2:#a6aebf;--lv-3:#b98a10;--lv-4:#9cc414}
-.vx-seg:nth-child(1){--s:var(--lv-1);--t:#acb5c8}
-.vx-seg:nth-child(2){--s:var(--lv-2);--t:#ccd2e0}
+.vx-meter{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:2px 0 14px}
+/* El medidor se llena tramo a tramo, de rojo (insuficiente) a lima (sólida): el nivel se
+   lee por cuánto se llena y por el color del último tramo. El lima queda reservado para
+   «Sólida». Cada tramo tiene su tono de barra (--s) y uno para su nombre (--t), legible
+   sobre el fondo. Los mismos tonos se usan en la lista de niveles de la metodología. */
+:root{--lv-1:#e5484d;--lv-2:#f0883e;--lv-3:#e0b33a;--lv-4:#a3d14a;--lv-5:#d4f25c}
+:root[data-theme="light"]{--lv-1:#dc3b41;--lv-2:#ea7a2c;--lv-3:#d4a21e;--lv-4:#86bd34;--lv-5:#b4dc22}
+.vx-seg:nth-child(1){--s:var(--lv-1);--t:#f58e91}
+.vx-seg:nth-child(2){--s:var(--lv-2);--t:#f6ac78}
 .vx-seg:nth-child(3){--s:var(--lv-3);--t:#f6d66a}
-.vx-seg:nth-child(4){--s:var(--lv-4);--t:#d4f25c}
-:root[data-theme="light"] .vx-seg:nth-child(1){--t:#4e5974}
-:root[data-theme="light"] .vx-seg:nth-child(2){--t:#394560}
-:root[data-theme="light"] .vx-seg:nth-child(3){--t:#664a00}
-:root[data-theme="light"] .vx-seg:nth-child(4){--t:#4c6000}
+.vx-seg:nth-child(4){--s:var(--lv-4);--t:#bfe27a}
+.vx-seg:nth-child(5){--s:var(--lv-5);--t:#d4f25c}
+:root[data-theme="light"] .vx-seg:nth-child(1){--t:#b4232a}
+:root[data-theme="light"] .vx-seg:nth-child(2){--t:#a8510f}
+:root[data-theme="light"] .vx-seg:nth-child(3){--t:#7a5a00}
+:root[data-theme="light"] .vx-seg:nth-child(4){--t:#4a6b00}
+:root[data-theme="light"] .vx-seg:nth-child(5){--t:#4c6000}
 .vx-seg-bar{display:block;height:8px;border-radius:4px;background:var(--line)}
 .vx-seg.is-on .vx-seg-bar{background:var(--s)}
 .vx-seg-name{display:block;margin-top:7px;font-size:13px;line-height:1.3;color:var(--muted-2)}
 /* La etiqueta activa destaca por color y peso, a la misma altura que las demás: más
    grande quedaba descolgada y, en el móvil, casi pegada a la siguiente. */
 .vx-seg.is-here .vx-seg-name{color:var(--t);font-weight:700}
+/* La tarjeta se apila según su propio ancho, no el de la ventana: en tablet, con la barra
+   lateral, dos columnas dejaban el medidor en unos 220 px. */
+@container vx (max-width:760px){
+  .vx-main{grid-template-columns:1fr;gap:20px}
+  .vx-trust{padding-left:0;border-left:0;padding-top:20px;border-top:1px solid var(--line)}
+}
+/* Cinco nombres no caben bajo el medidor en un móvil estrecho: se deja solo el del nivel
+   actual, bajo su tramo (el aria-label del medidor sigue nombrando el nivel). */
+.vx-trust{container:vxt/inline-size}
+@container vxt (max-width:312px){
+  .vx-seg-name{display:none}
+  .vx-seg.is-here .vx-seg-name{display:block;white-space:nowrap}
+}
 /* Bajo la tarjeta, los datos del análisis como contexto. */
 .vx + .run-stamp{margin:-2px 0 12px}
 .u-result{margin-top:12px}
@@ -1388,7 +1402,8 @@ tr.sel td{color:var(--text-2)}
 .doc-level{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--radius-sm);padding:10px 14px;background:var(--surface)}
 .doc-level dt{font-weight:700;color:var(--text-hi);margin:0 0 3px}
 .doc-level dd{margin:0;color:var(--text-2);font-size:var(--fs-base);line-height:1.55}
-.doc-level-strong{border-left-color:var(--lv-4)}
+.doc-level-strong{border-left-color:var(--lv-5)}
+.doc-level-good{border-left-color:var(--lv-4)}
 .doc-level-moderate{border-left-color:var(--lv-3)}
 .doc-level-weak{border-left-color:var(--lv-2)}
 .doc-level-insufficient{border-left-color:var(--lv-1)}
