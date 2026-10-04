@@ -29,6 +29,9 @@ const FOTOS = {
   'portada-claro': { src: 'portada-claro.jpg', desk: [0, 520, 1932, 1104], mob: [0, 0, 1932, 2576] },
   cierre: { src: 'cierre.jpg', desk: [0, 110, 2576, 1220], mob: [795, 0, 915, 1511] },
   guias: { src: 'guias.jpg', desk: [0, 330, 2576, 890], mob: [380, 250, 1700, 1100] },
+  // Monument Valley de noche: mesetas de cima plana bajo un cielo del mismo azul noche
+  // que la web. El título va arriba, sobre el cielo (ver .photo-head.ph-top).
+  metodologia: { src: 'metodologia.jpg', desk: [0, 120, 2576, 1180], mob: [1080, 320, 1380, 1130], calidad: 56 },
   404: { src: '404.jpg', desk: [0, 820, 1717, 900], mob: [0, 0, 1717, 2576] },
   // Fotos de contenido (<img> con srcset en la portada), no de fondo: un solo recorte y dos
   // anchos. El original es de atardecer rosa y carrizal anaranjado, lo único cálido de la web:

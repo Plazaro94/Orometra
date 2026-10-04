@@ -1960,6 +1960,9 @@ html{zoom:var(--z)}
 [data-photo="guias"]{
   --ph-img:url("/img/fotos/guias-esc-1400.webp");
 }
+[data-photo="metodologia"]{
+  --ph-img:url("/img/fotos/metodologia-esc-1400.webp");
+}
 [data-photo="404"]{
   --ph-img:url("/img/fotos/404-esc-1400.webp");
 }
@@ -1973,6 +1976,9 @@ html{zoom:var(--z)}
   }
   [data-photo="guias"]{
     --ph-img:url("/img/fotos/guias-esc-2200.webp");
+  }
+  [data-photo="metodologia"]{
+    --ph-img:url("/img/fotos/metodologia-esc-2200.webp");
   }
   [data-photo="404"]{
     --ph-img:url("/img/fotos/404-esc-1717.webp");
@@ -1988,6 +1994,9 @@ html{zoom:var(--z)}
   }
   [data-photo="guias"]{
     --ph-img:url("/img/fotos/guias-mov-1200.webp");
+  }
+  [data-photo="metodologia"]{
+    --ph-img:url("/img/fotos/metodologia-mov-1200.webp");
   }
   [data-photo="404"]{
     --ph-img:url("/img/fotos/404-mov-1200.webp");
@@ -2006,6 +2015,9 @@ html{zoom:var(--z)}
   [data-photo="guias"]{
     --ph-img:image-set(url("/img/fotos/guias-esc-1400.avif") type("image/avif"),url("/img/fotos/guias-esc-1400.webp") type("image/webp"));
   }
+  [data-photo="metodologia"]{
+    --ph-img:image-set(url("/img/fotos/metodologia-esc-1400.avif") type("image/avif"),url("/img/fotos/metodologia-esc-1400.webp") type("image/webp"));
+  }
   [data-photo="404"]{
     --ph-img:image-set(url("/img/fotos/404-esc-1400.avif") type("image/avif"),url("/img/fotos/404-esc-1400.webp") type("image/webp"));
   }
@@ -2019,6 +2031,9 @@ html{zoom:var(--z)}
     }
     [data-photo="guias"]{
       --ph-img:image-set(url("/img/fotos/guias-esc-2200.avif") type("image/avif"),url("/img/fotos/guias-esc-2200.webp") type("image/webp"));
+    }
+    [data-photo="metodologia"]{
+      --ph-img:image-set(url("/img/fotos/metodologia-esc-2200.avif") type("image/avif"),url("/img/fotos/metodologia-esc-2200.webp") type("image/webp"));
     }
     [data-photo="404"]{
       --ph-img:image-set(url("/img/fotos/404-esc-1717.avif") type("image/avif"),url("/img/fotos/404-esc-1717.webp") type("image/webp"));
@@ -2034,6 +2049,9 @@ html{zoom:var(--z)}
     }
     [data-photo="guias"]{
       --ph-img:image-set(url("/img/fotos/guias-mov-1200.avif") type("image/avif"),url("/img/fotos/guias-mov-1200.webp") type("image/webp"));
+    }
+    [data-photo="metodologia"]{
+      --ph-img:image-set(url("/img/fotos/metodologia-mov-1200.avif") type("image/avif"),url("/img/fotos/metodologia-mov-1200.webp") type("image/webp"));
     }
     [data-photo="404"]{
       --ph-img:image-set(url("/img/fotos/404-mov-1200.avif") type("image/avif"),url("/img/fotos/404-mov-1200.webp") type("image/webp"));
@@ -2082,6 +2100,16 @@ html,body{overflow-x:clip}
   display:grid;align-content:end;gap:8px;color:#e7ebf3;
   background:linear-gradient(180deg,rgba(10,15,26,.04) 0%,rgba(10,15,26,.38) 50%,rgba(10,15,26,.82) 100%),var(--ph-img) center/cover no-repeat,#0a0f1a;
 }
+/* Cabecera con el texto arriba, sobre el cielo, y la foto anclada abajo (Metodología:
+   las mesetas quedan a la vista y el título no las tapa). */
+.photo-head.ph-top{
+  align-content:start;
+  background:linear-gradient(180deg,rgba(10,15,26,.55) 0%,rgba(10,15,26,.18) 42%,rgba(10,15,26,0) 64%,rgba(10,15,26,.28) 100%),var(--ph-img) center bottom/cover no-repeat,#0a0f1a;
+}
+.photo-head.ph-top{min-height:clamp(300px,34vw,460px);margin-bottom:28px}
+@media (max-width:640px){.photo-head.ph-top{min-height:340px}}
+/* La entrada va justo debajo de la foto, no encima: así no tapa las mesetas. */
+.lp-lead.ph-after{margin:0 0 40px}
 .photo-head .lp-eyebrow{color:#c3cfea;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
 .photo-head h1{color:#ffffff;margin:0}
 .photo-head :is(h1,.lp-lead,.lp-eyebrow){text-shadow:0 1px 16px rgba(8,12,20,.6)}
