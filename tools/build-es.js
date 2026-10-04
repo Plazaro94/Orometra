@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Genera las paginas publicas en espanol (/es/, /es/methodology/, /es/privacy/) a partir
+// Genera las paginas publicas en espanol (/es/, /es/methodology/, /es/privacy/, /es/about/…) a partir
 // de las inglesas y de las traducciones de js/i18n.js.
 //
 // Por que existen: el HTML estatico esta en ingles y el espanol se aplicaba con
@@ -26,6 +26,7 @@ const PAGES = [
   ['index.html', '/', '/es/', 'landing'],
   ['methodology/index.html', '/methodology/', '/es/methodology/', 'methodology'],
   ['privacy/index.html', '/privacy/', '/es/privacy/', 'privacy'],
+  ['about/index.html', '/about/', '/es/about/', 'about'],
   ['guides/index.html', '/guides/', '/es/guias/', 'guides'],
   ['guides/export-mt5-optimization-xml/index.html', '/guides/export-mt5-optimization-xml/', '/es/guias/exportar-optimizacion-mt5-xml/', 'guide-export'],
   ['guides/mt5-overfitting/index.html', '/guides/mt5-overfitting/', '/es/guias/sobreoptimizacion-mt5/', 'guide-overfit'],
