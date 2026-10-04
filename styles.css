@@ -57,6 +57,7 @@
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --font-display:"Source Sans 3",system-ui,sans-serif;
   /* Escala tipográfica (7 pasos) */
+  --measure:72ch; /* longitud de línea máxima del texto corrido */
   --fs-xs:13px; --fs-sm:13px; --fs-md:14px; --fs-base:15px; --fs-lg:16.5px; --fs-xl:19.5px; --fs-2xl:23px; --fs-display:clamp(34px,4vw,52px);
   --space-section:56px;
   /* Ancho comun de cabecera, contenido y pie en portada, metodologia y privacidad. */
@@ -185,7 +186,7 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 }
 .lang-btn{padding:5px 9px;font-size:13px;font-weight:700;letter-spacing:.06em}
 .theme-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;font-size:13.5px}
-.lang-btn:hover,.theme-btn:hover{color:var(--text-hi)}
+@media (hover:hover){.lang-btn:hover,.theme-btn:hover{color:var(--text-hi)}}
 .lang-btn[aria-checked="true"],.theme-btn[aria-checked="true"]{background:var(--surface-3);color:var(--text-hi)}
 .lang-btn:focus-visible,.theme-btn:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
 .sidebar-bottom .lang-row{margin-bottom:8px}
@@ -262,6 +263,8 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .has-analysis.intake-collapsed .intake .upload-grid,
 .has-analysis.intake-collapsed .intake .set-hint,
 .has-analysis.intake-collapsed .intake #preflight{display:none}
+/* Plegado, el resumen es una línea de contexto, no otra tarjeta antes del resultado. */
+.has-analysis.intake-collapsed .intake{padding:0 2px;border:0;background:none;margin-bottom:12px}
 .has-analysis.intake-collapsed .intake-summary{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   font-size:13.5px;color:var(--muted);
@@ -280,7 +283,7 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
    flex) -- apretaba el texto de la pestana en una caja de 20px que se desbordaba sobre
    la siguiente pestana en la tira horizontal de movil. */
 .nav-item span:first-child{font-size:13px;color:var(--muted-3);width:20px;font-variant-numeric:tabular-nums}
-.nav-item:hover:not(:disabled){background:var(--surface-2);color:var(--text)}
+@media (hover:hover){.nav-item:hover:not(:disabled){background:var(--surface-2);color:var(--text)}}
 .nav-item.active{background:var(--surface-3);color:var(--text-hi);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
 /* Tema claro: el fondo de la pestaña activa casi no se distinguía del de la barra (1,05:1). */
 [data-theme="light"] .nav-item.active{background:#ffffff;box-shadow:inset 3px 0 0 var(--accent),inset 0 0 0 1px var(--line)}
@@ -308,12 +311,12 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
   border-radius:999px;padding:9px 15px;font-size:13.5px;transition:background .15s,border-color .15s,color .15s;
   text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
 }
-.ghost-btn:hover,.back-btn:hover{background:var(--surface-2);color:var(--text-hi);border-color:var(--line)}
+@media (hover:hover){.ghost-btn:hover,.back-btn:hover{background:var(--surface-2);color:var(--text-hi);border-color:var(--line)}}
 .primary-btn{background:var(--cta-bg);color:var(--cta-text);border-color:var(--cta-line);font-weight:700}
-.primary-btn:hover:not(:disabled){background:var(--cta-hover)}
+@media (hover:hover){.primary-btn:hover:not(:disabled){background:var(--cta-hover)}}
 .primary-btn:disabled{background:var(--surface-2);border-color:var(--line);color:var(--muted-2);cursor:default}
 .text-btn{border:0;padding:0;background:none;color:var(--info-text);font-size:13px}
-.text-btn:hover{color:var(--text);text-decoration:underline}
+@media (hover:hover){.text-btn:hover{color:var(--text);text-decoration:underline}}
 .link-btn{border:0;background:none;color:var(--accent);font-weight:700;padding:0;font-size:13.5px}
 .link-btn:hover{text-decoration:underline}
 
@@ -322,7 +325,7 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:6px;
 }
 .export-menu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--text-2);padding:9px 11px;border-radius:var(--radius-sm);font-size:13.5px}
-.export-menu button:hover{background:var(--surface-3);color:var(--text-hi)}
+@media (hover:hover){.export-menu button:hover{background:var(--surface-3);color:var(--text-hi)}}
 
 .gloss{position:relative;border-bottom:1px dotted var(--muted-2);cursor:help}
 .gloss-card{
@@ -361,7 +364,7 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 }
 .policy-toggle::after{content:"+";margin-left:auto;font-size:18px;font-weight:400;color:var(--muted)}
 .policy-open .policy-toggle::after{content:"−"}
-.policy-toggle:hover{border-color:var(--line-strong);color:var(--text-hi)}
+@media (hover:hover){.policy-toggle:hover{border-color:var(--line-strong);color:var(--text-hi)}}
 .policy-toggle-sum{font-weight:400;color:var(--muted);font-size:13px;flex:1;min-width:0}
 .policy-toggle > span:first-child{flex:none}
 .has-files .empty-state{display:none}
@@ -374,7 +377,9 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
   padding:14px;display:flex;align-items:center;gap:13px;transition:border-color .15s,background .15s;
 }
 .dropzone{cursor:pointer}
-.dropzone:hover,.dropzone.drag,.dropzone:focus-visible{border-color:var(--accent);background:var(--surface-2)}
+/* Los :hover, solo con ratón: en pantallas táctiles el estado se quedaba pegado tras tocar. */
+.dropzone.drag,.dropzone:focus-visible{border-color:var(--accent);background:var(--surface-2)}
+@media (hover:hover){.dropzone:hover{border-color:var(--accent);background:var(--surface-2)}}
 .dropzone.ready{border-style:solid;border-color:var(--ok-line);background:var(--ok-bg)}
 .dropzone.error{border-color:var(--danger);border-style:solid}
 /* Bloqueada mientras se analiza: sin opacidad sobre el texto (bajaba a 2,5:1); se apagan
@@ -383,7 +388,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .dropzone.locked .file-icon{opacity:.45}
 .dropzone.locked .drop-action{color:var(--muted);border-color:var(--line)}
 .set-hint{
-  margin:8px 2px 0;font-size:13px;color:var(--muted-2);line-height:1.45;
+  margin:8px 2px 0;font-size:13px;color:var(--muted-2);line-height:1.45;max-width:var(--measure);
 }
 .set-hint .set-status{display:block;margin-top:3px;color:var(--muted);font-family:var(--mono);font-size:13px}
 .set-hint .set-status:empty{display:none}
@@ -397,7 +402,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .req{background:var(--danger-bg);color:var(--danger-text);border:1px solid var(--danger-line)}
 .opt{background:var(--surface-3);color:var(--info);border:1px solid var(--line-strong)}
 .drop-action{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 18px;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);color:var(--text-hi);font-size:14px;font-weight:600;flex:none}
-.dropzone:hover .drop-action{border-color:var(--accent)}
+@media (hover:hover){.dropzone:hover .drop-action{border-color:var(--accent)}}
 .analyze-card{
   border-style:solid;border-color:var(--line);text-align:left;color:var(--text-2);width:100%;
   background:var(--surface-2);cursor:default;
@@ -410,7 +415,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .analyze-card:disabled strong{color:var(--muted)}
 .analyze-card:not(:disabled){background:var(--cta-bg);border-color:var(--cta-line);color:var(--cta-text);cursor:pointer}
 .analyze-card:not(:disabled) strong,.analyze-card:not(:disabled) span,.analyze-card:not(:disabled) .analyze-arrow{color:var(--cta-text)}
-.analyze-card:not(:disabled):hover{background:var(--cta-hover);border-color:var(--cta-line)}
+@media (hover:hover){.analyze-card:not(:disabled):hover{background:var(--cta-hover);border-color:var(--cta-line)}}
 .analyze-card.busy{cursor:progress}
 .analyze-arrow{margin-left:auto;color:var(--muted-3);font-size:20px}
 .analyze-card:disabled .analyze-arrow{display:none}
@@ -528,7 +533,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .panel-kicker,.detail-kicker{font-size:13px;letter-spacing:0;font-weight:700;color:var(--muted-2);text-transform:none}
 .panel h2{font-size:17px;margin-top:4px;letter-spacing:-.02em}
 .panel h3{font-size:13px;margin-bottom:9px;color:var(--text)}
-.panel-intro{margin:0 0 15px;color:var(--muted);font-size:14px;max-width:820px}
+.panel-intro{margin:0 0 15px;color:var(--muted);font-size:14px;max-width:var(--measure)}
 .muted{color:var(--muted);font-size:13px}
 
 .empty-state{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:24px 26px}
@@ -640,6 +645,14 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-seg.is-here .vx-seg-name{color:var(--t);font-weight:700}
 /* Bajo la tarjeta, los datos del análisis como contexto. */
 .vx + .run-stamp{margin:-2px 0 12px}
+.u-result{margin-top:12px}
+.u-result-tag{display:inline-flex;align-items:center;gap:7px;padding:4px 12px;border-radius:999px;border:1px solid;font-size:13.5px;font-weight:700}
+.u-result-tag::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.u-result.v-go .u-result-tag{background:var(--evidence-strong-bg);color:var(--evidence-strong-text);border-color:var(--evidence-strong-line)}
+.u-result.v-warn .u-result-tag{background:var(--evidence-moderate-bg);color:var(--evidence-moderate-text);border-color:var(--evidence-moderate-line)}
+.u-result.v-no .u-result-tag{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-line)}
+.u-result-title{margin:12px 0 0;font-size:24px;line-height:1.2;letter-spacing:-.02em;color:var(--text-hi);max-width:var(--measure)}
+.u-result .vx-pass-note{margin-bottom:0;max-width:var(--measure)}
 .vx-trust-line{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--text-2)}
 .vx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .vx-stat{border:1px solid var(--line-soft);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px 12px 11px;min-width:0}
@@ -720,7 +733,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .f-block strong{color:var(--danger-text)}
 .f-warn strong{color:var(--warn-text)}
 .f-ok strong{color:var(--ok-text)}
-.finding p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55}
+.finding p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55;max-width:var(--measure)}
 /* Las negritas dentro del texto son inline: la regla del titulo las partia en lineas sueltas. */
 .finding p strong{display:inline;font-size:inherit;margin:0}
 
@@ -745,7 +758,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .why-col li{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid var(--line-soft)}
 .why-col li:first-child{padding-top:0;border-top:0}
 .why-col strong{font-size:var(--fs-sm);color:var(--text-hi);font-weight:700}
-.why-col span{font-size:var(--fs-xs);color:var(--muted);line-height:1.45}
+.why-col span{font-size:var(--fs-xs);color:var(--muted);line-height:1.45;max-width:var(--measure)}
 .why-pros strong{color:var(--ok-text)}
 .why-cons strong{color:var(--warn-text)}
 .why-grid-one{grid-template-columns:1fr}
@@ -909,7 +922,7 @@ th.t3-label{padding-left:2px}
 /* ---------------------------------------------------------------- tablas */
 .detail-head{margin-bottom:16px}
 .detail-head h2{font-size:26px;margin:8px 0;letter-spacing:-.025em}
-.detail-head p{color:var(--muted);font-size:13.5px;margin:0;max-width:880px}
+.detail-head p{color:var(--muted);font-size:13.5px;margin:0;max-width:var(--measure)}
 .detail-head strong{color:var(--text)}
 .table-wrap{overflow-x:auto;overflow-y:visible;position:relative}
 /* El difuminado va pegado (sticky) al borde visible, no al final del contenido:
@@ -964,7 +977,20 @@ tr.sel td{color:var(--text-2)}
   tr.stack-row:last-child{border-bottom:none}
   tr.stack-row td{display:flex;align-items:flex-start;gap:10px;padding:3px 0;border:none;white-space:normal;max-width:none}
   tr.stack-row td::before{content:attr(data-label);flex:0 0 40%;color:var(--muted);font-size:13px;text-transform:none;letter-spacing:0}
-  tr.stack-row td.reasons{flex-direction:column;align-items:flex-start}
+  tr.stack-row td.reasons-cell{flex-direction:column;align-items:flex-start}
+  /* Descartes: tarjeta compacta. Puesto, pasada y resultado en una fila; las tres
+     cifras en otra; los motivos debajo. Antes, siete filas etiqueta/valor por
+     descarte: la pestaña medía ~5.000 px. */
+  .rej-table tr.stack-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;padding:14px 0}
+  .rej-table tr.stack-row td{display:block;padding:0}
+  .rej-table tr.stack-row td::before{display:block;margin-bottom:2px;font-size:12.5px}
+  .rej-table tr.stack-row td.reasons-cell{grid-column:1 / -1}
+  .rej-table tr.stack-row td::before{font-family:var(--font)}
+  /* El detalle de cada motivo repite los mínimos que ya se explican arriba: en la
+     tarjeta compacta quedan solo las etiquetas, como en la tabla de escritorio. */
+  .rej-table .reason-detail{display:none}
+  /* El título ya dice que es el informe: la etiqueta «Informe» sobra en el móvil. */
+  .topbar-report .eyebrow{display:none}
   .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:13px}
   .table-wrap:has(table.stack-table).has-hscroll::after{display:none}
 }
@@ -1032,7 +1058,7 @@ tr.sel td{color:var(--text-2)}
   #plateauSurfaceCanvas{aspect-ratio:16/12}
 }
 
-.limits{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+.limits{margin:0;padding-left:18px;color:var(--muted);font-size:14px;max-width:var(--measure)}
 .limits li{margin-bottom:9px}
 
 .method-list{list-style:none;margin:0;padding:0}
@@ -1055,7 +1081,7 @@ tr.sel td{color:var(--text-2)}
 /* Dos gráficos lado a lado solo si cada uno tiene sitio; si no, uno debajo de otro (a
    1280 px, lado a lado, el texto quedaba a 8 px). */
 .grid-secondary.chart-pair{grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr))}
-.chart-note{margin:12px 0 0;font-size:13.5px;color:var(--muted-2);line-height:1.5}
+.chart-note{margin:12px 0 0;font-size:13.5px;color:var(--muted-2);line-height:1.5;max-width:var(--measure)}
 .chart-block{display:flex;flex-direction:column;gap:10px}
 .chart-legend{
   display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;
