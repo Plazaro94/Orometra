@@ -243,7 +243,7 @@ const STRINGS = {
     'version': 'Engine version 2',
 
     'top.eyebrow': 'Quantitative robustness analysis',
-    'top.h1': 'See which configuration holds up before you trust it with real money.',
+    'top.h1': 'See which configuration holds up before you trust it with your money.',
     'top.report.eyebrow': 'Report',
     'btn.demo': 'See a sample report',
     'btn.export': 'Export',
@@ -832,7 +832,7 @@ const STRINGS = {
     'version': 'Versión 2 del motor',
 
     'top.eyebrow': 'Análisis cuantitativo de robustez',
-    'top.h1': 'Descubre qué configuración aguanta antes de confiarle tu dinero real.',
+    'top.h1': 'Descubre qué configuración aguanta antes de confiarle tu dinero.',
     'top.report.eyebrow': 'Informe',
     'btn.demo': 'Ver un informe de ejemplo',
     'btn.export': 'Exportar',
