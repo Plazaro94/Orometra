@@ -104,7 +104,11 @@ section('C2. Solo un periodo no visto de la configuracion propuesta sube el nive
   }
   if (a.verdict.level === 'strong') {
     set({ params: other }, 'normal');
-    check('con un informe ajeno el sello no pasa de moderada', displayVerdictLevel(a) === 'moderate', displayVerdictLevel(a));
+    check('con un informe ajeno el sello no pasa de buena', displayVerdictLevel(a) === 'good', displayVerdictLevel(a));
+    set({ params: matching }, 'tail');
+    check('si el periodo no visto va en contra, baja a moderada', displayVerdictLevel(a) === 'moderate', displayVerdictLevel(a));
+    set({ params: matching }, 'outside');
+    check('fuera de rango tambien baja a moderada', displayVerdictLevel(a) === 'moderate', displayVerdictLevel(a));
     set({ params: matching }, 'normal');
     check('con el informe correcto el sello es solida', displayVerdictLevel(a) === 'strong', displayVerdictLevel(a));
   }

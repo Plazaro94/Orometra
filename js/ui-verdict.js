@@ -41,6 +41,7 @@ export function verdictCopy(level) {
   if (level === 'insufficient') return { label: t('verdict.insufficient'), cls: 'v-no' };
   if (level === 'weak') return { label: t('verdict.weak'), cls: 'v-weak' };
   if (level === 'moderate') return { label: t('verdict.moderate'), cls: 'v-warn' };
+  if (level === 'good') return { label: t('verdict.good'), cls: 'v-go' };
   return { label: t('verdict.strong'), cls: 'v-go' };
 }
 
@@ -92,41 +93,56 @@ export function holdoutFact(a) {
       : L(`Periodo no visto: ${value}`, `Unseen period: ${value}`),
     done: true,
     ok: !problem && res.level === 'normal',
+    // "En la cola" o "fuera de rango" sobre la configuración propuesta: el periodo no
+    // visto va en contra. Un informe ajeno no dice nada, ni a favor ni en contra.
+    against: !problem && res.level !== 'normal',
   };
 }
 
 /**
- * Evidencia "fuerte" sin holdout limpio se muestra como moderada: el forward ya se usó.
+ * El motor solo ve el forward, que ya se usó para validar y ordenar las mesetas. Su
+ * "sólida" se muestra como "buena" hasta que un periodo no visto la confirma, y baja a
+ * "moderada" si ese periodo va en contra.
  */
 export function displayVerdictLevel(a) {
   let level = a.verdict.level;
   if (level === 'strong' && a.meta.hasForward) {
     const h = holdoutFact(a);
-    if (!h.done || !h.ok) level = 'moderate';
+    if (h.against) level = 'moderate';
+    else if (!h.ok) level = 'good';
   }
   return level;
 }
 
 /**
  * Titular y resumen coherentes con el nivel MOSTRADO, no con el que calculó el
- * motor. displayVerdictLevel() rebaja "sólida" a "moderada" cuando falta un
- * holdout limpio, pero a.verdict.headline/summary siguen siendo el texto que
- * el motor generó para "sólida" -- usarlos tal cual contradice al sello (un
- * recuadro moderado/ámbar con el titular "Evidencia sólida" encima).
+ * motor. displayVerdictLevel() deja la "sólida" del motor en "buena" (o "moderada"),
+ * pero a.verdict.headline/summary siguen siendo el texto que el motor generó para
+ * "sólida" -- usarlos tal cual contradice al medidor.
  */
 export function displayVerdictCopy(a) {
   const level = displayVerdictLevel(a);
   const v = a.verdict;
   if (level === v.level) return { level, headline: v.headline, summary: v.summary };
-  // Unico caso posible hoy: sólida -> moderada por falta de holdout.
+  // El titular empieza siempre por el nivel MOSTRADO: la frase más leída no puede
+  // admitir dos lecturas.
+  if (level === 'good') {
+    return {
+      level,
+      headline: L('Evidencia buena: meseta validada en el forward, falta el periodo no visto', 'Good evidence: plateau validated on the forward, unseen period still missing'),
+      summary: L(
+        'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y aguanta al mover los umbrales. Se queda en buena porque el forward ya se usó para validar y ordenar las mesetas: para llegar a sólida falta confirmarla en un periodo que no hayas tocado.',
+        'The proposed plateau rests on neighbors that also clear your minimums and holds when thresholds are moved. It stays at good because the forward was already used to validate and rank the plateaus: to reach strong it still needs confirming on a period you have not touched.',
+      ),
+    };
+  }
+  // sólida -> moderada: el periodo no visto va en contra de la configuración propuesta.
   return {
     level,
-    // El titular empieza por el nivel MOSTRADO. Antes decia "Evidencia sólida, aún sin
-    // validar" bajo un sello "moderada": la frase mas leida admitia dos lecturas.
-    headline: L('Evidencia moderada: meseta sólida, falta el periodo no visto', 'Moderate evidence: solid plateau, unseen period still missing'),
+    headline: L('Evidencia moderada: el periodo no visto no la confirma', 'Moderate evidence: the unseen period does not confirm it'),
     summary: L(
-      'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y aguanta al mover los umbrales. Se queda en moderada porque el forward ya se usó para validar y ordenar las mesetas: falta confirmarla en un periodo que no hayas tocado.',
-      'The proposed plateau rests on neighbors that also clear your minimums and holds when thresholds are moved. It stays at moderate because the forward was already used to validate and rank the plateaus: it still needs confirming on a period you have not touched.',
+      'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y pasó el forward, pero en el periodo no visto su resultado se sale de lo habitual. Revisa esa pestaña antes de dar ningún paso más.',
+      'The proposed plateau rests on neighbors that also clear your minimums and passed the forward, but on the unseen period its result falls outside the usual range. Check that tab before taking any further step.',
     ),
   };
 }
@@ -166,7 +182,7 @@ export function nextStepText(a, hold) {
   );
 }
 
-const LEVEL_ORDER = ['insufficient', 'weak', 'moderate', 'strong'];
+const LEVEL_ORDER = ['insufficient', 'weak', 'moderate', 'good', 'strong'];
 
 /** Nombre corto de cada nivel para el medidor («Moderada»), sin la palabra «Evidencia». */
 export function levelName(level) {
@@ -174,6 +190,7 @@ export function levelName(level) {
     insufficient: L('Insuficiente', 'Insufficient'),
     weak: L('Débil', 'Weak'),
     moderate: L('Moderada', 'Moderate'),
+    good: L('Buena', 'Good'),
     strong: L('Sólida', 'Strong'),
   }[level];
 }
@@ -207,9 +224,14 @@ export function trustLine(a, level) {
       : L(`Hay una meseta, pero con ${critical} limitaciones serias que conviene leer antes de usarla.`,
         `There is a plateau, but with ${critical} serious limitations worth reading before using it.`);
   }
+  if (level === 'good') {
+    return L('Meseta validada en el forward. Para llegar a sólida, falta confirmarla en un periodo no visto.',
+      'A plateau validated on the forward. To reach strong, it still needs confirming on an unseen period.');
+  }
   if (level === 'moderate') {
     if (a.verdict.level === 'strong') {
-      return L('Meseta validada en el forward.', 'A plateau validated on the forward.');
+      return L('Meseta validada en el forward, pero el periodo no visto no la confirma.',
+        'A plateau validated on the forward, but the unseen period does not confirm it.');
     }
     return warnings === 1
       ? L('Meseta con apoyo real, con un aviso que conviene leer.', 'A plateau with real support, with one warning worth reading.')
@@ -219,10 +241,11 @@ export function trustLine(a, level) {
     'The most these data can support: a plateau validated and confirmed on an unseen period.');
 }
 
-/** Medidor de cuatro tramos: dónde está este análisis y cuánto le falta. */
+/** Medidor de cinco tramos: dónde está este análisis y cuánto le falta. */
 function evidenceMeter(level) {
   const at = LEVEL_ORDER.indexOf(level);
-  return `<div class="vx-meter" role="img" aria-label="${esc(L(`Nivel de evidencia: ${levelName(level)} (${at + 1} de 4)`, `Evidence level: ${levelName(level)} (${at + 1} of 4)`))}">
+  const n = LEVEL_ORDER.length;
+  return `<div class="vx-meter" role="img" aria-label="${esc(L(`Fiabilidad: ${levelName(level)} (${at + 1} de ${n})`, `Reliability: ${levelName(level)} (${at + 1} of ${n})`))}">
     ${LEVEL_ORDER.map((lv, i) => `<div class="vx-seg${i <= at ? ' is-on' : ''}${i === at ? ' is-here' : ''}">
       <span class="vx-seg-bar"></span>
       <span class="vx-seg-name">${esc(levelName(lv))}</span>
@@ -318,7 +341,7 @@ function nextSteps(a, best, hold) {
   </div>`;
 }
 
-/** La tarjeta principal: qué configuración usar, cuánto fiarte y qué hacer ahora. */
+/** La tarjeta principal: qué configuración usar, su fiabilidad y qué hacer ahora. */
 function renderDecision(a, dv, best, hold) {
   const c = verdictCopy(dv.level);
   const hasF = a.meta.hasForward;
@@ -354,7 +377,7 @@ function renderDecision(a, dv, best, hold) {
     <div class="vx-main">
       <div class="vx-pick">${pick}</div>
       <div class="vx-trust">
-        <span class="vx-label">${esc(L('Cuánto fiarte', 'How much to trust it'))}</span>
+        <span class="vx-label">${esc(L('Fiabilidad', 'Reliability'))}</span>
         ${evidenceMeter(dv.level)}
         <p class="vx-trust-line">${esc(trustLine(a, dv.level))}</p>
         ${keyFigures(a, best)}
