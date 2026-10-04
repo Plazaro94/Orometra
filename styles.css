@@ -36,19 +36,17 @@
   --text-2:#dbe0eb;      --text:#f1f3f8;        --text-hi:#ffffff;
   --ok-bg:#1f2840;       --ok-line:#3a4870;     --ok:#a9b8da;     --ok-text:#c3cfea;     --ok-hi:#e6ecf8;
   /* Lima: solo la acción y la respuesta (botón principal, configuración recomendada, evidencia sólida). */
-  --lime:#d4f25c;        --lime-fill:#d4f25c;   --lime-text:#d4f25c;   --lime-bg:#232a12;     --lime-line:#4a5a1c;
-  --warn-bg:#2b2410;     --warn-line:#5a4a18;   --warn:#f2c230;   --warn-text:#f6d66a;   --warn-hi:#fbe9b0;
-  --danger-bg:#2a1a1a;   --danger-line:#4f2b2a; --danger:#e0706a; --danger-text:#f0a8a3; --danger-hi:#f8d4d1;
-  --info-bg:#1f2840;     --info-line:#3a4870;   --info:#a9b8da;   --info-text:#c3cfea;   --info-hi:#e6ecf8;
+  --lime-fill:#d4f25c;   --lime-text:#d4f25c;   --lime-bg:#232a12;     --lime-line:#4a5a1c;
+  --warn-bg:#2b2410;     --warn-line:#5a4a18;   --warn:#f2c230;   --warn-text:#f6d66a;
+  --danger-bg:#2a1a1a;   --danger-line:#4f2b2a; --danger:#e0706a; --danger-text:#f0a8a3;
+  --info-bg:#1f2840;     --info-line:#3a4870;   --info:#a9b8da;   --info-text:#c3cfea;
   --profit:#63c08c;      --loss:#ff5a52;
 
   /* Tokens semánticos del producto (capa de significado, no solo color) */
-  --evidence-strong:var(--lime);   --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
-  --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#9fa8bc; --evidence-weak-bg:#1d2332; --evidence-weak-line:#30384b; --evidence-weak-text:#ccd2e0;
-  --evidence-none:#848a9a; --evidence-none-bg:#1b212f; --evidence-none-line:#30384b; --evidence-none-text:#ccd2e0;
-  --peak:#848a9a;            --peak-bg:#1c212e;            --peak-text:#ccd2e0;
-  --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
+  --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
+  --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
+  --peak:#848a9a;            --peak-text:#ccd2e0;
+  --plateau:var(--ok);
 
   --accent:var(--ok);    --accent2:var(--info);
   /* Escala de bordes (2 niveles + píldora). Antes había 9 valores de radio distintos
@@ -61,10 +59,9 @@
   --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --font-display:"Source Sans 3",system-ui,sans-serif;
-  /* Escala tipográfica (7 pasos) */
+  /* Escala tipográfica */
   --measure:72ch; /* longitud de línea máxima del texto corrido */
-  --fs-xs:13px; --fs-sm:13px; --fs-md:14px; --fs-base:15px; --fs-lg:16.5px; --fs-xl:19.5px; --fs-2xl:23px; --fs-display:clamp(34px,4vw,52px);
-  --space-section:56px;
+  --fs-xs:13px; --fs-sm:13px; --fs-md:14px; --fs-base:15px; --fs-lg:16.5px; --fs-xl:19.5px;
   /* Ancho comun de cabecera, contenido y pie en portada, metodologia y privacidad. */
   --site-w:1120px;
   /* Cabecera (marca + idioma/tema): un solo tamano para cada contexto, en vez de que
@@ -78,7 +75,7 @@
   --control-h:36px;
   --brand-gap:10px;
   /* Botón principal (lima con borde más claro) y banda de cabecera (azul noche) */
-  --cta-bg:#d4f25c; --cta-line:#e6fa9a; --cta-text:#141a08; --cta-hover:#e0f87e; --band:#0b1019; --navy:#0b1019; --navy-line:#1f2638;
+  --cta-bg:#d4f25c; --cta-line:#e6fa9a; --cta-text:#141a08; --cta-hover:#e0f87e; --navy:#0b1019; --navy-line:#1f2638;
   --hero-a:#1f2b47; --hero-b:#0f1524;
   color-scheme:dark;
 }
@@ -108,18 +105,16 @@
   --muted-3:#404c68;     --muted-2:#37425d;     --muted:#2d3853;
   --text-2:#1d273e;      --text:#11192d;        --text-hi:#050a14;
   --ok-bg:#e9eef8;       --ok-line:#c3cfe8;     --ok:#2b4a8c;     --ok-text:#24407c;     --ok-hi:#17295a;
-  --lime:#4c6000;        --lime-fill:#c6ec3c;   --lime-text:#4c6000;   --lime-bg:#f1f8d6;     --lime-line:#cfe39a;
-  --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;   --warn-hi:#5a4200;
-  --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c; --danger-hi:#66231f;
-  --info-bg:#e9eef8;     --info-line:#c3cfe8;   --info:#2b4a8c;   --info-text:#24407c;   --info-hi:#17295a;
+  --lime-fill:#c6ec3c;   --lime-text:#4c6000;   --lime-bg:#f1f8d6;     --lime-line:#cfe39a;
+  --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;
+  --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c;
+  --info-bg:#e9eef8;     --info-line:#c3cfe8;   --info:#2b4a8c;   --info-text:#24407c;
   --profit:#1d7a4c;      --loss:#b23a2f;
-  --evidence-strong:var(--lime);   --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
-  --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#4e5974; --evidence-weak-bg:#eef0f7; --evidence-weak-line:#d3d8e3; --evidence-weak-text:#394560;
-  --evidence-none:#6a7181; --evidence-none-bg:#eef0f7; --evidence-none-line:#d5dae7; --evidence-none-text:#444f6a;
-  --peak:#6a7181;            --peak-bg:#e7ebf3;            --peak-text:#394560;
-  --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
-  --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
+  --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
+  --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
+  --peak:#6a7181;            --peak-text:#394560;
+  --plateau:var(--ok);
+  --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --navy:#e6eaf4; --navy-line:#cdd4e4;
   --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
 }
@@ -241,7 +236,7 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .has-analysis .drop-copy strong{font-size:13px}
 .has-analysis .drop-copy span:last-child{font-size:13px}
 .has-analysis .analyze-card{padding:8px 12px;min-height:0}
-.has-analysis .analyze-icon,.has-analysis .analyze-arrow{display:none}
+.has-analysis .analyze-arrow{display:none}
 .has-analysis .analyze-card strong{font-size:13px}
 .has-analysis .analyze-card span{font-size:13px}
 .has-analysis .policy-panel{margin-top:10px}
@@ -296,7 +291,6 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .topbar{display:flex;justify-content:space-between;gap:28px;align-items:flex-start;margin-bottom:26px;flex-wrap:wrap}
 .eyebrow{font-size:13px;letter-spacing:0;font-weight:700;color:var(--muted);text-transform:none;margin-bottom:9px}
 .topbar h1{font-size:34px;letter-spacing:-.03em;line-height:1.1;margin-bottom:9px;font-weight:700;max-width:28ch}
-.subtitle strong{color:var(--text)}
 .top-actions{display:flex;gap:8px;flex-wrap:wrap;position:relative}
 
 .ghost-btn,.primary-btn{
@@ -499,8 +493,6 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
   display:flex;align-items:center;gap:9px;flex-wrap:wrap;
   font-size:13px;color:var(--muted-2);margin-bottom:11px;padding:0 2px;
 }
-.run-files{font-family:var(--mono);color:var(--muted)}
-.run-files b{color:var(--muted-2);font-weight:400}
 .run-sep{color:var(--line)}
 @media (max-width:640px){.run-stamp{gap:4px 12px}.run-sep{display:none}}
 .run-holdout{color:var(--muted);font-weight:600}
@@ -523,9 +515,6 @@ details.panel > summary:hover::after{color:var(--text)}
 details.panel > summary.panel-head.compact{padding-right:44px}
 details.panel > .panel-body{padding:0 20px 20px}
 .panel-evidence{border-color:var(--info-line);background:var(--info-bg)}
-.panel-risk{border-color:var(--warn-line);background:var(--warn-bg)}
-.panel-recommend{border-color:var(--ok-line);background:var(--surface)}
-.panel-recommend > .panel-head .panel-kicker{color:var(--ok-text)}
 .panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:15px;flex-wrap:wrap}
 .panel-head.compact{align-items:center}
 .panel-kicker,.detail-kicker{font-size:13px;letter-spacing:0;font-weight:700;color:var(--muted-2);text-transform:none}
@@ -549,32 +538,6 @@ details.panel > .panel-body{padding:0 20px 20px}
 
 .demo-note{border:1px solid var(--line-strong);background:var(--surface-2);border-radius:var(--radius);padding:12px 15px;font-size:13.5px;color:var(--text-2);margin-bottom:12px}
 
-/* ---------------------------------------------------------------- veredicto */
-/* Tarjeta neutra, como el resto del informe: el nivel se lee en el sello y en la barra
-   lateral. Rellenar la tarjeta entera con el color del nivel convertia el ambar de
-   "moderada" en un marron apagado que chocaba con la paleta azul. */
-.verdict-aside{
-  display:flex;flex-direction:column;gap:10px;min-width:0;
-  padding-left:20px;border-left:1px solid var(--line);
-}
-.verdict-fact{display:flex;flex-direction:column;gap:3px;min-width:0}
-.verdict-fact-label{
-  font-size:13px;letter-spacing:0;text-transform:none;font-weight:700;color:var(--muted-2);
-}
-.verdict-fact-value{font-size:13.5px;color:var(--text-hi);font-weight:700;line-height:1.35}
-.verdict-fact-value.mono{font-family:var(--mono);font-size:15px;letter-spacing:-.02em}
-.verdict-fact-note{
-  font-size:13px;color:var(--muted);line-height:1.4;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
-}
-.verdict-fact-note-full{-webkit-line-clamp:unset;overflow:visible}
-.verdict-fact-risk .verdict-fact-value{color:var(--warn-text)}
-.v-no .verdict-fact-risk .verdict-fact-value{color:var(--danger-text)}
-.v-weak .verdict-fact-risk .verdict-fact-value{color:var(--evidence-weak-text)}
-.verdict-fact-next .verdict-fact-value{font-weight:600;color:var(--text)}
-.verdict-fact-cta{align-self:flex-start;margin-top:2px;font-weight:600}
-.verdict-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.verdict-actions button{padding:9px 14px;font-size:13.5px}
 /* ---------------------------------------------------------------- decisión (veredicto)
    Lo primero del informe: qué configuración usar, su fiabilidad y qué hacer ahora. El
    nivel se lee en el medidor y en su color; la tarjeta es neutra, como el resto. */
@@ -745,8 +708,6 @@ details.panel > .panel-body{padding:0 20px 20px}
 .why-cons strong{color:var(--warn-text)}
 .why-grid-one{grid-template-columns:1fr}
 .why-none{margin:0;color:var(--muted-2);font-size:var(--fs-sm)}
-.verdict-params{margin:8px 0 10px}
-.why-empty{color:var(--muted-2) !important;font-size:var(--fs-sm)}
 .range-table-wrap{overflow:auto;margin-top:8px;position:relative}
 .range-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
 .range-table th{
@@ -829,7 +790,6 @@ th.t3-label{padding-left:2px}
 .t3-agree{background:var(--ok-bg)}
 .t3-agree .t3-label{background:var(--ok-bg)}
 .t3-tick{color:var(--accent);margin-left:7px;font-weight:700}
-.t3-sep td,.t3-sep th{border-bottom:1px solid var(--line)}
 .t3-params-head th{padding-top:16px;font-size:13px;letter-spacing:0;text-transform:none;color:var(--muted-2);font-weight:700;background:var(--surface)}
 .t3-table tfoot td{padding-top:14px;border-bottom:0}
 .t3-table tfoot th{border-bottom:0;background:var(--surface)}
@@ -1237,9 +1197,6 @@ tr.sel td{color:var(--text-2)}
   .topbar h1{font-size:27px}
   .tab-next{justify-content:stretch}
   .tab-next-btn{width:100%;justify-content:center}
-  /* En columna, la configuracion elegida y su .set van antes que la explicacion: es lo
-     que se viene a buscar. */
-  .verdict-aside{padding-left:0;border-left:0;padding-bottom:14px;border-bottom:1px solid var(--line)}
   .empty-state{padding:20px 18px}
   .dropzone-main{flex-wrap:wrap;padding:16px}
   .dropzone-main .file-icon{display:none}
@@ -1260,18 +1217,16 @@ tr.sel td{color:var(--text-2)}
   --muted-3:#404c68;     --muted-2:#37425d;     --muted:#2d3853;
   --text-2:#1d273e;      --text:#11192d;        --text-hi:#050a14;
   --ok-bg:#e9eef8;       --ok-line:#c3cfe8;     --ok:#2b4a8c;     --ok-text:#24407c;     --ok-hi:#17295a;
-  --lime:#4c6000;        --lime-fill:#c6ec3c;   --lime-text:#4c6000;   --lime-bg:#f1f8d6;     --lime-line:#cfe39a;
-  --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;   --warn-hi:#5a4200;
-  --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c; --danger-hi:#66231f;
-  --info-bg:#e9eef8;     --info-line:#c3cfe8;   --info:#2b4a8c;   --info-text:#24407c;   --info-hi:#17295a;
+  --lime-fill:#c6ec3c;   --lime-text:#4c6000;   --lime-bg:#f1f8d6;     --lime-line:#cfe39a;
+  --warn-bg:#fbf3dc;     --warn-line:#e8d39a;   --warn:#8f6a00;   --warn-text:#7a5a00;
+  --danger-bg:#f8ecea;   --danger-line:#e8c7c3; --danger:#a33a33; --danger-text:#8f322c;
+  --info-bg:#e9eef8;     --info-line:#c3cfe8;   --info:#2b4a8c;   --info-text:#24407c;
   --profit:#1d7a4c;      --loss:#b23a2f;
-  --evidence-strong:var(--lime);   --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
-  --evidence-moderate:var(--warn); --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
-  --evidence-weak:#4e5974; --evidence-weak-bg:#eef0f7; --evidence-weak-line:#d3d8e3; --evidence-weak-text:#394560;
-  --evidence-none:#6a7181; --evidence-none-bg:#eef0f7; --evidence-none-line:#d5dae7; --evidence-none-text:#444f6a;
-  --peak:#6a7181;            --peak-bg:#e7ebf3;            --peak-text:#394560;
-  --plateau:var(--ok);             --plateau-bg:var(--ok-bg);             --plateau-text:var(--ok-text);
-  --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --band:#ffffff; --navy:#e6eaf4; --navy-line:#cdd4e4;
+  --evidence-strong-bg:var(--lime-bg);   --evidence-strong-line:var(--lime-line);   --evidence-strong-text:var(--lime-text);
+  --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
+  --peak:#6a7181;            --peak-text:#394560;
+  --plateau:var(--ok);
+  --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --navy:#e6eaf4; --navy-line:#cdd4e4;
   --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
 }
@@ -1306,10 +1261,6 @@ tr.sel td{color:var(--text-2)}
   .panel-intro{margin-bottom:8px}
   .run-stamp{margin-bottom:3mm;color:var(--muted-3)}
   .run-sep{color:var(--muted-3)}
-  .verdict-aside{border-color:var(--line-strong)}
-  .verdict-fact-label{color:var(--muted-3)}
-  .verdict-fact-value,.verdict-fact-next .verdict-fact-value{color:#000}
-  .verdict-fact-note{color:var(--muted-2);-webkit-line-clamp:unset;overflow:visible}
   .finding p,.limits li{color:var(--text-2)}
   .finding strong{color:#000}
   .badge,.status-pill,.chip,.reason{border-color:var(--line-strong);background:#fff;color:#111}
@@ -1601,7 +1552,6 @@ html.i18n-pending body{visibility:hidden}
 .hm-lead{margin:0 0 28px;font-size:18px;line-height:1.55;color:var(--text-2);max-width:36ch}
 .hm-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .hm-cta{padding:12px 20px;font-size:15px;text-decoration:none;display:inline-flex;align-items:center;min-height:46px}
-.hm-trust{margin:0;font-size:var(--fs-sm);color:var(--muted)}
 
 .hm-section{margin-bottom:112px}
 .hm-section h2,.hm-final h2{

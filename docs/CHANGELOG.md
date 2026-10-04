@@ -1,5 +1,41 @@
 # Changelog
 
+## 2026-10-04 — Limpieza del repositorio
+
+- Fuera lo que ya no usaba nada: unas 30 reglas y 20 variables de `styles.css` de pantallas
+  antiguas del veredicto, 20 textos de `js/i18n.js` y una captura suelta en la raíz.
+- Fuera `vercel.json` y `_headers`: la web solo se publica en GitHub Pages. La política de
+  seguridad de referencia es la de `tools/serve.js`, y el test comprueba ahora el `<meta>`
+  de **todas** las páginas, no solo de ocho.
+- `npm test` ejecuta `tests/all.js`, que recorre todos los `tests/*.test.js` (una prueba
+  nueva ya no hay que añadirla a mano a `package.json`). `run.js`, `stress.js` e
+  `invariance.js` pasan a llamarse `engine.test.js`, `stress.test.js` e `invariance.test.js`.
+- `core/matrix/` pasa a llamarse `core/trades/`: el nombre venía del CSCV retirado el
+  2026-09-24 y hoy la carpeta solo analiza las operaciones del periodo no visto (sus
+  pruebas: `tests/trades.test.js` y `tests/trades-from-deals.test.js`).
+- Licencias OFL de las tres tipografías, con su aviso de copyright correcto (faltaba la de
+  IBM Plex Mono).
+- `README.md` y `DEPLOY.md` al día: cinco niveles de fiabilidad, páginas en español,
+  cómo se usa, y cada tema en un solo sitio.
+
+## 2026-10-01 → 2026-10-04 — Portada, app y fiabilidad
+
+- **Fiabilidad en cinco niveles** (insuficiente, débil, moderada, buena, sólida), de rojo a
+  lima. «Buena» es una meseta sin avisos validada en el forward a falta del periodo no
+  visto; si ese periodo va en contra, baja a moderada.
+- **Portada** editorial: titular nuevo, fotos de paisaje (portada, cierre, guías,
+  metodología, 404), sección «Lo que te llevas», preguntas frecuentes reescritas y página
+  «Quiénes somos». Paleta «Noche y señal»: azul medianoche, lavanda y el lima solo para lo
+  importante; tipografía Source Sans 3 / Source Serif 4 / IBM Plex Mono servida desde el
+  propio dominio.
+- **App**: la misma cabecera que la portada (fija al bajar, con menú en el móvil), el
+  veredicto se entiende en 10 segundos, lenguaje claro en todas las pestañas, un nombre por
+  concepto, nada por debajo de 12 px, mapa de calor y relieve 3D legibles en los dos temas,
+  y la auditoría de interfaz resuelta en cuatro bloques.
+- **Robustez**: optimizaciones de hasta 160.000 filas, errores con código y pista,
+  cancelar un análisis, `.xlsx` leído fuera del hilo principal y pruebas de navegador
+  (Playwright) en CI.
+
 ## 2026-09-30 — Textos: adiós a «la primera fila»
 
 - «La primera fila» no se entendía sin conocer MT5 y se quedaba corta: con miles de

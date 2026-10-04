@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { buildDemoTables } from '../js/demo.js';
 import { runAnalysis } from '../core/analysis.js';
 import { DEFAULT_POLICY } from '../core/metrics.js';
-import { meanConfidenceInterval } from '../core/matrix/sample.js';
+import { meanConfidenceInterval } from '../core/trades/sample.js';
 import { setLocale } from '../js/i18n.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

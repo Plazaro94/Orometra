@@ -16,7 +16,7 @@ import { setLocale } from '../js/i18n.js';
 import { state } from '../js/ui-state.js';
 import { holdoutFact, displayVerdictLevel } from '../js/ui-verdict.js';
 import { parseBacktestReport } from '../core/report.js';
-import { dailySeriesFromDeals } from '../core/matrix/from-deals.js';
+import { dailySeriesFromDeals } from '../core/trades/from-deals.js';
 import { refinementRange } from '../core/engine.js';
 
 let failures = 0;

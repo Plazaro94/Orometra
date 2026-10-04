@@ -56,29 +56,34 @@ orometra/
 │   ├── verdict.js           # veredicto por fuerza de evidencia
 │   ├── unseen.js            # contraste contra el periodo no visto (6 cifras agregadas)
 │   ├── report.js            # lector del informe HTML de backtest (operación a operación)
-│   ├── matrix/              # análisis sobre la lista de operaciones del periodo no visto
+│   ├── trades/              # análisis sobre la lista de operaciones del periodo no visto
 │   │   ├── from-deals.js    # agrupa `report.js#deals` en serie diaria y orquesta lo de abajo
 │   │   ├── bootstrap.js     # bootstrap estacionario (Politis-Romano) / Monte Carlo
 │   │   ├── sample.js        # tamaño de muestra, intervalos, potencia
 │   │   ├── costs.js         # stress de costes analítico + punto de equilibrio
 │   │   └── risk.js          # aviso de dominancia del swap
-│   ├── parse.js, xlsx.js, setfile.js, schema.js, errors.js, rng.js
+│   ├── surface.js           # rejilla 2D de calidad para el relieve de la meseta
+│   ├── parse.js, setfile.js, schema.js, entities.js, errors.js, rng.js
 ├── app/                     # shell de la app (index.html)
-├── js/                      # UI (módulos por sección; ninguno debe superar ~600 líneas)
-├── methodology/, privacy/   # páginas públicas
-├── tests/
+├── js/                      # UI por sección (ui-*.js), gráficos, lector .xlsx, i18n
+├── methodology/, guides/, privacy/, about/   # páginas públicas en inglés
+├── es/                      # las mismas en español (generadas por tools/build-es.js)
+├── fonts/, img/             # tipografías (con su licencia OFL) y fotos optimizadas
+├── tools/                   # servidor local, build de es/, fotos, imagen para redes, CLI
+├── bench/                   # banco de pruebas del motor (ver bench/PREREGISTRO.md)
+├── tests/                   # npm test (tests/all.js) y npm run test:e2e
 └── docs/
     ├── SPEC.md              # este documento
     ├── CHANGELOG.md
     └── MT5_ASSUMPTIONS.md
 ```
 
-### Por qué `core/matrix/` no necesita nada fuera del navegador
+### Por qué `core/trades/` no necesita nada fuera del navegador
 
 El export de **optimización** de MT5 solo trae métricas agregadas por pasada: con eso
 nunca se podría hacer Monte Carlo ni stress de costes real. Pero el informe HTML de
 **un backtest individual** (el que se usa para validar el periodo no visto) sí trae la
-lista de operaciones una a una. `core/matrix/from-deals.js` agrupa esa lista por día y
+lista de operaciones una a una. `core/trades/from-deals.js` agrupa esa lista por día y
 alimenta bootstrap/muestra/costes con ella — sin sonda, sin Electron, sin nada que
 instalar. Lo que esa lista **no** trae (stop loss por operación, posiciones simultáneas,
 hora de apertura) es exactamente lo que se dejó fuera (auditoría de estructura de

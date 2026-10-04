@@ -1,6 +1,6 @@
 // Invarianza y fixtures de riesgo estadistico.
 //
-//   node tests/invariance.js
+//   node tests/invariance.test.js
 //
 // Comprueba lo que la auditoria externa pedía como P0/P1 técnico:
 //   - shuffle de filas no cambia el resultado

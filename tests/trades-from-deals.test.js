@@ -1,7 +1,7 @@
-// Pruebas de core/matrix/from-deals.js: de la lista de operaciones del informe HTML
+// Pruebas de core/trades/from-deals.js: de la lista de operaciones del informe HTML
 // de backtest a la serie diaria, y de ahí a Monte Carlo / muestra / costes / swap.
 
-import { dailySeriesFromDeals, auditUnseenTrades } from '../core/matrix/from-deals.js';
+import { dailySeriesFromDeals, auditUnseenTrades } from '../core/trades/from-deals.js';
 
 let failures = 0;
 let checks = 0;

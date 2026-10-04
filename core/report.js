@@ -267,7 +267,7 @@ function parseDeals(rows) {
   // La comision de una operacion se reparte entre su apertura y su cierre, y solo el
   // cierre lleva el beneficio. Se arrastran los costes de las aperturas hasta el cierre
   // siguiente: asi cada operacion queda con su coste completo y la suma cuadra. Comision
-  // y swap se arrastran por separado porque el aviso de dominancia del swap (core/matrix/
+  // y swap se arrastran por separado porque el aviso de dominancia del swap (core/trades/
   // risk.js) necesita distinguirlos: uno lo fija el bróker, el otro lo aplica el tester
   // con la tasa ACTUAL a todo el histórico.
   let carryCommission = 0;

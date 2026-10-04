@@ -1,4 +1,4 @@
-// core/matrix: análisis del historial de operaciones del periodo no visto.
+// core/trades: análisis del historial de operaciones del periodo no visto.
 //
 // Hubo aquí también CSCV/PBO real, DSR publicado y walk-forward multiventana: los tres
 // necesitaban una curva de equity por cada configuración de la rejilla, y la única
