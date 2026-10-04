@@ -1481,6 +1481,17 @@ tr.sel td{color:var(--text-2)}
 .guide .lp-eyebrow a:hover{text-decoration:underline}
 .guide-step .lp-list{max-width:62ch}
 .guide-step h2+.lp-list{margin-top:4px}
+/* Guías largas: varios párrafos, subtítulos, figuras y referencias dentro de una sección. */
+.guide-step p+p,.guide-step p+.lp-list,.guide-step .lp-list+p,.guide-step .guide-figure+p{margin-top:12px}
+.guide-step h3{margin:24px 0 6px;font-size:var(--fs-lg);font-weight:700;line-height:1.35;letter-spacing:-.01em;color:var(--text)}
+.guide-figure{margin:16px 0 0;max-width:62ch}
+.guide-figure-media{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);overflow:hidden;container:gfig/inline-size}
+.guide-figure-media svg{display:block;width:100%;height:auto}
+@container gfig (max-width:470px){.guide-figure-media svg text{font-size:14px}}
+@container gfig (max-width:380px){.guide-figure-media svg text{font-size:16.5px}}
+.guide-figure figcaption{margin-top:8px;font-size:var(--fs-sm);line-height:1.5;color:var(--muted)}
+.guide-refs{font-size:var(--fs-md)}
+.guide-refs a{color:var(--ok-text);text-underline-offset:3px}
 .guide-related{margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
 .guide-related h2{margin:0 0 12px;font-size:var(--fs-base);text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
 .guide-related ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}

@@ -7,8 +7,8 @@
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1019">
-<meta name="description" content="What overfitting (curve fitting) is when you optimize an EA in MetaTrader 5, the signs that give it away in your results and how to choose parameters that hold up out of sample.">
-<title>MT5 overfitting: what it is and how to spot it — Orometra</title>
+<meta name="description" content="A complete guide to overfitting (curve fitting) when you optimize an EA in MetaTrader 5: why the best pass is usually inflated, the signs that give it away and a step-by-step workflow to keep it under control.">
+<title>MT5 overfitting: what it is, why it happens and how to avoid it — Orometra</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
@@ -32,8 +32,8 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261004e">
-<script type="application/ld+json" data-ld="guide-overfit">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"MT5 overfitting: what it is and how to spot it before you risk money","description":"What overfitting (curve fitting) is when you optimize an EA in MetaTrader 5, the signs that give it away in your results and how to choose parameters that hold up out of sample.","inLanguage":"en","mainEntityOfPage":"https://orometra.com/guides/mt5-overfitting/","url":"https://orometra.com/guides/mt5-overfitting/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://orometra.com/guides/"},{"@type":"ListItem","position":3,"name":"MT5 overfitting: what it is and how to spot it before you risk money","item":"https://orometra.com/guides/mt5-overfitting/"}]}]}</script>
+<link rel="stylesheet" href="/styles.css?v=20261004f">
+<script type="application/ld+json" data-ld="guide-overfit">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"MT5 overfitting: what it is, why it happens and how to avoid it","description":"A complete guide to overfitting (curve fitting) when you optimize an EA in MetaTrader 5: why the best pass is usually inflated, the signs that give it away and a step-by-step workflow to keep it under control.","inLanguage":"en","mainEntityOfPage":"https://orometra.com/guides/mt5-overfitting/","url":"https://orometra.com/guides/mt5-overfitting/","datePublished":"2026-09-28","dateModified":"2026-10-04","image":"https://orometra.com/og-image.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://orometra.com/guides/"},{"@type":"ListItem","position":3,"name":"MT5 overfitting: what it is, why it happens and how to avoid it","item":"https://orometra.com/guides/mt5-overfitting/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -68,54 +68,139 @@
 
 <main id="main" class="lp-main lp-doc guide">
   <p class="lp-eyebrow"><a href="/guides/" data-i18n="guide.overfit.eyebrow">Guide</a></p>
-  <h1 data-i18n="guide.overfit.h1">MT5 overfitting: what it is and how to spot it before you risk money</h1>
-  <p class="lp-lead" data-i18n="guide.overfit.lead">You optimize your EA, pick the best pass, and live it looks nothing like the backtest. The cause is almost always the same: the parameters fitted the noise of the past, not something that repeats. This is how you recognize it.</p>
+  <h1 data-i18n="guide.overfit.h1">MT5 overfitting: what it is, why it happens and how to avoid it</h1>
+  <p class="lp-lead" data-i18n="guide.overfit.lead">You optimize your EA, pick the best pass, and live it looks nothing like the backtest. Execution, costs and changing markets all play a part, but there is a cause that comes before all of them and that is in your hands: the optimization picked the configuration that best fitted the noise of the past. This guide explains what overfitting is, why it is almost inevitable when you test thousands of combinations, how to recognize it in MT5 and how to keep it to a minimum.</p>
 
   <aside class="guide-summary" aria-labelledby="guide-sum-title">
-    <h2 id="guide-sum-title" data-i18n="guide.overfit.sum.title">Warning signs</h2>
-    <ol>
-      <li data-i18n="guide.overfit.sum.1">The best pass is isolated: its neighbors give much worse results.</li>
-      <li data-i18n="guide.overfit.sum.2">The forward collapses compared with the in-sample.</li>
-      <li data-i18n="guide.overfit.sum.3">Thousands of combinations tested, few trades, and the best one barely beats what chance alone would give.</li>
-      <li data-i18n="guide.overfit.sum.4">It shines in the metric you optimized and falls short in the others.</li>
+    <h2 id="guide-sum-title" data-i18n="guide.overfit.sum.title">The essentials</h2>
+    <ol class="lp-list">
+      <li data-i18n="guide.overfit.sum.1">On average, the best pass of an optimization looks better in the backtest than it will perform on new data: part of its result is luck, and that luck is part of the reason it came out on top.</li>
+      <li data-i18n="guide.overfit.sum.2">The more combinations you test and the fewer trades each one has, the larger that share of luck.</li>
+      <li data-i18n="guide.overfit.sum.3">What gives it away: an isolated best pass, a forward unrelated to the in-sample, a result that does not beat what chance alone would produce, and profit that depends on a handful of trades.</li>
+      <li data-i18n="guide.overfit.sum.4">You cannot remove it, but you can keep it in check: fewer parameters, minimums set in advance, the center of a plateau instead of the top of the list, and a final test on a period you have never touched.</li>
     </ol>
   </aside>
 
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.overfit.s1.title">What overfitting is</h2>
-    <p data-i18n="guide.overfit.s1.body">When the Strategy Tester tries thousands of parameter combinations, some always come out brilliant. Part of that shine may be real, but part is chance: the combination happens to fit specific moves in that price history that will not repeat. Overfitting (also called curve fitting) is picking exactly that combination. The more you try, the more likely it is that the best one is mostly luck.</p>
+    <h2 data-i18n="guide.overfit.s1.title">What overfitting really is</h2>
+    <p data-i18n="guide.overfit.s1.p1">Every backtest result has two parts: the edge the strategy may really have, and the luck of that particular price history, the moves that happened to suit a given combination and will not repeat in the same way. An optimization searches for the highest total, and it cannot tell the two parts apart. When the configuration you end up choosing owes much of its result to the second part, you have overfitted. It is also called curve fitting or over-optimization.</p>
+    <p data-i18n="guide.overfit.s1.p2">It is like a student who memorizes the answers to last year’s exam: a perfect score on that exam, and no idea what to do when the questions change. The parameters have learned the past by heart instead of something that repeats.</p>
+    <p data-i18n="guide.overfit.s1.p3">Optimizing is not the problem in itself: tuning an EA to the market it trades is legitimate and necessary. The problem is believing the best figure in the table. Overfitting is a matter of degree, and the goal is not to remove it, which is impossible, but to keep it small enough that what remains is real.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.overfit.s2.title">Sign 1: isolated peaks</h2>
-    <p data-i18n="guide.overfit.s2.body">Look at the neighbors of the best pass: the ones that change a single parameter by one step (from 30 to 35, from 0.1 to 0.2). If the best one has a profit factor of 2 and its neighbors are around 1, you have not found a good zone, you have found a peak. The market never behaves exactly as in the backtest, and a peak leaves no margin. What you want is a plateau: a zone where many nearby combinations work, and to stay in its center.</p>
+    <h2 data-i18n="guide.overfit.s2.title">Why it happens: the winner’s curse</h2>
+    <p data-i18n="guide.overfit.s2.p1">Picture 1,000 configurations with no real edge at all, whose results differ only by luck. None is better than the others, yet one of them will top the table. On average, the best of them stands about 3.2 standard deviations above the mean: a gap that looks like skill and is pure selection. With 100 configurations the best would be about 2.5 standard deviations above; with 10,000, about 3.9.</p>
+    <p data-i18n="guide.overfit.s2.p2">That is the winner’s curse: whenever you pick the best of many noisy measurements, the winner tends to be the one that noise pushed upward, and on new data that push is gone. Those figures assume independent results. In an optimization, neighboring configurations are correlated, so the effective number of trials is smaller than the number of passes, but the effect is the same in kind: the top of the list is inflated.</p>
+    <p data-i18n="guide.overfit.s2.p3">Research has put numbers on it. Bailey, Borwein, López de Prado and Zhu (2014) showed that, with five years of data and strategies with no real edge, trying more than about 45 independent configurations almost guarantees finding one with an annualized in-sample Sharpe ratio of 1, while its expected out-of-sample Sharpe ratio is zero. An MT5 optimization usually tests thousands.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.overfit.s3.title">Sign 2: the forward collapses</h2>
-    <p data-i18n="guide.overfit.s3.body">With Forward enabled, MT5 tests the best passes on a stretch it did not use to optimize. Some decline is normal; what gives overfitting away is the top in-sample passes sinking in the forward, or the ranking changing completely. One caution: do not simply pick the pass with the best forward. Then the forward stops being a clean test and becomes just another optimization.</p>
-  </section>
-  <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.overfit.s4.title">Sign 3: too many trials for too little data</h2>
-    <p data-i18n="guide.overfit.s4.body">Every parameter you optimize and every value you add to a range multiplies the combinations. With many trials and few trades, chance alone can produce spectacular results. It can be measured: compute the Sharpe ratio you would expect from the best pass by pure luck, given how many combinations were tested, and check whether yours beats it. If it does not, your best result may be nothing but noise.</p>
-  </section>
-  <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.overfit.s5.title">Sign 4: only the Result column shines</h2>
-    <p data-i18n="guide.overfit.s5.body">MT5 sorts by the criterion you asked it to optimize, so the top of the list is where the passes that benefited most from chance in that criterion tend to end up. Look at several metrics at once: profit factor, drawdown, recovery factor, number of trades. A solid configuration is reasonable in all of them; an overfitted one usually stands out in one and falls short in the rest.</p>
-  </section>
-
-  <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.overfit.err.title">How to reduce it</h2>
+    <h2 data-i18n="guide.overfit.s3.title">What makes it worse</h2>
     <ul class="lp-list">
-      <li data-i18n="guide.overfit.err.1">Optimize fewer parameters, with sensible ranges: only the ones that really change how the EA behaves.</li>
-      <li data-i18n="guide.overfit.err.2">Always enable Forward, and keep a final stretch untouched for the last test.</li>
-      <li data-i18n="guide.overfit.err.3">Set minimums before sorting: the profit factor, drawdown and number of trades you would accept live.</li>
-      <li data-i18n="guide.overfit.err.4">Pick the center of a plateau, not the top of the list.</li>
-      <li data-i18n="guide.overfit.err.5">Test the chosen configuration with somewhat worse spread or slippage than in the backtest.</li>
+      <li data-i18n-html="guide.overfit.s3.1"><strong>More parameters and finer ranges.</strong> Every parameter multiplies the combinations: four parameters with 20 values each make 160,000 configurations. The more freedom the optimizer has, the easier it is to find one that fits the noise.</li>
+      <li data-i18n-html="guide.overfit.s3.2"><strong>Few trades.</strong> The uncertainty of an average shrinks with the square root of the number of trades: to halve it, you need four times as many. With a few dozen trades, two or three lucky ones can decide the whole result.</li>
+      <li data-i18n-html="guide.overfit.s3.3"><strong>Decisions that never show up in the table.</strong> Changing the symbol, the timeframe or the dates, adding a filter or dropping a bad year after looking at the results are trials too. They do not appear among the passes, but they inflate the result just the same.</li>
+      <li data-i18n-html="guide.overfit.s3.4"><strong>Reusing the forward.</strong> If you optimize, look at the forward, tweak something and optimize again, the forward ends up taking part in the choice. After a few rounds it is no longer an independent test, just more in-sample.</li>
+      <li data-i18n-html="guide.overfit.s3.5"><strong>Judging by a single metric.</strong> The table is sorted by the criterion you optimized, so the passes that got luckiest in that metric gather at the top.</li>
+    </ul>
+    <p data-i18n="guide.overfit.s3.p">A different problem adds to all of this: markets change, and a pattern can be real and still fade. That is not overfitting, but it is one more reason to prefer configurations that work across a broad zone of parameters rather than at one exact point.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.overfit.s4.title">How to spot it in your MT5 results</h2>
+    <p data-i18n="guide.overfit.s4.intro">None of these signs proves overfitting on its own, and their absence does not prove that a strategy works. Together, they tell you how far you can trust the best pass.</p>
+    <h3 data-i18n="guide.overfit.s4.h1">1. The best pass is an isolated peak</h3>
+    <p data-i18n="guide.overfit.s4.p1">Look at its neighbors: the passes that change a single parameter by one step (from 30 to 35, from 0.1 to 0.2). If the best one has a profit factor of 2 and its neighbors hover around 1, you have not found a good zone, you have found a peak. A real edge should not vanish because one parameter moves one step, and live trading never reproduces the backtest exactly. What you are looking for is a plateau, a zone where many nearby configurations clear your minimums, and you want to stand in its center, with margin on every side.</p>
+    <figure class="guide-figure">
+      <div class="guide-figure-media" aria-hidden="true">
+        <svg viewBox="0 0 480 320" role="img">
+          <line x1="24" y1="220" x2="456" y2="220" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <text x="24" y="206" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--muted-2)" data-i18n="doc.method.plat.floor">YOUR MINIMUMS</text>
+          <polyline points="50,260 100,245 150,90 200,250 250,150 300,140 350,155 400,260" fill="none" stroke="var(--line-strong)" stroke-width="1.3" opacity=".7"/>
+          <circle cx="50" cy="260" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="100" cy="245" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="200" cy="250" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="400" cy="260" r="3.5" fill="var(--muted-3)" opacity=".5"/>
+          <circle cx="250" cy="150" r="5" fill="var(--ok)" opacity=".6"/>
+          <circle cx="350" cy="155" r="5" fill="var(--ok)" opacity=".6"/>
+          <line x1="150" y1="72" x2="150" y2="82" stroke="var(--danger-line)" stroke-width="1.5"/>
+          <rect x="102" y="48" width="96" height="24" rx="12" fill="var(--danger-bg)" stroke="var(--danger-line)"/>
+          <text x="150" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="var(--danger-text)" data-i18n="doc.method.plat.isolated">Isolated</text>
+          <circle cx="150" cy="90" r="8" fill="var(--danger)"/>
+          <line x1="300" y1="119" x2="300" y2="132" stroke="var(--ok-line)" stroke-width="1.5"/>
+          <rect x="245" y="95" width="110" height="24" rx="12" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
+          <text x="300" y="111" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.plat.pick">Chosen</text>
+          <circle cx="300" cy="140" r="8" fill="var(--ok)"/>
+        </svg>
+      </div>
+      <figcaption data-i18n="guide.overfit.s4.fig">An isolated peak (left) clears your minimums at a single point: one step either way and it falls below them. A plateau (right) clears them across a whole zone, and its center leaves margin on both sides.</figcaption>
+    </figure>
+    <p data-i18n="guide.overfit.s4.p1b">A plateau is a necessary condition, not a guarantee: it shows that the result does not hinge on one exact value, not that the strategy will make money.</p>
+    <h3 data-i18n="guide.overfit.s4.h2">2. The forward bears no relation to the in-sample</h3>
+    <p data-i18n="guide.overfit.s4.p2">With Forward enabled, MT5 splits the period: it optimizes on the first part and then re-tests the best passes, the top 10% in a complete search or the top 25% with the genetic algorithm, on the remaining stretch. Some decline is normal and expected: it is the winner’s curse at work. What gives overfitting away is a collapse: the best in-sample passes sinking in the forward, or no relationship at all between the order of the two lists.</p>
+    <p data-i18n="guide.overfit.s4.p2b">One trap: do not simply pick the pass with the best forward. The moment you choose by it, the forward stops being a test and becomes part of the optimization, and its figures inherit the same inflation.</p>
+    <h3 data-i18n="guide.overfit.s4.h3">3. The best result does not beat chance</h3>
+    <p data-i18n="guide.overfit.s4.p3">As we have seen, testing many combinations raises the best result on its own. The Deflated Sharpe Ratio of Bailey and López de Prado (2014) builds on that idea: it estimates the highest Sharpe ratio you would expect from luck alone, given how many trials you ran and how much their results vary, and measures whether yours clears it by enough. If it does not, the top pass may be nothing but noise. If it does, you have ruled out one explanation, the sheer number of trials, but that does not validate the strategy.</p>
+    <h3 data-i18n="guide.overfit.s4.h4">4. It only shines in the metric you optimized</h3>
+    <p data-i18n="guide.overfit.s4.p4">Look at several metrics at once: profit factor, drawdown, recovery factor, Sharpe ratio and number of trades. A robust configuration is reasonable in all of them; an overfitted one tends to stand out in the criterion you optimized and fall short in the rest. No criterion protects you on its own, not even the complex one: each only changes which kind of luck gets rewarded.</p>
+    <h3 data-i18n="guide.overfit.s4.h5">5. A few trades make all the profit</h3>
+    <p data-i18n="guide.overfit.s4.p5">In the Strategy Tester report of the chosen pass, compare the largest winning trade with the total net profit. If taking away the two or three best trades wipes out the result, the backtest rests on a handful of events that may not happen again. A robust edge is spread across many trades.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.overfit.s5.title">How to keep it under control in MT5, step by step</h2>
+    <ol class="lp-list">
+      <li data-i18n-html="guide.overfit.s5.1"><strong>Start from an idea, not from the optimizer.</strong> Know what market behavior your EA exploits and why. Optimize only the parameters that really change its behavior, with ranges that make sense for that idea and steps coarse enough to matter: testing 20, 21, 22 and so on multiplies the trials without telling you much more.</li>
+      <li data-i18n-html="guide.overfit.s5.2"><strong>Split your history in three.</strong> An optimization period; a forward period, which MT5 sets up for you (a half, a third or a quarter of the dates, or from a date you choose); and a final stretch that you leave out of the tester dates altogether and do not look at until the end. In Orometra we call it the unseen period.</li>
+      <li data-i18n-html="guide.overfit.s5.3"><strong>Write down your minimums and acceptance criteria before optimizing.</strong> The profit factor, drawdown and number of trades you would accept live, and what the final test must show for you to go ahead. Set after seeing the results, they bend to fit them.</li>
+      <li data-i18n-html="guide.overfit.s5.4"><strong>Use a fast model to search and a precise one to confirm.</strong> “1 minute OHLC” or “Open prices only” (the latter only if your EA trades at the opening of each bar) are fine for exploring. Re-test the finalists with “Every tick based on real ticks”, the most accurate mode according to MetaQuotes itself.</li>
+      <li data-i18n-html="guide.overfit.s5.5"><strong>Choose the center of a plateau, not the top of the list.</strong> Before keeping a configuration, check its neighbors one step away on each parameter. If its best value sits at the edge of the range you tested, widen the range: you do not know what lies beyond.</li>
+      <li data-i18n-html="guide.overfit.s5.6"><strong>Read the forward as a test, not as a second ranking.</strong> Expect some decline; worry about collapses and reversals. If you change something after seeing it, assume that forward is spent and judge the result on a new stretch.</li>
+      <li data-i18n-html="guide.overfit.s5.7"><strong>Check how sensitive it is to costs and execution.</strong> The tester uses the spread recorded in the history, and with real ticks it is the actual one. To see how your EA copes with wider spreads you have to change the symbol’s conditions, for example with a custom symbol whose specification and history you control. The Delays option simulates execution latency, including a random delay.</li>
+      <li data-i18n-html="guide.overfit.s5.8"><strong>Run the final test once.</strong> Backtest the chosen configuration on the stretch you kept aside and compare it with the criteria you wrote down. If it fails, do not re-optimize on that stretch: that would turn it into in-sample too.</li>
+      <li data-i18n-html="guide.overfit.s5.9"><strong>Go live small.</strong> Start on a demo account or with reduced risk, and compare live results with the plateau’s usual range, not with the best backtest figures.</li>
+    </ol>
+    <p data-i18n="guide.overfit.s5.wf">If you want to go further: MT5’s built-in forward is a single split. Walk-forward analysis, which repeats the optimization over successive windows and tests each one on the next, gives a much more complete picture, but MT5 does not do it natively: it has to be done by hand or with third-party tools.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.overfit.s6.title">Common misconceptions</h2>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.overfit.s6.1"><strong>“More data fixes it.”</strong> It helps, but if you also widen the ranges and add parameters, the number of trials grows faster than the information.</li>
+      <li data-i18n-html="guide.overfit.s6.2"><strong>“A good forward proves it.”</strong> Only if you did not use it to choose. And even then, a single period can turn out well by chance.</li>
+      <li data-i18n-html="guide.overfit.s6.3"><strong>“Optimizing for profit factor or Sharpe ratio instead of balance avoids it.”</strong> It changes what gets rewarded, not the selection problem.</li>
+      <li data-i18n-html="guide.overfit.s6.4"><strong>“Few trades with a high profit factor are better.”</strong> A profit factor of 3 over 20 trades is far less certain than it looks: a couple of trades going the other way could change it drastically.</li>
+      <li data-i18n-html="guide.overfit.s6.5"><strong>“If the backtest is that good, it must be real.”</strong> In a large optimization it is the other way around: the more spectacular the best result, the larger the share of luck it is likely to carry.</li>
     </ul>
   </section>
-
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.overfit.next.title">Next step</h2>
-    <p data-i18n="guide.overfit.next.body">Orometra runs these checks for you on the XML of your optimization: it looks for plateaus, checks them against the forward, measures how much could be luck and tells you how much evidence backs a configuration. Everything runs in your browser: your files never leave your computer.</p>
+    <h2 data-i18n="guide.overfit.s7.title">How Orometra helps</h2>
+    <p data-i18n="guide.overfit.s7.intro">Orometra applies the checks in this guide to the XML of your MT5 optimization, and it does so in your browser: your files never leave your computer. In particular:</p>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.overfit.s7.1"><strong>Your minimums first.</strong> Only configurations that clear your floors enter the search, and the floors are required in each period separately.</li>
+      <li data-i18n-html="guide.overfit.s7.2"><strong>Quality without the Result column.</strong> It judges each configuration by several objective metrics at once, not by the criterion you optimized.</li>
+      <li data-i18n-html="guide.overfit.s7.3"><strong>Plateaus, not peaks.</strong> It looks at each configuration’s neighbors on your grid, rejects isolated peaks and recommends a configuration inside the plateau, chosen by its combined in-sample and forward rank averaged with its neighbors.</li>
+      <li data-i18n-html="guide.overfit.s7.4"><strong>The forward as a test.</strong> It uses the forward to confirm or demote plateaus, not to pick the best row.</li>
+      <li data-i18n-html="guide.overfit.s7.5"><strong>How much could be luck.</strong> It compares your best Sharpe ratio with what chance alone would produce given the number of trials, and measures how often the rule “take the top of the table” fails when the configurations are resampled.</li>
+      <li data-i18n-html="guide.overfit.s7.6"><strong>It tests itself.</strong> It repeats the search 50 times, moving its own thresholds by up to ±20%, to check that the recommendation does not depend on them.</li>
+      <li data-i18n-html="guide.overfit.s7.7"><strong>Your search, measured.</strong> It detects whether the search was complete or genetic, how much of the space it covered and whether the grid has uneven steps, and warns you when that limits the conclusions.</li>
+      <li data-i18n-html="guide.overfit.s7.8"><strong>The final test.</strong> Drop in the HTML report of your backtest on the unseen period: it checks that the parameters match the recommended configuration, tells you whether the result is normal for that plateau, runs a Monte Carlo on your own trades, tells you whether there are enough trades to conclude anything and shows what happens if costs get worse.</li>
+    </ul>
+    <p data-i18n="guide.overfit.s7.p">The answer comes as a reliability level, from insufficient to strong, that grades how much your data back the recommendation. It never tells you to trade: it measures evidence, it does not give permission.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.overfit.s8.title">What Orometra cannot do</h2>
+    <ul class="lp-list">
+      <li data-i18n="guide.overfit.s8.1">It does not see the equity curve of each pass, because the MT5 optimization export does not include it. That is why it does not compute the Probability of Backtest Overfitting (PBO) or the classic Reality Check and SPA tests, which require it.</li>
+      <li data-i18n="guide.overfit.s8.2">It does not judge the quality of your price history or the costs in your backtest: if the backtest is optimistic, so is the analysis.</li>
+      <li data-i18n="guide.overfit.s8.3">The forward is used to validate and rank the plateaus, so it is not blind: only the unseen period is.</li>
+      <li data-i18n="guide.overfit.s8.4">A plateau is stability in your sample, not a promise of future profit.</li>
+    </ul>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.overfit.s9.title">Further reading</h2>
+    <ul class="lp-list guide-refs">
+      <li data-i18n-html="guide.overfit.s9.1">Bailey, Borwein, López de Prado and Zhu (2014). <a href="https://scholarworks.wmich.edu/math_pubs/40/" rel="noopener">Pseudo-Mathematics and Financial Charlatanism: The Effects of Backtest Overfitting on Out-of-Sample Performance</a>. <em>Notices of the American Mathematical Society</em>.</li>
+      <li data-i18n-html="guide.overfit.s9.2">Bailey and López de Prado (2014). <a href="https://papers.ssrn.com/abstract=2460551" rel="noopener">The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting and Non-Normality</a>. <em>The Journal of Portfolio Management</em>.</li>
+      <li data-i18n-html="guide.overfit.s9.3">Bailey, Borwein, López de Prado and Zhu (2017). <a href="https://www.risk.net/journal-of-computational-finance/2471206/the-probability-of-backtest-overfitting" rel="noopener">The Probability of Backtest Overfitting</a>. <em>Journal of Computational Finance</em>.</li>
+      <li data-i18n-html="guide.overfit.s9.4">MetaTrader 5 help: <a href="https://www.metatrader5.com/en/terminal/help/algotrading/strategy_optimization" rel="noopener">Strategy optimization</a> and <a href="https://www.metatrader5.com/en/terminal/help/algotrading/tick_generation" rel="noopener">Real and generated ticks</a>.</li>
+    </ul>
   </section>
 
   <section class="lp-doc-cta">
