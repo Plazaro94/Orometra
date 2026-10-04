@@ -2314,3 +2314,8 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
   .nav-item{padding-top:5px;padding-bottom:5px}
   .version{padding-top:4px}
 }
+
+/* Enlaces dentro del texto de las páginas de documento (Quiénes somos, Privacidad,
+   guías): el color de la paleta, no el azul/morado por defecto del navegador. */
+.lp-doc-block a:not([class]),.lp-lead a:not([class]){color:var(--ok-text);text-underline-offset:3px}
+@media (hover:hover){.lp-doc-block a:not([class]):hover,.lp-lead a:not([class]):hover{color:var(--ok-hi)}}
