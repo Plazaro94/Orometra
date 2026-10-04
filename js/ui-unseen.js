@@ -358,7 +358,7 @@ export function renderTradesAudit() {
 export function renderUnseen(a) {
   const fieldsDef = unseenFields();
   const head = `<div class="detail-head">
-      <div class="detail-kicker">${L('06 / Periodo no visto', '06 / Unseen period')}</div>
+      
       <h2>${L('La prueba de fuego', 'The acid test')}</h2>
       <p>
         ${L(
@@ -441,9 +441,9 @@ export function renderUnseen(a) {
   // dice por que.
   const paramsOk = !state.report || !compareParams(state.report.params, a.meta.paramNames, p.record.params).different.length;
   const cls = !paramsOk ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
-  const stamp = !paramsOk ? L('NO VALIDA', 'DOES NOT VALIDATE')
-    : res.level === 'outside' ? L('FUERA DE RANGO', 'OUT OF RANGE')
-      : res.level === 'tail' ? L('EN EL LÍMITE', 'AT THE EDGE') : L('NO CONTRADICE LO VISTO', 'NOT CONTRADICTED');
+  const stamp = !paramsOk ? L('No valida', 'Does not validate')
+    : res.level === 'outside' ? L('Fuera de rango', 'Out of range')
+      : res.level === 'tail' ? L('En el límite', 'At the edge') : L('No contradice lo visto', 'Not contradicted');
   const headline = paramsOk ? res.headline : L('Estas cifras son de otra configuración', 'These figures are from another configuration');
   const subline = paramsOk
     ? L(
@@ -467,10 +467,13 @@ export function renderUnseen(a) {
     </tr>`;
   }).join('');
 
-  const result = `<section class="verdict-banner ${cls}" style="margin-top:12px">
-      <div class="verdict-stamp">${stamp}</div>
-      <div class="verdict-body"><h2>${esc(headline)}</h2>
-        <p>${esc(subline)}</p></div>
+  // Misma tarjeta que el veredicto (.vx): etiqueta, resultado en grande y una línea de
+  // contexto. El nivel va en una etiqueta con su color, no en un sello en mayúsculas.
+  const result = `<section class="vx u-result ${cls}">
+      <span class="vx-label">${L('Resultado del periodo no visto', 'Unseen-period result')}</span>
+      <span class="u-result-tag">${stamp}</span>
+      <h2 class="u-result-title">${esc(headline)}</h2>
+      <p class="vx-pass-note">${esc(subline)}</p>
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>

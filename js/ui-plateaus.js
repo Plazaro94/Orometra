@@ -102,7 +102,7 @@ const METRIC_LABEL = () => ({
 
 export function renderPlateaus(a) {
   if (!a.plateaus.length) {
-    return `<div class="detail-head"><div class="detail-kicker">${L('02 / Mesetas', '02 / Plateaus')}</div><h2>${L('No se ha encontrado ninguna meseta', 'No plateau was found')}</h2>
+    return `<div class="detail-head"><h2>${L('No se ha encontrado ninguna meseta', 'No plateau was found')}</h2>
       <p>${L(
         'Ninguna región conexa supera los mínimos con estabilidad suficiente. Revisa el diagnóstico: lo habitual es que falten datos, que el rango probado sea demasiado estrecho o que la estrategia no tenga ventaja.',
         'No plateau clears the minimums with enough stability. Check diagnostics: usually data are missing, the tested range is too narrow, or the strategy has no edge.',
@@ -126,7 +126,7 @@ export function renderPlateaus(a) {
   const sparseSampling = a.meta.sampling === 'sparse' || a.meta.sampling === 'partial';
 
   return `<div class="detail-head">
-      <div class="detail-kicker">${L('02 / Mesetas', '02 / Plateaus')}</div>
+      
       <h2>${L('Las mesetas de tu optimización', 'The plateaus in your optimization')}</h2>
       <p>${L(
         'Ordenadas por cómo rinden sus configuraciones <strong>más flojas</strong>, no las mejores. Una meseta es una zona continua donde incluso las más flojas siguen rindiendo bien.',
@@ -341,14 +341,14 @@ export function renderRejected(a) {
     ? (a.meta.criterionOosName || L('criterio forward', 'forward criterion'))
     : (a.meta.criterionIsName || L('criterio', 'criterion'));
   if (!a.peaks.length) {
-    return `<div class="detail-head"><div class="detail-kicker">${L('03 / Descartes', '03 / Rejected')}</div><h2>${L('Ningún descarte entre las mejores por tu criterio', 'No rejections among the best by your criterion')}</h2>
+    return `<div class="detail-head"><h2>${L('Ningún descarte entre las mejores por tu criterio', 'No rejections among the best by your criterion')}</h2>
       <p>${L(
         'Las configuraciones que encabezan tu ranking caen dentro de alguna meseta. Es poco habitual y es buena señal.',
         'The configurations that top your ranking fall inside some plateau. That is uncommon and a good sign.',
       )}</p></div>`;
   }
   return `<div class="detail-head">
-      <div class="detail-kicker">${L('03 / Descartes', '03 / Rejected')}</div>
+      
       <h2>${L('Primeras en MT5, descartadas aquí', 'Top in MT5, discarded here')}</h2>
       <p>${L(
         `Ordenadas por <code>${esc(critName)}</code>, que es la columna por la que MT5 te las presenta. Para cada una se indica por qué el motor no la respalda. Esta es la tabla que evita la mayoría de los errores.`,
@@ -358,7 +358,7 @@ export function renderRejected(a) {
     </div>
     <section class="panel">
       ${rejectedMinimums(a)}
-      <div class="table-wrap"><table class="stack-table">
+      <div class="table-wrap"><table class="stack-table rej-table">
         <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinos', 'Neighbors')}</th><th>${L('Vecinos flojos', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
         <tbody>${a.peaks.map((p) => `<tr class="stack-row">
           <td data-label="${L('Puesto', 'Rank')}"><span class="rank-mini">#${int(p.criterionRank)}</span></td>
@@ -367,7 +367,7 @@ export function renderRejected(a) {
           <td data-label="${L('Calidad', 'Quality')}">${num(p.score, 2)}</td>
           <td data-label="${L('Vecinos', 'Neighbors')}">${int(p.st.support)}</td>
           <td data-label="${L('Vecinos flojos', 'Weak neighbors')}">${num(p.st.q25, 2)}</td>
-          <td class="reasons" data-label="${L('Motivo del descarte', 'Rejection reason')}">${(p.tags || p.reasons.map((r) => ({ tag: r, detail: r }))).map((t) => `<span class="reason" title="${esc(t.detail)}"><span class="reason-tag">${esc(t.tag)}</span>${t.tag === t.detail ? '' : `<span class="reason-detail">${esc(t.detail)}</span>`}</span>`).join('')}</td>
+          <td class="reasons-cell" data-label="${L('Motivo del descarte', 'Rejection reason')}"><div class="reasons">${(p.tags || p.reasons.map((r) => ({ tag: r, detail: r }))).map((t) => `<span class="reason" title="${esc(t.detail)}"><span class="reason-tag">${esc(t.tag)}</span>${t.tag === t.detail ? '' : `<span class="reason-detail">${esc(t.detail)}</span>`}</span>`).join('')}</div></td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>`;
@@ -377,7 +377,7 @@ export function renderParams(a) {
   const [dimA, dimB] = topTwoSensitive(a);
   const options = a.sensitivity.map((s) => `<option value="${s.index}"${s.index === state.selectedParam ? ' selected' : ''}${s.constant ? ' disabled' : ''}>${esc(s.name)}${s.constant ? L(' (constante)', ' (constant)') : ''}</option>`).join('');
   return `<div class="detail-head">
-      <div class="detail-kicker">${L('04 / Parámetros', '04 / Parameters')}</div>
+      
       <h2>${L('Qué parámetros mandan de verdad', 'Which parameters really matter')}</h2>
       <p>${L(
         'La sensibilidad mide cuánto se mueve la calidad al recorrer los valores de un parámetro. Los numéricos que influyen <strong>cuentan para buscar vecinos</strong>. Los de sí/no o de lista (por ejemplo, el tipo de media) <strong>no se miden en distancia</strong>: dos configuraciones solo son vecinas si coinciden en ellos, porque activar o no un filtro no es un paso pequeño sino otra estrategia. Solo se ignora lo demostrablemente plano.',
@@ -481,7 +481,7 @@ export function renderDiagnostics(a) {
   const statsFindings = findingsForCategory(findings, 'stats');
 
   return `<div class="detail-head">
-      <div class="detail-kicker">${L('05 / Diagnóstico', '05 / Diagnostics')}</div>
+      
       <h2>${L('Datos y criterios del análisis', 'Analysis data and criteria')}</h2>
       <p>${L('Todo lo que decide el veredicto está aquí. Si algo se ha clasificado mal, se ve en esta pantalla.',
         'Everything that decides the verdict is here. If something was misclassified, it shows on this screen.')}</p>

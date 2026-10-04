@@ -727,7 +727,7 @@ const methodologyHref = () => (getLocale() === 'es' ? '../es/methodology/' : '..
 
 export function renderMethod() {
   return `<div class="detail-head">
-      <div class="detail-kicker">${L('07 / Metodología', '07 / Methodology')}</div>
+      
       <h2>${esc(t('doc.method.h1'))}</h2>
       <p>${esc(t('doc.method.app.lead'))}</p>
     </div>
