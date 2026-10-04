@@ -1,8 +1,9 @@
 :root{
   /* ================================================================ TEMA OSCURO
-   *                              «musgo»
-   * Carbón cálido, cabecera azul noche y un solo acento oliva. Serio y con un punto
-   * natural; sin brillos: el color se reserva para lo que significa algo.
+   *                         «noche y señal»
+   * Azul noche de fondo, lavanda apagado como color secundario y un solo acento lima,
+   * que se reserva para lo importante: el botón principal, la configuración
+   * recomendada y la evidencia sólida.
    *
    * REGLA DE COLOR DEL PRODUCTO, y es deliberada: en trading el verde y el rojo ya
    * significan GANANCIA y PÉRDIDA. Si el veredicto usara esos mismos colores, una
@@ -10,15 +11,19 @@
    * aplicación NO afirma: dice «esto ha pasado la auditoría». Por eso:
    *
    *     veredicto  ->  lima (sólida) · oro (moderada) · gris (débil e insuficiente)
-   *     acción     ->  oliva (botón principal); lima también para el dato vivo y las etiquetas cortas
-   *     navegación ->  lavanda (marcas A/B/C, pasos, enlaces)
-   *     estructura ->  carbón (fondo) y azul noche (franja superior, bandas, barra lateral)
+   *     acción     ->  lima (solo el botón principal y la configuración recomendada)
+   *     navegación ->  lavanda (marcas A/B/C, pasos, enlaces, la meseta en los gráficos)
+   *     estructura ->  azul noche (fondo, franja superior, bandas, barra lateral)
    *     picos      ->  gris: lo frágil ya lo dice el texto; el color es solo para la meseta
    *     dinero     ->  verde (beneficio)   · rojo (pérdida)
    *     errores    ->  teja apagado (archivo que no se lee, columnas que faltan)
    *
-   * El oliva del veredicto es amarillento y apagado; el verde del dinero, más azulado. Que
-   * no se confundan: el oliva nunca va en una cifra de dinero.
+   * El lima del veredicto es amarillento; el verde del dinero, más azulado. Que no se
+   * confundan: el lima nunca va en una cifra de dinero.
+   *
+   * Nombres heredados: --ok, --info, --accent, --accent2 y --plateau valen hoy el mismo
+   * lavanda (--ok no significa «éxito»). Se mantienen como alias para no tocar cientos de
+   * reglas a la vez.
    */
   --bg:#0b1019;          --surface:#1b212f;     --surface-2:#212838;   --surface-3:#2a3243;
   --line-soft:#202635;   --line:#31394c;        --line-strong:#475066;
@@ -72,7 +77,7 @@
   --header-pad:16px;
   --control-h:36px;
   --brand-gap:10px;
-  /* Botón principal y banda de cabecera (estilo «musgo»): oliva con borde vivo, azul noche */
+  /* Botón principal (lima con borde más claro) y banda de cabecera (azul noche) */
   --cta-bg:#d4f25c; --cta-line:#e6fa9a; --cta-text:#141a08; --cta-hover:#e0f87e; --band:#0b1019; --navy:#0b1019; --navy-line:#1f2638;
   --hero-a:#1f2b47; --hero-b:#0f1524;
   color-scheme:dark;
@@ -95,8 +100,8 @@
 
 /* ================================================================== TEMA CLARO
  *                              «informe»
- * Blanco roto cálido, negro casi puro y el mismo acento en oliva oscuro. Mismas reglas
- * de color que el tema oscuro. */
+ * Blanco azulado, texto azul noche y el mismo acento lima (más oscuro para leerse sobre
+ * blanco). Mismas reglas de color que el tema oscuro. */
 [data-theme="light"]{
   --bg:#f4f6fa;          --surface:#ffffff;     --surface-2:#eef0f7;   --surface-3:#e1e5ef;
   --line-soft:#e7ebf3;   --line:#d5dae7;        --line-strong:#afb7ca;
@@ -141,7 +146,7 @@ button{cursor:pointer}
 h1,h2,h3{margin:0;font-family:var(--font-display);letter-spacing:-.02em}
 code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-2);padding:1px 3px;border-radius:4px;color:var(--text)}
 ::selection{background:var(--ok-bg);color:var(--ok-hi)}
-:focus-visible{outline:2px solid var(--accent2);outline-offset:2px;border-radius:6px}
+:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
 
 .shell{min-height:calc(100vh / var(--z));display:grid;grid-template-columns:248px 1fr}
 
@@ -189,38 +194,26 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 @media (hover:hover){.lang-btn:hover,.theme-btn:hover{color:var(--text-hi)}}
 .lang-btn[aria-checked="true"],.theme-btn[aria-checked="true"]{background:var(--surface-3);color:var(--text-hi)}
 .lang-btn:focus-visible,.theme-btn:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
-.sidebar-bottom .lang-row{margin-bottom:8px}
+/* Pie de la barra lateral: idioma y tema en una sola fila (el tema, solo con su
+   muestra de color; el nombre queda para lectores de pantalla). */
+.sidebar-bottom{display:flex;flex-wrap:wrap;gap:8px}
+.sidebar-bottom > *{flex:1 1 100%}
+.sidebar-bottom > .lang-row,.sidebar-bottom > .theme-row{flex:1 1 0}
+.sidebar-bottom .theme-btn > span:not(.swatch){position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 .swatch{width:11px;height:11px;border-radius:50%;border:1px solid var(--line-strong);flex:none}
 .swatch.dark{background:#101520}
 .swatch.light{background:#f4f6fa}
 
 /* ------------------------------------------------------------ bloque de entrada */
-.hero{margin:0 0 30px}
-.hero-copy{max-width:900px}
-.hero h1{
-  font-size:clamp(26px,3.6vw,40px);line-height:1.12;letter-spacing:-.03em;
-  margin:0 0 14px;max-width:16ch;color:var(--text-hi);
-}
-.hero-lead{font-size:16.5px;line-height:1.6;color:var(--text-2);margin:0 0 26px;max-width:62ch}
-.hero-lead strong{color:var(--ok-text);font-weight:600}
-.hero-points{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:20px}
-.hero-points h2{
-  font-size:13px;margin:0 0 6px;color:var(--text);letter-spacing:-.01em;
-  padding-top:12px;border-top:1px solid var(--line);
-}
-.hero-points p{margin:0;font-size:13.5px;line-height:1.6;color:var(--muted)}
-.hero-points em{color:var(--text-2);font-style:normal}
 /* En la pantalla inicial manda el bloque de entrada; en cuanto hay un analisis se
    cambian los papeles y la cabecera recupera su titulo. Asi no se dice dos veces lo
    mismo, que es lo que pasaba al juntarlos. */
-.hero{display:none}
 .skip-link{
   position:absolute;left:-9999px;top:8px;z-index:100;
   background:var(--ok-bg);color:var(--ok-text);border:1px solid var(--ok-line);
   border-radius:9px;padding:10px 16px;font-size:13px;text-decoration:none;
 }
 .skip-link:focus{left:8px}
-.hero-back{display:flex;gap:10px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
 .legal-links{padding:10px 8px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
 .legal-links a.text-btn{text-decoration:none;white-space:nowrap}
 .legal-links .text-btn{font-size:13px;color:var(--muted-2)}
@@ -311,7 +304,7 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
   border-radius:999px;padding:9px 15px;font-size:13.5px;transition:background .15s,border-color .15s,color .15s;
   text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
 }
-@media (hover:hover){.ghost-btn:hover,.back-btn:hover{background:var(--surface-2);color:var(--text-hi);border-color:var(--line)}}
+@media (hover:hover){.ghost-btn:hover{background:var(--surface-2);color:var(--text-hi);border-color:var(--line)}}
 .primary-btn{background:var(--cta-bg);color:var(--cta-text);border-color:var(--cta-line);font-weight:700}
 @media (hover:hover){.primary-btn:hover:not(:disabled){background:var(--cta-hover)}}
 .primary-btn:disabled{background:var(--surface-2);border-color:var(--line);color:var(--muted-2);cursor:default}
@@ -323,7 +316,12 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .export-menu{
   position:absolute;top:calc(100% + 8px);right:0;z-index:30;min-width:250px;
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:6px;
+  box-shadow:0 12px 32px -8px rgba(0,0,0,.45);
 }
+/* Exportar abre un menú: se indica con un chevron. */
+#exportBtn::after{content:"";width:6px;height:6px;margin:-3px 0 0 9px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
+/* Botones de texto sueltos (no dentro de un párrafo): 28 px de alto mínimo para acertar. */
+.intake-summary .text-btn,.vx-step-cta{min-height:28px;display:inline-flex;align-items:center}
 .export-menu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--text-2);padding:9px 11px;border-radius:var(--radius-sm);font-size:13.5px}
 @media (hover:hover){.export-menu button:hover{background:var(--surface-3);color:var(--text-hi)}}
 
@@ -516,7 +514,7 @@ details.panel{padding:0}
 details.panel > summary{padding:20px;margin:0;cursor:pointer;list-style:none;position:relative}
 details.panel > summary::-webkit-details-marker{display:none}
 details.panel > summary::after{
-  content:'+';position:absolute;right:20px;top:18px;color:var(--muted-2);
+  content:'+';position:absolute;right:20px;top:50%;transform:translateY(-50%);color:var(--muted-2);
   font-size:20px;font-weight:400;line-height:1;
 }
 details.panel[open] > summary::after{content:'\2212'}
@@ -532,7 +530,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .panel-head.compact{align-items:center}
 .panel-kicker,.detail-kicker{font-size:13px;letter-spacing:0;font-weight:700;color:var(--muted-2);text-transform:none}
 .panel h2{font-size:17px;margin-top:4px;letter-spacing:-.02em}
-.panel h3{font-size:13px;margin-bottom:9px;color:var(--text)}
+.panel h3{font-size:15px;margin-bottom:9px;color:var(--text-hi)}
 .panel-intro{margin:0 0 15px;color:var(--muted);font-size:14px;max-width:var(--measure)}
 .muted{color:var(--muted);font-size:13px}
 
@@ -552,32 +550,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .demo-note{border:1px solid var(--line-strong);background:var(--surface-2);border-radius:var(--radius);padding:12px 15px;font-size:13.5px;color:var(--text-2);margin-bottom:12px}
 
 /* ---------------------------------------------------------------- veredicto */
-.verdict-banner{
-  display:grid;grid-template-columns:auto minmax(0,1.2fr) minmax(220px,0.9fr);
-  gap:20px 24px;align-items:stretch;border-radius:var(--radius);padding:22px 24px;margin-bottom:12px;border:1px solid;
-}
 /* Tarjeta neutra, como el resto del informe: el nivel se lee en el sello y en la barra
    lateral. Rellenar la tarjeta entera con el color del nivel convertia el ambar de
-   "moderada" en un marron apagado que chocaba con la paleta azul y turquesa. */
-.verdict-banner{background:var(--surface);border-color:var(--line);border-left-width:4px}
-.verdict-banner.v-no{border-left-color:var(--evidence-none)}
-.verdict-banner.v-weak{border-left-color:var(--evidence-weak)}
-.verdict-banner.v-warn{border-left-color:var(--evidence-moderate)}
-.verdict-banner.v-go{border-left-color:var(--evidence-strong)}
-.verdict-stamp-col{display:flex;align-items:flex-start}
-.verdict-stamp{
-  font-size:13px;font-weight:800;letter-spacing:.14em;padding:14px 16px;border-radius:var(--radius);
-  /* min-content: una palabra por linea y la caja ajustada a la mas larga. Con max-width
-     en ch el espaciado entre letras no contaba y el texto se salia del borde. */
-  white-space:pre-line;border:2px solid;line-height:1.25;text-align:center;width:min-content;
-}
-.v-no .verdict-stamp{background:var(--evidence-none-bg);color:var(--evidence-none-text);border-color:var(--evidence-none-line)}
-.v-weak .verdict-stamp{background:var(--evidence-weak-bg);color:var(--evidence-weak-text);border-color:var(--evidence-weak-line)}
-.v-warn .verdict-stamp{background:var(--evidence-moderate-bg);color:var(--evidence-moderate-text);border-color:var(--evidence-moderate-line)}
-.v-go .verdict-stamp{background:var(--evidence-strong-bg);color:var(--evidence-strong);border-color:var(--evidence-strong-line)}
-.verdict-body{min-width:0;display:flex;flex-direction:column;justify-content:flex-start;gap:6px;padding-top:4px}
-.verdict-body h2{font-size:22px;letter-spacing:-.025em;margin:0;line-height:1.2}
-.verdict-body p{margin:0;color:var(--text-2);font-size:15px;line-height:1.6}
+   "moderada" en un marron apagado que chocaba con la paleta azul. */
 .verdict-aside{
   display:flex;flex-direction:column;gap:10px;min-width:0;
   padding-left:20px;border-left:1px solid var(--line);
@@ -621,12 +596,12 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-actions button{padding:11px 18px;font-size:14px}
 .vx-fine{margin:12px 0 0;font-size:13px;line-height:1.45;color:var(--muted-2);max-width:56ch}
 .vx-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:2px 0 14px}
-/* Un solo color, el turquesa de la marca, que se intensifica tramo a tramo: el nivel se
-   lee por cuánto se llena y por lo intenso que es el último tramo. No se usan los colores
-   de aviso: el nivel califica la evidencia, no la estrategia. Cada tramo tiene su tono
+/* El medidor se llena tramo a tramo (gris, gris, oro, lima): el nivel se lee por cuánto
+   se llena y por el color del último tramo. No se usan los colores de aviso: el nivel
+   califica la evidencia, no la estrategia. Cada tramo tiene su tono
    de barra (--s) y uno más claro para su nombre (--t), legible sobre el fondo. */
-/* Los cuatro niveles de evidencia, de insuficiente (1) a sólida (4): el mismo teal que se
-   intensifica en el medidor del informe y en la lista de niveles de la metodología. */
+/* Los cuatro niveles de evidencia, de insuficiente (1) a sólida (4): los mismos tonos en
+   el medidor del informe y en la lista de niveles de la metodología. */
 :root{--lv-1:#30384b;--lv-2:#4b556c;--lv-3:#e0b33a;--lv-4:#d4f25c}
 :root[data-theme="light"]{--lv-1:#d3d8e3;--lv-2:#a6aebf;--lv-3:#b98a10;--lv-4:#9cc414}
 .vx-seg:nth-child(1){--s:var(--lv-1);--t:#acb5c8}
@@ -709,13 +684,6 @@ details.panel > .panel-body{padding:0 20px 20px}
    "Empezar de cero". */
 .has-analysis #demoBtn{display:none}
 
-.kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:12px}
-.kpi{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:15px}
-.kpi-label{font-size:13px;color:var(--muted-2);text-transform:none;letter-spacing:0;font-weight:700}
-.kpi-value{font-size:26px;font-weight:700;letter-spacing:-.035em;margin-top:6px;font-variant-numeric:tabular-nums}
-.kpi-note{color:var(--muted-2);font-size:13px;margin-top:4px}
-.kpi[title]{cursor:help}
-.kpi-help{display:inline-grid;place-items:center;width:13px;height:13px;margin-left:5px;border-radius:50%;border:1px solid var(--line-strong);color:var(--muted);font-size:9px;font-weight:700;vertical-align:1px}
 
 .grid-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 
@@ -747,7 +715,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 }
 .evidence-sheet-row:first-child{border-top:0;padding-top:2px}
 .evidence-sheet-row span{color:var(--muted);font-weight:600}
-.evidence-sheet-row strong{color:var(--text-hi);font-family:var(--mono);font-size:var(--fs-base);font-weight:700}
+.evidence-sheet-row strong{color:var(--text-hi);font-size:var(--fs-base);font-weight:700;font-variant-numeric:tabular-nums}
 .evidence-sheet-row em{font-style:normal;color:var(--muted-2);font-size:var(--fs-xs);line-height:1.4}
 .why-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 28px}
 .why-col h3{
@@ -799,7 +767,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .evidence-list>div{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-top:1px solid var(--line-soft);font-size:13.5px}
 .evidence-list>div:first-child{border-top:0}
 .evidence-list span{color:var(--muted)}
-.evidence-list strong{color:var(--text-hi);font-family:var(--mono);font-size:13.5px;text-align:right}
+/* La fuente mono, solo para identificadores de MT5 (parámetros, valores del .set, pasada);
+   aquí hay también palabras («confirmada», «requerido»): sans con cifras tabulares. */
+.evidence-list strong{color:var(--text-hi);font-size:14px;text-align:right;font-variant-numeric:tabular-nums}
 .evidence-list em{font-style:normal;color:var(--muted-2);font-family:var(--font);font-size:13px}
 
 /* ---------------------------------------------------------------- top 3 */
@@ -807,31 +777,13 @@ details.panel > .panel-body{padding:0 20px 20px}
 .t3-consensus{text-align:right;border:1px solid var(--ok-line);background:var(--ok-bg);border-radius:var(--radius);padding:9px 14px}
 .t3-consensus strong{display:block;font-size:19px;color:var(--accent);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .t3-consensus span{display:block;font-size:13px;color:var(--ok);max-width:190px;line-height:1.35;margin-top:2px}
-.t3-podium{
-  display:grid;grid-template-columns:minmax(0,1.55fr) minmax(200px,0.85fr);
-  gap:12px;margin:4px 0 16px;align-items:stretch;
-}
-.t3-featured{
-  border:1px solid var(--ok-line);background:var(--ok-bg);border-radius:var(--radius);
-  padding:16px 16px 14px;display:flex;flex-direction:column;gap:12px;
-}
-.t3-featured-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.t3-featured-metrics{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;
-}
-.t3-featured-metrics > div{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 9px;
-  display:flex;flex-direction:column;gap:2px;
-}
-.t3-featured-metrics span{font-size:13px;letter-spacing:0;text-transform:none;font-weight:700;color:var(--muted-2)}
-.t3-featured-metrics strong{font-family:var(--mono);font-size:13px;color:var(--text-hi)}
 .t3-param-chips{display:flex;flex-wrap:wrap;gap:6px}
 .t3-param-chips span{
   font-size:13px;font-family:var(--mono);color:var(--text-2);
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:4px 7px;
 }
 .t3-param-chips b{color:var(--text-hi);font-weight:700}
-.t3-featured-actions,.t3-alt-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.t3-alt-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .t3-btn-inline{width:auto;margin:0;display:inline-flex}
 .t3-alts{display:flex;flex-direction:column;gap:10px;min-width:0}
 .t3-alt{
@@ -850,7 +802,7 @@ th.t3-label{padding-left:2px}
 .t3-best{background:var(--ok-bg)}
 .t3-table thead th{padding:12px 12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
 .t3-rank{font-size:13px;letter-spacing:0;text-transform:none;font-weight:700;color:var(--muted-2)}
-.t3-featured .t3-rank,.t3-best .t3-rank{color:var(--accent)}
+.t3-best .t3-rank{color:var(--accent)}
 .t3-pass{font-family:var(--mono);font-size:14px;color:var(--text);margin-top:5px;font-weight:600}
 .t3-score{font-size:28px;font-weight:700;color:var(--accent);line-height:1.1;margin-top:0;font-variant-numeric:tabular-nums;text-align:right}
 .t3-score small{display:block;font-size:13px;letter-spacing:0;text-transform:none;color:var(--muted-3);font-weight:700;margin-top:1px}
@@ -1007,7 +959,7 @@ tr.sel td{color:var(--text-2)}
 .stability-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin-top:6px}
 .stability-cols h3{font-size:13px;margin:0 0 3px;color:var(--text);letter-spacing:-.01em}
 .stability-sub{font-size:13px;color:var(--muted);margin:0 0 10px}
-.evidence-list strong.big{font-size:15px;font-family:var(--mono)}
+.evidence-list strong.big{font-size:15px}
 .evidence-list strong.big.ok{color:var(--ok)}
 .evidence-list strong.big.warn{color:var(--warn)}
 .evidence-list strong.big.bad{color:var(--danger-text)}
@@ -1147,7 +1099,6 @@ tr.sel td{color:var(--text-2)}
 /* ---------------------------------------------------------------- responsive */
 @media (max-width:1180px){
   .grid-secondary,.columns-grid{grid-template-columns:1fr}
-  .kpi-row{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:980px){
   .shell{grid-template-columns:200px 1fr}
@@ -1267,19 +1218,14 @@ tr.sel td{color:var(--text-2)}
   .upload-grid{grid-template-columns:minmax(0,1fr)}
   .drop-copy{min-width:0}
   .drop-copy span{white-space:normal;overflow-wrap:anywhere}
-  .kpi-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   /* Objetivos tactiles: 20 px de alto es imposible de acertar con el dedo. */
   .text-btn{min-height:44px;display:inline-flex;align-items:center}
-  .hero-back{gap:6px}
   .topbar h1{font-size:27px}
   .tab-next{justify-content:stretch}
   .tab-next-btn{width:100%;justify-content:center}
-  .verdict-banner{grid-template-columns:1fr;gap:14px}
   /* En columna, la configuracion elegida y su .set van antes que la explicacion: es lo
      que se viene a buscar. */
   .verdict-aside{padding-left:0;border-left:0;padding-bottom:14px;border-bottom:1px solid var(--line)}
-  .verdict-body{order:3}
-  .t3-podium{grid-template-columns:1fr}
   .empty-state{padding:20px 18px}
   .dropzone-main{flex-wrap:wrap;padding:16px}
   .dropzone-main .file-icon{display:none}
@@ -1323,9 +1269,9 @@ tr.sel td{color:var(--text-2)}
   .topbar{margin-bottom:5mm;border-bottom:1px solid var(--line-strong);padding-bottom:3mm}
   .topbar h1{font-size:17pt;color:#000}
   .eyebrow{color:var(--muted-3)}
-  .panel,.kpi{border:1px solid var(--line-strong);background:#fff;box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:3mm;padding:12px 14px !important}
-  .panel h2,.detail-head h2,.kpi-value,.rep-pass,.strong,.t3-pass{color:#000}
-  .panel-kicker,.detail-kicker,.kpi-label,.kpi-note,.chart-note,.panel-intro,.muted,.t3-rank{color:var(--muted-3)}
+  .panel{border:1px solid var(--line-strong);background:#fff;box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:3mm;padding:12px 14px !important}
+  .panel h2,.detail-head h2,.rep-pass,.strong,.t3-pass{color:#000}
+  .panel-kicker,.detail-kicker,.chart-note,.panel-intro,.muted,.t3-rank{color:var(--muted-3)}
   .range-table td,.range-table td.mono{color:#111}
   .evidence-sheet-row strong{color:#111}
   /* El informe impreso es un resumen, no una copia de toda la pestana: la hoja de
@@ -1338,7 +1284,7 @@ tr.sel td{color:var(--text-2)}
   th{color:var(--muted-3)}
   td{color:#111}
   th,td{border-bottom:1px solid var(--line)}
-  .verdict-banner,.vx{border:2px solid #111;background:#fff !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
+  .vx{border:2px solid #111;background:#fff !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
   .vx-pass,.vx-stat > strong,.vx-step strong{color:#000}
   .vx-stat{background:#fff;border-color:var(--line-strong)}
   .vx-actions,.vx-step-cta,.vx-section-title,.vx-detail{display:none !important}
@@ -1346,7 +1292,6 @@ tr.sel td{color:var(--text-2)}
   .panel-intro{margin-bottom:8px}
   .run-stamp{margin-bottom:3mm;color:var(--muted-3)}
   .run-sep{color:var(--muted-3)}
-  .verdict-banner h2,.verdict-stamp{color:#000 !important;background:#fff !important;border-color:#111 !important}
   .verdict-aside{border-color:var(--line-strong)}
   .verdict-fact-label{color:var(--muted-3)}
   .verdict-fact-value,.verdict-fact-next .verdict-fact-value{color:#000}
@@ -1923,7 +1868,7 @@ html{zoom:var(--z)}
 /* ======================================================================
    Portada editorial (2026-10): ritmo de bandas, tarjeta de portada, botones
    grandes con flecha y títulos centrados. Mismo lenguaje que la referencia
-   que eligió el usuario (franja azul noche arriba, carbón, oliva y lima).
+   que eligió el usuario (franja azul noche arriba, lavanda y lima).
    ====================================================================== */
 :root{--strip:#060a12;--strip-text:#ccd2e0;--strip-hi:#c3cfea;--radius-xl:40px;--radius-lg:24px}
 .lp-strip{background:var(--strip);color:var(--strip-text);font-size:14.5px;line-height:1.4;text-align:center;padding:9px 16px}
@@ -2334,7 +2279,6 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
   .sidebar-help{padding-bottom:8px;margin-bottom:8px}
   .sidebar-help a{padding:3px 0}
   .sidebar-bottom{padding-top:10px}
-  .sidebar-bottom .lang-row{margin-bottom:6px}
   .legal-links{padding-top:6px}
 }
 @media (min-width:721px) and (max-height:800px){
