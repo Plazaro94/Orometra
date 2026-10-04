@@ -94,12 +94,16 @@ section('AUD-03: nada del archivo llega al HTML sin escapar');
 }
 
 // ------------------------------------------------------------------ AUD-07
-section('AUD-07: CSP en <meta> en todas las paginas, igual que en vercel.json');
+section('AUD-07: CSP en <meta> en todas las paginas, igual que la cabecera de tools/serve.js');
 {
-  const vercel = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
-  const header = vercel.headers[0].headers.find((h) => h.key === 'Content-Security-Policy').value;
+  const serve = fs.readFileSync(path.join(ROOT, 'tools/serve.js'), 'utf8');
+  const header = serve.match(/'Content-Security-Policy': "([^"]+)"/)[1];
   const expected = header.replace(" frame-ancestors 'none';", '');
-  for (const page of ['index.html', '404.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'es/index.html', 'es/methodology/index.html', 'es/privacy/index.html']) {
+  const pages = fs.readdirSync(ROOT, { recursive: true })
+    .filter((f) => f.endsWith('.html') && !/^(node_modules|tests|bench|fotos-originales|\.git)[\\/]/.test(f))
+    .map((f) => f.split(path.sep).join('/'));
+  check('se revisan todas las paginas', pages.length >= 20, pages.length);
+  for (const page of pages) {
     const html = fs.readFileSync(path.join(ROOT, page), 'utf8');
     const m = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/);
     check(`${page} lleva CSP en meta`, Boolean(m));
@@ -107,13 +111,11 @@ section('AUD-07: CSP en <meta> en todas las paginas, igual que en vercel.json');
     const want = page === 'app/index.html'
       ? expected.replace(' https://static.cloudflareinsights.com', '').replace(' https://cloudflareinsights.com', '')
       : expected;
-    if (m) check(`${page} CSP = vercel.json (sin frame-ancestors${page === 'app/index.html' ? ' ni Cloudflare' : ''})`, m[1] === want, m[1]);
+    if (m) check(`${page} CSP = tools/serve.js (sin frame-ancestors${page === 'app/index.html' ? ' ni Cloudflare' : ''})`, m[1] === want, m[1]);
     const cspPos = html.indexOf('http-equiv="Content-Security-Policy"');
     const firstScript = html.indexOf('<script');
     check(`${page} CSP antes del primer script`, cspPos > 0 && cspPos < firstScript);
   }
-  const headersFile = fs.readFileSync(path.join(ROOT, '_headers'), 'utf8');
-  check('_headers = vercel.json', headersFile.includes(header));
 }
 
 // ------------------------------------------------------------------ AUD-08

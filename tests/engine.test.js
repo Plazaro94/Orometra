@@ -1,4 +1,4 @@
-// Pruebas del motor. Se ejecutan con `node tests/run.js`.
+// Pruebas del motor. Se ejecutan con `node tests/engine.test.js`.
 //
 // Dos bloques:
 //  1. Datos sinteticos con verdad conocida (meseta plantada, EA perdedor, ruido puro).

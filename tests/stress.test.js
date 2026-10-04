@@ -6,7 +6,7 @@
 // veinte, cuarenta configuraciones o doscientas mil, EAs con pocas operaciones, columnas
 // de metricas que faltan, superficies planas, rangos degenerados.
 //
-//   node tests/stress.js
+//   node tests/stress.test.js
 //
 // Cada escenario comprueba primero los INVARIANTES que deben cumplirse siempre, y
 // despues lo especifico del caso.

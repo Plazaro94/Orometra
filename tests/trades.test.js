@@ -1,8 +1,8 @@
-// Pruebas de respuesta conocida para core/matrix.
+// Pruebas de respuesta conocida para core/trades.
 //
 // CSCV/PBO real, DSR publicado y walk-forward multiventana vivieron aquí, con sus
 // pruebas. Se retiraron junto con la sonda MQL5 que les daba de comer (curva de
-// equity por configuración); ver core/matrix/index.js y docs/CHANGELOG.md.
+// equity por configuración); ver core/trades/index.js y docs/CHANGELOG.md.
 
 import {
   applyCostStress,
@@ -10,7 +10,7 @@ import {
   stationaryBootstrap,
   sampleAudit,
   dataWarnings,
-} from '../core/matrix/index.js';
+} from '../core/trades/index.js';
 
 let failures = 0;
 let checks = 0;

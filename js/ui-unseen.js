@@ -6,7 +6,7 @@ import { evaluateUnseen } from '../core/unseen.js';
 import { parseBacktestReport, parseBacktestReportGrid, compareParams } from '../core/report.js';
 import { compareOtherParams } from '../core/setfile.js';
 import { parseXmlSpreadsheet } from '../core/parse.js';
-import { auditUnseenTrades } from '../core/matrix/from-deals.js';
+import { auditUnseenTrades } from '../core/trades/from-deals.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
 
@@ -47,7 +47,7 @@ export async function setReport(file) {
     state.unseen.reportError = null;
     // A partir de la lista de operaciones (no de los seis campos agregados), y solo si
     // el informe trae suficientes: Monte Carlo, tamaño de muestra y stress de costes.
-    // Ver core/matrix/from-deals.js.
+    // Ver core/trades/from-deals.js.
     state.unseen.tradesAudit = report.deals && report.deals.length
       ? auditUnseenTrades(report.deals)
       : null;
@@ -230,7 +230,7 @@ export function renderTradesAudit() {
 
   const { bootstrap: bs, sample: sa, costs, breakEven, warnings } = aud;
 
-  // El bootstrap acorta cada horizonte a los días que de verdad hay (core/matrix/
+  // El bootstrap acorta cada horizonte a los días que de verdad hay (core/trades/
   // bootstrap.js: h = min(dias, 63|126|252)). Con menos de 63 días los tres horizontes
   // se calculan sobre el mismo tramo y darian el mismo numero con etiquetas distintas:
   // eso es peor que no mostrarlo. Solo se enseña el horizonte que el tramo cubre entero.
@@ -314,7 +314,7 @@ export function renderTradesAudit() {
       ${breakEven.usable ? `The extra cost per trade that would wipe out the whole edge is <strong>${num(breakEven.breakEven, 2)}</strong>.` : ''}`,
     )}</p>`;
 
-  // `dataWarnings` (core/matrix/risk.js) es un módulo puro y devuelve `detail` en un
+  // `dataWarnings` (core/trades/risk.js) es un módulo puro y devuelve `detail` en un
   // solo idioma: no le corresponde saber en qué idioma está la interfaz. El texto que
   // se muestra se decide aquí, por `code`, igual que el resto de esta pantalla.
   const WARNING_TEXT = {

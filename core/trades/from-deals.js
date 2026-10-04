@@ -7,7 +7,7 @@
 // lista de transacciones una a una, y es justo lo único que MT5 exporta que permite un
 // Monte Carlo serio: reordenar operaciones reales, no simular una distribución
 // inventada. Se agrupa por día (no por operación) porque los horizontes de "3/6/12
-// meses" del bootstrap (core/matrix/bootstrap.js) están calibrados en días de mercado
+// meses" del bootstrap (core/trades/bootstrap.js) están calibrados en días de mercado
 // (63/126/252): mezclar granularidades les haría decir una cosa por otra.
 
 import { applyCostStress, costScenarios, breakEvenExtraCostPerTrade } from './costs.js';

@@ -95,8 +95,10 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   de estimación de Lo (2002) por número de operaciones, retirado por partir de un supuesto
   falso sobre cómo MT5 calcula esa cifra (SR-1 en `docs/MT5_ASSUMPTIONS.md`). No es el
   Deflated Sharpe Ratio publicado.
-- **Calificación de la FUERZA DE LA EVIDENCIA**, no de la estrategia: sólida / moderada /
-  débil / insuficiente. La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
+- **Calificación de la FUERZA DE LA EVIDENCIA** («Fiabilidad»), no de la estrategia, en cinco
+  niveles: insuficiente, débil, moderada, buena y sólida. «Buena» es el tope mientras falte
+  el periodo no visto, porque el forward ya se usó para elegir; solo un periodo no visto
+  que lo confirme lleva a «sólida». La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
   contienen unos datos, no si un EA va a funcionar. Distingue «no hay región conexa»
   de «no hay datos suficientes para saberlo», que son hechos, y deja la decisión al usuario.
 - **Lectura del informe de backtest de MT5** (`Informe → HTML`): se suelta en la app y
@@ -126,6 +128,20 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   escapan antes de pintarse.
 - **Vista previa de los mínimos** y **aviso de empate** entre mesetas casi igualadas.
 
+## Cómo se usa
+
+1. En el Probador de Estrategias de MT5, lanza la optimización (con **Forward** si quieres
+   validar) y, en la pestaña **Optimización**, clic derecho sobre la tabla → exportar. Acepta
+   el `.xml` que propone; si activaste Forward, repite desde la pestaña de resultados forward.
+   El `.opt` de `MQL5/Profiles/Tester` es la caché binaria del probador y no se admite.
+2. Suelta los dos archivos en la app. Deben ser de la **misma** optimización: la aplicación lo
+   comprueba y avisa si no cuadran.
+3. Para validar la configuración elegida en un tramo no usado, lanza su backtest, clic
+   derecho sobre los resultados → **Informe** → **HTML**, y suelta ese archivo en la pestaña
+   del periodo no visto.
+
+Las guías de la web (`/guides/`, `/es/guias/`) lo explican paso a paso.
+
 ## Ejecutar en local
 
 Necesita un servidor HTTP: usa módulos ES y un Web Worker, que el navegador bloquea sobre
@@ -139,8 +155,9 @@ Después abre `http://localhost:3000`. Acepta otro puerto como argumento: `node 
 
 ## Páginas en español
 
-La portada, la metodología y la privacidad tienen una versión por idioma: `/`, `/methodology/`
-y `/privacy/` en inglés, y `/es/…` en español, enlazadas con `hreflang` para que Google indexe
+Las páginas públicas (portada, metodología, guías, privacidad y «Quiénes somos») tienen una
+versión por idioma: en inglés en la raíz (`/`, `/methodology/`, `/guides/…`) y en español bajo
+`/es/…`, enlazadas con `hreflang` para que Google indexe
 las dos. Las de `es/` **se generan**, no se editan a mano: cambia la página inglesa o
 `js/i18n.js` y ejecuta
 
@@ -159,12 +176,15 @@ siendo una sola página que se traduce en el navegador.
 npm test
 ```
 
+Comprueba que `es/` está al día y ejecuta todos los `tests/*.test.js` (`tests/all.js`; una
+prueba nueva entra sola si su nombre acaba en `.test.js`). Entre ellas:
+
 - **`tests/source.test.js`** revisa el propio código (tildes en identificadores, clases CSS, ids).
-- **`tests/regression.test.js`** compara el JSON canónico de la demo con un fixture fijo (Fase 0).
+- **`tests/regression.test.js`** compara el JSON canónico de la demo con un fixture fijo.
 - **`tests/input-guards.test.js`**: dos forward, coma decimal, escape de valores y CSP en `<meta>`.
 - **`tests/verdict-coherence.test.js`**: el copy del método coincide con el modo de selección,
   un solo nivel de evidencia en pantalla y en el export, modo solo in-sample e IC diario.
-- **`tests/run.js`**, **`tests/stress.js`**, **`tests/method.test.js`**, etc.: motor, invariantes y lecturas.
+- **`tests/engine.test.js`**, **`tests/stress.test.js`**, **`tests/invariance.test.js`**, etc.: motor, invariantes y lecturas.
 - **`tests/robustness.test.js`**: optimizaciones enormes (160.000 filas), tope de filas y errores con código.
 
 La interfaz se prueba en un navegador de verdad (Chromium con Playwright, que no es
@@ -184,7 +204,7 @@ Para incluir archivos reales, colócalos como `IS(1).xls` y `OOS(1).xls` en tu c
 descargas, o indica la ruta:
 
 ```bash
-MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/run.js
+MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/engine.test.js
 ```
 
 ## Accesibilidad y soporte
@@ -217,13 +237,21 @@ MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/run.js
 
 ## Temas
 
-Dos: oscuro y claro. Todo el color pasa por una escala semántica de tokens
-definida en el bloque `:root` de `styles.css`; **no se escribe ningún color literal fuera
-de ahí**. Los nombres describen el papel y no el color (`--ok-text` es «texto verde
-legible sobre su fondo»), para que al invertir el tema sigan significando lo mismo.
+Dos: oscuro y claro. El color pasa por una escala semántica de tokens definida al principio
+de `styles.css` (`:root` y su versión `[data-theme="light"]`). Los nombres describen el
+papel y no el color (`--ok-text` es «texto de estado correcto, legible sobre su fondo»), para
+que al invertir el tema sigan significando lo mismo. Las pocas escalas con un color por
+paso —los cinco niveles de fiabilidad (`--lv-1` a `--lv-5`) y el mapa de calor— se definen
+junto a su componente, también para los dos temas.
 
 El tema elegido se guarda en `localStorage` y se aplica en un script del `<head>` antes de
 pintar, porque si no se ve un fogonazo del tema contrario al recargar.
+
+## Despliegue, seguridad y privacidad
+
+En [`DEPLOY.md`](DEPLOY.md): cómo se publica en GitHub Pages, la política de seguridad de
+contenido, la analítica y qué se guarda en el navegador. La historia de cambios está en
+[`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 
 ## Licencia
 
