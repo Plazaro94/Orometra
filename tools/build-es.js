@@ -38,6 +38,8 @@ const PAGES = [
 // Fecha de publicacion de cada guia (datos estructurados).
 // Guias: fecha de publicacion y prefijo de sus claves i18n.
 const PUBLISHED = { 'guide-export': '2026-09-28', 'guide-overfit': '2026-09-28', 'guide-forward': '2026-09-28', 'guide-report': '2026-09-28', 'guide-genetic': '2026-09-28', 'guide-criterion': '2026-09-28' };
+// Fecha de la última revisión a fondo de una guía (si no está, la de publicación).
+const MODIFIED = { 'guide-overfit': '2026-10-04' };
 const GUIDE_KEYS = { 'guide-export': 'guide.export', 'guide-overfit': 'guide.overfit', 'guide-forward': 'guide.forward', 'guide-report': 'guide.report', 'guide-genetic': 'guide.genetic', 'guide-criterion': 'guide.criterion' };
 const LOCALIZED = new Map(PAGES.map(([, en, es]) => [en, es]));
 
@@ -131,7 +133,7 @@ function jsonLd(page, locale, pagePath) {
     const guidesUrl = locale === 'es' ? `${ORIGIN}/es/guias/` : `${ORIGIN}/guides/`;
     return { '@context': 'https://schema.org', '@graph': [
       { '@type': 'Article', headline: strip(t(`${k}.h1`)), description: strip(t(`meta.description.${page}`)), inLanguage: lang,
-        mainEntityOfPage: url, url, datePublished: PUBLISHED[page], dateModified: PUBLISHED[page],
+        mainEntityOfPage: url, url, datePublished: PUBLISHED[page], dateModified: MODIFIED[page] || PUBLISHED[page],
         image: `${ORIGIN}/${locale === 'es' ? 'og-image-es.jpg?v=13' : 'og-image.jpg?v=13'}`, author: org, publisher: org },
       { '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Orometra', item: home },
