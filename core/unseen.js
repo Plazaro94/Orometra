@@ -160,6 +160,9 @@ export function evaluateUnseen(analysis, plateau, observed) {
       q90: denormalize(quantile(refNorm, 0.9), trades, spec.scale),
       max: denormalize(extent(refNorm)[1], trades, spec.scale),
     };
+    // Al ensanchar la banda de un tramo corto, el factor de beneficio podría bajar de 0, que
+    // no existe.
+    if (spec.key === 'profitFactor') for (const k of Object.keys(band)) band[k] = Math.max(0, band[k]);
     const value = obs[spec.key];
 
     let status;

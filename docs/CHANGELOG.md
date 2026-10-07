@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-07 — Revisión independiente del PR de la auditoría
+
+- **Reversiones «in/out» (cuentas de compensación):** el stress de costes contaba dos veces
+  el lote que se abre en sentido contrario, así que el punto de equilibrio salía a la
+  mitad. Ahora se usa solo el volumen que cierra cada operación.
+- **Cierres «out by»:** no sacaban sus posiciones de la cola de aperturas, y un solo «out
+  by» descolocaba el emparejado de todo lo que venía detrás (el stress de costes se
+  apagaba). Ahora se consumen, aunque su precio no se usa para el valor del contrato.
+- **Tipos en alemán:** «Verkauf» se leía como compra (contiene «kauf»).
+- **Precios con artefactos de coma flotante** (`1.0876500000000001`): ya no fijan un tamaño
+  de punto absurdo.
+- **Periodo no visto:** la banda ensanchada del factor de beneficio no baja de 0, y la
+  tabla dice que el rango está «ajustado a tu tramo».
+- **Pruebas:** en navegador, dos mesetas (el menú «Exportar» baja M1 aunque se haya mirado
+  M2; con el código anterior bajaba M2) y sin forward (ningún botón .set que dé error).
+  En `tests/report.test.js`, los cuatro casos de emparejado de arriba.
+
 ## 2026-10-07 — Auditoría (3): detalles de presentación y del periodo no visto
 
 - **Muestra de menos de 30 días:** ya no enseña «potencia 99 %» junto a «no se distingue

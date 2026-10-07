@@ -289,10 +289,14 @@ function parseDeals(rows) {
     if (!queues.has(k)) queues.set(k, []);
     return queues.get(k);
   };
-  const sideOf = (type) => (/buy|compra|kauf/.test(type) ? 'buy' : /sell|venta|verkauf/.test(type) ? 'sell' : null);
+  // La venta se mira primero: «verkauf» contiene «kauf».
+  const sideOf = (type) => (/sell|venta|verkauf/.test(type) ? 'sell' : /buy|compra|kauf/.test(type) ? 'buy' : null);
+  // Decimales del precio, para saber el tamaño del punto. Más de 8 no existe en MT5: es un
+  // artefacto de coma flotante (p. ej. un .xlsx guardado con Excel) y se ignora.
   const decimalsOf = (raw) => {
     const m = /[.,](\d+)\s*$/.exec(String(raw || '').trim());
-    return m ? m[1].length : 0;
+    const d = m ? m[1].length : 0;
+    return d <= 8 ? d : NaN;
   };
   /** Consume `vol` de una cola y devuelve el precio medio ponderado de lo consumido. */
   const consume = (q, vol) => {
@@ -334,12 +338,17 @@ function parseDeals(rows) {
     }
     const profit = toNumber(c[cols.profit]);
     if (!Number.isFinite(profit)) continue;
-    // Precio de apertura de lo que se cierra. «out by» (cierre contra una posición
-    // opuesta) no trae un precio de mercado útil, y se deja sin emparejar.
+    // Precio de apertura de lo que se cierra.
     let openPrice = NaN;
     let closedVolume = vol;
     let positionSide = null;
-    if (canPair && !/by/.test(dir)) {
+    if (canPair && /by/.test(dir)) {
+      // «out by» (cierre contra una posición opuesta): su precio no es de mercado y no se
+      // usa para deducir el valor del contrato, pero la posición SÍ se cierra. Si no se
+      // sacara de la cola, cada cierre posterior se emparejaría con la apertura anterior a
+      // la suya y el stress de costes se apagaría entero.
+      consume(queueOf(sym, side === 'sell' ? 'buy' : 'sell'), vol);
+    } else if (canPair) {
       positionSide = side === 'sell' ? 'buy' : 'sell';
       const q = queueOf(sym, positionSide);
       if (/in/.test(dir)) {

@@ -34,9 +34,12 @@ export function dailySeriesFromDeals(deals, contracts = null) {
   // Valor nominal de cada operación en dinero de la cuenta (precio × lotes × valor de
   // un movimiento de 1,0 del precio por lote). Solo se puede si se conoce el valor del
   // contrato de TODOS los símbolos operados; si falta alguno, no se reparte a medias.
+  // El volumen que CIERRA cada operación: en una reversión (in/out) el deal lleva también
+  // el lote que se abre en sentido contrario, que ya se contará en su propio cierre.
+  const volOf = (d) => (Number.isFinite(d.closedVolume) && d.closedVolume > 0 ? d.closedVolume : d.volume);
   const notionalOf = (d) => {
     const c = contracts && contracts[d.symbol || ''];
-    return c && Number.isFinite(d.price) && Number.isFinite(d.volume) ? d.price * d.volume * c.valuePerPriceUnit : NaN;
+    return c && Number.isFinite(d.price) && Number.isFinite(volOf(d)) ? d.price * volOf(d) * c.valuePerPriceUnit : NaN;
   };
   const notionalKnown = Boolean(contracts) && deals.every((d) => Number.isFinite(notionalOf(d)));
   let totalVolume = 0;
@@ -53,7 +56,7 @@ export function dailySeriesFromDeals(deals, contracts = null) {
     bucket.pnl += Number.isFinite(d.net) ? d.net : 0;
     bucket.volume += Number.isFinite(d.volume) ? d.volume : 0;
     bucket.trades += 1;
-    totalVolume += Number.isFinite(d.volume) ? d.volume : 0;
+    totalVolume += Number.isFinite(volOf(d)) ? volOf(d) : 0;
     if (notionalKnown) {
       bucket.notional += notionalOf(d);
       totalNotional += notionalOf(d);
