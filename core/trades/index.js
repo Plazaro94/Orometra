@@ -5,7 +5,7 @@
 // fuente de eso era la sonda MQL5 (retirada junto con Desktop). Sin ella habría que
 // fingir con las métricas agregadas del export de optimización, y eso es exactamente
 // lo que este proyecto se niega a hacer. Ver docs/CHANGELOG.md.
-export { applyCostStress, costScenarios, breakEvenExtraCostPerTrade } from './costs.js';
+export { applyCostStress, costScenarios, breakEvenExtraCostPerTrade, contractValues, bpToPoints, COST_SCENARIOS_BP } from './costs.js';
 export { stationaryBootstrap } from './bootstrap.js';
 export { sampleAudit, powerAgainstZero, minBtl, meanConfidenceInterval } from './sample.js';
 export { dataWarnings } from './risk.js';

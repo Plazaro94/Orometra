@@ -146,7 +146,10 @@ export function toggleExportMenu() {
     <button data-export="refine">${esc(t('export.refine'))}</button>`;
   $('.top-actions').appendChild(menu);
   menu.querySelectorAll('[data-export]').forEach((b) => b.addEventListener('click', () => {
-    doExport(b.dataset.export);
+    // El menú ofrece la configuración PROPUESTA (M1), no la última meseta que se miró en
+    // la pestaña de mesetas: si no, tras abrir una alternativa se bajaba el .set de M2
+    // con la etiqueta «propuesta». Las fichas de cada meseta tienen su propio botón.
+    doExport(b.dataset.export, 0);
     menu.remove();
   }));
   // Un único punto de cierre: así no se acumula un listener por cada apertura.

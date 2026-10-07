@@ -245,6 +245,8 @@ function parseDeals(rows) {
         type: iType,
         direction: iDir,
         volume: has(/^volumen$|^volume$/),
+        price: has(/^precio$|^price$|^preis$/),
+        symbol: has(/^s[ií]mbolo$|^symbol$/),
         commission: has(/^comisi|^commission$/),
         swap: has(/^swap$/),
         profit: iProfit,
@@ -273,21 +275,84 @@ function parseDeals(rows) {
   let carryCommission = 0;
   let carrySwap = 0;
 
+  /*
+   * Emparejado de cada cierre con su apertura, para saber cuánto se movió el precio en
+   * cada operación. Con eso el stress de costes puede deducir cuánto vale en dinero un
+   * movimiento de precio en este instrumento (core/trades/costs.js#contractValues); sin
+   * eso, un coste fijo en dinero significa cosas distintas según el símbolo y el lote.
+   * Se lleva una cola FIFO por símbolo y por lado: un cierre de tipo «sell» cierra
+   * compras, y uno de tipo «buy» cierra ventas (vale también en cuentas de cobertura).
+   */
+  const queues = new Map();
+  const queueOf = (sym, side) => {
+    const k = `${sym}\u0000${side}`;
+    if (!queues.has(k)) queues.set(k, []);
+    return queues.get(k);
+  };
+  const sideOf = (type) => (/buy|compra|kauf/.test(type) ? 'buy' : /sell|venta|verkauf/.test(type) ? 'sell' : null);
+  const decimalsOf = (raw) => {
+    const m = /[.,](\d+)\s*$/.exec(String(raw || '').trim());
+    return m ? m[1].length : 0;
+  };
+  /** Consume `vol` de una cola y devuelve el precio medio ponderado de lo consumido. */
+  const consume = (q, vol) => {
+    let left = vol;
+    let acc = 0;
+    let got = 0;
+    while (left > 1e-12 && q.length) {
+      const head = q[0];
+      const take = Math.min(left, head.volume);
+      acc += take * head.price;
+      got += take;
+      head.volume -= take;
+      left -= take;
+      if (head.volume <= 1e-12) q.shift();
+    }
+    return got > 1e-12 && Math.abs(got - vol) <= 1e-9 * Math.max(1, vol) ? acc / got : NaN;
+  };
+  const queuedVolume = (q) => q.reduce((a, x) => a + x.volume, 0);
+
   for (let i = headerAt + 1; i < rows.length; i++) {
     const c = rows[i];
     if (c.length <= cols.profit) continue;
     const type = (c[cols.type] || '').toLowerCase();
     if (/balance|credit|deposit/.test(type)) continue; // ingreso inicial, no es una operacion
     const dir = cols.direction >= 0 ? (c[cols.direction] || '').toLowerCase() : '';
+    const side = sideOf(type);
+    const sym = cols.symbol >= 0 ? String(c[cols.symbol] || '').trim() : '';
+    const priceRaw = cols.price >= 0 ? c[cols.price] : '';
+    const price = cols.price >= 0 ? toNumber(priceRaw) : NaN;
+    const vol = cols.volume >= 0 ? toNumber(c[cols.volume]) : NaN;
+    const canPair = side && Number.isFinite(price) && price > 0 && Number.isFinite(vol) && vol > 0;
     // Solo el cierre materializa el resultado. Si el informe no trae direccion, se
     // acepta cualquier fila con beneficio distinto de cero.
     if (cols.direction >= 0 && !/out/.test(dir)) {
       carryCommission += commissionOf(c);
       carrySwap += swapOf(c);
+      if (canPair && /in/.test(dir)) queueOf(sym, side).push({ price, volume: vol });
       continue;
     }
     const profit = toNumber(c[cols.profit]);
     if (!Number.isFinite(profit)) continue;
+    // Precio de apertura de lo que se cierra. «out by» (cierre contra una posición
+    // opuesta) no trae un precio de mercado útil, y se deja sin emparejar.
+    let openPrice = NaN;
+    let closedVolume = vol;
+    let positionSide = null;
+    if (canPair && !/by/.test(dir)) {
+      positionSide = side === 'sell' ? 'buy' : 'sell';
+      const q = queueOf(sym, positionSide);
+      if (/in/.test(dir)) {
+        // Reversión (in/out, cuentas de compensación): cierra toda la posición abierta y
+        // abre el resto en el sentido contrario.
+        closedVolume = queuedVolume(q);
+        openPrice = closedVolume > 0 ? consume(q, closedVolume) : NaN;
+        const rest = vol - closedVolume;
+        if (rest > 1e-12) queueOf(sym, side).push({ price, volume: rest });
+      } else {
+        openPrice = consume(q, vol);
+      }
+    }
     const commission = commissionOf(c) + carryCommission;
     const swap = swapOf(c) + carrySwap;
     carryCommission = 0;
@@ -303,8 +368,16 @@ function parseDeals(rows) {
       swap,
       cost,
       net: profit + cost,
-      volume: cols.volume >= 0 ? toNumber(c[cols.volume]) : NaN,
+      volume: vol,
       balance: cols.balance >= 0 ? toNumber(c[cols.balance]) : NaN,
+      symbol: sym,
+      // Precio del cierre, precio medio de apertura de lo cerrado, lado de la posición
+      // cerrada y volumen cerrado: con ellos se deduce el valor del contrato.
+      price,
+      openPrice,
+      positionSide,
+      closedVolume,
+      digits: cols.price >= 0 ? decimalsOf(priceRaw) : NaN,
     });
   }
   return deals;

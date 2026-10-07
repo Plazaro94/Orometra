@@ -7,6 +7,7 @@ import { parseBacktestReport, parseBacktestReportGrid, compareParams } from '../
 import { compareOtherParams } from '../core/setfile.js';
 import { parseXmlSpreadsheet } from '../core/parse.js';
 import { auditUnseenTrades } from '../core/trades/from-deals.js';
+import { bpToPoints } from '../core/trades/costs.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
 
@@ -228,7 +229,7 @@ export function renderTradesAudit() {
     return `<section class="panel"><div class="panel-head compact"><div><h2>${L('Desde tus operaciones', 'From your trades')}</h2></div></div><p class="muted">${esc(reason)}</p></section>`;
   }
 
-  const { bootstrap: bs, sample: sa, costs, breakEven, warnings } = aud;
+  const { bootstrap: bs, sample: sa, costs, breakEven, warnings, contract } = aud;
 
   // El bootstrap acorta cada horizonte a los días que de verdad hay (core/trades/
   // bootstrap.js: h = min(dias, 63|126|252)). Con menos de 63 días los tres horizontes
@@ -287,31 +288,67 @@ export function renderTradesAudit() {
         sample size.`,
       )}</p>`;
 
-  const scenLabel = { base: L('Base (tal cual)', 'Base (as is)'), moderate: L('Moderado', 'Moderate'), severe: L('Severo', 'Severe') };
-  const costRows = ['base', 'moderate', 'severe'].map((k) => {
+  // Escenarios en puntos básicos del precio (core/trades/costs.js): comparables entre
+  // instrumentos y con cualquier lote. Con un solo símbolo se dice además cuántos puntos
+  // del instrumento son, que es como se lee el spread en MT5.
+  const symName = contract ? esc(contract.symbol || L('el instrumento', 'the instrument')) : '';
+  const pts = (bp) => {
+    const p = bpToPoints(bp, contract);
+    return Number.isFinite(p) ? ` <em>${L(`≈ ${num(p, p < 10 ? 1 : 0)} puntos de ${symName}`, `≈ ${num(p, p < 10 ? 1 : 0)} ${symName} points`)}</em>` : '';
+  };
+  const scenLabel = {
+    base: () => L('Base (tal cual)', 'Base (as is)'),
+    moderate: (bp) => L(`Moderado: +${num(bp, 0)} pb del precio por operación`, `Moderate: +${num(bp, 0)} bp of price per trade`),
+    severe: (bp) => L(`Severo: +${num(bp, 0)} pb del precio por operación`, `Severe: +${num(bp, 0)} bp of price per trade`),
+  };
+  // Solo tiene sentido si hay ventaja que anular (neto positivo).
+  const beOk = breakEven.usable && breakEven.net > 0;
+  const beParts = [];
+  if (beOk && Number.isFinite(breakEven.points)) {
+    beParts.push(L(`${num(breakEven.points, breakEven.points < 10 ? 1 : 0)} puntos de ${symName}`, `${num(breakEven.points, breakEven.points < 10 ? 1 : 0)} ${symName} points`));
+  }
+  if (beOk && Number.isFinite(breakEven.bp)) beParts.push(L(`${num(breakEven.bp, 1)} pb del precio`, `${num(breakEven.bp, 1)} bp of price`));
+  if (beOk && Number.isFinite(breakEven.perLot)) beParts.push(L(`${num(breakEven.perLot, 2)} por lote`, `${num(breakEven.perLot, 2)} per lot`));
+  const beText = beParts.length
+    ? L(` El coste extra por operación que anularía toda la ventaja es de <strong>${beParts.join(' · ')}</strong>: compáralo con el spread y la comisión de tu bróker.`,
+      ` The extra cost per trade that would wipe out the whole edge is <strong>${beParts.join(' · ')}</strong>: compare it with your broker's spread and commission.`)
+    : '';
+
+  const costs2 = costs
+    ? `<div class="table-wrap"><table>
+      <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Caída máx. (dinero)', 'Max drop (money)')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
+      <tbody>${['base', 'moderate', 'severe'].map((k) => {
     const c = costs[k];
     return `<tr>
-      <td class="strong">${scenLabel[k]}</td>
+      <td class="strong">${scenLabel[k](c.bp)}${k === 'base' ? '' : pts(c.bp)}</td>
       <td>${num(c.stressedNet, 2)}</td>
       <td>${pct(c.degradation, 1)}</td>
       <td>${num(c.maxDrawdownStressed, 2)}</td>
       <td><span class="badge ${c.stillProfitable ? 'ok' : 'bad'}">${c.stillProfitable ? L('sí', 'yes') : L('no', 'no')}</span></td>
     </tr>`;
-  }).join('');
-
-  const costs2 = `<div class="table-wrap"><table>
-      <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Caída máx. (dinero)', 'Max drop (money)')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
-      <tbody>${costRows}</tbody>
+  }).join('')}</tbody>
     </table></div>
     <p class="chart-note">${L(
-      `Resta spread, slippage y comisión extra a cada operación (escenarios orientativos, no los costes
-      exactos de tu bróker) y recalcula. El escenario base es tal cual lo mediste; moderado y severo
-      preguntan qué pasa si tus costes reales en vivo son peores que los que usaste al optimizar.
-      ${breakEven.usable ? `El coste extra por operación que anularía toda la ventaja es de <strong>${num(breakEven.breakEven, 2)}</strong>.` : ''}`,
-      `Subtracts extra spread, slippage and commission from every trade (orientative scenarios, not your
-      broker's exact costs) and recalculates. The base scenario is as measured; moderate and severe ask
-      what happens if your real live costs are worse than the ones you optimized with.
-      ${breakEven.usable ? `The extra cost per trade that would wipe out the whole edge is <strong>${num(breakEven.breakEven, 2)}</strong>.` : ''}`,
+      `Resta a cada operación un coste extra (spread, slippage y comisión juntos) proporcional a su tamaño:
+      1 pb (punto básico, 0,01 % del precio) es ~1 pip en EURUSD o ~0,20 en el oro a 2.000. El valor de cada
+      movimiento de precio se deduce de tus propias operaciones, así que el coste crece con el lote como el
+      real. Son escenarios orientativos, no los costes exactos de tu bróker: preguntan qué pasa si tus costes
+      en vivo son peores que los que usaste al probar.${beText}`,
+      `Subtracts from every trade an extra cost (spread, slippage and commission together) proportional to its
+      size: 1 bp (basis point, 0.01% of price) is ~1 pip on EURUSD or ~0.20 on gold at 2,000. The value of each
+      price move is derived from your own trades, so the cost grows with the lot size like the real one. These
+      are orientative scenarios, not your broker's exact costs: they ask what happens if your live costs are
+      worse than the ones you tested with.${beText}`,
+    )}</p>`
+    : `<p class="chart-note">${L(
+      `No se ha podido deducir cuánto vale en dinero un movimiento del precio en este instrumento (hace falta
+      la columna Precio del informe y al menos 5 operaciones con su apertura y su cierre). Sin ese dato, un
+      coste fijo en dinero significaría cosas distintas según el símbolo y el lote, así que no se simulan
+      escenarios.${beText}`,
+      `It was not possible to derive how much a price move is worth in money on this instrument (it needs the
+      report's Price column and at least 5 trades with their opening and closing). Without that, a fixed cost
+      in money would mean different things depending on the symbol and the lot size, so no scenarios are
+      simulated.${beText}`,
     )}</p>`;
 
   // `dataWarnings` (core/trades/risk.js) es un módulo puro y devuelve `detail` en un

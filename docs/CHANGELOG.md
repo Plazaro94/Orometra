@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-07 — Auditoría: exportar, costes y nivel «sólida»
+
+- **El menú «Exportar» baja siempre la configuración propuesta (M1).** Antes usaba la
+  última meseta abierta en la pestaña de mesetas: tras mirar una alternativa, «Configuración
+  propuesta (.set)» bajaba el `.set` de M2.
+- **El stress de costes ya no depende del instrumento ni del lote.** Restaba cantidades
+  fijas de dinero (0,5 por lote, 0,2 por lado…): en EURUSD el escenario moderado equivalía a
+  4 pips por operación con 0,01 lotes y a 0,09 con 1 lote, y en oro o índices no significaba
+  nada. Ahora el coste extra se mide en puntos básicos del precio (moderado +1 pb ≈ 1 pip en
+  EURUSD, severo +3 pb), y el valor en dinero de cada movimiento de precio se deduce de las
+  operaciones del informe emparejando cada cierre con su apertura (`core/report.js`,
+  `core/trades/costs.js#contractValues`). El punto de equilibrio se da en puntos del
+  instrumento, en pb y por lote. Si no se puede deducir el valor del contrato, no se
+  simulan escenarios y se dice por qué.
+- **«Sólida» ya no dice «confirmada».** El medidor decía «validada y confirmada en un
+  periodo no visto» mientras el siguiente paso decía que aprobarlo «no la confirma». Ahora
+  es «validada en el forward y sin contradicción en un periodo no visto», también en
+  Metodología.
+
 ## 2026-10-04 — Limpieza del repositorio
 
 - Fuera lo que ya no usaba nada: unas 30 reglas y 20 variables de `styles.css` de pantallas

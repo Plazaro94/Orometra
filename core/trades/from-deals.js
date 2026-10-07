@@ -10,7 +10,7 @@
 // meses" del bootstrap (core/trades/bootstrap.js) están calibrados en días de mercado
 // (63/126/252): mezclar granularidades les haría decir una cosa por otra.
 
-import { applyCostStress, costScenarios, breakEvenExtraCostPerTrade } from './costs.js';
+import { applyCostStress, costScenarios, breakEvenExtraCostPerTrade, contractValues } from './costs.js';
 import { stationaryBootstrap } from './bootstrap.js';
 import { sampleAudit } from './sample.js';
 import { dataWarnings } from './risk.js';
@@ -27,10 +27,20 @@ function dayKey(time) {
  * (informe con formato inesperado), no se reparte a medias: se marca `usable:false` en
  * vez de mezclar días reales con un reparto inventado.
  */
-export function dailySeriesFromDeals(deals) {
+export function dailySeriesFromDeals(deals, contracts = null) {
   if (!Array.isArray(deals) || !deals.length) {
     return { usable: false, reason: 'sin_operaciones' };
   }
+  // Valor nominal de cada operación en dinero de la cuenta (precio × lotes × valor de
+  // un movimiento de 1,0 del precio por lote). Solo se puede si se conoce el valor del
+  // contrato de TODOS los símbolos operados; si falta alguno, no se reparte a medias.
+  const notionalOf = (d) => {
+    const c = contracts && contracts[d.symbol || ''];
+    return c && Number.isFinite(d.price) && Number.isFinite(d.volume) ? d.price * d.volume * c.valuePerPriceUnit : NaN;
+  };
+  const notionalKnown = Boolean(contracts) && deals.every((d) => Number.isFinite(notionalOf(d)));
+  let totalVolume = 0;
+  let totalNotional = 0;
   const byDay = new Map();
   let totalSwap = 0;
   let totalCommission = 0;
@@ -38,11 +48,16 @@ export function dailySeriesFromDeals(deals) {
   for (const d of deals) {
     const key = dayKey(d.time);
     if (!key) return { usable: false, reason: 'fechas_no_reconocidas' };
-    if (!byDay.has(key)) byDay.set(key, { pnl: 0, volume: 0, trades: 0 });
+    if (!byDay.has(key)) byDay.set(key, { pnl: 0, volume: 0, trades: 0, notional: 0 });
     const bucket = byDay.get(key);
     bucket.pnl += Number.isFinite(d.net) ? d.net : 0;
     bucket.volume += Number.isFinite(d.volume) ? d.volume : 0;
     bucket.trades += 1;
+    totalVolume += Number.isFinite(d.volume) ? d.volume : 0;
+    if (notionalKnown) {
+      bucket.notional += notionalOf(d);
+      totalNotional += notionalOf(d);
+    }
     totalSwap += Number.isFinite(d.swap) ? d.swap : 0;
     totalCommission += Number.isFinite(d.commission) ? d.commission : 0;
     totalNet += Number.isFinite(d.net) ? d.net : 0;
@@ -65,7 +80,7 @@ export function dailySeriesFromDeals(deals) {
     const wd = d.getUTCDay();
     if (byDay.has(k)) keys.push(k);
     else if (wd !== 0 && wd !== 6) {
-      byDay.set(k, { pnl: 0, volume: 0, trades: 0 });
+      byDay.set(k, { pnl: 0, volume: 0, trades: 0, notional: 0 });
       keys.push(k);
     }
   }
@@ -76,6 +91,9 @@ export function dailySeriesFromDeals(deals) {
     dailyPnl: keys.map((k) => byDay.get(k).pnl),
     dailyVolume: keys.map((k) => byDay.get(k).volume),
     dailyTrades: keys.map((k) => byDay.get(k).trades),
+    dailyNotional: notionalKnown ? keys.map((k) => byDay.get(k).notional) : null,
+    totalVolume,
+    totalNotional: notionalKnown ? totalNotional : NaN,
     totalSwap,
     totalCommission,
     totalNet,
@@ -93,14 +111,23 @@ export function dailySeriesFromDeals(deals) {
  *                      contraste de potencia (por defecto 1: sin corregir por selección)
  */
 export function auditUnseenTrades(deals, opts = {}) {
-  const series = dailySeriesFromDeals(deals);
+  const contracts = contractValues(deals);
+  const series = dailySeriesFromDeals(deals, contracts);
   if (!series.usable) return { usable: false, reason: series.reason };
   if (series.days < 5) return { usable: false, reason: 'pocos_dias', days: series.days };
 
   const bootstrap = stationaryBootstrap(series.dailyPnl, { seed: opts.seed });
   const sample = sampleAudit(series.dailyPnl, { nTrials: opts.nTrials ?? 1 });
-  const costs = costScenarios(series.dailyPnl, series.dailyVolume, series.dailyTrades);
-  const breakEven = breakEvenExtraCostPerTrade(series.dailyPnl, series.dailyTrades);
+  // Con un solo símbolo, los escenarios y el punto de equilibrio se pueden dar también en
+  // puntos del instrumento, que es la unidad en la que se lee el spread en MT5.
+  const symbols = Object.keys(contracts);
+  const contract = series.dailyNotional && symbols.length === 1 ? contracts[symbols[0]] : null;
+  const costs = costScenarios(series.dailyPnl, series.dailyNotional);
+  const breakEven = breakEvenExtraCostPerTrade(series.dailyPnl, series.dailyTrades, {
+    totalVolume: series.totalVolume,
+    totalNotional: series.totalNotional,
+    contract,
+  });
 
   // El swap lo aplica el tester con la tasa ACTUAL a todo el histórico simulado: cuanto
   // más pesa sobre el resultado neto, menos fiable es ese resultado si el swap real
@@ -120,6 +147,7 @@ export function auditUnseenTrades(deals, opts = {}) {
     bootstrap,
     sample,
     costs,
+    contract: contract ? { symbol: symbols[0], ...contract } : null,
     breakEven,
     swap: { totalSwap: series.totalSwap, totalCommission: series.totalCommission, pctOfPnl: swapPctOfPnl },
     warnings,

@@ -101,7 +101,7 @@ export function holdoutFact(a) {
 
 /**
  * El motor solo ve el forward, que ya se usó para validar y ordenar las mesetas. Su
- * "sólida" se muestra como "buena" hasta que un periodo no visto la confirma, y baja a
+ * "sólida" se muestra como "buena" hasta que un periodo no visto no la contradice, y baja a
  * "moderada" si ese periodo va en contra.
  */
 export function displayVerdictLevel(a) {
@@ -131,8 +131,8 @@ export function displayVerdictCopy(a) {
       level,
       headline: L('Evidencia buena: meseta validada en el forward, falta el periodo no visto', 'Good evidence: plateau validated on the forward, unseen period still missing'),
       summary: L(
-        'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y aguanta al mover los umbrales. Se queda en buena porque el forward ya se usó para validar y ordenar las mesetas: para llegar a sólida falta confirmarla en un periodo que no hayas tocado.',
-        'The proposed plateau rests on neighbors that also clear your minimums and holds when thresholds are moved. It stays at good because the forward was already used to validate and rank the plateaus: to reach strong it still needs confirming on a period you have not touched.',
+        'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y aguanta al mover los umbrales. Se queda en buena porque el forward ya se usó para validar y ordenar las mesetas: para llegar a sólida falta probarla en un periodo que no hayas tocado.',
+        'The proposed plateau rests on neighbors that also clear your minimums and holds when thresholds are moved. It stays at good because the forward was already used to validate and rank the plateaus: to reach strong it still needs testing on a period you have not touched.',
       ),
     };
   }
@@ -225,8 +225,8 @@ export function trustLine(a, level) {
         `There is a plateau, but with ${critical} serious limitations worth reading before using it.`);
   }
   if (level === 'good') {
-    return L('Meseta validada en el forward. Para llegar a sólida, falta confirmarla en un periodo no visto.',
-      'A plateau validated on the forward. To reach strong, it still needs confirming on an unseen period.');
+    return L('Meseta validada en el forward. Para llegar a sólida, falta probarla en un periodo no visto.',
+      'A plateau validated on the forward. To reach strong, it still needs testing on an unseen period.');
   }
   if (level === 'moderate') {
     if (a.verdict.level === 'strong') {
@@ -237,8 +237,10 @@ export function trustLine(a, level) {
       ? L('Meseta con apoyo real, con un aviso que conviene leer.', 'A plateau with real support, with one warning worth reading.')
       : L(`Meseta con apoyo real, con ${warnings} avisos que conviene leer.`, `A plateau with real support, with ${warnings} warnings worth reading.`);
   }
-  return L('Lo máximo que estos datos pueden respaldar: una meseta validada y confirmada en un periodo no visto.',
-    'The most these data can support: a plateau validated and confirmed on an unseen period.');
+  // «Sin contradicción», no «confirmada»: la prueba del periodo no visto detecta poco
+  // (core/unseen.js) y el siguiente paso lo dice; aquí no se puede decir lo contrario.
+  return L('Lo máximo que estos datos pueden respaldar: una meseta validada en el forward a la que el periodo no visto no contradice.',
+    'The most these data can support: a plateau validated on the forward and not contradicted by the unseen period.');
 }
 
 /** Medidor de cinco tramos: dónde está este análisis y cuánto le falta. */
