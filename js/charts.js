@@ -214,7 +214,7 @@ export function sensitivityBars(analysis) {
   const body = rows.map((r, k) => {
     const role = dimRole(analysis, r);
     const cls = role === 'distancia' ? 'ch-sens-active' : role === 'particion' ? 'ch-sens-block' : 'ch-sens-flat';
-    const roleNote = role === 'distancia' ? '' : role;
+    const roleNote = role === 'distancia' ? '' : ({ particion: L('partición', 'partition'), plano: L('plano', 'flat'), liberado: L('liberado', 'released'), 'no optimizado': L('no optimizado', 'not optimized') }[role] || role);
     const value = eff(r);
     const marginal = r.sensitivity || 0;
     // Diferencia real, no solo redondeo: la combinada rescata a este parametro.

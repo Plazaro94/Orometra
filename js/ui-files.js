@@ -163,8 +163,8 @@ export async function acceptFiles(fileList, preferred, nested = false) {
     // Dos exports forward: asignar uno como in-sample en silencio compararia el forward
     // consigo mismo y daria un veredicto limpio falso.
     api.showError(L(
-      'Los dos archivos son exportaciones forward (traen Forward Result / Back Result). Falta el export de la optimización: en MT5, pestaña de resultados de optimización → clic derecho → exportar XML.',
-      'Both files are forward exports (they have Forward Result / Back Result). The optimization export is missing: in MT5, optimization results tab → right-click → export XML.',
+      'Los dos archivos son exportaciones forward (traen Forward Result / Back Result). Falta el export de la optimización: en MT5, pestaña de resultados de optimización → clic derecho → Exportar a XML.',
+      'Both files are forward exports (they have Forward Result / Back Result). The optimization export is missing: in MT5, optimization results tab → right-click → Export to XML.',
     ), CODE.SCHEMA_ERROR);
     return;
   }

@@ -109,23 +109,23 @@ export function doExport(kind, plateauIndex) {
     if (!best) return api.showError(L('No hay ninguna meseta que exportar.', 'There is no plateau to export.'));
     if (!a.meta.hasForward) {
       return api.showError(L(
-        'Sin forward no se exporta un .set de despliegue: la región solo se midió en el periodo optimizado. Exporta el rango de refinamiento, o vuelve a auditar con el archivo forward.',
+        'Sin forward no se exporta un .set de despliegue: la meseta solo se midió en el periodo optimizado. Exporta el rango de refinamiento, o vuelve a auditar con el archivo forward.',
         'Without forward, a deployment .set is not exported: the plateau was only measured on the optimized period. Export the refinement range, or re-audit with the forward file.',
       ));
     }
     downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best, state.searchSet));
   } else if (kind === 'refine') {
     if (!best) return api.showError(L('No hay ninguna meseta que refinar.', 'There is no plateau to refine.'));
-    downloadText(`orometra-M${best.rank}-refinamiento.set`, buildRefinementSetFile(a, best, state.searchSet));
+    downloadText(`orometra-M${best.rank}-${L('refinamiento', 'refinement')}.set`, buildRefinementSetFile(a, best, state.searchSet));
   } else if (kind === 'json') {
-    downloadText(`orometra-informe-${stamp}.json`, JSON.stringify(buildReport(a, {
+    downloadText(`orometra-${L('informe', 'report')}-${stamp}.json`, JSON.stringify(buildReport(a, {
       source: state.source ? { is: state.source.is, oos: state.source.oos || null, at: state.source.at } : null,
       shownVerdict: displayVerdictCopy(a),
     }), null, 2), 'application/json');
   } else if (kind === 'csv') {
-    downloadText(`orometra-configuraciones-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');
+    downloadText(`orometra-${L('configuraciones', 'configurations')}-${stamp}.csv`, buildCsv(a), 'text/csv;charset=utf-8');
   } else if (kind === 'summary') {
-    downloadText(`orometra-resumen-${stamp}.txt`, buildPlainSummary(a));
+    downloadText(`orometra-${L('resumen', 'summary')}-${stamp}.txt`, buildPlainSummary(a));
   }
 }
 

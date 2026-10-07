@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-10-07 — Auditoría de textos en español e inglés
+
+Revisión de todos los textos visibles (diccionario, veredicto, mesetas, periodo no visto,
+errores, exportaciones y páginas públicas), comparando cada pareja ES/EN. Unos 190 cambios
+puntuales; lo que estaba bien no se ha tocado.
+
+- **Incoherencias ES↔EN corregidas:** el inglés decía «no plateau to fall back on» donde el
+  español (y la lógica) dicen «no hay región amplia»; «cerca de la mitad de los casos» con
+  estabilidades de hasta el 80 % pasa a «hasta en la mitad»; la nota del Sharpe menciona los
+  rendimientos logarítmicos en los dos idiomas; el glosario de coherencia y la descripción
+  de privacidad para compartir dicen lo mismo en ambos.
+- **Sin traducir:** el pie de página (`aria-label`, `title`) y la navegación de la app
+  quedaban en inglés en las páginas españolas; el gráfico de sensibilidad pintaba
+  «particion»/«plano» en inglés; los nombres de los archivos descargados salían siempre en
+  español.
+- **Términos unificados:** «drawdown» en vez de «caída», «minimums» en vez de «gates» y
+  «Minima», «meseta» en vez de «región», «probador» en vez de «tester», «columna Result»,
+  «rejilla», «archivo», y «test/check» en vez del calco «contrast» en inglés.
+- **Errores en lenguaje llano:** «masa interior» y «región conexa con soporte local» se
+  explican sin jerga; «exporta el informe XML» pasa a «Exportar a XML».
+- **Ortografía:** inglés americano (modeling, gray, around, parenthesized), espacio antes de
+  % y comillas «» en español, tildes, rayas y concordancias. «Sharpe» ya no sale en
+  minúscula en el periodo no visto.
+
 ## 2026-10-07 — Revisión independiente del PR de la auditoría
 
 - **Reversiones «in/out» (cuentas de compensación):** el stress de costes contaba dos veces

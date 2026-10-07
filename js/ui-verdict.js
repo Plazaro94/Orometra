@@ -281,7 +281,7 @@ function keyFigures(a, best) {
     ${hasF
     ? tile(Number.isFinite(keep) ? pct(keep, 0) : '—',
       gloss('retention', esc(L('Se mantiene al validar', 'Holds on validation'))),
-      esc(L('De su calidad, la que conserva en el periodo de validación (forward).', 'Of its quality, what it keeps on the validation period (forward).')))
+      esc(L('Qué parte de su calidad conserva en el periodo de validación (forward).', 'How much of its quality it keeps on the validation period (forward).')))
     : tile('—',
       esc(L('Sin validar', 'Not validated')),
       esc(L('No hay periodo de validación (forward): añádelo para poder medirlo.', 'No validation period (forward): add one to measure this.')))}
@@ -323,7 +323,7 @@ function nextSteps(a, best, hold) {
     steps = [
       step(1, esc(L('Descarga el .set', 'Download the .set')),
         esc(L(`Lleva ${setCountEs(a, best)} de la pasada ${best.record.id}. En el probador de MT5, pestaña de parámetros de entrada («Inputs»): clic derecho sobre la tabla → «Cargar» («Load») y elige el archivo.`,
-          `It carries ${setCountEn(a, best)} of pass ${best.record.id}. In the MT5 tester, «Inputs» tab: right-click on the table → «Load» and choose the file.`))),
+          `It carries ${setCountEn(a, best)} of pass ${best.record.id}. In the MT5 tester's “Inputs” tab, right-click the table → “Load” and choose the file.`))),
       step(2, esc(L('Pruébala en un periodo que no hayas usado', 'Test it on a period you have not used')),
         esc(L('Ni para optimizar ni para validar: por ejemplo, los meses posteriores a tu forward. Decide antes qué resultado darás por bueno.',
           'Neither for optimizing nor for validating: for example, the months after your forward. Decide beforehand what result you will accept.'))),
@@ -394,7 +394,7 @@ function renderDecision(a, dv, best, hold) {
       ${hasF ? `<p class="vx-fine">${esc(setCoverageNote(a, best, state.searchSet))}</p>` : ''}`;
   } else if (a.fallback) {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
-      <div class="vx-pass vx-pass-risk">${esc(L('Ninguna con garantías', 'None with confidence'))}</div>
+      <div class="vx-pass vx-pass-risk">${esc(L('Ninguna con garantías', 'None you can rely on'))}</div>
       <p class="vx-pass-note">${L('Sugerencia orientativa:', 'Tentative suggestion:')} <b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>`;
   } else {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
@@ -436,7 +436,7 @@ export function renderVerdict(a) {
         <span class="run-sep">·</span>
         <span>${esc(L('analizado', 'analyzed'))} ${esc(src.at.toLocaleString(localeTag(), { dateStyle: 'short', timeStyle: 'short' }))}</span>
         <span class="run-sep">·</span>
-        <span title="${esc(L('Mínimos exigidos en este análisis: factor de beneficio, caída máxima y operaciones', 'Minima required in this analysis: profit factor, maximum drawdown and trades'))}">${esc(L('Mínimos', 'Minima'))}: PF ≥ ${num(a.meta.policy.gates.minProfitFactor, 2)} · ${esc(L('caída', 'drawdown'))} ≤ ${num(a.meta.policy.gates.maxDrawdownPct, 0)} % · ${int(a.meta.minTradesIs)} ${esc(L('operaciones', 'trades'))}</span>
+        <span title="${esc(L('Mínimos exigidos en este análisis: factor de beneficio, drawdown máximo y operaciones', 'Minimums required in this analysis: profit factor, maximum drawdown and trades'))}">${esc(L('Mínimos', 'Minimums'))}: PF ≥ ${num(a.meta.policy.gates.minProfitFactor, 2)} · ${esc(L('drawdown', 'drawdown'))} ≤ ${num(a.meta.policy.gates.maxDrawdownPct, 0)} % · ${int(a.meta.minTradesIs)} ${esc(L('operaciones', 'trades'))}</span>
         <span class="run-sep">·</span>
         <span class="run-holdout" title="${esc(hold.note)}">${esc(hold.short)}</span>
       </div>`
@@ -470,18 +470,18 @@ export function renderVerdict(a) {
         </li>`).join('')}
       </ul>`) : '',
     a.meta.hasForward ? detailPanel(L('Gráficos: optimización frente a validación', 'Charts: optimization vs validation'),
-      L('Cuánto se degrada cada configuración y qué les pasa a tus mejores.', 'How much each configuration degrades and what happens to your best.'),
+      L('Cuánto se degrada cada configuración y qué les pasa a tus mejores.', 'How much each configuration degrades and what happens to your best ones.'),
       `<div class="grid-secondary chart-pair">
         <div>
           <h3>${L('Calidad en la optimización frente a la validación', 'Quality in optimization vs validation')}</h3>
           ${scatterIsOos(a)}
           <p class="chart-note">${L(
             'Cada punto es una configuración. La diagonal marca &laquo;no se degrada&raquo;. Los puntos por debajo pierden calidad fuera de la muestra. En lavanda, las que forman meseta.',
-            'Each point is a configuration. The diagonal marks &laquo;no degradation&raquo;. Points below lose quality out of sample. In lavender, those that form a plateau.',
+            'Each point is a configuration. The diagonal marks &ldquo;no degradation&rdquo;. Points below lose quality out of sample. In lavender, those that form a plateau.',
           )}</p>
         </div>
         <div>
-          <h3>${L('Qué les pasa a tus mejores', 'What happens to your best')}</h3>
+          <h3>${L('Qué les pasa a tus mejores', 'What happens to your best ones')}</h3>
           ${degradationChart(a)}
           <p class="chart-note">${L(
             'Las configuraciones, en diez grupos según su puesto en la optimización (D10 = tu 10 % mejor). Si D10 no destaca en la validación, el orden de MT5 no predice nada.',
@@ -550,11 +550,11 @@ export function renderEvidenceSheet(a, best) {
   const covNote = sc && sc.usable && Number.isFinite(sc.coverageSearch)
     ? L(
       'Primero: fracción de la malla de niveles vistos en el archivo. Segundo (.set): fracción del espacio que pediste en MT5. Un genético puede subir el primero y dejar el segundo muy bajo.',
-      'First: fraction of the seen-level grid in the file. Second (.set): fraction of the space you asked MT5 for. A genetic can inflate the first while leaving the second very low.',
+      'First: fraction of the seen-level grid in the file. Second (.set): fraction of the space you asked MT5 for. A genetic search can inflate the first while leaving the second very low.',
     )
     : L(
       'Fracción del espacio de niveles vistos en tus archivos — no del rango del .set. Suelta el .set de la optimización para contrastarlo.',
-      'Fraction of the seen-level space in your files — not the .set range. Drop the optimization .set to contrast it.',
+      'Fraction of the seen-level space in your files — not the .set range. Drop the optimization .set to check it against the range you asked for.',
     );
   const nb = best && best.neighborhood;
   let neighborsVal = '—';
@@ -765,7 +765,7 @@ export function renderTop3(a) {
       flags.push(`<span class="badge warn" title="${esc(L('Esta configuración no cumple tus mínimos en el forward', 'This configuration does not meet your minimums on the forward'))}">${L('falla al validar', 'fails on validation')}</span>`);
     }
     if (p.oosValidation && p.oosValidation.passFrac < 0.5) {
-      flags.push(`<span class="badge warn" title="${esc(L('Menos de la mitad de la meseta cumple tus mínimos en el forward', 'Less than half of the plateau meets your minimums on the forward'))}">${L('frágil al validar', 'weak on validation')}</span>`);
+      flags.push(`<span class="badge warn" title="${esc(L('Menos de la mitad de la meseta cumple tus mínimos en el forward', 'Less than half of the plateau meets your minimums on the forward'))}">${L('frágil al validar', 'fragile on validation')}</span>`);
     }
     return flags.join(' ') || `<span class="badge ok">${L('sin avisos', 'no warnings')}</span>`;
   };
@@ -821,8 +821,8 @@ export function renderTop3(a) {
           ${metricRow(L('Meseta', 'Plateau'), (p) => `${zone(p)} · ${int(p.size)}`)}
           ${metricRow(gloss('quality', L('Calidad al optimizar', 'Quality when optimizing')), (p) => `${num(p.record.qualityIs, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityIs))}</em>`)}
           ${hasF ? metricRow(L('Calidad al validar', 'Quality on validation'), (p) => `${num(p.record.qualityOos, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityOos))}</em>`) : ''}
-          ${hasF ? metricRow(L('Al validar · PF / caída / operaciones', 'On validation · PF / drawdown / trades'), (p) => `${num(p.record.oos.profitFactor, 2)} / ${num(p.record.oos.drawdown, 1)} % / ${int(p.record.oos.trades)}`) : ''}
-          ${metricRow(L('Al optimizar · PF / caída / operaciones', 'When optimizing · PF / drawdown / trades'), (p) => `${num(p.record.is.profitFactor, 2)} / ${num(p.record.is.drawdown, 1)} % / ${int(p.record.is.trades)}`)}
+          ${hasF ? metricRow(L('Al validar · PF / drawdown / operaciones', 'On validation · PF / drawdown / trades'), (p) => `${num(p.record.oos.profitFactor, 2)} / ${num(p.record.oos.drawdown, 1)} % / ${int(p.record.oos.trades)}`) : ''}
+          ${metricRow(L('Al optimizar · PF / drawdown / operaciones', 'When optimizing · PF / drawdown / trades'), (p) => `${num(p.record.is.profitFactor, 2)} / ${num(p.record.is.drawdown, 1)} % / ${int(p.record.is.trades)}`)}
           <tr class="t3-params-head"><th class="t3-label" colspan="${top.length + 1}">${L('Parámetros de entrada', 'Input parameters')}</th></tr>
           ${paramRows}
         </tbody>

@@ -74,7 +74,7 @@ export function buildVerdict(ctx) {
           `Of ${total.toLocaleString(localeTag())} configurations, none meet your minimums. With these minimums there is nothing to select.`), null);
   } else if (gatePassCount / fwdBase < 0.02) {
     add(SEV.CRITICAL, L('Solo un resquicio del espacio sobrevive', 'Only a sliver of the space survives'),
-      L(`Apenas ${gatePassCount} de ${fwdBase.toLocaleString(localeTag())} configuraciones${hasForward ? ' con forward' : ''} (${fmt((100 * gatePassCount / fwdBase), 1)}%) pasan los mínimos. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
+      L(`Apenas ${gatePassCount} de ${fwdBase.toLocaleString(localeTag())} configuraciones${hasForward ? ' con forward' : ''} (${fmt((100 * gatePassCount / fwdBase), 1)} %) pasan los mínimos. Una estrategia que solo funciona en un punto concreto del espacio de parámetros casi siempre es un artefacto del optimizador.`,
         `Barely ${gatePassCount} of ${fwdBase.toLocaleString(localeTag())} configurations${hasForward ? ' with forward' : ''} (${fmt((100 * gatePassCount / fwdBase), 1)}%) pass the gates. A strategy that only works at one specific point in parameter space is almost always an optimizer artifact.`), null);
   }
 
@@ -124,7 +124,7 @@ export function buildVerdict(ctx) {
     // No es lo mismo "no hay meseta" que "no hay datos para saberlo". La cifra es la del
     // conjunto donde se buscan las mesetas (`searchPassCount`), la misma que decide
     // `underpowered` y que da el resumen: antes aquí salía la de los dos periodos, otra.
-    add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to pronounce on'),
+    add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to draw any conclusion'),
       L(`Solo ${searchPassCount} configuraciones superan los mínimos${hasForward && selectionMode === 'isThenOos' ? ' en el periodo optimizado' : ''}; una meseta necesitaría al menos ${viableNeededForPlateau}, con vecinas que también cumplan. Esto no dice que tu EA sea malo: dice que estos datos no permiten afirmar nada. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
         `Only ${searchPassCount} configurations clear the minimums${hasForward && selectionMode === 'isThenOos' ? ' on the optimized period' : ''}; a plateau would need at least ${viableNeededForPlateau}, with neighbors that also pass. This does not say your EA is bad: it says these data cannot support any claim. Widen the parameter ranges, add intermediate values or relax the minimums, and optimize again.`), null);
   } else if (!plateaus.length) {
@@ -150,32 +150,32 @@ export function buildVerdict(ctx) {
   const hasRefuge = viableShare >= VIABLE_REFUGE && hasRegion;
   if (Number.isFinite(fragility)) {
     if (fragility >= 0.5 && hasRefuge) {
-      add(SEV.WARN, L(`Tu ranking MT5 (Result) no se sostiene: falla el ${fmt((100 * fragility), 0)}%`, `Your MT5 ranking (Result) does not hold: fails ${fmt((100 * fragility), 0)}%`),
-        L(`Al quedarte con la mejor fila según la columna Result de un periodo, cae por debajo de la mediana del otro el ${fmt((100 * fragility), 0)}% de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quédate con la meseta de abajo.`,
-          `When you keep the best row by the Result column of one period, it falls below the median of the other ${fmt((100 * fragility), 0)}% of the time. That condemns your table order, not the plateau Orometra proposes. Ignore the ranking and keep the plateau below.`), 'stats');
+      add(SEV.WARN, L(`Tu ranking MT5 (Result) no se sostiene: falla el ${fmt((100 * fragility), 0)} %`, `Your MT5 ranking (Result) does not hold: it fails ${fmt((100 * fragility), 0)}%`),
+        L(`Al quedarte con la mejor fila según la columna Result de un periodo, cae por debajo de la mediana del otro el ${fmt((100 * fragility), 0)} % de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quédate con la meseta de abajo.`,
+          `When you keep the best row by the Result column of one period, it falls below the median of the other period ${fmt((100 * fragility), 0)}% of the time. That condemns your table order, not the plateau Orometra proposes. Ignore the ranking and keep the plateau below.`), 'stats');
     } else if (fragility >= 0.5) {
-      add(SEV.CRITICAL, L(`La regla "primera de Result" falla el ${fmt((100 * fragility), 0)}% de las veces`, `The "top Result row" rule fails ${fmt((100 * fragility), 0)}% of the time`),
-        L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)}% al cruzar periodos, y no hay región amplia donde refugiarse. Por encima del 50% ese ranking vale menos que una moneda.`,
-          `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and there is no plateau to fall back on. Above 50% that ranking is worth less than a coin flip.`), 'stats');
+      add(SEV.CRITICAL, L(`La regla «primera de Result» falla el ${fmt((100 * fragility), 0)} % de las veces`, `The "top Result row" rule fails ${fmt((100 * fragility), 0)}% of the time`),
+        L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)} % al cruzar periodos, y no hay región amplia donde refugiarse. Por encima del 50 % ese ranking vale menos que lanzar una moneda.`,
+          `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and there is no broad region to fall back on. Above 50% that ranking is worth less than a coin flip.`), 'stats');
     } else if (fragility >= 0.3) {
       add(SEV.WARN, L(`El orden de MT5 solo se mantiene a medias: falla el ${fmt((100 * fragility), 0)} %`, `The MT5 order only half holds: it fails ${fmt((100 * fragility), 0)}%`),
         L(`La mejor fila según la columna Result de un periodo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)} % de las veces. Ese orden conserva algo de valor, pero no el suficiente para fiarte de la primera fila: elige por meseta.`,
-          `The best row by the Result column of one period falls below the middle of the table in the other ${fmt((100 * fragility), 0)}% of the time. That order keeps some value, but not enough to trust the top row: choose by plateau.`), 'stats');
+          `The best row by the Result column of one period falls below the middle of the table in the other period ${fmt((100 * fragility), 0)}% of the time. That order keeps some value, but not enough to trust the top row: choose by plateau.`), 'stats');
     } else {
       add(SEV.OK, L(`El orden de MT5 se mantiene entre periodos: solo falla el ${fmt((100 * fragility), 0)} %`, `The MT5 order holds across periods: it only fails ${fmt((100 * fragility), 0)}%`),
         L(`La mejor fila según la columna Result de un periodo solo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)} % de las veces: ese orden sí anticipa algo.`,
-          `The best row by the Result column of one period only falls below the middle of the table in the other ${fmt((100 * fragility), 0)}% of the time: that order does anticipate something.`), 'stats');
+          `The best row by the Result column of one period only falls below the middle of the table in the other period ${fmt((100 * fragility), 0)}% of the time: that order does anticipate something.`), 'stats');
     }
   }
 
   if (Number.isFinite(fragilityQuality)) {
     if (fragilityQuality >= 0.5) {
       add(SEV.WARN, L(`La nota de Orometra también se tambalea entre periodos: falla el ${fmt((100 * fragilityQuality), 0)} %`, `The Orometra score also wobbles across periods: it fails ${fmt((100 * fragilityQuality), 0)}%`),
-        L('Aunque no se use la columna Result, la nota con varias métricas a la vez (factor de beneficio, caída, operaciones…) también pierde orden al pasar de un periodo a otro. La meseta sigue siendo mejor que la cima, pero probarla en un periodo no visto es imprescindible.',
+        L('Aunque no se use la columna Result, la nota con varias métricas a la vez (factor de beneficio, drawdown, operaciones…) también pierde orden al pasar de un periodo a otro. La meseta sigue siendo mejor que la cima, pero probarla en un periodo no visto es imprescindible.',
           'Even without the Result column, the score built from several metrics at once (profit factor, drawdown, trades…) also loses order from one period to the other. The plateau is still better than the peak, but testing it on an unseen period is essential.'), 'stats');
     } else if (fragilityQuality < 0.3) {
       add(SEV.OK, L(`La nota de Orometra se mantiene entre periodos: solo falla el ${fmt((100 * fragilityQuality), 0)} %`, `The Orometra score holds across periods: it only fails ${fmt((100 * fragilityQuality), 0)}%`),
-        L('La nota con varias métricas a la vez (factor de beneficio, caída, operaciones…) conserva el orden de las configuraciones de un periodo a otro.',
+        L('La nota con varias métricas a la vez (factor de beneficio, drawdown, operaciones…) conserva el orden de las configuraciones de un periodo a otro.',
           'The score built from several metrics at once (profit factor, drawdown, trades…) keeps the order of configurations from one period to the other.'), null);
     }
   }
@@ -192,7 +192,7 @@ export function buildVerdict(ctx) {
     if (v && v.withForward === 0) {
       add(SEV.WARN, L('La meseta recomendada no tiene ninguna configuración probada en el forward', 'The recommended plateau has no configuration tested on the forward'),
         L('MT5 solo pasa al forward las mejores pasadas y ninguna de esta meseta estaba entre ellas. Trátala como provisional hasta probarla en un periodo no visto.',
-          'MT5 only passes the best passes to the forward and none of this plateau was among them. Treat it as provisional until you test it on an unseen period.'), null);
+          'MT5 only sends the best passes to the forward and none of this plateau was among them. Treat it as provisional until you test it on an unseen period.'), null);
     } else if (v && Number.isFinite(ctx.plateauForwardCritical) && v.passFrac < ctx.plateauForwardCritical) {
       add(SEV.CRITICAL, L(`La meseta recomendada no se sostiene en el forward: solo aguanta el ${fmt((100 * v.passFrac), 0)} %${basis}`, `The recommended plateau does not hold on the forward: only ${fmt((100 * v.passFrac), 0)}%${basis}`),
         L(`Menos de ${fmt(100 * ctx.plateauForwardCritical, 0)} de cada 100 configuraciones de la meseta cumplen tus mínimos en el forward. Una meseta con ventaja real suele aprobarlo en casi todas; sin ventaja, una meseta entera puede aprobarlo a medias por pura suerte del periodo. No la uses sin probarla antes en un periodo no visto.`,
@@ -219,7 +219,7 @@ export function buildVerdict(ctx) {
     const b = fragilityFolds.oosToIs.value;
     add(SEV.WARN, L('Los dos periodos no son intercambiables', 'The two periods are not interchangeable'),
       L(`Elegir en el periodo optimizado y validar en el forward falla el ${fmt((100 * a), 0)} % de las veces; al revés, el ${fmt((100 * b), 0)} %. Una ventaja real daría cifras parecidas: una diferencia de ${fmt((100 * fragilityAsymmetry), 0)} puntos indica que uno de los tramos es más fácil o es otro régimen de mercado. Por eso aquí el periodo no visto es imprescindible.`,
-        `Choosing on the optimized period and validating on the forward fails ${fmt((100 * a), 0)}% of the time; the other way round, ${fmt((100 * b), 0)}%. A real edge would give similar figures: a ${fmt((100 * fragilityAsymmetry), 0)}-point gap means one stretch is easier or a different market regime. That is why the unseen period is essential here.`), 'stats');
+        `Choosing on the optimized period and validating on the forward fails ${fmt((100 * a), 0)}% of the time; the other way around, ${fmt((100 * b), 0)}%. A real edge would give similar figures: a ${fmt((100 * fragilityAsymmetry), 0)}-point gap means one stretch is easier or a different market regime. That is why the unseen period is essential here.`), 'stats');
   }
 
   /*
@@ -275,8 +275,8 @@ export function buildVerdict(ctx) {
           `The search was repeated ${stabilityCheck.draws} times randomly shifting our criteria by ±20% (minimum plateau quality, minimum size, minimum neighbors…). In ${fmt(pctRegion, 0)}% of cases the winning configuration still falls inside the SAME plateau. The recommendation is a property of your data, not of the tool's tuning.`), 'stability');
     } else if (stabilityCheck.regionRate >= 0.5) {
       add(SEV.WARN, L(`La recomendación solo aguanta el ${fmt(pctRegion, 0)} % de las variaciones de umbral`, `The recommendation only holds through ${fmt(pctRegion, 0)}% of threshold variations`),
-        L(`Moviendo un ±20 % nuestros criterios, la meseta ganadora cambia en cerca de la mitad de los casos. Hay señal, pero la frontera entre las mesetas candidatas es difusa: trata el Top como un conjunto de opciones equivalentes y decide por criterio operativo, no por el orden.`,
-          `Shifting our criteria by ±20%, the winning plateau changes in roughly half the cases. There is signal, but the boundary between candidate plateaus is diffuse: treat the Top as a set of equivalent options and decide by operational criteria, not by rank.`), 'stability');
+        L(`Moviendo un ±20 % nuestros criterios, la meseta ganadora cambia hasta en la mitad de los casos. Hay señal, pero la frontera entre las mesetas candidatas es difusa: trata el Top como un conjunto de opciones equivalentes y decide por criterio operativo, no por el orden.`,
+          `Shifting our criteria by ±20%, the winning plateau changes in up to half the cases. There is signal, but the boundary between candidate plateaus is diffuse: treat the Top as a set of equivalent options and decide by operational criteria, not by rank.`), 'stability');
     } else {
       add(SEV.CRITICAL, L(`La recomendación no sobrevive a sus propios umbrales (${fmt(pctRegion, 0)} %)`, `The recommendation does not survive its own thresholds (${fmt(pctRegion, 0)}%)`),
         L(`Repitiendo la búsqueda ${stabilityCheck.draws} veces con los umbrales movidos un ±20 %, la meseta ganadora solo se mantiene el ${fmt(pctRegion, 0)} % de las veces. Lo que sale primero depende de dónde pusimos los cortes, no de tus datos.`,
@@ -293,13 +293,13 @@ export function buildVerdict(ctx) {
     if (gs && gs.draws) {
       const p = 100 * gs.regionRate;
       if (gs.regionRate >= 0.8) {
-        add(SEV.OK, L(`La recomendación aguanta el ${fmt(p, 0)} % de las variaciones de TUS mínimos`, `The recommendation holds through ${fmt(p, 0)}% of YOUR minimums variations`),
+        add(SEV.OK, L(`La recomendación aguanta el ${fmt(p, 0)} % de las variaciones de TUS mínimos`, `The recommendation holds through ${fmt(p, 0)}% of variations in YOUR minimums`),
           L(`Moviendo un ±20 % el factor de beneficio exigido, el drawdown máximo y el número mínimo de operaciones, la configuración ganadora sigue cayendo en la misma meseta. No depende de haber acertado con unos mínimos concretos.`,
             `Shifting the required profit factor, maximum drawdown and minimum trade count by ±20%, the winning configuration still falls in the same plateau. It does not depend on having hit particular minimums.`), 'stability');
       } else if (gs.regionRate >= 0.5) {
         add(SEV.WARN, L(`Tus mínimos mueven la recomendación (aguanta el ${fmt(p, 0)} %)`, `Your minimums move the recommendation (it holds ${fmt(p, 0)}%)`),
-          L(`Moviendo un ±20 % los mínimos que has configurado, la meseta ganadora cambia en cerca de la mitad de los casos. Antes de decidir, prueba a subir y bajar el factor de beneficio exigido y mira si te sigue recomendando lo mismo: si no, lo que estás eligiendo es tu umbral, no una propiedad de tu EA.`,
-            `Shifting the minimums you configured by ±20%, the winning plateau changes in roughly half the cases. Before deciding, try raising and lowering the required profit factor and see whether it still recommends the same thing: if not, what you are choosing is your threshold, not a property of your EA.`), 'stability');
+          L(`Moviendo un ±20 % los mínimos que has configurado, la meseta ganadora cambia hasta en la mitad de los casos. Antes de decidir, prueba a subir y bajar el factor de beneficio exigido y mira si te sigue recomendando lo mismo: si no, lo que estás eligiendo es tu umbral, no una propiedad de tu EA.`,
+            `Shifting the minimums you configured by ±20%, the winning plateau changes in up to half the cases. Before deciding, try raising and lowering the required profit factor and see whether it still recommends the same thing: if not, what you are choosing is your threshold, not a property of your EA.`), 'stability');
       } else {
         add(SEV.CRITICAL, L(`La recomendación depende de los mínimos que elijas (${fmt(p, 0)} %)`, `The recommendation depends on the minimums you choose (${fmt(p, 0)}%)`),
           L(`Con los mínimos movidos un ±20 %, la meseta ganadora solo se mantiene el ${fmt(p, 0)} % de las veces. La recomendación la decide el umbral que has escrito, no tus datos: con un factor de beneficio de 1,25 en vez de 1,15 saldría otra, igual de válida.`,
@@ -329,7 +329,7 @@ export function buildVerdict(ctx) {
     } else {
       add(SEV.OK, L('El mejor Sharpe supera el umbral del azar', 'Best Sharpe beats the chance threshold'),
         L(`Sharpe máximo${sharpeTest.period === 'oos' ? ' en el forward' : ''} ${fmt(observedMax, 2)} frente a ${fmt(chanceMax, 2)} esperable sin ventaja real con ${howMany}. Superar este contraste es condición necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
-          `Maximum Sharpe${sharpeTest.period === 'oos' ? ' on the forward' : ''} ${fmt(observedMax, 2)} versus ${fmt(chanceMax, 2)} expected with no real edge with ${howMany}. Passing this contrast is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`), 'stats');
+          `Maximum Sharpe${sharpeTest.period === 'oos' ? ' on the forward' : ''} ${fmt(observedMax, 2)} versus ${fmt(chanceMax, 2)} expected with no real edge with ${howMany}. Passing this test is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`), 'stats');
     }
   }
 
@@ -369,13 +369,13 @@ export function buildVerdict(ctx) {
     const listEs = top.map((g) => `${g.name}: el salto mayor (${g.maxStep}) es ${fmt(g.ratio, 0)} veces el menor (${g.minStep})`).join('; ');
     const listEn = top.map((g) => `${g.name}: the largest step (${g.maxStep}) is ${fmt(g.ratio, 0)} times the smallest (${g.minStep})`).join('; ');
     const spanEs = spansIrregular && spansIrregular.length
-      ? ` La región recomendada cruza uno de esos saltos (${spansIrregular.map((x) => x.name).join(', ')}).`
+      ? ` La meseta recomendada cruza uno de esos saltos (${spansIrregular.map((x) => x.name).join(', ')}).`
       : '';
     const spanEn = spansIrregular && spansIrregular.length
       ? ` The recommended plateau crosses one of those jumps (${spansIrregular.map((x) => x.name).join(', ')}).`
       : '';
     add(SEV.WARN, L(`La rejilla de ${irregularGrids.length} parámetro(s) tiene saltos desiguales`, `The grid of ${irregularGrids.length} parameter(s) has uneven steps`),
-      L(`${listEs}. El motor cuenta POSICIONES, no distancias: dos valores consecutivos de tu lista están siempre "a un paso" aunque entre ellos haya un abismo. Donde los saltos son desiguales, la continuidad de una meseta puede ser un espejismo. Optimiza esos parámetros con un paso uniforme.${spanEs}`,
+      L(`${listEs}. El motor cuenta POSICIONES, no distancias: dos valores consecutivos de tu lista están siempre «a un paso» aunque entre ellos haya un abismo. Donde los saltos son desiguales, la continuidad de una meseta puede ser un espejismo. Optimiza esos parámetros con un paso uniforme.${spanEs}`,
         `${listEn}. The engine counts POSITIONS, not distances: two consecutive values on your list are always "one step apart" even if there is a gulf between them. Where steps are uneven, plateau continuity can be an illusion. Optimize those parameters with a uniform step.${spanEn}`), 'sensitivity');
   }
 
@@ -386,7 +386,7 @@ export function buildVerdict(ctx) {
   }
 
   if (sampling === 'sparse') {
-    add(SEV.WARN, L(`Muestreo disperso (sobre niveles vistos): ${fmt((100 * coverage), 4)}%`, `Sparse sampling (on seen levels): ${fmt((100 * coverage), 4)}%`),
+    add(SEV.WARN, L(`Muestreo disperso (sobre niveles vistos): ${fmt((100 * coverage), 4)} %`, `Sparse sampling (on seen levels): ${fmt((100 * coverage), 4)}%`),
       L('Has optimizado con algoritmo genético, no con rejilla completa. El GA concentra las pruebas donde el periodo optimizado era bueno, así que la densidad de vecinos mide dónde miró el optimizador tanto como dónde hay estabilidad. Usa el rango de refinamiento que propone la app y repite con rejilla completa.',
         'You optimized with a genetic algorithm, not a full grid. The GA concentrates trials where the optimized period was good, so neighbor density measures where the optimizer looked as much as where there is stability. Use the refinement range the app proposes and repeat with a full grid.'), 'coverage');
   }
@@ -395,21 +395,21 @@ export function buildVerdict(ctx) {
     const cs = searchCoverage.coverageSearch;
     const obs = Number.isFinite(coverage) ? coverage : NaN;
     if (cs < 0.02) {
-      add(SEV.WARN, L(`Solo ${fmt((100 * cs), 2)}% del rango del .set`, `Only ${fmt((100 * cs), 2)}% of the .set search range`),
-        L(`El .set pide un espacio de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configuraciones; tus archivos cubren ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas. La cobertura “alta” sobre niveles vistos no implica que hayas explorado el rango que pediste en MT5.`,
+      add(SEV.WARN, L(`Solo ${fmt((100 * cs), 2)} % del rango del .set`, `Only ${fmt((100 * cs), 2)}% of the .set search range`),
+        L(`El .set pide un espacio de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configuraciones; tus archivos cubren ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas. La cobertura «alta» sobre niveles vistos no implica que hayas explorado el rango que pediste en MT5.`,
           `The .set asks for a space of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configurations; your files cover ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells. High coverage on seen levels does not mean you explored the range you asked MT5 for.`), 'coverage');
     } else if (Number.isFinite(obs) && obs >= 0.5 && cs < obs * 0.5) {
       add(SEV.WARN, L('La cobertura observada engaña frente al .set', 'Observed coverage misleads vs the .set'),
-        L(`Sobre niveles vistos cubres el ${fmt((100 * obs), 1)}%; frente al rango del .set, solo el ${fmt((100 * cs), 2)}%. Un genético denso en un rincón produce exactamente esa discrepancia.`,
-          `On seen levels you cover ${fmt((100 * obs), 1)}%; versus the .set range, only ${fmt((100 * cs), 2)}%. A genetic dense in a corner produces exactly that gap.`), 'coverage');
+        L(`Sobre niveles vistos cubres el ${fmt((100 * obs), 1)} %; frente al rango del .set, solo el ${fmt((100 * cs), 2)} %. Una optimización genética concentrada en un rincón produce exactamente esa discrepancia.`,
+          `On seen levels you cover ${fmt((100 * obs), 1)}%; versus the .set range, only ${fmt((100 * cs), 2)}%. A genetic optimization concentrated in one corner produces exactly that gap.`), 'coverage');
     } else if (cs >= 0.95) {
-      add(SEV.OK, L(`Cobertura del .set: ${fmt((100 * cs), 1)}%`, `.set coverage: ${fmt((100 * cs), 1)}%`),
+      add(SEV.OK, L(`Cobertura del .set: ${fmt((100 * cs), 1)} %`, `.set coverage: ${fmt((100 * cs), 1)}%`),
         L('Las pasadas cubren casi todo el espacio de búsqueda declarado en el .set.',
           'Passes cover almost the entire search space declared in the .set.'), 'coverage');
     } else {
-      add(SEV.INFO, L(`Cobertura del .set: ${fmt((100 * cs), 2)}%`, `.set coverage: ${fmt((100 * cs), 2)}%`),
+      add(SEV.INFO, L(`Cobertura del .set: ${fmt((100 * cs), 2)} %`, `.set coverage: ${fmt((100 * cs), 2)}%`),
         L(`${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} pedidas en el .set.`,
-          `${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} asked in the .set.`), 'coverage');
+          `${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} requested in the .set.`), 'coverage');
     }
     if (searchCoverage.outsideAny) {
       add(SEV.WARN, L('Hay pasadas fuera del rango del .set', 'Some passes fall outside the .set range'),
@@ -419,7 +419,7 @@ export function buildVerdict(ctx) {
     if (searchCoverage.missingInSet && searchCoverage.missingInSet.length) {
       add(SEV.INFO, L(`${searchCoverage.missingInSet.length} parámetro(s) del archivo no están en el .set`, `${searchCoverage.missingInSet.length} file parameter(s) missing from the .set`),
         L(`No se contrastaron: ${searchCoverage.missingInSet.slice(0, 6).join(', ')}${searchCoverage.missingInSet.length > 6 ? '…' : ''}.`,
-          `Not contrasted: ${searchCoverage.missingInSet.slice(0, 6).join(', ')}${searchCoverage.missingInSet.length > 6 ? '…' : ''}.`), 'coverage');
+          `Not checked: ${searchCoverage.missingInSet.slice(0, 6).join(', ')}${searchCoverage.missingInSet.length > 6 ? '…' : ''}.`), 'coverage');
     }
   } else if (!searchCoverage || !searchCoverage.present) {
     add(SEV.INFO, L('Sin .set de optimización: cobertura solo sobre niveles vistos', 'No optimization .set: coverage is on seen levels only'),
@@ -513,7 +513,7 @@ export function buildVerdict(ctx) {
   if (Number.isFinite(periodRatio)) {
     if (periodRatio < 0.15) {
       add(SEV.WARN, L(`El forward es muy corto (aprox. ${fmt((100 * periodRatio), 0)} % del periodo optimizado)`, `The forward is very short (approx. ${fmt((100 * periodRatio), 0)}% of the optimized period)`),
-        L('Un forward demasiado breve produce validaciones ruidosas. Lo habitual es situarlo entre el 20% y el 50% del periodo optimizado.',
+        L('Un forward demasiado breve produce validaciones ruidosas. Lo habitual es situarlo entre el 20 % y el 50 % del periodo optimizado.',
           'An overly short forward produces noisy validations. The usual range is between 20% and 50% of the optimized period.'), 'coverage');
     } else if (periodRatio > 1.2) {
       add(SEV.INFO, L(`El forward es más largo que el periodo optimizado (aprox. ${fmt((100 * periodRatio), 0)} %)`, `The forward is longer than the optimized period (approx. ${fmt((100 * periodRatio), 0)}%)`),
@@ -535,7 +535,7 @@ export function buildVerdict(ctx) {
       add(SEV.WARN,
         L('MT5 solo pasó al forward una parte de las configuraciones (las mejores)',
           'MT5 only passed part of the configurations to the forward (the best ones)'),
-        L(`El export forward trae ${integrity.oosRows} filas frente a ${integrity.isRows} del export de la optimización (~${pct} %). MT5 solo prueba en el forward las mejores pasadas según tu criterio de optimización, así que las mesetas y la fragilidad en forward se miden solo entre candidatas ya preseleccionadas: la validación queda sesgada al alza. Interpreta el forward con cautela.`,
+        L(`El export del forward trae ${integrity.oosRows} filas frente a ${integrity.isRows} del export de la optimización (~${pct} %). MT5 solo prueba en el forward las mejores pasadas según tu criterio de optimización, así que las mesetas y la fragilidad en forward se miden solo entre candidatas ya preseleccionadas: la validación queda sesgada al alza. Interpreta el forward con cautela.`,
           `The forward export has ${integrity.oosRows} rows versus ${integrity.isRows} in the optimization export (~${pct}%). MT5 only tests the best passes by your optimization criterion in the forward, so plateaus and forward fragility are measured only among already pre-selected candidates: validation is biased upward. Treat the forward with caution.`), 'integrity');
     }
     if (integrity.duplicateIds > 0) {
@@ -581,15 +581,15 @@ export function buildVerdict(ctx) {
     headline = L('Evidencia insuficiente', 'Insufficient evidence');
     const where = hasForward && selectionMode === 'isThenOos';
     summary = L(`Con ${searchPassCount} configuraciones por encima de tus mínimos${where ? ' en el periodo optimizado' : ''} no hay masa suficiente para que pudiera existir una meseta: harían falta al menos ${viableNeededForPlateau}. Esto no dice nada sobre tu EA: dice que estos datos no permiten pronunciarse en ninguna dirección.`,
-      `With ${searchPassCount} configurations above your minimums${where ? ' on the optimized period' : ''} there is not enough mass for a plateau to exist; at least ${viableNeededForPlateau} would be needed. This says nothing about your EA: it says these data do not allow a pronouncement in either direction.`);
+      `With ${searchPassCount} configurations above your minimums${where ? ' on the optimized period' : ''} there is not enough mass for a plateau to exist; at least ${viableNeededForPlateau} would be needed. This says nothing about your EA: it says these data do not support a conclusion either way.`);
   } else if (criticas.length) {
     level = LEVELS.WEAK;
     headline = regiones
       ? L('Evidencia débil (hay meseta)', 'Weak evidence (plateau found)')
       : L('Evidencia débil', 'Weak evidence');
     summary = regiones
-      ? L(`Sí hay ${regiones === 1 ? 'una meseta' : `${regiones} mesetas`} en tus datos (abajo). Lo que es débil no es “que no exista meseta”, sino el peso que puedes darle: ${criticas.length === 1 ? 'hay una limitación seria' : `hay ${criticas.length} limitaciones serias`} en lo que la sostiene. Léela antes de decidir.`,
-          `There ${regiones === 1 ? 'is a plateau' : `are ${regiones} plateaus`} in your data (below). What is weak is not “that no plateau exists”, but how much weight you can give it: ${criticas.length === 1 ? 'there is one serious limitation' : `there are ${criticas.length} serious limitations`} in what supports it. Read it before deciding.`)
+      ? L(`Sí hay ${regiones === 1 ? 'una meseta' : `${regiones} mesetas`} en tus datos (abajo). Lo que es débil no es «que no exista meseta», sino el peso que puedes darle: ${criticas.length === 1 ? 'hay una limitación seria' : `hay ${criticas.length} limitaciones serias`} en lo que la sostiene. Tenlo en cuenta antes de decidir.`,
+          `There ${regiones === 1 ? 'is a plateau' : `are ${regiones} plateaus`} in your data (below). What is weak is not “that no plateau exists”, but how much weight you can give it: ${criticas.length === 1 ? 'there is one serious limitation' : `there are ${criticas.length} serious limitations`} in what supports it. Keep that in mind before deciding.`)
       : L('No hay ninguna meseta en estos datos, solo configuraciones sueltas. Abajo tienes las mejores, pero un punto aislado puede ser suerte.',
           'There is no plateau in these data, only isolated configurations. Below you have the best ones, but an isolated point may be luck.');
   } else if (warnings.length) {
@@ -616,10 +616,10 @@ export function buildVerdict(ctx) {
     nextStep = L('Refina la optimización antes de seguir.', 'Refine the optimization before continuing.');
   } else if (Number.isFinite(fragility) && fragility >= 0.5) {
     nextStep = L('Ignora el orden de tu tabla de MT5: aquí engaña. La meseta de abajo sigue siendo el hallazgo; exporta el .set de la configuración representativa y pruébala en un tramo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptación ANTES de mirar el resultado.',
-      'Ignore the order of your MT5 table: here it misleads. The plateau below is still the finding; export the .set of the representative configuration and test it on a stretch you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
+      'Ignore the order of your MT5 table: here it misleads. The plateau below is still the finding; export the .set of the representative configuration and test it on a stretch you have not used for optimization or validation. Set your acceptance criteria BEFORE looking at the result.');
   } else {
     nextStep = L('Exporta el .set de la configuración representativa y pruébala en un periodo que no hayas usado ni para optimizar ni para validar. Fija los criterios de aceptación ANTES de mirar el resultado.',
-      'Export the .set of the representative configuration and test it on a period you have not used for optimization or validation. Fix acceptance criteria BEFORE looking at the result.');
+      'Export the .set of the representative configuration and test it on a period you have not used for optimization or validation. Set your acceptance criteria BEFORE looking at the result.');
   }
 
   return {
@@ -703,8 +703,8 @@ export function peakRejectTags(p, opts = {}) {
   }
   if (!out.length) {
     tagged(L('Poca robustez', 'Low robustness'),
-      L('no llega a la robustez que se pide a una meseta, con vecinos suficientes',
-        'does not reach the robustness required of a plateau, with enough neighbors'));
+      L('tiene vecinos suficientes, pero no llega a la robustez que se pide a una meseta',
+        'has enough neighbors but does not reach the robustness required of a plateau'));
   }
   return out;
 }

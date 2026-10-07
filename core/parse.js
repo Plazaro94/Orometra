@@ -97,7 +97,7 @@ function splitDelimited(line, delimiter) {
 
 export function parseDelimited(text) {
   const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '');
-  if (lines.length < 2) throw new AnalysisError(CODE.FILE_ERROR, L('Esto no parece una exportación de MT5: no se encuentran filas de datos. En el probador, clic derecho sobre la tabla de resultados y exporta el informe (formato XML).', 'This does not look like an MT5 export: no data rows found. In the tester, right-click the results table and export the report (XML format).'));
+  if (lines.length < 2) throw new AnalysisError(CODE.FILE_ERROR, L('Esto no parece una exportación de MT5: no se encuentran filas de datos. En el probador, clic derecho sobre la tabla de resultados → Exportar a XML.', 'This does not look like an MT5 export: no data rows found. In the tester, right-click the results table → Export to XML.'));
   const header = lines[0];
   const tabs = (header.match(/\t/g) || []).length;
   const semis = (header.match(/;/g) || []).length;

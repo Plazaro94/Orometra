@@ -74,10 +74,10 @@
 
   <nav class="doc-index" data-i18n="doc.method.index" data-i18n-attr="aria-label" aria-label="Pasos">
     <ol>
-    <li><a href="#lectura"><span class="doc-index-num">01</span><span class="doc-index-text"><strong data-i18n="doc.method.s1.title">Lee tu export tal cual</strong><span data-i18n="doc.method.s1.short">Cabeceras en español o inglés, cualquier decimal</span></span></a></li>
+    <li><a href="#lectura"><span class="doc-index-num">01</span><span class="doc-index-text"><strong data-i18n="doc.method.s1.title">Lee tu export tal cual</strong><span data-i18n="doc.method.s1.short">Cabeceras en español o inglés, cualquier separador decimal</span></span></a></li>
     <li><a href="#minimos"><span class="doc-index-num">02</span><span class="doc-index-text"><strong data-i18n="doc.method.s2.title">Tus mínimos antes que cualquier ranking</strong><span data-i18n="doc.method.s2.short">Solo cuenta lo que supera tus suelos</span></span></a></li>
     <li><a href="#calidad"><span class="doc-index-num">03</span><span class="doc-index-text"><strong data-i18n="doc.method.s3.title">Calidad sin la columna Result</strong><span data-i18n="doc.method.s3.short">Varias métricas objetivas a la vez</span></span></a></li>
-    <li><a href="#mesetas"><span class="doc-index-num">04</span><span class="doc-index-text"><strong data-i18n="doc.method.s4.title">Mesetas, no picos</strong><span data-i18n="doc.method.s4.short">Los vecinos también tienen que funcionar</span></span></a></li>
+    <li><a href="#mesetas"><span class="doc-index-num">04</span><span class="doc-index-text"><strong data-i18n="doc.method.s4.title">Mesetas, no picos</strong><span data-i18n="doc.method.s4.short">Las vecinas también tienen que funcionar</span></span></a></li>
     <li><a href="#forward"><span class="doc-index-num">05</span><span class="doc-index-text"><strong data-i18n="doc.method.s5.title">El forward confirma o rebaja</strong><span data-i18n="doc.method.s5.short">Prueba en datos que no usó</span></span></a></li>
     <li><a href="#suerte"><span class="doc-index-num">06</span><span class="doc-index-text"><strong data-i18n="doc.method.s6.title">Calcula cuánto pudo ser azar</strong><span data-i18n="doc.method.s6.short">¿Tu mejor resultado supera al azar?</span></span></a></li>
     <li><a href="#umbrales"><span class="doc-index-num">07</span><span class="doc-index-text"><strong data-i18n="doc.method.s7.title">Se examina a sí mismo</strong><span data-i18n="doc.method.s7.short">La respuesta no puede depender de sus ajustes</span></span></a></li>
@@ -91,7 +91,7 @@
       <span class="lp-method-num">01</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s1.title">Lee tu export tal cual</h2>
-        <p data-i18n="doc.method.s1.body">Suelta el XML que exporta MT5, con comas o puntos decimales. El motor no se fía del nombre de las columnas para distinguir parámetros de métricas: lo hace por cómo se comportan (un parámetro vale lo mismo en la misma pasada del in-sample y del forward; una métrica no). Lo que sí necesita es reconocer por su nombre las columnas de métricas (beneficio, factor de beneficio, drawdown, operaciones), y lee cabeceras en inglés y en español: si no reconoce columnas clave, te lo dice en vez de juzgar con menos de lo que parece. Si descarta alguna fila, te lo dice.</p>
+        <p data-i18n="doc.method.s1.body">Suelta el XML que exporta MT5, con comas o puntos decimales. El motor no se fía del nombre de las columnas para distinguir parámetros de métricas: lo hace por cómo se comportan (un parámetro vale lo mismo en la misma pasada del in-sample y del forward; una métrica no). Lo que sí necesita es reconocer por su nombre las columnas de métricas (beneficio, factor de beneficio, drawdown, operaciones), y lee cabeceras en inglés y en español: si no reconoce columnas clave, te lo dice en vez de dar un veredicto que se apoya en menos de lo que parece. Si descarta alguna fila, te lo dice.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="minimos">
@@ -141,7 +141,7 @@
       <span class="lp-method-num">04</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s4.title">Mesetas, no picos</h2>
-        <p data-i18n="doc.method.s4.body">Para cada configuración mira a sus vecinos, medidos en pasos de tu rejilla (de 30 a 50, o de 0,1 a 0,2, es un paso). Una meseta es una zona conectada donde los vecinos también superan tus mínimos. Los picos aislados se descartan. Dentro de la meseta se elige la configuración con mejor puesto conjunto en in-sample y forward, promediado con sus vecinas: ni el punto más alto ni la suerte de un punto concreto. Si no hay meseta y hay forward, da una sugerencia orientativa con la misma regla y lo dice. En nuestro banco de pruebas ciego gana a elegir la pasada que MT5 pone primera (mayor beneficio in-sample), la mejor del forward, la suma de puestos y el azar; pierde por poco contra «media con vecinas» si cada caso sin meseta cuenta como fallo (con la sugerencia orientativa, gana).</p>
+        <p data-i18n="doc.method.s4.body">Para cada configuración mira sus vecinas, medidos en pasos de tu rejilla (de 30 a 50, o de 0,1 a 0,2, es un paso). Una meseta es una zona conectada donde las vecinas también superan tus mínimos. Los picos aislados se descartan. Dentro de la meseta se elige la configuración con mejor puesto conjunto en in-sample y forward, promediado con sus vecinas: ni el punto más alto ni la suerte de un punto concreto. Si no hay meseta y hay forward, da una sugerencia orientativa con la misma regla y lo dice. En nuestro banco de pruebas ciego gana a elegir la pasada que MT5 pone primera (mayor beneficio in-sample), la mejor del forward, la suma de puestos y el azar; pierde por poco contra «media con vecinas» si cada caso sin meseta cuenta como fallo (con la sugerencia orientativa, gana).</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -298,14 +298,14 @@
       <strong>Orometra</strong>
       <span data-i18n="lp.foot.tagline">Separa lo frágil de lo estable</span>
     </div>
-    <nav class="lp-foot-nav" aria-label="Footer">
+    <nav class="lp-foot-nav" aria-label="Pie de página" data-i18n="nav.footer" data-i18n-attr="aria-label">
       <a href="/es/">Orometra</a>
       <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
       <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
       <a href="/es/about/" data-i18n="doc.about.nav">Quiénes somos</a>
       <a href="/es/privacy/" data-i18n="doc.privacy.nav">Privacidad</a>
       <a href="/app/" data-i18n="lp.cta.footer">App</a>
-      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+      <a href="mailto:hello@orometra.com" title="Contacto" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>
 </footer>

@@ -93,8 +93,8 @@ export function errorCopy(code, L) {
     [CODE.FILE_ERROR]: {
       title: L('Error de archivo', 'File error'),
       hint: L(
-        'El fichero no se pudo leer como exportación de MT5. Vuelve a exportar el informe XML desde el probador.',
-        'The file could not be read as an MT5 export. Re-export the XML report from the tester.',
+        'El fichero no se pudo leer como exportación de MT5. Vuelve a exportar el XML de la optimización desde el probador.',
+        'The file could not be read as an MT5 export. Re-export the optimization XML from the tester.',
       ),
     },
     [CODE.SCHEMA_ERROR]: {
@@ -121,8 +121,8 @@ export function errorCopy(code, L) {
     [CODE.INSUFFICIENT_DATA]: {
       title: L('Evidencia insuficiente para una meseta', 'Insufficient evidence for a plateau'),
       hint: L(
-        'Hay configuraciones que pasan los mínimos, pero no hay masa interior suficiente para afirmar una región estable.',
-        'Some configurations clear the minimums, but there is not enough interior mass to claim a plateau.',
+        'Hay configuraciones que pasan los mínimos, pero son demasiado pocas para afirmar que hay una meseta.',
+        'Some configurations clear the minimums, but too few to claim a plateau.',
       ),
     },
     [CODE.NO_QUALIFYING_CONFIGS]: {
@@ -135,8 +135,8 @@ export function errorCopy(code, L) {
     [CODE.NO_PLATEAU]: {
       title: L('Sin meseta estable', 'No stable plateau'),
       hint: L(
-        'Hay candidatos, pero no una región conexa con soporte local suficiente. Revisa descartes y cobertura.',
-        'There are candidates, but no plateau with enough local support. Check rejected peaks and coverage.',
+        'Hay candidatos, pero ninguno forma una meseta: no hay una zona continua con suficientes configuraciones vecinas. Revisa descartes y cobertura.',
+        'There are candidates, but none forms a plateau: no continuous zone has enough neighboring configurations. Check rejected peaks and coverage.',
       ),
     },
     [CODE.REPORT_ERROR]: {

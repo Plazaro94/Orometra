@@ -125,10 +125,10 @@ export function evaluateUnseen(analysis, plateau, observed) {
   const reference = buildReference(analysis, plateau);
   const trades = Number(observed.trades);
   if (!Number.isFinite(trades) || trades <= 0) {
-    throw new Error(L('Hace falta el número de operaciones del periodo no visto: sin él no se puede corregir por duración.', 'The number of trades of the unseen period is required: without it the duration cannot be corrected.'));
+    throw new Error(L('Hace falta el número de operaciones del periodo no visto: sin él no se puede corregir por duración.', 'The number of trades in the unseen period is required: without it, the figures cannot be corrected for duration.'));
   }
   if (reference.observations.length < 4) {
-    throw new Error(L('La meseta elegida no tiene suficientes configuraciones para establecer que es normal en este EA.', 'The chosen plateau does not have enough configurations to establish what is normal for this EA.'));
+    throw new Error(L('La meseta elegida no tiene suficientes configuraciones para establecer qué es normal en este EA.', 'The chosen plateau does not have enough configurations to establish what is normal for this EA.'));
   }
 
   const obs = {
@@ -205,17 +205,20 @@ export function evaluateUnseen(analysis, plateau, observed) {
   const outside = results.filter((r) => r.status === 'fuera');
   const above = results.filter((r) => r.status === 'mejor');
   const tail = results.filter((r) => r.status === 'cola');
+  // Nombre de la métrica dentro de una frase: en minúscula, salvo el nombre propio (Sharpe).
+  const lc = (r) => (r.key === 'sharpe' ? r.label : r.label.toLowerCase());
+  const cap = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   let level;
   let headline;
   if (outside.length) {
     level = 'outside';
     headline = outside.length === 1
-      ? L(`Fuera de lo que este EA había mostrado nunca en ${outside[0].label.toLowerCase()}`, `Outside anything this EA had ever shown in ${outside[0].label.toLowerCase()}`)
+      ? L(`Fuera de lo que este EA había mostrado nunca en ${lc(outside[0])}`, `Outside anything this EA had ever shown in ${lc(outside[0])}`)
       : L(`Fuera de rango en ${outside.length} métricas`, `Out of range in ${outside.length} metrics`);
   } else if (tail.length) {
     level = 'tail';
-    headline = L('Dentro de lo visto, pero en la parte baja de su historial', 'Within what was seen, but at the low end of its history');
+    headline = L('Dentro de lo visto, pero en la peor zona de su historial', 'Within what was seen, but at the weak end of its history');
   } else {
     level = 'normal';
     headline = above.length
@@ -228,38 +231,38 @@ export function evaluateUnseen(analysis, plateau, observed) {
   const listEn = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : xs.join(''));
   const notes = [];
   notes.push(level === 'normal' && above.length
-    ? L(`Ninguna métrica queda por debajo de lo que la meseta ya había demostrado, y ${listEs(above.map((r) => r.label.toLowerCase()))} ${above.length === 1 ? 'supera' : 'superan'} todo lo visto en el periodo optimizado y en el forward. Eso no es un fallo, pero tampoco demuestra más ventaja: lo habitual es que el tramo haya sido especialmente favorable. Espera en vivo algo más cercano al rango habitual, no a estas cifras. Y comprueba que este periodo no se solapa con el periodo optimizado ni con el forward: un periodo «no visto» que en realidad sí se usó da justo esto.`,
-      `No metric falls below what the plateau had already shown, and ${listEn(above.map((r) => r.label.toLowerCase()))} ${above.length === 1 ? 'exceeds' : 'exceed'} anything seen in the optimized period and the forward. That is not a failure, but it does not show more edge either: usually the period was especially favorable. Expect live results closer to the usual range, not these figures. And check that this period does not overlap the optimized period or the forward: an "unseen" period that was actually used produces exactly this.`)
+    ? L(`Ninguna métrica queda por debajo de lo que la meseta ya había demostrado, y ${listEs(above.map(lc))} ${above.length === 1 ? 'supera' : 'superan'} todo lo visto en el periodo optimizado y en el forward. Eso no es un fallo, pero tampoco demuestra más ventaja: lo habitual es que el tramo haya sido especialmente favorable. Espera en vivo algo más cercano al rango habitual, no a estas cifras. Y comprueba que este periodo no se solapa con el periodo optimizado ni con el forward: un periodo «no visto» que en realidad sí se usó da justo esto.`,
+      `No metric falls below what the plateau had already shown, and ${listEn(above.map(lc))} ${above.length === 1 ? 'exceeds' : 'exceed'} anything seen in the optimized period and the forward. That is not a failure, but it does not show more edge either: usually the period was especially favorable. Expect live results closer to the usual range, not these figures. And check that this period does not overlap the optimized period or the forward: an "unseen" period that was actually used produces exactly this.`)
     : level === 'normal'
     ? L('Ninguna métrica se sale del recorrido que la meseta ya había demostrado. No hacía falta que los números fuesen espectaculares: hacía falta que no contradijeran lo visto, y no lo contradicen.',
       'No metric leaves the range the plateau had already shown. The numbers did not need to be spectacular: they needed not to contradict what was seen, and they do not.')
     : level === 'tail'
-      ? L(`Todo sigue dentro de lo que el EA ya había atravesado alguna vez, pero rozando su peor cara en: ${tail.map((r) => r.label.toLowerCase()).join(', ')}. Un tramo corto puede dar esto por pura varianza; dos seguidos ya no.`,
-        `Everything is still within what the EA had gone through at some point, but close to its worst side in: ${tail.map((r) => r.label.toLowerCase()).join(', ')}. A short period can do this by pure variance; two in a row cannot.`)
-      : L(`Hay métricas peores que cualquier cosa vista en el periodo optimizado y en el forward: ${outside.map((r) => r.label.toLowerCase()).join(', ')}. Eso ya no se explica por mala suerte dentro de lo conocido.`,
-        `Some metrics are worse than anything seen in the optimized period and the forward: ${outside.map((r) => r.label.toLowerCase()).join(', ')}. That is no longer explained by bad luck within what is known.`));
+      ? L(`Todo sigue dentro de lo que el EA ya había atravesado alguna vez, pero rozando su peor cara en: ${tail.map(lc).join(', ')}. Un tramo corto puede dar esto por pura varianza; dos seguidos ya no.`,
+        `Everything is still within what the EA had gone through at some point, but close to its worst side in: ${tail.map(lc).join(', ')}. A short period can do this by pure variance; two in a row cannot.`)
+      : L(`Hay métricas peores que cualquier cosa vista en el periodo optimizado y en el forward: ${outside.map(lc).join(', ')}. Eso ya no se explica por mala suerte dentro de lo conocido.`,
+        `Some metrics are worse than anything seen in the optimized period and the forward: ${outside.map(lc).join(', ')}. That is no longer explained by bad luck within what is known.`));
 
   // Alcance del contraste, medido con datos simulados de verdad conocida (bench/unseen.js,
   // 100 semillas por escenario). Las tasas dependen mucho de la duración del tramo, así
   // que se dan las dos referencias y la proporción del tramo del usuario frente al forward.
   const fwdTrades = median(reference.observations.filter((o) => o.period === 'oos').map((o) => o.trades));
   const fwdShare = Number.isFinite(fwdTrades) && fwdTrades > 0 ? trades / fwdTrades : NaN;
-  const shareEs = Number.isFinite(fwdShare) ? ` Tu tramo tiene ${(100 * fwdShare).toFixed(0)} % de las operaciones del forward.` : '';
+  const shareEs = Number.isFinite(fwdShare) ? ` Tu tramo tiene el ${(100 * fwdShare).toFixed(0)} % de las operaciones del forward.` : '';
   const shareEn = Number.isFinite(fwdShare) ? ` Your period has ${(100 * fwdShare).toFixed(0)}% of the forward's trades.` : '';
   notes.push(L(`Alcance de este contraste: es una prueba de sentido común, no una confirmación. En simulaciones con verdad conocida y un tramo tan largo como el forward, avisó en el 35 % de los casos en que la ventaja había desaparecido y en el 26 % de los que se había reducido a la mitad, y dio falsa alarma en el 24 % cuando se mantenía. Con tramos más cortos avisa más en todos los casos y distingue poco mejor (con un quinto de las operaciones del forward: 45 %, 34 % y 30 %).${shareEs} Que salga «no contradice» significa que no hay evidencia en contra, no que la estrategia esté confirmada; que avise sí merece atención.`,
     `Scope of this check: it is a common-sense test, not a confirmation. In simulations with known truth and a period as long as the forward, it flagged 35% of the cases where the edge had vanished and 26% where it had been halved, and gave a false alarm in 24% when the edge held. With shorter periods it flags more in every case and discriminates hardly better (with a fifth of the forward's trades: 45%, 34% and 30%).${shareEn} A “does not contradict” result means there is no evidence against, not that the strategy is confirmed; a warning does deserve attention.`));
 
   const scaledOnes = results.filter((r) => r.scaled);
   if (scaledOnes.length) {
-    notes.push(L(`${scaledOnes.map((r) => r.label.toLowerCase()).join(' y ')} se han corregido por duración: dependen del número de operaciones, así que compararlos en crudo contra un periodo más largo llevaría a la conclusión contraria. La referencia mostrada ya está ajustada a las ${Math.round(trades)} operaciones de tu tramo, suponiendo que la caída máxima crece más despacio que la raíz de las operaciones, como en una estrategia con ventaja. Es una aproximación.`,
-      `${scaledOnes.map((r) => r.label.toLowerCase()).join(' and ')} were corrected for duration: they depend on the number of trades, so comparing them raw against a longer period would lead to the opposite conclusion. The reference shown is already adjusted to the ${Math.round(trades)} trades of your period, assuming the maximum drawdown grows more slowly than the square root of the trades, as in a strategy with an edge. It is an approximation.`));
+    notes.push(L(`${cap(scaledOnes.map(lc).join(' y '))} se han corregido por duración: dependen del número de operaciones, así que compararlos en crudo contra un periodo más largo llevaría a la conclusión contraria. La referencia mostrada ya está ajustada a las ${Math.round(trades)} operaciones de tu tramo, suponiendo que la caída máxima crece más despacio que la raíz de las operaciones, como en una estrategia con ventaja. Es una aproximación.`,
+      `${cap(scaledOnes.map(lc).join(' and '))} were corrected for duration: they depend on the number of trades, so comparing them raw against a longer period would lead to the opposite conclusion. The reference shown is already adjusted to the ${Math.round(trades)} trades of your period, assuming the maximum drawdown grows more slowly than the square root of the trades, as in a strategy with an edge. It is an approximation.`));
   }
   if (reference.observations.some((o) => o.trades > trades)) {
     notes.push(L('Como tu tramo es más corto que los periodos de referencia, las bandas del factor de beneficio, del beneficio por operación y del Sharpe se han ensanchado en proporción: son medias, y con menos operaciones son más ruidosas; compararlas con la dispersión de periodos largos haría saltar avisos por puro azar.',
       'Since your period is shorter than the reference periods, the bands for profit factor, profit per trade and Sharpe have been widened in proportion: they are averages, and with fewer trades they are noisier; comparing them with the spread of long periods would trigger warnings by pure chance.'));
   }
   if (lowPower) {
-    notes.push(L(`Aviso de potencia: con ${Math.round(trades)} operaciones${Number.isFinite(tradeShare) ? ` (un ${(100 * tradeShare).toFixed(0)} % de lo habitual en la referencia)` : ''}, este contraste detecta poco. Que salga "normal" significa sobre todo que no hay evidencia en contra, no que esté confirmado.`,
+    notes.push(L(`Aviso de potencia: con ${Math.round(trades)} operaciones${Number.isFinite(tradeShare) ? ` (un ${(100 * tradeShare).toFixed(0)} % de lo habitual en la referencia)` : ''}, este contraste detecta poco. Que salga «normal» significa sobre todo que no hay evidencia en contra, no que esté confirmado.`,
       `Power warning: with ${Math.round(trades)} trades${Number.isFinite(tradeShare) ? ` (${(100 * tradeShare).toFixed(0)}% of what is usual in the reference)` : ''}, this check detects little. A "normal" result mostly means there is no evidence against, not that it is confirmed.`));
   }
 

@@ -4,6 +4,7 @@ import { addStrings } from './i18n-core.js';
 
 addStrings({
   "en": {
+    "contact.title": "Contact",
     "doc.404.eyebrow": "Error 404",
     "doc.404.h1": "This page does not exist",
     "doc.404.home": "Back to home",
@@ -20,6 +21,7 @@ addStrings({
     "lp.strip": "<b>100% in your browser</b> <span class=\"lp-strip-long\">Your files never leave your computer · </span><span class=\"lp-strip-short\">· </span>Free, no sign-up",
     "meta.description.notfound": "This page does not exist.",
     "meta.title.notfound": "Page not found — Orometra",
+    "nav.footer": "Footer",
     "nav.guides": "Guides",
     "nav.menu": "Menu",
     "nav.method": "Methodology",
@@ -29,6 +31,7 @@ addStrings({
     "theme.light": "Light"
   },
   "es": {
+    "contact.title": "Contacto",
     "doc.404.eyebrow": "Error 404",
     "doc.404.h1": "Esta página no existe",
     "doc.404.home": "Volver al inicio",
@@ -45,6 +48,7 @@ addStrings({
     "lp.strip": "<b>100 % en tu navegador</b> <span class=\"lp-strip-long\">Tus archivos no salen de tu ordenador · </span><span class=\"lp-strip-short\">· </span>Gratis y sin registro",
     "meta.description.notfound": "Esta página no existe.",
     "meta.title.notfound": "Página no encontrada — Orometra",
+    "nav.footer": "Pie de página",
     "nav.guides": "Guías",
     "nav.menu": "Menú",
     "nav.method": "Metodología",

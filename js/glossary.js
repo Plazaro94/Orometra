@@ -7,7 +7,7 @@ import { esc } from './ui-state.js';
 const DEFS = {
   sharpe: {
     es: 'Rentabilidad media de las operaciones dividida entre su volatilidad. MT5 calcula esta cifra de forma distinta según el build del terminal — ver el aviso en el contraste de abajo.',
-    en: "Average return of the trades divided by their volatility. MT5 computes this figure differently depending on the terminal build — see the note on the contrast below.",
+    en: "Average return of the trades divided by their volatility. MT5 computes this figure differently depending on the terminal build — see the note on the Sharpe test below.",
   },
   profitFactor: {
     es: 'Beneficio bruto entre pérdida bruta. Por encima de 1 gana más de lo que pierde; por debajo de 1, pierde más de lo que gana.',
@@ -47,7 +47,7 @@ const DEFS = {
   },
   coherence: {
     es: 'Cuánto varía la calidad entre las configuraciones que forman la meseta. Poca variación = zona pareja.',
-    en: 'Quality dispersion within the plateau: how much the neighboring configurations that form it vary among themselves.',
+    en: 'How much quality varies among the configurations that form the plateau. Little variation = an even zone.',
   },
   quality: {
     es: 'Nota de 0 a 1 que da Orometra a cada configuración con varias métricas a la vez (factor de beneficio, recuperación, caída máxima, Sharpe, operaciones), no con la columna Result que optimizaste.',

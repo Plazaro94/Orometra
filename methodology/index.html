@@ -69,7 +69,7 @@
     <p class="lp-eyebrow" data-i18n="doc.method.eyebrow">Methodology</p>
     <h1 data-i18n="doc.method.h1">How the engine decides</h1>
   </header>
-  <p class="lp-lead ph-after" data-i18n="doc.method.lead">We do not re-rank your MT5 table. We look for plateaus, and tell you how much evidence backs them. These are the steps, in the order the engine runs them.</p>
+  <p class="lp-lead ph-after" data-i18n="doc.method.lead">We do not re-rank your MT5 table. We look for plateaus and tell you how much evidence backs them. These are the steps, in the order the engine runs them.</p>
 
   <nav class="doc-index" data-i18n="doc.method.index" data-i18n-attr="aria-label" aria-label="Steps">
     <ol>
@@ -90,7 +90,7 @@
       <span class="lp-method-num">01</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s1.title">It reads your export as it is</h2>
-        <p data-i18n="doc.method.s1.body">Drop the XML that MT5 exports, with commas or dots as decimals. The engine does not trust column names to tell parameters from metrics: it uses how they behave (a parameter has the same value for the same pass in-sample and in forward; a metric does not). It does need to recognize the metric columns (profit, profit factor, drawdown, trades) by name, and it reads English and Spanish headers: if key columns are not recognized, it tells you instead of judging with less than it seems. If it drops any row, it tells you.</p>
+        <p data-i18n="doc.method.s1.body">Drop the XML that MT5 exports, with commas or dots as decimals. The engine does not trust column names to tell parameters from metrics: it uses how they behave (a parameter has the same value for the same pass in-sample and in forward; a metric does not). It does need to recognize the metric columns (profit, profit factor, drawdown, trades) by name, and it reads English and Spanish headers: if key columns are not recognized, it tells you instead of giving a verdict that rests on less than it seems. If it drops any row, it tells you.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="minimos">
@@ -168,7 +168,7 @@
       <span class="lp-method-num">05</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s5.title">The forward confirms or demotes</h2>
-        <p data-i18n="doc.method.s5.body">Plateaus are found with the in-sample only. Then the forward puts them to the test: your minimums are required again of the plateau’s configurations and their quality is compared. If many fail, the plateau drops in rank and you are warned. Your minimums are required in each period separately, so a good forward cannot hide a weak in-sample, or the other way round. Only to choose within an already validated plateau are the two periods’ ranks added together.</p>
+        <p data-i18n="doc.method.s5.body">Plateaus are found with the in-sample only. Then the forward puts them to the test: the plateau’s configurations must clear your minimums again, and their quality is compared. If many fail, the plateau drops in rank and you are warned. Your minimums are required in each period separately, so a good forward cannot hide a weak in-sample, or the other way around. The two periods’ ranks are added together only to choose within an already validated plateau.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step" id="suerte">
@@ -278,7 +278,7 @@
         <div><dt data-i18n="doc.ai.1.title">Same data, same answer</dt><dd data-i18n="doc.ai.1.body">A language model writes every answer from scratch: it changes with the wording of your question, the order of the data and from one day to the next. Orometra is a calculation: same files, same result, today and a year from now. That is what lets you compare one optimization with another.</dd></div>
         <div><dt data-i18n="doc.ai.2.title">A fixed method, not an improvised one</dt><dd data-i18n="doc.ai.2.body">Ask an AI to assess robustness and it makes up a method on the spot. You cannot know whether it is the same as last time, or whether it is right. Orometra's method is written on this page, it is always the same, and automated tests check that it keeps doing what it says.</dd></div>
         <div><dt data-i18n="doc.ai.3.title">Numbers you can check</dt><dd data-i18n="doc.ai.3.body">Language models can give figures that sound right and come from no calculation. Even when they write code, you have to review that code every time. Every figure in Orometra's report comes from the columns of your export and can be traced back.</dd></div>
-        <div><dt data-i18n="doc.ai.4.title">It knows when to say no</dt><dd data-i18n="doc.ai.4.body">An AI is built to be helpful, so it tends to answer even when the data cannot support a conclusion. Orometra lowers the evidence level and says why: if there is no plateau, if the forward does not confirm it or if the result does not beat chance, it stays at weak; and if the data are not enough even for that, it says “insufficient”.</dd></div>
+        <div><dt data-i18n="doc.ai.4.title">It knows when to say no</dt><dd data-i18n="doc.ai.4.body">An AI is built to be helpful, so it tends to answer even when the data cannot support a conclusion. Orometra lowers the evidence level and says why: if there is no plateau, if the forward does not confirm it or if the result does not beat chance, it stays at “weak”; and if the data are not enough even for that, it says “insufficient”.</dd></div>
         <div><dt data-i18n="doc.ai.5.title">Your strategy stays yours</dt><dd data-i18n="doc.ai.5.body">For an AI to analyze your optimization you have to upload your parameters — the heart of your strategy — to another company's servers. Orometra runs the analysis in your browser: your files never leave your computer.</dd></div>
         <div><dt data-i18n="doc.ai.6.title">Something you can use</dt><dd data-i18n="doc.ai.6.body">An AI gives you text. Orometra gives you a specific configuration, its evidence level, the reasons, a .set to load in MT5 and the range to re-optimize around it.</dd></div>
       </dl>
@@ -297,14 +297,14 @@
       <strong>Orometra</strong>
       <span data-i18n="lp.foot.tagline">Separate the fragile from the stable</span>
     </div>
-    <nav class="lp-foot-nav" aria-label="Footer">
+    <nav class="lp-foot-nav" aria-label="Footer" data-i18n="nav.footer" data-i18n-attr="aria-label">
       <a href="../">Orometra</a>
       <a href="../methodology/" data-i18n="nav.method">Methodology</a>
       <a href="../guides/" data-i18n="nav.guides">Guides</a>
       <a href="../about/" data-i18n="doc.about.nav">About us</a>
       <a href="../privacy/" data-i18n="doc.privacy.nav">Privacy</a>
       <a href="../app/" data-i18n="lp.cta.footer">App</a>
-      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+      <a href="mailto:hello@orometra.com" title="Contact" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>
 </footer>

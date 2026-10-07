@@ -136,7 +136,7 @@ export function renderPlateaus(a) {
     ${sparseSampling ? `<div class="inline-warn">${L(
       `Esta optimización usó ${a.meta.sampling === 'sparse' ? 'muestreo disperso (genético)' : 'una rejilla parcial'}, así que la meseta de abajo puede tener huecos sin probar. Antes de decidir con esto,`,
       `This optimization used ${a.meta.sampling === 'sparse' ? 'sparse (genetic) sampling' : 'a partial grid'}, so the plateau below can have untested gaps. Before deciding on this,`,
-    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas configuraciones y confirma si la meseta aguanta entera.', "— it's a small number of configurations and confirms whether the whole plateau holds.")}</div>` : ''}
+    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas configuraciones y así confirmas si la meseta aguanta entera.', "— it's a small number of configurations and confirms whether the whole plateau holds.")}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
         <thead><tr><th>#</th><th>${L('Pasada elegida', 'Chosen pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Centro', 'Center')}</th><th>${L('Las más flojas', 'Weakest')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Variación', 'Spread')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
@@ -157,7 +157,7 @@ export function renderPlateaus(a) {
         ${sparseSampling ? `<span class="status-pill warn-pill">${L('Recomendado', 'Recommended')}</span>` : ''}</div>
       <p class="panel-intro">${L(
         `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Descarga el .set de refinamiento y cárgalo en la pestaña de parámetros de entrada del probador («Inputs»: clic derecho → «Cargar»): ya trae marcados los parámetros que hay que barrer, con su inicio, paso y fin. Con la búsqueda completa no quedan huecos sin probar y la forma de la meseta se mide mejor. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configuraciones</strong>, un tamaño que se puede ejecutar de verdad.`,
-        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. Download the refinement .set and load it in the tester's «Inputs» tab (right-click → «Load»): it already marks the parameters to sweep, with their start, step and stop. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configurations</strong> — a size you can actually run.`,
+        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. Download the refinement .set and load it in the tester's “Inputs” tab (right-click → “Load”): it already marks the parameters to sweep, with their start, step and stop. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configurations</strong> — a size you can actually run.`,
       )}</p>
       <div class="table-wrap"><table>
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Centro', 'Center')}</th><th>${L('Inicio', 'Start')}</th><th>${L('Paso', 'Step')}</th><th>${L('Fin', 'Stop')}</th><th>${L('Niveles', 'Levels')}</th></tr></thead>
@@ -167,7 +167,7 @@ export function renderPlateaus(a) {
             ? `<td>${paramHtml(x.value)}</td><td colspan="4" class="muted">${L('no se optimizó', 'was not optimized')}</td>`
             : x.fixed
               ? `<td class="strong">${paramHtml(x.center)}</td><td colspan="4" class="muted">${x.categorical
-                ? L('booleano o enumeración: se fija, actívalo a mano si quieres barrerlo', 'boolean or enum: fixed; enable manually if you want to sweep it')
+                ? L('booleano o enumeración: se fija; actívalo a mano si quieres barrerlo', 'boolean or enum: fixed; enable manually if you want to sweep it')
                 : x.flat
                   ? L('se fija: no tiene efecto medible en tus datos', 'fixed: it has no measurable effect in your data')
                   : L('se fija: el presupuesto de la rejilla se gasta en parámetros más influyentes', 'fixed: the grid budget is spent on more influential parameters')}</td>`
@@ -393,7 +393,7 @@ export function renderParams(a) {
       ${sensitivityBars(a)}
       <p class="chart-note">${L(
         `La barra es la influencia que cuenta: la mayor entre <strong>por sí solo</strong> (agrupando por el valor del parámetro) y <strong>con el resto fijo</strong> (dejando fijo todo lo demás). Donde aparece la marca <span class="ch-sens-marginal-swatch"></span> y un valor entre paréntesis, el parámetro parecía plano mirado solo — con el resto fijo sí influye. El detalle completo está en Diagnóstico.`,
-        `The bar is the influence that counts: the larger of <strong>on its own</strong> (grouped by the parameter's value) and <strong>with the rest fixed</strong> (everything else held fixed). Where the <span class="ch-sens-marginal-swatch"></span> mark and a parenthesised value appear, the parameter looked flat on its own — with the rest fixed it does matter. The full breakdown is in Diagnostics.`,
+        `The bar is the influence that counts: the larger of <strong>on its own</strong> (grouped by the parameter's value) and <strong>with the rest fixed</strong> (everything else held fixed). Where the <span class="ch-sens-marginal-swatch"></span> mark and a parenthesized value appear, the parameter looked flat on its own — with the rest fixed it does matter. The full breakdown is in Diagnostics.`,
       )}</p>
     </section>
     ${a.inversions && a.inversions.length ? `<section class="panel warn-panel">
@@ -401,7 +401,7 @@ export function renderParams(a) {
         <span class="status-pill warn-pill">${int(a.inversions.length)} ${L('detectados', 'detected')}</span></div>
       <p class="panel-intro">${L(
         'En estos parámetros, el valor que gana en el periodo optimizado <strong>es de los que pierden en el forward</strong>. Es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al revés. Afinarlos sobre el periodo optimizado es tiempo perdido; déjalos en un valor central y decide con los que sí son coherentes entre periodos.',
-        'On these parameters, the value that wins on the optimized period <strong>is among those that lose on forward</strong>. That is the mechanical reason the ranking fails to transfer: the signal is not missing — it points the wrong way. Fine-tuning them on on the optimized period is wasted time; leave them at a central value and decide with the ones that are coherent across periods.',
+        'On these parameters, the value that wins on the optimized period <strong>is among those that lose on forward</strong>. That is the mechanical reason the ranking fails to transfer: the signal is not missing — it points the wrong way. Fine-tuning them on the optimized period is wasted time; leave them at a central value and decide with the ones that are coherent across periods.',
       )}</p>
       <div class="table-wrap"><table>
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Gana en el periodo optimizado', 'Wins on the optimized period')}</th><th>${L('Gana en forward', 'Wins in forward')}</th><th>${L('Margen que tiras', 'Margin you waste')}</th><th>${L('Perfil de calidad (valor: periodo optimizado / forward)', 'Quality profile (value: optimized period / forward)')}</th></tr></thead>
@@ -564,14 +564,14 @@ export function renderDiagnostics(a) {
         <div><span>${L('Operaciones mínimas (periodo optimizado)', 'Minimum trades (optimized period)')}</span><strong>${int(a.meta.minTradesIs)}</strong></div>
         <div><span>${L('Operaciones mínimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>
         ${(a.meta.gateInfluence || []).filter((gi) => gi.name !== 'beneficio').map((gi) => `
-        <div><span>· ${gateName(gi.name)}: ${L('descarta ella sola', 'rejects on its own')}</span><strong>${gi.sole ? int(gi.sole) + L(' configuraciones', ' configurations') : `<em>${L('ninguna (no filtra nada)', 'none (filters nothing)')}</em>`}</strong></div>`).join('')}
+        <div><span>· ${gateName(gi.name)}: ${L('descarta por sí solo', 'rejects on its own')}</span><strong>${gi.sole ? int(gi.sole) + L(' configuraciones', ' configurations') : `<em>${L('ninguna (no filtra nada)', 'none (filters nothing)')}</em>`}</strong></div>`).join('')}
         <div><span>${L('Se exigen en', 'Required in')}</span><strong>${a.meta.hasForward ? (a.meta.selectionMode === 'joint' ? L('los dos periodos', 'both periods') : L('periodo optimizado (buscar) · forward (validar)', 'optimized period (search) · forward (validate)')) : L('el periodo optimizado', 'the optimized period')}</strong></div>
       </div>
       ${findingsNote(gatesFindings)}
     </section>
 
     <details class="panel">
-      <summary class="panel-head compact"><div><div class="panel-kicker">${L('Contraste', 'Contrast')}</div><h2>${L('Pruebas estadísticas', 'Statistical tests')}</h2></div></summary>
+      <summary class="panel-head compact"><div><div class="panel-kicker">${L('Contraste', 'Checks')}</div><h2>${L('Pruebas estadísticas', 'Statistical tests')}</h2></div></summary>
       <div class="panel-body">
       <div class="evidence-list">
         <div><span>${L('Orden que se mantiene del periodo optimizado al forward', 'Ranking kept from the optimized period to the forward')}</span><strong>${num(a.stats.spearmanCriterion, 3)}</strong></div>
@@ -597,13 +597,13 @@ export function renderDiagnostics(a) {
         saldría positivo por sí solo — ese es el umbral que hay que batir. La dispersión de esa nula sale de
         los Sharpe que de verdad obtuviste entre pasadas (estilo Bailey y López de Prado), no de un error de
         estimación por número de operaciones: el export de MT5 no dice cuántas barras usó para calcular cada
-        Sharpe (desde el build 3210 del terminal lo calcula sobre la curva de equity <em>por barra</em>,
-        anualizado, no por operación), así que cualquier cifra basada en operaciones sería una suposición sin
-        base real. En una malla densa de una sola estrategia, parte de esta dispersión la produce la propia
+        Sharpe (desde el build 3210 del terminal lo calcula sobre los rendimientos logarítmicos <em>por barra</em> de la
+        curva de equity, anualizado, no por operación), así que cualquier cifra basada en operaciones sería una suposición sin
+        base real. En una rejilla densa de una sola estrategia, parte de esta dispersión la produce la propia
         forma de la superficie de parámetros (señal real), no solo el ruido — el umbral sube de más cuanta
         <em>más</em> señal real hay. Por eso <strong>superarlo es necesario, no suficiente, y no superarlo es
         una señal fuerte</strong>.`,
-          `<strong>How to read the Sharpe contrast.</strong> The null hypothesis is that no configuration
+          `<strong>How to read the Sharpe test.</strong> The null hypothesis is that no configuration
         has an edge: then each observed Sharpe would be noise around zero, and the best of N trials
         would come out positive on its own — that is the threshold to beat. That null's dispersion comes
         from the Sharpes you actually got across trials (Bailey and López de Prado style), not from an
@@ -611,7 +611,7 @@ export function renderDiagnostics(a) {
         each Sharpe (since terminal build 3210 it is computed from the equity curve's <em>per-bar</em>
         log-returns, annualized, not per trade), so any trade-count-based figure would be a guess with no
         real basis. On a dense grid of one strategy, part of this dispersion is produced by the shape of the
-        parameter surface itself (real signal), not just noise — the threshold rises the more real signal
+        parameter surface itself (real signal), not just noise — the threshold rises too high, and more so the more real signal
         there is. So <strong>clearing it is necessary, not sufficient, and failing to clear it is a strong
         signal</strong>.`,
         )}
@@ -621,13 +621,13 @@ export function renderDiagnostics(a) {
           `<strong>Por qué esto no se llama PBO.</strong> El método original (CSCV) parte la <em>serie temporal</em> de
         rendimientos de cada prueba en bloques y recombina todas las particiones. Eso exige la curva de equity de
         cada configuración, y la exportación de optimización de MT5 solo trae métricas agregadas por pasada: con
-        ese fichero el CSCV completo es imposible, y no hay aproximación que lo arregle. Lo que sí se puede medir
-        -y es lo que ves- es cuánto depende el resultado de qué configuraciones había en el menú, en los dos
+        ese archivo el CSCV completo es imposible, y no hay aproximación que lo arregle. Lo que sí se puede medir
+        —y es lo que ves— es cuánto depende el resultado de qué configuraciones había en el menú, en los dos
         sentidos de la partición. Es útil, pero es otra cosa, y llamarlo PBO sería tomar prestada una autoridad
         que no nos corresponde.`,
           `<strong>Why this is not called PBO.</strong> The original method (CSCV) splits each trial's
         <em>return time series</em> into blocks and recombines all partitions. That needs each configuration's
-        equity curve, and MT5's optimization export only brings aggregated metrics per pass: with
+        equity curve, and MT5's optimization export only contains aggregated metrics per pass: with
         that file full CSCV is impossible, and no approximation fixes it. What can be measured
         — and what you see — is how much the result depends on which configurations were on the menu, in both
         partition directions. It is useful, but it is something else, and calling it PBO would borrow authority
@@ -744,7 +744,7 @@ export function renderSensitivityPanel(a) {
       : `<span class="role flat">${L('se ignora', 'ignored')}</span>`);
   return `<section class="panel">
     <div class="panel-head compact">
-      <div><div class="panel-kicker">${L('Diagnóstico', 'Diagnostics')}</div><h2>${L('Cuánto influye cada parámetro', 'How much each parameter influences')}</h2></div>
+      <div><div class="panel-kicker">${L('Diagnóstico', 'Diagnostics')}</div><h2>${L('Cuánto influye cada parámetro', 'How much influence each parameter has')}</h2></div>
     </div>
     <p class="panel-intro">
       ${L(
@@ -757,7 +757,7 @@ export function renderSensitivityPanel(a) {
       <strong>With the rest fixed</strong> holds all other parameters fixed and measures the range along this one.
       A parameter whose effect reverses depending on another looks flat on the first measure and not on the second;
       that is why <strong>the larger of the two</strong> wins. Dropping an axis that does influence would treat
-      non-neighbors as neighbors, and inflate plateaus until inventing one where none exists.`,
+      non-neighbors as neighbors, and inflate plateaus to the point of inventing one where none exists.`,
       )}
     </p>
     <div class="table-wrap">
@@ -780,7 +780,7 @@ export function renderSensitivityPanel(a) {
     )}</div>` : ''}
     ${a.meta.irregularGrids && a.meta.irregularGrids.length ? `<div class="inline-warn"><strong>${L('Saltos desiguales en la rejilla.', 'Uneven grid steps.')}</strong> ${a.meta.irregularGrids.slice(0, 3).map((g) => `<code>${esc(g.name)}</code> (×${g.ratio.toFixed(0)})`).join(', ')}: ${L(
       'el motor cuenta posiciones, no distancias, así que dos valores consecutivos están siempre &laquo;a un paso&raquo; aunque entre ellos haya un abismo.',
-      'the engine counts positions, not distances, so two consecutive values are always &laquo;one step&raquo; even if there is a chasm between them.',
+      'the engine counts positions, not distances, so two consecutive values are always “one step” even if there is a chasm between them.',
     )}</div>` : ''}
   </section>`;
 }

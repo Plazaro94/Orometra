@@ -574,12 +574,12 @@ export function renderLegal() {
       <h2>${L('Condiciones, privacidad y descargo', 'Terms, privacy and disclaimer')}</h2>
       <p>${L(
         'Lee esto antes de tomar cualquier decisión con lo que te diga esta herramienta.',
-        'Read this before making any decision from what this tool tells you.',
+        'Read this before making any decision based on what this tool tells you.',
       )}</p>
     </div>
 
     <section class="panel legal-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Lo más importante', 'The most important')}</div><h2>${L('Esto no es asesoramiento financiero', 'This is not financial advice')}</h2></div></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Lo más importante', 'Most important')}</div><h2>${L('Esto no es asesoramiento financiero', 'This is not financial advice')}</h2></div></div>
       <p class="panel-intro">
         ${L(
           `Orometra es una <strong>herramienta de análisis estadístico</strong> que examina datos históricos que tú
@@ -595,7 +595,7 @@ export function renderLegal() {
           `<strong>Un veredicto favorable no es una recomendación de compra ni de venta.</strong> Significa
         únicamente que la configuración ha superado unos contrastes estadísticos sobre datos pasados. Nada más.`,
           `<strong>A favorable verdict is not a buy or sell recommendation.</strong> It only means
-        the configuration passed some statistical contrasts on past data. Nothing more.`,
+        the configuration passed some statistical tests on past data. Nothing more.`,
         )}</li>
         <li>${L(
           `<strong>Los resultados de un backtest no predicen resultados futuros.</strong> Esta frase se repite
@@ -714,7 +714,7 @@ export function renderLegal() {
       <p class="chart-note">
         ${L(
           `Estos textos son borradores cuidados, no asesoramiento jurídico. Si algún día esta herramienta pasa a
-        tener dimensión económica -cobro, publicidad o recogida de datos de contacto- la normativa española
+        tener dimensión económica —cobro, publicidad o recogida de datos de contacto— la normativa española
         exigirá además identificar al titular con nombre, NIF y domicilio, y estos textos tendrán que
         revisarse con un profesional.`,
           `These texts are careful drafts, not legal advice. If someday this tool acquires an

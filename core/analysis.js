@@ -684,7 +684,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     .map((p) => ({ ...p, reasons: peakRejectReasons(p, opts), tags: peakRejectTags(p, opts) }))
     .slice(0, 12);
 
-  progress(onProgress, 90, L('Contrastes estadísticos', 'Statistical contrasts'));
+  progress(onProgress, 90, L('Contrastes estadísticos', 'Statistical tests'));
   // Todo lo que compara los dos periodos se mide SOLO sobre pasadas con forward.
   const fwdRecords = records.filter(hasOos);
   const isCriterion = fwdRecords.map((r) => (Number.isFinite(r.criterionIs) ? r.criterionIs : r.qualityIs));
