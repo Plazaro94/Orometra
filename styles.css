@@ -384,7 +384,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .dropzone.locked .file-icon{opacity:.45}
 .dropzone.locked .drop-action{color:var(--muted);border-color:var(--line)}
 .set-hint{
-  margin:8px 2px 0;font-size:13px;color:var(--muted-2);line-height:1.45;max-width:var(--measure);
+  margin:8px 2px 0;font-size:14px;color:var(--muted-2);line-height:1.45;max-width:var(--measure);
 }
 .set-hint .set-status{display:block;margin-top:3px;color:var(--muted);font-family:var(--mono);font-size:13px}
 .set-hint .set-status:empty{display:none}
@@ -408,13 +408,16 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
    texto que dice qué falta tiene que leerse (con opacidad quedaba a 2,45:1). */
 .analyze-card strong{display:block;font-size:16px;font-weight:700;color:var(--text-hi)}
 .analyze-card span{display:block;color:var(--muted-2);font-size:13.5px;margin-top:3px;line-height:1.4}
+/* Desactivado se lee como un botón que espera, no como otra tarjeta de información: sin
+   fondo propio y con su flecha, apagada. */
+.analyze-card:disabled{background:transparent}
 .analyze-card:disabled strong{color:var(--muted)}
 .analyze-card:not(:disabled){background:var(--cta-bg);border-color:var(--cta-line);color:var(--cta-text);cursor:pointer}
 .analyze-card:not(:disabled) strong,.analyze-card:not(:disabled) span,.analyze-card:not(:disabled) .analyze-arrow{color:var(--cta-text)}
 @media (hover:hover){.analyze-card:not(:disabled):hover{background:var(--cta-hover);border-color:var(--cta-line)}}
 .analyze-card.busy{cursor:progress}
 .analyze-arrow{margin-left:auto;color:var(--muted-3);font-size:20px}
-.analyze-card:disabled .analyze-arrow{display:none}
+.analyze-card:disabled .analyze-arrow{color:var(--line-strong)}
 
 .policy-panel{margin-top:11px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:18px}
 .policy-head h2{font-size:15px;margin-bottom:5px}
@@ -1447,6 +1450,13 @@ tr.sel td{color:var(--text-2)}
 @container fig (max-width:420px){.lp-method-step-media svg text{font-size:15.5px}}
 @container fig (max-width:380px){.lp-method-step-media svg text{font-size:16.5px}}
 @container fig (max-width:345px){.lp-method-step-media svg text{font-size:18px}}
+/* Paso 9: las etiquetas de las cajas caben en una línea mientras el diagrama mide más de
+   470 px; por debajo, con la letra agrandada, se parten en dos. */
+.lp-method-step-media svg .bt-two{display:none}
+@container fig (max-width:470px){
+  .lp-method-step-media svg .bt-one{display:none}
+  .lp-method-step-media svg .bt-two{display:inline}
+}
 .lp-method-step.has-media:nth-child(even) .lp-method-step-media{order:0;margin-left:0;margin-right:52px}
 @media (max-width:720px){
   .lp-method-step,.lp-method-step:nth-child(even){flex-direction:row;align-self:stretch;max-width:none;flex-wrap:wrap}
@@ -1877,12 +1887,6 @@ html{zoom:var(--z)}
 .hm .ghost-btn.hm-cta{background:var(--surface-2);border-color:transparent;color:var(--text)}
 .hm .ghost-btn.hm-cta:hover{background:var(--surface-3);color:var(--text-hi)}
 .hm-go-group{display:inline-flex;gap:8px;align-items:center}
-.hm-go{
-  flex:none;width:54px;height:54px;border-radius:50%;display:inline-grid;place-items:center;
-  background:var(--cta-bg);border:1px solid var(--cta-line);color:var(--cta-text);transition:background .15s;
-}
-.hm-go:hover{background:var(--cta-hover)}
-.hm-go svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 /* Títulos de sección centrados, grandes, en blanco roto */
 .hm-section > h2,.hm-final h2{
@@ -2176,7 +2180,6 @@ html,body{overflow-x:clip}
   .lp-strip-short{display:inline}
 }
 @media (max-width:380px){
-  .hm-hero .hm-go{display:none}
   .hm-hero .hm-cta{padding-inline:18px;font-size:16px}
 }
 
@@ -2213,7 +2216,6 @@ svg.brand-mark .bm-top{fill:var(--lime-fill)}
   .hm-actions .hm-go-group,.hm-final .hm-go-group{flex:0 0 auto}
   .hm-actions .hm-go-group .hm-cta,.hm-final .hm-cta{flex:0 0 auto}
   .hm .hm-cta{min-height:48px;padding:12px 24px;font-size:16px}
-  .hm .hm-go{display:none}
   .hm-faq-head{text-align:center}
   .hm-faq-head h2{margin-left:auto;margin-right:auto}
 }

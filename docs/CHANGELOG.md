@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-07 — Un solo botón en la portada, «Analizar» en la app y diagrama del paso 9
+
+- **Portada:** fuera el círculo con flecha junto a «Analizar mis resultados» (arriba y en el
+  cierre): llevaba al mismo sitio que el botón.
+- **App vacía:** «Analizar» desactivado ya no parece otra tarjeta (sin fondo, con su flecha
+  apagada) y dice cuándo se activa en vez de repetir lo que ya dice la zona de carga. La
+  nota del .set pasa de cuatro líneas a dos y de 13 a 14 px.
+- **Metodología, paso 9:** «Monte Carlo», «Tamaño de muestra» y «Stress de costes» caben en
+  una línea mientras el diagrama mide más de 470 px; por debajo, con la letra agrandada, se
+  siguen partiendo en dos.
+
 ## 2026-10-07 — Páginas de texto: una columna de lectura y letra más grande
 
 - **Metodología, Guías, Privacidad y Quiénes somos:** el contenido va en una columna centrada
