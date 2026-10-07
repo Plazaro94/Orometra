@@ -92,10 +92,10 @@ export function scatterIsOos(analysis) {
     xTicks: ticks, yTicks: ticks, xScale, yScale,
   });
   return wrapChart(svg, legend([
-    { cls: 'chart-swatch-fail', label: L('No pasan mínimos', 'Fail gates') },
-    { cls: 'chart-swatch-pass', label: L('Pasan mínimos', 'Pass gates') },
+    { cls: 'chart-swatch-fail', label: L('No pasan mínimos', 'Fail the minimums') },
+    { cls: 'chart-swatch-pass', label: L('Pasan mínimos', 'Pass the minimums') },
     { cls: 'chart-swatch-plateau', label: L('En meseta', 'In a plateau') },
-    { cls: 'chart-swatch-rep', label: L('Centro de cada meseta', 'Center of each plateau') },
+    { cls: 'chart-swatch-rep', label: L('Configuración elegida de cada meseta', 'Chosen configuration of each plateau') },
   ]));
 }
 

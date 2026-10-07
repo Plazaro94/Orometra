@@ -26,7 +26,7 @@ export function buildSetFile(analysis, plateau, baseSet = null) {
   const lines = [
     '; ================================================================',
     L('; Orometra - configuración representativa', '; Orometra - representative configuration'),
-    L(`; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pass original ${plateau.record.id}`, `; Plateau ${plateau.rank} of ${analysis.plateaus.length} | Original pass ${plateau.record.id}`),
+    L(`; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pasada original ${plateau.record.id}`, `; Plateau ${plateau.rank} of ${analysis.plateaus.length} | Original pass ${plateau.record.id}`),
     L(`; Robustez ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configuraciones en la meseta`, `; Robustness ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configurations in the plateau`),
     L('; Elegida por buen puesto en el periodo optimizado y en el forward, promediado con sus vecinas.', '; Chosen for ranking well on both the optimized period and the forward, averaged with its neighbors.'),
     L(`; Generado ${new Date().toISOString()}`, `; Generated ${new Date().toISOString()}`),

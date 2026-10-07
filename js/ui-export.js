@@ -27,7 +27,9 @@ export function buildPlainSummary(a) {
   lines.push(L('RESUMEN OROMETRA', 'OROMETRA SUMMARY'));
   lines.push('='.repeat(40));
   lines.push('');
-  lines.push(`${c.label}: ${plain(dv.headline)}`);
+  // El titular ya empieza casi siempre por el nivel («Evidencia buena: …»): no se repite.
+  const headline = plain(dv.headline);
+  lines.push(headline.toLowerCase().startsWith(String(c.label).toLowerCase()) ? headline : `${c.label}: ${headline}`);
   if (dv.summary) lines.push(plain(dv.summary));
   lines.push('');
 

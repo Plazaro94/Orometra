@@ -107,16 +107,16 @@ export function buildVerdict(ctx) {
       : '';
     if (per < 15) {
       add(SEV.CRITICAL, L(`Poca evidencia: ~${fmt(per, 0)} operaciones por parámetro`, `Thin evidence: ~${fmt(per, 0)} trades per parameter`),
-        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones: ~${fmt(per, 0)} por parámetro. Con esa proporción, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
-          `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades: ~${fmt(per, 0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`), null);
+        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones (mediana de las configuraciones probadas): ~${fmt(per, 0)} por parámetro. Con esa proporción, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
+          `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades (median of the tested configurations): ~${fmt(per, 0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`), null);
     } else if (per < 50) {
       add(SEV.WARN, L(`Evidencia limitada: ~${fmt(per, 0)} operaciones por parámetro`, `Limited evidence: ~${fmt(per, 0)} trades per parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Todo lo que sigue debe leerse como provisional.${extraEs}`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. Everything that follows should be read as provisional.${extraEn}`), null);
+        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Todo lo que sigue debe leerse como provisional.${extraEs}`,
+          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). Everything that follows should be read as provisional.${extraEn}`), null);
     } else if (per >= 100) {
       add(SEV.OK, L(`Operaciones de sobra: ~${fmt(per, 0)} por parámetro`, `Plenty of trades: ~${fmt(per, 0)} per parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Con tantas operaciones por parámetro, el tamaño de la muestra no es el punto débil.`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. With this many trades per parameter, sample size is not the weak point.`), null);
+        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Con tantas operaciones por parámetro, el tamaño de la muestra no es el punto débil.`,
+          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). With this many trades per parameter, sample size is not the weak point.`), null);
     }
   }
 

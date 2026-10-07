@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-07 — Auditoría (3): detalles de presentación y del periodo no visto
+
+- **Muestra de menos de 30 días:** ya no enseña «potencia 99 %» junto a «no se distingue
+  de cero». Por debajo de 30 días no se calcula y se dice por qué (`sampleAudit.reason`).
+- **Drawdown del Monte Carlo y del stress de costes:** el capital inicial cuenta como primer
+  pico (`[-100, 50]` caía 0 en vez de 100).
+- **Botones «Descargar .set» sin forward:** ya no aparecen donde solo podían dar error (ficha
+  de meseta, alternativas, periodo no visto). Los de la ficha de meseta y el de
+  refinamiento llevan la meseta explícita.
+- **«Ver la meseta completa»** baja al relieve de esa misma meseta en vez de saltar a M1.
+- **Cómo cargar el .set en MT5:** el paso 1 y el rango de refinamiento lo dicen (pestaña de
+  parámetros de entrada, clic derecho → «Cargar»). El paso 1 cuenta los parámetros que
+  lleva de verdad el .set (también los no optimizados si cargaste el .set de la optimización).
+- **Textos:** la leyenda del gráfico dice «lavanda» (decía «verde»); la configuración se
+  describe igual en la tarjeta y en el .set («elegida por buen puesto…», no «el centro»);
+  las operaciones por parámetro dicen que son la mediana de las configuraciones;
+  «Pasada original» en el .set en español; «minimums» en la leyenda en inglés; el resumen
+  .txt ya no repite el nivel.
+- **Pruebas:** la del bootstrap comparaba el total de cada camino con la media diaria y
+  pasaba solo porque la serie tenía media ~0; ahora compara magnitudes equivalentes.
+
 ## 2026-10-07 — Auditoría (2): valores exactos, avisos al día y periodo no visto
 
 - **Los parámetros se muestran exactos, como en el .set.** La tarjeta, el Top 3, la tabla

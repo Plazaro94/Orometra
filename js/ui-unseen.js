@@ -8,6 +8,7 @@ import { compareOtherParams } from '../core/setfile.js';
 import { parseXmlSpreadsheet } from '../core/parse.js';
 import { auditUnseenTrades } from '../core/trades/from-deals.js';
 import { bpToPoints } from '../core/trades/costs.js';
+import { MIN_SAMPLE_DAYS } from '../core/trades/sample.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
 
@@ -272,10 +273,19 @@ export function renderTradesAudit() {
   const losing = sufficient && Number.isFinite(sa.sharpe) && sa.sharpe < 0;
   const sampleRow = `<div class="evidence-list">
       <div><span>${L('Días de datos', 'Days of data')}</span><strong>${int(sa.n)}</strong></div>
-      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable ? pct(sa.power.power) : '—'}</strong></div>
+      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable && sa.reason !== 'few_days' ? pct(sa.power.power) : '—'}</strong></div>
       <div><span>${L('Intervalo de confianza del resultado diario medio', 'Confidence interval of the average daily result')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 2)} &ndash; ${num(sa.meanCi.ci.p95, 2)}` : '—'}</strong></div>
     </div>
-    <p class="chart-note">${losing
+    <p class="chart-note">${sa.reason === 'few_days'
+      ? L(
+        `Con <strong>menos de ${MIN_SAMPLE_DAYS} días</strong> no se calcula si el resultado medio se distingue de cero: el
+        cálculo se apoya en una aproximación que con tan pocos datos no es fiable. No es un veredicto negativo:
+        hace falta un tramo más largo para decir algo.`,
+        `With <strong>fewer than ${MIN_SAMPLE_DAYS} days</strong> it is not computed whether the average result is
+        distinguishable from zero: the calculation relies on an approximation that is not reliable with so few
+        data. It isn't a negative verdict: a longer segment is needed to say anything.`,
+      )
+      : losing
       ? L(
         'Con estos días, el resultado medio diario se distingue de cero con razonable seguridad, <strong>pero por debajo</strong>: en este periodo la estrategia pierde dinero.',
         'With this many days, the average daily result is distinguishable from zero with reasonable confidence, <strong>but below it</strong>: in this period the strategy loses money.',
@@ -471,7 +481,7 @@ export function renderUnseen(a) {
 
   const params = `<section class="panel">
     <div class="panel-head compact"><div><div class="panel-kicker">${L('Recordatorio', 'Reminder')}</div><h2>${L('Configuración que debes probar', 'Configuration you must test')}</h2></div>
-      <button class="ghost-btn" data-export="set" data-plateau-index="${idx}">${L('Descargar .set', 'Download .set')}</button></div>
+      ${a.meta.hasForward ? `<button class="ghost-btn" data-export="set" data-plateau-index="${idx}">${L('Descargar .set', 'Download .set')}</button>` : ''}</div>
     <div class="param-grid">
       ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramHtml(p.record.params[j])}</strong></div>`).join('')}
     </div>
