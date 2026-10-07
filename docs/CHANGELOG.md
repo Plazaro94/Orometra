@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-07 — CLAUDE.md
+
+- Nuevo `CLAUDE.md` en la raíz: lo lee Claude Code al empezar cada sesión. Resume cómo
+  trabajar con el autor, los comandos, la estructura, los principios de `docs/SPEC.md`, las
+  normas de código, la publicación y lo pendiente conocido, para no repetirlo en cada chat.
+
 ## 2026-10-07 — Revisión independiente del PR de la auditoría
 
 - **Reversiones «in/out» (cuentas de compensación):** el stress de costes contaba dos veces
