@@ -36,7 +36,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=20261004f">
+<link rel="stylesheet" href="styles.css?v=20261007a">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separate the fragile from the stable in your MT5 optimization: which configuration of your EA is stable and how much evidence backs it. Free, in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js" data-hero-photo></script>
 </head>
@@ -153,27 +153,24 @@
     </div>
   </section>
 
-  <!-- 2c. Respiro: la misma idea en la naturaleza -->
+  <!-- 2c. Respiro: la misma idea en la naturaleza. Texto a un lado y la foto en una tarjeta al
+       otro; en móvil, la foto arriba. -->
   <section class="hm-section hm-nature" aria-labelledby="hm-nature-title">
+    <div class="hm-nature-copy">
+      <h2 id="hm-nature-title" data-i18n="home.nature.title">No one flies alone</h2>
+      <p data-i18n="home.nature.body">Each one steers by its nearest neighbors, and that is how the whole group holds together. Orometra judges your configurations the same way: it only trusts one that works alongside those around it.</p>
+    </div>
     <!-- Una versión por tema (etalonadas en tools/fotos.mjs); la oculta no se descarga (loading="lazy"). -->
     <figure class="hm-nature-photo">
       <picture class="hm-nature-dark">
-        <source media="(max-width:860px)" type="image/avif" srcset="/img/fotos/estorninos-noche-mov-1200.avif">
-        <source media="(max-width:860px)" type="image/webp" srcset="/img/fotos/estorninos-noche-mov-1200.webp">
-        <source type="image/avif" srcset="/img/fotos/estorninos-noche-esc-1000.avif 1000w, /img/fotos/estorninos-noche-esc-1400.avif 1400w, /img/fotos/estorninos-noche-esc-2000.avif 2000w" sizes="100vw">
-        <img src="/img/fotos/estorninos-noche-esc-2000.webp" srcset="/img/fotos/estorninos-noche-esc-1000.webp 1000w, /img/fotos/estorninos-noche-esc-1400.webp 1400w, /img/fotos/estorninos-noche-esc-2000.webp 2000w" sizes="100vw" width="2000" height="854" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="A murmuration of starlings at dusk over a reed bed">
+        <source type="image/avif" srcset="/img/fotos/bandada-noche-esc-800.avif 800w, /img/fotos/bandada-noche-esc-1200.avif 1200w, /img/fotos/bandada-noche-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
+        <img src="/img/fotos/bandada-noche-esc-1200.webp" srcset="/img/fotos/bandada-noche-esc-800.webp 800w, /img/fotos/bandada-noche-esc-1200.webp 1200w, /img/fotos/bandada-noche-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Thousands of silhouettes in flight crossing a muted blue-grey sky in a diagonal stream">
       </picture>
       <picture class="hm-nature-light">
-        <source media="(max-width:860px)" type="image/avif" srcset="/img/fotos/estorninos-dia-mov-1200.avif">
-        <source media="(max-width:860px)" type="image/webp" srcset="/img/fotos/estorninos-dia-mov-1200.webp">
-        <source type="image/avif" srcset="/img/fotos/estorninos-dia-esc-1000.avif 1000w, /img/fotos/estorninos-dia-esc-1400.avif 1400w, /img/fotos/estorninos-dia-esc-2000.avif 2000w" sizes="100vw">
-        <img src="/img/fotos/estorninos-dia-esc-2000.webp" srcset="/img/fotos/estorninos-dia-esc-1000.webp 1000w, /img/fotos/estorninos-dia-esc-1400.webp 1400w, /img/fotos/estorninos-dia-esc-2000.webp 2000w" sizes="100vw" width="2000" height="854" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="A murmuration of starlings at dusk over a reed bed">
+        <source type="image/avif" srcset="/img/fotos/bandada-dia-esc-800.avif 800w, /img/fotos/bandada-dia-esc-1200.avif 1200w, /img/fotos/bandada-dia-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
+        <img src="/img/fotos/bandada-dia-esc-1200.webp" srcset="/img/fotos/bandada-dia-esc-800.webp 800w, /img/fotos/bandada-dia-esc-1200.webp 1200w, /img/fotos/bandada-dia-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Thousands of silhouettes in flight crossing a muted blue-grey sky in a diagonal stream">
       </picture>
     </figure>
-    <div class="hm-nature-copy">
-      <h2 id="hm-nature-title" data-i18n="home.nature.title">No starling flies alone</h2>
-      <p data-i18n="home.nature.body">Each one steers by its nearest neighbors, and that is how the whole flock holds together. Orometra judges your configurations the same way: it only trusts one that works alongside those around it.</p>
-    </div>
   </section>
 
   <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->
