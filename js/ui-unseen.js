@@ -162,13 +162,13 @@ export function renderReportCard(a, plateau) {
     : !cmp.same.length && a.meta.paramNames.length
       ? `<div class="inline-warn report-mismatch">
         <strong>${L('No se han podido leer los parámetros de este informe.', 'The parameters of this report could not be read.')}</strong>
-        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que el resultado no sube el nivel de evidencia.', 'Without them it cannot be checked that the backtest is of the proposed configuration, so the result does not raise the evidence level.')}
+        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que el resultado no sube el nivel de evidencia.', 'Without them there is no way to check that the backtest used the proposed configuration, so the result does not raise the evidence level.')}
       </div>`
     : cmp.missing.length
       ? `<div class="inline-warn report-mismatch">
         <strong>${L(`Al informe le faltan ${int(cmp.missing.length)} de los ${int(a.meta.paramNames.length)} parámetros optimizados.`, `The report is missing ${int(cmp.missing.length)} of the ${int(a.meta.paramNames.length)} optimized parameters.`)}</strong>
         ${cmp.missing.slice(0, 8).map((n) => `<code>${esc(n)}</code>`).join(', ')}${cmp.missing.length > 8 ? L(` y ${cmp.missing.length - 8} más`, ` and ${cmp.missing.length - 8} more`) : ''}.
-        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que el resultado no sube el nivel de evidencia.', 'Without them it cannot be checked that the backtest is of the proposed configuration (another EA version, or a different parameter name?), so the result does not raise the evidence level.')}
+        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que el resultado no sube el nivel de evidencia.', 'Without them there is no way to check that the backtest used the proposed configuration (another EA version, or a different parameter name?), so the result does not raise the evidence level.')}
       </div>`
     : cmp.same.length
       ? `<div class="report-ok">${L(
@@ -196,7 +196,7 @@ export function renderReportCard(a, plateau) {
       <button class="text-btn" id="reportClear" type="button">${L('Quitar', 'Remove')}</button>
     </div>
     <div class="evidence-list">
-      <div><span>${L('Instrumento y marco', 'Instrument and timeframe')}</span><strong>${esc(rep.meta.symbol || '—')} ${esc(rep.meta.timeframe || '')}</strong></div>
+      <div><span>${L('Instrumento y marco temporal', 'Instrument and timeframe')}</span><strong>${esc(rep.meta.symbol || '—')} ${esc(rep.meta.timeframe || '')}</strong></div>
       <div><span>${L('Periodo del backtest', 'Backtest period')}</span><strong>${fecha(rep.meta.from)} – ${fecha(rep.meta.to)}${Number.isFinite(rep.meta.days) ? ` <em>${int(rep.meta.days)} ${L('días', 'days')}</em>` : ''}</strong></div>
       <div><span>${L('Operaciones', 'Trades')}</span><strong>${int(rep.metrics.trades)}${rep.deals.length ? ` <em>${int(rep.deals.length)} ${L('leídas una a una', 'read one by one')}</em>` : ''}</strong></div>
       <div><span>${L('Beneficio neto', 'Net profit')}</span><strong>${num(rep.metrics.profit, 2)}</strong></div>
@@ -227,7 +227,7 @@ export function renderTradesAudit() {
         `Solo ${int(aud.days)} días con operaciones: hacen falta al menos 5 para simular algo. No es un fallo, es
         que el tramo es demasiado corto para esto en concreto (el contraste de arriba sigue siendo válido).`,
         `Only ${int(aud.days)} days with trades: at least 5 are needed to simulate anything. It's not a
-        failure, this particular check just needs a longer segment (the contrast above still stands).`,
+        failure, this particular check just needs a longer segment (the check above still stands).`,
       )
       : L(
         'El informe no trae fechas de cierre reconocibles, así que no se puede agrupar por día sin inventar un reparto.',
@@ -282,7 +282,7 @@ export function renderTradesAudit() {
         cálculo se apoya en una aproximación que con tan pocos datos no es fiable. No es un veredicto negativo:
         hace falta un tramo más largo para decir algo.`,
         `With <strong>fewer than ${MIN_SAMPLE_DAYS} days</strong> it is not computed whether the average result is
-        distinguishable from zero: the calculation relies on an approximation that is not reliable with so few
+        distinguishable from zero: the calculation relies on an approximation that is not reliable with so little
         data. It isn't a negative verdict: a longer segment is needed to say anything.`,
       )
       : losing
@@ -353,7 +353,7 @@ export function renderTradesAudit() {
       `Subtracts from every trade an extra cost (spread, slippage and commission together) proportional to its
       size: 1 bp (basis point, 0.01% of price) is ~1 pip on EURUSD or ~0.20 on gold at 2,000. The value of each
       price move is derived from your own trades, so the cost grows with the lot size like the real one. These
-      are orientative scenarios, not your broker's exact costs: they ask what happens if your live costs are
+      are indicative scenarios, not your broker's exact costs: they ask what happens if your live costs are
       worse than the ones you tested with.${beText}`,
     )}</p>`
     : `<p class="chart-note">${L(
@@ -372,7 +372,7 @@ export function renderTradesAudit() {
   // se muestra se decide aquí, por `code`, igual que el resto de esta pantalla.
   const WARNING_TEXT = {
     SWAP_DOMINANCE: L(
-      'El tester aplica los swaps actuales a todo el histórico simulado: el swap pesa una parte grande del resultado neto.',
+      'El probador aplica los swaps actuales a todo el histórico simulado: el swap pesa una parte grande del resultado neto.',
       'The tester applies current swap rates to the whole simulated history: swap accounts for a large share of the net result.',
     ),
     MIXED_TICKS: L(
@@ -423,10 +423,10 @@ export function renderUnseen(a) {
         del veredicto — aquí no se mide la fuerza de la meseta, se mide si este tramo nuevo encaja
         con lo que el EA ya demostró.`,
           `You already chose a configuration looking at the optimized period and the forward, so neither is
-        still blind. This is the last step: run in MT5 a backtest of the chosen configuration
+        still blind. This is the last step: run a backtest of the chosen configuration in MT5
         on a segment you <strong>have not used for optimizing or validating</strong>,
         and bring its numbers here. The question is not whether they are spectacular, but whether they are
-        <strong>normal for this EA</strong>. This is a different contrast from the verdict's evidence
+        <strong>normal for this EA</strong>. This is a different check from the verdict's evidence
         grade — it does not measure the plateau's strength, it measures whether this new segment
         fits what the EA has already shown.`,
         )}
@@ -467,13 +467,13 @@ export function renderUnseen(a) {
       sin el número de operaciones no se puede corregir por duración, y esa corrección es justo lo
       que distingue este contraste de mirarlo a ojo.`,
         ` The first two are required:
-      without the trade count duration cannot be corrected, and that correction is exactly what
-      distinguishes this contrast from eyeballing it.`,
+      without the trade count, the figures cannot be corrected for duration, and that correction is exactly what
+      distinguishes this check from eyeballing it.`,
       )}
     </p>
     <div class="policy-grid">${fields}</div>
     <div class="rep-actions">
-      <button class="primary-btn" id="unseenCheck" type="button">${L('Comprobar contra el historial del EA', 'Check against the EA history')}</button>
+      <button class="primary-btn" id="unseenCheck" type="button">${L('Comprobar contra el historial del EA', 'Check against the EA\'s history')}</button>
       <button class="text-btn" id="unseenClear" type="button">${L('Limpiar', 'Clear')}</button>
     </div>
     ${state.unseen.error ? `<div class="error-box" style="margin-top:12px" role="alert"><strong>${L('No se ha podido comprobar', 'Could not check')}</strong><span>${esc(state.unseen.error)}</span></div>` : ''}
@@ -514,11 +514,11 @@ export function renderUnseen(a) {
     : paramsDiffer
       ? L(
         'El backtest se lanzó con parámetros distintos de los propuestos, así que este contraste no dice nada sobre la configuración que estás validando. Vuelve a lanzarlo en MT5 con el .set correcto.',
-        'The backtest was run with parameters different from those proposed, so this contrast says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.',
+        'The backtest was run with parameters different from those proposed, so this check says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.',
       )
       : L(
         'En el informe no están todos los parámetros optimizados, así que no se puede comprobar que el backtest sea de la configuración propuesta. Las cifras se muestran, pero no validan nada hasta que eso se pueda comprobar.',
-        'The report does not contain all the optimized parameters, so it cannot be checked that the backtest is of the proposed configuration. The figures are shown, but they validate nothing until that can be checked.',
+        'The report does not contain all the optimized parameters, so there is no way to check that the backtest used the proposed configuration. The figures are shown, but they validate nothing until that can be checked.',
       );
 
   const statusMap = unseenStatus();

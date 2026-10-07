@@ -78,7 +78,7 @@
       <h1 id="hm-title" data-i18n-html="home.h1">Separa lo frágil <em>de lo estable.</em></h1>
       <p class="hm-lead" data-i18n="home.lead">Orometra analiza tu optimización de MT5 y te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.</p>
       <div class="hm-actions">
-        <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="portada-cta" data-i18n="lp.cta">Analizar mis resultados</a><a class="hm-go" href="/app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
+        <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="portada-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
       </div>
       <p class="hm-need" data-i18n-html="home.need">Solo necesitas el XML que exporta MT5<span class="hm-need-sep"> · </span><a href="/es/guias/exportar-optimizacion-mt5-xml/" data-track="portada-guia-xml">Cómo exportarlo →</a></p>
     </div>
@@ -154,26 +154,6 @@
     </div>
   </section>
 
-  <!-- 2c. Respiro: la misma idea en la naturaleza. Texto a un lado y la foto en una tarjeta al
-       otro; en móvil, la foto arriba. -->
-  <section class="hm-section hm-nature" aria-labelledby="hm-nature-title">
-    <div class="hm-nature-copy">
-      <h2 id="hm-nature-title" data-i18n="home.nature.title">Ningún estornino vuela solo</h2>
-      <p data-i18n="home.nature.body">Cada uno se guía por sus vecinos más cercanos, y así se sostiene la bandada entera. Orometra juzga igual tus configuraciones: solo se fía de la que funciona junto a las de su alrededor.</p>
-    </div>
-    <!-- Una versión por tema (etalonadas en tools/fotos.mjs); la oculta no se descarga (loading="lazy"). -->
-    <figure class="hm-nature-photo">
-      <picture class="hm-nature-dark">
-        <source type="image/avif" srcset="/img/fotos/bandada-noche-esc-800.avif 800w, /img/fotos/bandada-noche-esc-1200.avif 1200w, /img/fotos/bandada-noche-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
-        <img src="/img/fotos/bandada-noche-esc-1200.webp" srcset="/img/fotos/bandada-noche-esc-800.webp 800w, /img/fotos/bandada-noche-esc-1200.webp 1200w, /img/fotos/bandada-noche-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Miles de siluetas en vuelo cruzan en diagonal un cielo azul grisáceo apagado">
-      </picture>
-      <picture class="hm-nature-light">
-        <source type="image/avif" srcset="/img/fotos/bandada-dia-esc-800.avif 800w, /img/fotos/bandada-dia-esc-1200.avif 1200w, /img/fotos/bandada-dia-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
-        <img src="/img/fotos/bandada-dia-esc-1200.webp" srcset="/img/fotos/bandada-dia-esc-800.webp 800w, /img/fotos/bandada-dia-esc-1200.webp 1200w, /img/fotos/bandada-dia-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Miles de siluetas en vuelo cruzan en diagonal un cielo azul grisáceo apagado">
-      </picture>
-    </figure>
-  </section>
-
   <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->
   <section class="hm-section hm-more-sec" aria-labelledby="hm-more-title">
     <h2 id="hm-more-title" data-i18n="home.more.title">Lo que hay detrás del resultado</h2>
@@ -208,8 +188,8 @@
         <ul class="hm-proof-grid">
           <li><h3 data-i18n="home.proof.1.title">El código es público</h3><p data-i18n="home.proof.1.body">Cada cálculo del motor se puede leer en GitHub. Sin cajas negras.</p><a href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" data-i18n="home.proof.1.link">Ver el código →</a></li>
           <li><h3 data-i18n="home.proof.2.title">El método está publicado</h3><p data-i18n="home.proof.2.body">Paso a paso y con sus límites: qué hace y qué no hace.</p><a href="/es/methodology/" data-i18n="home.proof.2.link">Leer el método →</a></li>
-          <li><h3 data-i18n="home.proof.3.title">Comprueba que tus archivos no salen</h3><p data-i18n="home.proof.3.body">Abre las herramientas del navegador, pestaña Red, mientras analizas: solo verás archivos de la propia web y un recuento anónimo de uso. Tus archivos no se envían a ningún sitio.</p><a href="/es/privacy/" data-i18n="home.proof.3.link">Privacidad →</a></li>
-          <li><h3 data-i18n="home.proof.4.title">Se pone a prueba en cada versión</h3><p data-i18n="home.proof.4.body">Antes de publicarse, cada versión pasa cientos de comprobaciones automáticas, entre ellas con datos en los que se conoce de antemano la respuesta correcta.</p></li>
+          <li><h3 data-i18n="home.proof.3.title">Comprueba que tus archivos no salen</h3><p data-i18n="home.proof.3.body">Abre las herramientas para desarrolladores del navegador, pestaña Red, mientras analizas: solo verás archivos de la propia web y un recuento anónimo de uso. Tus archivos no se envían a ningún sitio.</p><a href="/es/privacy/" data-i18n="home.proof.3.link">Privacidad →</a></li>
+          <li><h3 data-i18n="home.proof.4.title">Se pone a prueba en cada versión</h3><p data-i18n="home.proof.4.body">Antes de publicarse, cada versión pasa cientos de comprobaciones automáticas, entre ellas pruebas con datos en los que se conoce de antemano la respuesta correcta.</p></li>
         </ul>
       </div>
       <div class="hm-pane hm-ai" role="tabpanel" id="hm-pane-ai" aria-labelledby="hm-tab-ai" tabindex="0">
@@ -250,7 +230,7 @@
 
   <section class="hm-final has-photo">
     <h2 data-i18n="home.final.title">¿Lo pruebas?</h2>
-    <p data-i18n="home.final.body">Suelta aquí tu optimización y míralo en un minuto. No se sube nada.</p>
+    <p data-i18n="home.final.body">Suelta aquí tu optimización y mira el resultado en un minuto. No se sube nada.</p>
     <ul class="hm-checks">
       <li data-i18n="home.final.c1">Gratis y sin registro</li>
       <li data-i18n="home.final.c2">Tus archivos no salen de tu ordenador</li>
@@ -259,7 +239,7 @@
       <li data-i18n="home.final.c5">Optimizaciones completas y genéticas</li>
       <li data-i18n="home.final.c6">Comprueba tu backtest en un periodo no visto</li>
     </ul>
-    <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="cierre-cta" data-i18n="lp.cta">Analizar mis resultados</a><a class="hm-go" href="/app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
+    <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="cierre-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
   </section>
 </main>
 
@@ -269,13 +249,13 @@
       <strong>Orometra</strong>
       <span data-i18n="lp.foot.tagline">Separa lo frágil de lo estable</span>
     </div>
-    <nav class="lp-foot-nav" aria-label="Footer">
+    <nav class="lp-foot-nav" aria-label="Pie de página" data-i18n="nav.footer" data-i18n-attr="aria-label">
       <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
       <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
       <a href="/es/about/" data-i18n="doc.about.nav">Quiénes somos</a>
       <a href="/es/privacy/" data-i18n="doc.privacy.nav">Privacidad</a>
       <a href="/app/" data-i18n="lp.cta.footer">App</a>
-      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+      <a href="mailto:hello@orometra.com" title="Contacto" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>
 </footer>

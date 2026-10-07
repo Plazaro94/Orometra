@@ -100,7 +100,7 @@
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.report.s5.title">Expected payoff and Sharpe ratio</h2>
-    <p data-i18n="guide.report.s5.body">Expected payoff is the average profit per trade. Compare it with your cost per trade (spread, commission, slippage): if it is only a few points, a slightly worse broker eats it. The Sharpe ratio measures return relative to how irregular it is; in the tester, below 0 means it loses and above 1 means the risk pays off. Use it to compare configurations with each other rather than as an absolute grade.</p>
+    <p data-i18n="guide.report.s5.body">Expected payoff is the average profit per trade. Compare it with your cost per trade (spread, commission, slippage): if it is only a few points, a slightly worse broker eats it. The Sharpe ratio measures return relative to how irregular it is; in the tester, below 0 means it loses and above 1 is considered a sign that the risk pays off. Use it to compare configurations with each other rather than as an absolute grade.</p>
   </section>
 
   <section class="lp-doc-block guide-step">
@@ -108,7 +108,7 @@
     <ul class="lp-list">
       <li data-i18n="guide.report.err.1">Looking only at net profit. Without drawdown and number of trades, it says nothing about risk or about whether it is chance.</li>
       <li data-i18n="guide.report.err.2">Comparing reports with different periods or deposits: profit and drawdown in money depend on both.</li>
-      <li data-i18n="guide.report.err.3">Trusting a backtest with unrealistic modelling. "Every tick based on real ticks" is the most faithful; "Open prices only" only makes sense if the EA acts at the open of the bar.</li>
+      <li data-i18n="guide.report.err.3">Trusting a backtest with unrealistic modeling. “Every tick based on real ticks” is the most faithful; “Open prices only” only makes sense if the EA acts at the open of the bar.</li>
       <li data-i18n="guide.report.err.4">Reading the report of the best pass of an optimization as if it were a clean test: that pass was chosen precisely because it did well in that period.</li>
     </ul>
   </section>
@@ -139,16 +139,16 @@
   <div class="lp-shell lp-foot-inner">
     <div class="lp-foot-brand">
       <strong>Orometra</strong>
-      <span data-i18n="lp.foot.tagline">Tell the fragile from the stable</span>
+      <span data-i18n="lp.foot.tagline">Separate the fragile from the stable</span>
     </div>
-    <nav class="lp-foot-nav" aria-label="Footer">
+    <nav class="lp-foot-nav" aria-label="Footer" data-i18n="nav.footer" data-i18n-attr="aria-label">
       <a href="/">Orometra</a>
       <a href="/methodology/" data-i18n="nav.method">Methodology</a>
       <a href="/guides/" data-i18n="nav.guides">Guides</a>
       <a href="/about/" data-i18n="doc.about.nav">About us</a>
       <a href="/privacy/" data-i18n="doc.privacy.nav">Privacy</a>
       <a href="/app/" data-i18n="lp.cta.footer">App</a>
-      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+      <a href="mailto:hello@orometra.com" title="Contact" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>
 </footer>

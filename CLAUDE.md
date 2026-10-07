@@ -17,6 +17,8 @@ y qué no) · `bench/PREREGISTRO.md` (cómo se valida el motor) · `DEPLOY.md` (
 - **No inventes ni infles problemas.** Si algo está bien, dilo. Cada hallazgo, con
   `archivo:línea` y un escenario concreto; si no lo has podido comprobar, dilo también.
 - Al terminar, separa lo **comprobado** de lo **no comprobado**.
+- Cambios visibles: enséñale capturas del antes y el después (móvil y escritorio, tema
+  claro y oscuro) y espera su visto bueno antes de publicar.
 
 ## Comandos
 
@@ -54,7 +56,11 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
 ## Normas de código
 
 - Textos visibles **en ES y EN**: `L('es', 'en')` o claves en `js/i18n.js`. Lenguaje de
-  trader; lo técnico, en el detalle.
+  trader; lo técnico, en el detalle. Los dos idiomas deben decir lo mismo.
+- Español **de España**, con **tú**, comillas «» y espacio antes de % («20 %»). Inglés
+  **americano** (analyze, behavior, gray…). «Orometra» es la marca: no se traduce ni se cambia.
+- Términos asentados: meseta (plateau), pasada (pass), configuración, mínimos (minimums),
+  drawdown, factor de beneficio, probador (Strategy Tester), «columna Result».
 - Sin tildes en identificadores (lo vigila `tests/source.test.js`).
 - Todo valor que venga de los archivos del usuario se escapa al pintarlo: `esc()` y
   `paramHtml()`; nunca `paramValue()` dentro de una plantilla.
@@ -67,7 +73,9 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
 
 ## Git y publicación
 
-- Commits y PR en español. Un PR por tarea; se fusionan con *squash* (título `… (#N)`).
+- Commits en español. El trabajo pendiente de visto bueno va en la rama `trabajo`; con el
+  visto bueno, se lleva a `main`. Desde las sesiones en la nube no se pueden borrar ramas
+  ni crear etiquetas en GitHub.
 - Cada push a `main` publica en orometra.com (`.github/workflows/static.yml`, que antes pasa
   `npm test` y el navegador). `ci.yml` pasa las mismas pruebas en cada PR.
 

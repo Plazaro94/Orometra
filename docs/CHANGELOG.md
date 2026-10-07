@@ -4,7 +4,72 @@
 
 - Nuevo `CLAUDE.md` en la raíz: lo lee Claude Code al empezar cada sesión. Resume cómo
   trabajar con el autor, los comandos, la estructura, los principios de `docs/SPEC.md`, las
-  normas de código, la publicación y lo pendiente conocido, para no repetirlo en cada chat.
+  normas de código y de texto (español de España con tú, inglés americano, términos
+  asentados), cómo se publica y lo pendiente conocido, para no repetirlo en cada chat.
+
+## 2026-10-07 — Un solo botón en la portada, «Analizar» en la app y diagrama del paso 9
+
+- **Portada:** fuera el círculo con flecha junto a «Analizar mis resultados» (arriba y en el
+  cierre): llevaba al mismo sitio que el botón.
+- **App vacía:** «Analizar» desactivado ya no parece otra tarjeta (sin fondo, con su flecha
+  apagada) y dice cuándo se activa en vez de repetir lo que ya dice la zona de carga. La
+  nota del .set pasa de cuatro líneas a dos y de 13 a 14 px.
+- **Metodología, paso 9:** «Monte Carlo», «Tamaño de muestra» y «Stress de costes» caben en
+  una línea mientras el diagrama mide más de 470 px; por debajo, con la letra agrandada, se
+  siguen partiendo en dos.
+
+## 2026-10-07 — Páginas de texto: una columna de lectura y letra más grande
+
+- **Metodología, Guías, Privacidad y Quiénes somos:** el contenido va en una columna centrada
+  de 640 px; separadores, listas y diagramas miden lo mismo que el texto. Antes, el texto
+  ocupaba ~470 px pegado a la izquierda y dejaba media pantalla vacía. El índice de la
+  Metodología y las tarjetas de Privacidad y de Guías se abren a 920 px. La cabecera con foto
+  no cambia.
+- **Metodología:** cada paso lleva su diagrama debajo del texto, a lo ancho de la columna, en
+  vez del zigzag (que apretaba el texto de esos pasos en 360 px).
+- **Texto largo a 18 px** (16 en el móvil, antes 15) y entradilla a 20 px; títulos de sección
+  a 24 px para que sigan destacando. Unos 70–80 caracteres por línea en escritorio.
+
+## 2026-10-07 — Escala de fiabilidad en el móvil y texto del informe más legible
+
+- **Escala de fiabilidad:** en móviles de 361 a ~420 px (iPhone de 390 px), «Insuficiente»
+  se salía de su tramo y quedaba pegado a «Débil». Ahora, si la escala mide menos de 356 px,
+  se muestra solo el nivel actual (antes, por debajo de 313 px); desde 356 px hay 8 px o más
+  entre nombres.
+- **Informe de la app:** el 87 % del texto iba a 13–14 px. Los párrafos de lectura (notas de
+  gráficos, introducciones de panel, hallazgos, «A favor / En contra», límites, pasos de
+  «Qué hacer ahora», nota de la pasada elegida) pasan a 15 px, y las notas secundarias a
+  14 px. Etiquetas, cifras, tablas y botones no cambian.
+
+## 2026-10-07 — Portada sin la sección de los estorninos
+
+- Se quita «Ningún estornino vuela solo»: repetía la idea de las vecinas, que la portada ya
+  explica dos secciones antes, con una metáfora que competía con la del relieve. Fuera también
+  sus textos, las 12 fotos de la bandada y su etalonado en `tools/fotos.mjs`.
+
+## 2026-10-07 — Auditoría de textos en español e inglés
+
+Revisión de todos los textos visibles (diccionario, veredicto, mesetas, periodo no visto,
+errores, exportaciones y páginas públicas), comparando cada pareja ES/EN. Unos 190 cambios
+puntuales; lo que estaba bien no se ha tocado.
+
+- **Incoherencias ES↔EN corregidas:** el inglés decía «no plateau to fall back on» donde el
+  español (y la lógica) dicen «no hay región amplia»; «cerca de la mitad de los casos» con
+  estabilidades de hasta el 80 % pasa a «hasta en la mitad»; la nota del Sharpe menciona los
+  rendimientos logarítmicos en los dos idiomas; el glosario de coherencia y la descripción
+  de privacidad para compartir dicen lo mismo en ambos.
+- **Sin traducir:** el pie de página (`aria-label`, `title`) y la navegación de la app
+  quedaban en inglés en las páginas españolas; el gráfico de sensibilidad pintaba
+  «particion»/«plano» en inglés; los nombres de los archivos descargados salían siempre en
+  español.
+- **Términos unificados:** «drawdown» en vez de «caída», «minimums» en vez de «gates» y
+  «Minima», «meseta» en vez de «región», «probador» en vez de «tester», «columna Result»,
+  «rejilla», «archivo», y «test/check» en vez del calco «contrast» en inglés.
+- **Errores en lenguaje llano:** «masa interior» y «región conexa con soporte local» se
+  explican sin jerga; «exporta el informe XML» pasa a «Exportar a XML».
+- **Ortografía:** inglés americano (modeling, gray, around, parenthesized), espacio antes de
+  % y comillas «» en español, tildes, rayas y concordancias. «Sharpe» ya no sale en
+  minúscula en el periodo no visto.
 
 ## 2026-10-07 — Revisión independiente del PR de la auditoría
 

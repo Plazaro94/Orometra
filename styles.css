@@ -384,7 +384,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .dropzone.locked .file-icon{opacity:.45}
 .dropzone.locked .drop-action{color:var(--muted);border-color:var(--line)}
 .set-hint{
-  margin:8px 2px 0;font-size:13px;color:var(--muted-2);line-height:1.45;max-width:var(--measure);
+  margin:8px 2px 0;font-size:14px;color:var(--muted-2);line-height:1.45;max-width:var(--measure);
 }
 .set-hint .set-status{display:block;margin-top:3px;color:var(--muted);font-family:var(--mono);font-size:13px}
 .set-hint .set-status:empty{display:none}
@@ -408,13 +408,16 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
    texto que dice qué falta tiene que leerse (con opacidad quedaba a 2,45:1). */
 .analyze-card strong{display:block;font-size:16px;font-weight:700;color:var(--text-hi)}
 .analyze-card span{display:block;color:var(--muted-2);font-size:13.5px;margin-top:3px;line-height:1.4}
+/* Desactivado se lee como un botón que espera, no como otra tarjeta de información: sin
+   fondo propio y con su flecha, apagada. */
+.analyze-card:disabled{background:transparent}
 .analyze-card:disabled strong{color:var(--muted)}
 .analyze-card:not(:disabled){background:var(--cta-bg);border-color:var(--cta-line);color:var(--cta-text);cursor:pointer}
 .analyze-card:not(:disabled) strong,.analyze-card:not(:disabled) span,.analyze-card:not(:disabled) .analyze-arrow{color:var(--cta-text)}
 @media (hover:hover){.analyze-card:not(:disabled):hover{background:var(--cta-hover);border-color:var(--cta-line)}}
 .analyze-card.busy{cursor:progress}
 .analyze-arrow{margin-left:auto;color:var(--muted-3);font-size:20px}
-.analyze-card:disabled .analyze-arrow{display:none}
+.analyze-card:disabled .analyze-arrow{color:var(--line-strong)}
 
 .policy-panel{margin-top:11px;border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:18px}
 .policy-head h2{font-size:15px;margin-bottom:5px}
@@ -450,7 +453,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 }
 .preflight-head strong{font-size:14px;color:var(--text-hi);letter-spacing:-.015em}
 .preflight-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.set-note{margin:8px 0 0;font-size:13px;line-height:1.4;color:var(--muted-3)}
+.set-note{margin:8px 0 0;font-size:14px;line-height:1.4;color:var(--muted-3)}
 .noscript-note{margin:24px;padding:14px 16px;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn-text);border-radius:8px}
 .preflight-warn{display:block;margin-top:4px;color:var(--warn-text)}
 .preflight-card{
@@ -524,7 +527,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .panel-kicker,.detail-kicker{font-size:13px;letter-spacing:0;font-weight:700;color:var(--muted-2);text-transform:none}
 .panel h2{font-size:17px;margin-top:4px;letter-spacing:-.02em}
 .panel h3{font-size:15px;margin-bottom:9px;color:var(--text-hi)}
-.panel-intro{margin:0 0 15px;color:var(--muted);font-size:14px;max-width:var(--measure)}
+.panel-intro{margin:0 0 15px;color:var(--muted);font-size:var(--fs-base);line-height:1.55;max-width:var(--measure)}
 .muted{color:var(--muted);font-size:13px}
 
 .empty-state{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:24px 26px}
@@ -540,7 +543,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .empty-demo{margin:0;padding-top:16px;border-top:1px solid var(--line-soft);font-size:14px;color:var(--muted)}
 .empty-demo .text-btn{font-size:14px;font-weight:600;color:var(--ok-text)}
 
-.demo-note{border:1px solid var(--line-strong);background:var(--surface-2);border-radius:var(--radius);padding:12px 15px;font-size:13.5px;color:var(--text-2);margin-bottom:12px}
+.demo-note{border:1px solid var(--line-strong);background:var(--surface-2);border-radius:var(--radius);padding:12px 15px;font-size:14px;color:var(--text-2);margin-bottom:12px}
 
 /* ---------------------------------------------------------------- decisión (veredicto)
    Lo primero del informe: qué configuración usar, su fiabilidad y qué hacer ahora. El
@@ -557,12 +560,12 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-pass{font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--text-hi)}
 .vx-pass b{font-family:var(--mono);font-weight:700;letter-spacing:-.04em}
 .vx-pass-risk{font-size:22px;color:var(--warn-text)}
-.vx-pass-note{margin:6px 0 14px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.vx-pass-note{margin:6px 0 14px;font-size:var(--fs-base);line-height:1.5;color:var(--muted)}
 .vx-pass-note b{color:var(--text-hi)}
 .vx-params{margin:0 0 16px}
 .vx-actions{display:flex;flex-wrap:wrap;gap:8px}
 .vx-actions button{padding:11px 18px;font-size:14px}
-.vx-fine{margin:12px 0 0;font-size:13px;line-height:1.45;color:var(--muted-2);max-width:56ch}
+.vx-fine{margin:12px 0 0;font-size:14px;line-height:1.45;color:var(--muted-2);max-width:56ch}
 .vx-meter{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:2px 0 14px}
 /* El medidor se llena tramo a tramo, de rojo (insuficiente) a lima (sólida): el nivel se
    lee por cuánto se llena y por el color del último tramo. El lima queda reservado para
@@ -592,10 +595,11 @@ details.panel > .panel-body{padding:0 20px 20px}
   .vx-main{grid-template-columns:1fr;gap:20px}
   .vx-trust{padding-left:0;border-left:0;padding-top:20px;border-top:1px solid var(--line)}
 }
-/* Cinco nombres no caben bajo el medidor en un móvil estrecho: se deja solo el del nivel
-   actual, bajo su tramo (el aria-label del medidor sigue nombrando el nivel). */
+/* Cinco nombres no caben bajo el medidor en un móvil: se deja solo el del nivel actual,
+   bajo su tramo (el aria-label del medidor sigue nombrando el nivel). Con menos de 356 px,
+   «Insuficiente» y «Débil» quedaban a 1 px (iPhone de 390 px); desde 356, a 8 px o más. */
 .vx-trust{container:vxt/inline-size}
-@container vxt (max-width:312px){
+@container vxt (max-width:355px){
   .vx-seg-name{display:none}
   .vx-seg.is-here .vx-seg-name{display:block;white-space:nowrap}
 }
@@ -615,7 +619,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-stat > strong{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--text-hi);font-variant-numeric:tabular-nums;line-height:1.1}
 .vx-stat > strong small{font-size:13px;font-weight:600;color:var(--muted-2);letter-spacing:0}
 .vx-stat-label{display:block;margin-top:6px;font-size:13.5px;font-weight:700;color:var(--text)}
-.vx-stat-note{display:block;margin-top:3px;font-size:13px;line-height:1.4;color:var(--muted)}
+.vx-stat-note{display:block;margin-top:3px;font-size:14px;line-height:1.4;color:var(--muted)}
 .vx-next{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
 .vx-next .vx-label{margin-bottom:14px}
 .vx-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
@@ -624,8 +628,8 @@ details.panel > .panel-body{padding:0 20px 20px}
   flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
   border:1px solid var(--info-line);color:var(--info-text);font-weight:700;font-size:13px;
 }
-.vx-step strong{display:block;font-size:14px;color:var(--text-hi);line-height:1.35;margin-top:3px}
-.vx-step p{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--muted)}
+.vx-step strong{display:block;font-size:var(--fs-base);color:var(--text-hi);line-height:1.35;margin-top:3px}
+.vx-step p{margin:4px 0 0;font-size:14px;line-height:1.5;color:var(--muted)}
 .vx-step-cta{margin-top:6px;font-weight:600;color:var(--info-text)}
 .vx-next-text{margin:0;font-size:14.5px;line-height:1.55;color:var(--text-2);max-width:80ch}
 /* Por qué: el resumen del motor y, debajo, a favor / en contra con su marca. */
@@ -642,7 +646,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-section-title{margin:26px 0 10px;font-size:13px;font-weight:700;color:var(--muted-2);letter-spacing:0}
 .vx-detail{margin-bottom:8px}
 .vx-detail > summary h2{font-size:15px;margin-top:0}
-.vx-detail-hint{margin:3px 0 0;font-size:13.5px;color:var(--muted);font-weight:400}
+.vx-detail-hint{margin:3px 0 0;font-size:14px;color:var(--muted);font-weight:400}
 .vx-detail .panel-body h3{font-size:13px;margin:0 0 10px}
 .vx-detail .grid-secondary{gap:24px}
 .vx-detail-actions{display:flex;justify-content:flex-end;margin:0 0 6px}
@@ -678,11 +682,11 @@ details.panel > .panel-body{padding:0 20px 20px}
 .f-warn .finding-mark{background:var(--warn)}
 .f-ok .finding-mark{background:var(--accent)}
 .f-info .finding-mark{background:var(--muted-2)}
-.finding strong{font-size:13.5px;display:block;margin-bottom:3px}
+.finding strong{font-size:var(--fs-base);display:block;margin-bottom:3px}
 .f-block strong{color:var(--danger-text)}
 .f-warn strong{color:var(--warn-text)}
 .f-ok strong{color:var(--ok-text)}
-.finding p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55;max-width:var(--measure)}
+.finding p{margin:0;color:var(--muted);font-size:var(--fs-base);line-height:1.55;max-width:var(--measure)}
 /* Las negritas dentro del texto son inline: la regla del titulo las partia en lineas sueltas. */
 .finding p strong{display:inline;font-size:inherit;margin:0}
 
@@ -706,8 +710,8 @@ details.panel > .panel-body{padding:0 20px 20px}
 .why-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .why-col li{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid var(--line-soft)}
 .why-col li:first-child{padding-top:0;border-top:0}
-.why-col strong{font-size:var(--fs-sm);color:var(--text-hi);font-weight:700}
-.why-col span{font-size:var(--fs-xs);color:var(--muted);line-height:1.45;max-width:var(--measure)}
+.why-col strong{font-size:var(--fs-base);color:var(--text-hi);font-weight:700}
+.why-col span{font-size:var(--fs-base);color:var(--muted);line-height:1.55;max-width:var(--measure)}
 .why-pros strong{color:var(--ok-text)}
 .why-cons strong{color:var(--warn-text)}
 .why-grid-one{grid-template-columns:1fr}
@@ -852,7 +856,7 @@ th.t3-label{padding-left:2px}
 /* ---------------------------------------------------------------- tablas */
 .detail-head{margin-bottom:16px}
 .detail-head h2{font-size:26px;margin:8px 0;letter-spacing:-.025em}
-.detail-head p{color:var(--muted);font-size:13.5px;margin:0;max-width:var(--measure)}
+.detail-head p{color:var(--muted);font-size:var(--fs-base);margin:0;max-width:var(--measure)}
 .detail-head strong{color:var(--text)}
 .table-wrap{overflow-x:auto;overflow-y:visible;position:relative}
 /* El difuminado va pegado (sticky) al borde visible, no al final del contenido:
@@ -894,7 +898,7 @@ tr.sel td{color:var(--text-2)}
 @media (hover:none){
   .hover-hint{display:none}
   .reasons{flex-direction:column;gap:5px}
-  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:13px}
+  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:14px}
 }
 
 /* En movil, la tabla de descartes se apila en tarjetas: con scroll horizontal
@@ -921,7 +925,7 @@ tr.sel td{color:var(--text-2)}
   .rej-table .reason-detail{display:none}
   /* El título ya dice que es el informe: la etiqueta «Informe» sobra en el móvil. */
   .topbar-report .eyebrow{display:none}
-  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:13px}
+  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:14px}
   .table-wrap:has(table.stack-table).has-hscroll::after{display:none}
 }
 
@@ -936,7 +940,7 @@ tr.sel td{color:var(--text-2)}
 
 .stability-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin-top:6px}
 .stability-cols h3{font-size:13px;margin:0 0 3px;color:var(--text);letter-spacing:-.01em}
-.stability-sub{font-size:13px;color:var(--muted);margin:0 0 10px}
+.stability-sub{font-size:14px;color:var(--muted);margin:0 0 10px}
 .evidence-list strong.big{font-size:15px}
 .evidence-list strong.big.ok{color:var(--ok)}
 .evidence-list strong.big.warn{color:var(--warn)}
@@ -988,7 +992,7 @@ tr.sel td{color:var(--text-2)}
   #plateauSurfaceCanvas{aspect-ratio:16/12}
 }
 
-.limits{margin:0;padding-left:18px;color:var(--muted);font-size:14px;max-width:var(--measure)}
+.limits{margin:0;padding-left:18px;color:var(--muted);font-size:var(--fs-base);line-height:1.55;max-width:var(--measure)}
 .limits li{margin-bottom:9px}
 
 .method-list{list-style:none;margin:0;padding:0}
@@ -997,7 +1001,7 @@ tr.sel td{color:var(--text-2)}
 .method-num{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ok-text);width:24px}
 .method-list li>div{flex:1;min-width:0}
 .method-list h3{font-size:14.5px;margin:0 0 2px}
-.method-list p{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+.method-list p{font-size:14px;color:var(--muted);line-height:1.5;margin:0}
 .method-more{flex:none;font-weight:600}
 .method-full{margin:14px 0 0;font-size:14px}
 .method-full a{color:var(--ok-text);font-weight:600;text-underline-offset:3px}
@@ -1011,7 +1015,7 @@ tr.sel td{color:var(--text-2)}
 /* Dos gráficos lado a lado solo si cada uno tiene sitio; si no, uno debajo de otro (a
    1280 px, lado a lado, el texto quedaba a 8 px). */
 .grid-secondary.chart-pair{grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr))}
-.chart-note{margin:12px 0 0;font-size:13.5px;color:var(--muted-2);line-height:1.5;max-width:var(--measure)}
+.chart-note{margin:12px 0 0;font-size:var(--fs-base);color:var(--muted-2);line-height:1.55;max-width:var(--measure)}
 .chart-block{display:flex;flex-direction:column;gap:10px}
 .chart-legend{
   display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;
@@ -1446,6 +1450,13 @@ tr.sel td{color:var(--text-2)}
 @container fig (max-width:420px){.lp-method-step-media svg text{font-size:15.5px}}
 @container fig (max-width:380px){.lp-method-step-media svg text{font-size:16.5px}}
 @container fig (max-width:345px){.lp-method-step-media svg text{font-size:18px}}
+/* Paso 9: las etiquetas de las cajas caben en una línea mientras el diagrama mide más de
+   470 px; por debajo, con la letra agrandada, se parten en dos. */
+.lp-method-step-media svg .bt-two{display:none}
+@container fig (max-width:470px){
+  .lp-method-step-media svg .bt-one{display:none}
+  .lp-method-step-media svg .bt-two{display:inline}
+}
 .lp-method-step.has-media:nth-child(even) .lp-method-step-media{order:0;margin-left:0;margin-right:52px}
 @media (max-width:720px){
   .lp-method-step,.lp-method-step:nth-child(even){flex-direction:row;align-self:stretch;max-width:none;flex-wrap:wrap}
@@ -1876,12 +1887,6 @@ html{zoom:var(--z)}
 .hm .ghost-btn.hm-cta{background:var(--surface-2);border-color:transparent;color:var(--text)}
 .hm .ghost-btn.hm-cta:hover{background:var(--surface-3);color:var(--text-hi)}
 .hm-go-group{display:inline-flex;gap:8px;align-items:center}
-.hm-go{
-  flex:none;width:54px;height:54px;border-radius:50%;display:inline-grid;place-items:center;
-  background:var(--cta-bg);border:1px solid var(--cta-line);color:var(--cta-text);transition:background .15s;
-}
-.hm-go:hover{background:var(--cta-hover)}
-.hm-go svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 /* Títulos de sección centrados, grandes, en blanco roto */
 .hm-section > h2,.hm-final h2{
@@ -2140,27 +2145,6 @@ html,body{overflow-x:clip}
   .hm-pane .hm-steps .hm-num{grid-row:span 2;margin:0}
 }
 
-/* Respiro entre secciones: la bandada. Texto a un lado y la foto en una tarjeta al otro (como el
-   resto de tarjetas: borde de 1 px y esquinas redondeadas, sin degradados ni franja a todo el
-   ancho). Una versión etalonada por tema. En móvil la foto va arriba. */
-.hm-nature{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,600px);gap:clamp(32px,5vw,80px);align-items:center;
-  max-width:1056px;margin-inline:auto;
-}
-.hm-nature-photo{margin:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface-2)}
-.hm-nature-photo picture,.hm-nature-photo img{display:block;width:100%}
-.hm-nature-photo img{height:auto;aspect-ratio:5/4;object-fit:cover}
-.hm-nature-light{display:none !important}
-[data-theme="light"] .hm-nature-dark{display:none !important}
-[data-theme="light"] .hm-nature-light{display:block !important}
-.hm-nature-copy h2{text-wrap:balance;margin:0 0 14px;font-size:clamp(28px,3.4vw,42px);letter-spacing:-.02em;line-height:1.08;color:var(--text-hi)}
-.hm-nature-copy p{margin:0;color:var(--text-2);font-size:clamp(17px,1.5vw,19px);line-height:1.6;max-width:46ch}
-@media (max-width:860px){
-  .hm-nature{grid-template-columns:minmax(0,1fr);gap:28px}
-  .hm-nature-photo{order:-1;max-width:640px}
-}
-
-
 /* Móvil: la portada en unas 7 pantallas. Lo que se quita aquí sigue en escritorio,
    en el informe de ejemplo o en Metodología. */
 @media (max-width:640px){
@@ -2168,7 +2152,13 @@ html,body{overflow-x:clip}
   .hm-take-card .vx-stats{display:none}
   .hm-final .hm-checks li:nth-child(n+5){display:none}
   .hm-hero.has-photo,.hm-section{margin-bottom:52px}
-  .hm-take,.hm-final{padding-block:48px}
+  .hm-final{padding-block:48px}
+  /* La banda de «Una decisión, no una tabla» es del mismo color que el fondo en oscuro, así que
+     su relleno interior y el margen exterior se sumaban en un hueco de ~100 px (el resto de
+     secciones: 52). Se reparte para que entre el contenido de dos secciones haya siempre 52 px:
+     28 dentro de la banda + 24 fuera. */
+  .hm-take{padding-block:28px;margin-block:-28px 24px}
+  .hm-take .hm-more{margin-top:0}
 }
 
 /* Auditoría de la portada (2026-10) */
@@ -2190,7 +2180,6 @@ html,body{overflow-x:clip}
   .lp-strip-short{display:inline}
 }
 @media (max-width:380px){
-  .hm-hero .hm-go{display:none}
   .hm-hero .hm-cta{padding-inline:18px;font-size:16px}
 }
 
@@ -2227,9 +2216,6 @@ svg.brand-mark .bm-top{fill:var(--lime-fill)}
   .hm-actions .hm-go-group,.hm-final .hm-go-group{flex:0 0 auto}
   .hm-actions .hm-go-group .hm-cta,.hm-final .hm-cta{flex:0 0 auto}
   .hm .hm-cta{min-height:48px;padding:12px 24px;font-size:16px}
-  .hm .hm-go{display:none}
-  .hm-nature-copy{text-align:center}
-  .hm-nature-copy p{margin:0 auto}
   .hm-faq-head{text-align:center}
   .hm-faq-head h2{margin-left:auto;margin-right:auto}
 }
@@ -2306,3 +2292,47 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
    guías): el color de la paleta, no el azul/morado por defecto del navegador. */
 .lp-doc-block a:not([class]),.lp-lead a:not([class]){color:var(--ok-text);text-underline-offset:3px}
 @media (hover:hover){.lp-doc-block a:not([class]):hover,.lp-lead a:not([class]):hover{color:var(--ok-hi)}}
+
+/* ---------------------------------------------------------------- columna de lectura */
+/* Páginas de texto (Metodología, Guías, Privacidad, Quiénes somos): todo va en una sola
+   columna centrada, del ancho del texto, para que los separadores, las listas y los
+   diagramas midan lo mismo que los párrafos. Antes el texto se quedaba en ~470 px pegado a
+   la izquierda y la mitad derecha de la pantalla, vacía. La cabecera con foto sigue a todo
+   el ancho. 640 px a 18 px son unos 70-75 caracteres por línea. */
+:root{--read-w:640px}
+.lp-doc{--doc-fs:18px}
+.lp-doc > :not(.photo-head){max-width:var(--read-w);margin-left:auto;margin-right:auto}
+@media (min-width:1080px){
+  /* Guías: la columna de lectura y el índice a su derecha, centrados juntos. */
+  .lp-doc.guide{grid-template-columns:minmax(0,var(--read-w)) 264px;justify-content:center}
+  .lp-doc.guide > :not(.guide-rail){margin-left:0;margin-right:0}
+}
+/* El texto largo, a 18 px (16 en el móvil): con 15 px costaba leer páginas enteras. */
+.lp-doc .lp-lead{font-size:20px;line-height:1.5}
+.lp-doc-block p,.lp-doc .lp-list,.lp-doc .doc-level dd,.lp-doc .doc-ai-list dd,.lp-doc .guide-summary ol{font-size:var(--doc-fs);line-height:1.65}
+.lp-doc-block p,.lp-doc .guide-step .lp-list,.lp-doc .guide-figure,.lp-doc .doc-ai-list dd{max-width:none}
+@media (max-width:720px){
+  .lp-doc{--doc-fs:16px}
+  .lp-doc .lp-lead{font-size:17px}
+}
+/* Metodología: cada paso, número y texto arriba y su diagrama debajo, a lo ancho de la
+   columna (antes, en zigzag: el texto de los pasos con diagrama se apretaba en 360 px y los
+   pasos sin diagrama dejaban media pantalla vacía). */
+.lp-doc .lp-method-step,.lp-doc .lp-method-step.has-media,.lp-doc .lp-method-step.has-media:nth-child(even){
+  max-width:none;width:auto;flex-wrap:wrap;align-self:stretch;gap:20px;
+}
+.lp-doc .lp-method-step-text,.lp-doc .lp-method-step.has-media .lp-method-step-text{flex:1 1 0;max-width:none}
+.lp-doc .lp-method-step-media,.lp-doc .lp-method-step.has-media:nth-child(even) .lp-method-step-media{
+  order:4;flex:1 1 100%;min-width:0;margin:4px 0 0;aspect-ratio:16/9;
+}
+/* Lo que no es texto corrido (índice de la Metodología, tarjetas de Privacidad y de Guías)
+   necesita más sitio que un párrafo: se abre a 920 px, también centrado. */
+.lp-doc > .doc-index,.lp-doc > .lp-claims,.lp-doc > .guide-list{max-width:920px}
+/* Con el texto a 18 px, los títulos de sección a 19,5 px apenas se distinguían. */
+.lp-doc .lp-doc-block h2{font-size:24px;line-height:1.25}
+.lp-doc .guide-step h3{font-size:20px}
+@media (max-width:720px){
+  .lp-doc .lp-method-step,.lp-doc .lp-method-step.has-media,.lp-doc .lp-method-step.has-media:nth-child(even){gap:12px}
+  .lp-doc .lp-doc-block h2{font-size:21px}
+  .lp-doc .guide-step h3{font-size:18px}
+}

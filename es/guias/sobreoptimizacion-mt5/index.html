@@ -91,7 +91,7 @@
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.overfit.s2.title">Por qué ocurre: la maldición del ganador</h2>
     <p data-i18n="guide.overfit.s2.p1">Imagina 1.000 configuraciones sin ninguna ventaja real, cuyos resultados solo se diferencian por la suerte. Ninguna es mejor que las demás y, aun así, una encabezará la tabla. En promedio, la mejor queda unas 3,2 desviaciones típicas por encima de la media: una distancia que parece habilidad y es pura selección. Con 100 configuraciones, la mejor quedaría unas 2,5 por encima; con 10.000, unas 3,9.</p>
-    <p data-i18n="guide.overfit.s2.p2">Es la maldición del ganador: siempre que eliges la mejor de muchas mediciones con ruido, la ganadora tiende a ser aquella a la que el ruido empujó hacia arriba, y con datos nuevos ese empujón desaparece. Esas cifras suponen resultados independientes. En una optimización, las configuraciones vecinas están correlacionadas, así que el número efectivo de pruebas es menor que el de pasadas, pero el efecto es el mismo: lo primero de la lista está inflado.</p>
+    <p data-i18n="guide.overfit.s2.p2">Es la maldición del ganador: siempre que eliges la mejor de muchas mediciones con ruido, la ganadora tiende a ser aquella a la que el ruido empujó hacia arriba, y con datos nuevos ese empujón desaparece. Esas cifras suponen resultados independientes. En una optimización, las configuraciones vecinas están correlacionadas, así que el número efectivo de pruebas es menor que el de pasadas, pero el efecto es del mismo tipo: lo primero de la lista está inflado.</p>
     <p data-i18n="guide.overfit.s2.p3">La investigación le ha puesto cifras. Bailey, Borwein, López de Prado y Zhu (2014) mostraron que, con cinco años de datos y estrategias sin ventaja real, probar más de unas 45 configuraciones independientes casi garantiza encontrar una con un Sharpe anualizado de 1 dentro de la muestra, mientras que su Sharpe esperado fuera de ella es cero. Una optimización de MT5 suele probar miles.</p>
   </section>
   <section class="lp-doc-block guide-step">
@@ -141,7 +141,7 @@
     <h3 data-i18n="guide.overfit.s4.h3">3. El mejor resultado no supera al azar</h3>
     <p data-i18n="guide.overfit.s4.p3">Como hemos visto, probar muchas combinaciones eleva por sí solo el mejor resultado. El Deflated Sharpe Ratio de Bailey y López de Prado (2014) parte de esa idea: estima el Sharpe más alto que cabría esperar solo por suerte, dado cuántas pruebas hiciste y cuánto varían sus resultados, y mide si el tuyo lo supera con suficiente margen. Si no lo supera, la mejor pasada puede no ser más que ruido. Si lo supera, has descartado una explicación, el simple número de pruebas, pero eso no valida la estrategia.</p>
     <h3 data-i18n="guide.overfit.s4.h4">4. Solo brilla en la métrica que optimizaste</h3>
-    <p data-i18n="guide.overfit.s4.p4">Mira varias métricas a la vez: factor de beneficio, drawdown, factor de recuperación, Sharpe y número de operaciones. Una configuración robusta es razonable en todas; una sobreoptimizada suele destacar en el criterio que optimizaste y flojear en el resto. Ningún criterio te protege por sí solo, tampoco el complejo: cada uno solo cambia qué tipo de suerte se premia.</p>
+    <p data-i18n="guide.overfit.s4.p4">Mira varias métricas a la vez: factor de beneficio, drawdown, factor de recuperación, Sharpe y número de operaciones. Una configuración robusta es razonable en todas; una sobreoptimizada suele destacar en el criterio que optimizaste y flojear en el resto. Ningún criterio te protege por sí solo, tampoco el criterio complejo: cada uno solo cambia qué tipo de suerte se premia.</p>
     <h3 data-i18n="guide.overfit.s4.h5">5. Unas pocas operaciones hacen todo el beneficio</h3>
     <p data-i18n="guide.overfit.s4.p5">En el informe del probador de la pasada elegida, compara la mayor operación ganadora con el beneficio neto total. Si al quitar las dos o tres mejores operaciones el resultado desaparece, el backtest se apoya en unos pocos episodios que pueden no repetirse. Una ventaja robusta se reparte entre muchas operaciones.</p>
   </section>
@@ -166,7 +166,7 @@
       <li data-i18n-html="guide.overfit.s6.1"><strong>«Con más datos se arregla».</strong> Ayuda, pero si a la vez amplías los rangos y añades parámetros, el número de pruebas crece más deprisa que la información.</li>
       <li data-i18n-html="guide.overfit.s6.2"><strong>«Un buen forward lo demuestra».</strong> Solo si no lo usaste para elegir. E incluso entonces, un único periodo puede salir bien por casualidad.</li>
       <li data-i18n-html="guide.overfit.s6.3"><strong>«Optimizar por factor de beneficio o Sharpe en vez de por balance lo evita».</strong> Cambia lo que se premia, no el problema de la selección.</li>
-      <li data-i18n-html="guide.overfit.s6.4"><strong>«Pocas operaciones con un factor de beneficio alto es mejor».</strong> Un factor de beneficio de 3 en 20 operaciones es mucho menos seguro de lo que parece: un par de operaciones que salieran al revés podrían cambiarlo drásticamente.</li>
+      <li data-i18n-html="guide.overfit.s6.4"><strong>«Mejor pocas operaciones con un factor de beneficio alto».</strong> Un factor de beneficio de 3 en 20 operaciones es mucho menos seguro de lo que parece: un par de operaciones que salieran al revés podrían cambiarlo drásticamente.</li>
       <li data-i18n-html="guide.overfit.s6.5"><strong>«Si el backtest es tan bueno, será por algo».</strong> En una optimización grande es al revés: cuanto más espectacular es el mejor resultado, mayor suele ser la parte de suerte que lleva dentro.</li>
     </ul>
   </section>
@@ -188,7 +188,7 @@
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.overfit.s8.title">Lo que Orometra no puede hacer</h2>
     <ul class="lp-list">
-      <li data-i18n="guide.overfit.s8.1">No ve la curva de capital de cada pasada, porque el export de optimización de MT5 no la incluye. Por eso no calcula la Probabilidad de Sobreajuste del Backtest (PBO) ni los tests clásicos Reality Check y SPA, que la necesitan.</li>
+      <li data-i18n="guide.overfit.s8.1">No ve la curva de capital de cada pasada, porque el export de optimización de MT5 no la incluye. Por eso no calcula la probabilidad de sobreajuste del backtest (PBO) ni los tests clásicos Reality Check y SPA, que la necesitan.</li>
       <li data-i18n="guide.overfit.s8.2">No juzga la calidad de tu histórico ni los costes de tu backtest: si el backtest es optimista, el análisis también lo es.</li>
       <li data-i18n="guide.overfit.s8.3">El forward se usa para validar y ordenar las mesetas, así que no es ciego: solo lo es el periodo no visto.</li>
       <li data-i18n="guide.overfit.s8.4">Una meseta es estabilidad en tu muestra, no una promesa de beneficio futuro.</li>
@@ -227,14 +227,14 @@
       <strong>Orometra</strong>
       <span data-i18n="lp.foot.tagline">Separa lo frágil de lo estable</span>
     </div>
-    <nav class="lp-foot-nav" aria-label="Footer">
+    <nav class="lp-foot-nav" aria-label="Pie de página" data-i18n="nav.footer" data-i18n-attr="aria-label">
       <a href="/es/">Orometra</a>
       <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
       <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
       <a href="/es/about/" data-i18n="doc.about.nav">Quiénes somos</a>
       <a href="/es/privacy/" data-i18n="doc.privacy.nav">Privacidad</a>
       <a href="/app/" data-i18n="lp.cta.footer">App</a>
-      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+      <a href="mailto:hello@orometra.com" title="Contacto" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>
 </footer>

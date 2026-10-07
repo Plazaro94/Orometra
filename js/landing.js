@@ -121,11 +121,12 @@ function mountMobileMenu() {
     else actions.insertBefore(theme, cta || btn);
     if (!narrowHeader.matches) close();
   };
-  const open = () => {
+  // Foco al primer elemento solo si se abrió con el teclado (con un toque, el iPhone dibuja el recuadro).
+  const open = (viaKeyboard = false) => {
     panel.hidden = false;
     btn.setAttribute('aria-expanded', 'true');
     const first = panel.querySelector('a');
-    if (first) first.focus();
+    if (first && viaKeyboard) first.focus();
   };
   function close(focusBtn = false) {
     if (panel.hidden) return;
@@ -133,7 +134,7 @@ function mountMobileMenu() {
     btn.setAttribute('aria-expanded', 'false');
     if (focusBtn) btn.focus();
   }
-  btn.addEventListener('click', () => (panel.hidden ? open() : close()));
+  btn.addEventListener('click', (e) => (panel.hidden ? open(e.detail === 0) : close()));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(true); });
   document.addEventListener('click', (e) => { if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) close(); });
   narrowHeader.addEventListener('change', placeTheme);

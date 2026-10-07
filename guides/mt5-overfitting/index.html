@@ -74,7 +74,7 @@
   <aside class="guide-summary" aria-labelledby="guide-sum-title">
     <h2 id="guide-sum-title" data-i18n="guide.overfit.sum.title">The essentials</h2>
     <ol class="lp-list">
-      <li data-i18n="guide.overfit.sum.1">On average, the best pass of an optimization looks better in the backtest than it will perform on new data: part of its result is luck, and that luck is part of the reason it came out on top.</li>
+      <li data-i18n="guide.overfit.sum.1">On average, the best pass of an optimization performs better in the backtest than it will on new data: part of its result is luck, and that luck is part of the reason it came out on top.</li>
       <li data-i18n="guide.overfit.sum.2">The more combinations you test and the fewer trades each one has, the larger that share of luck.</li>
       <li data-i18n="guide.overfit.sum.3">What gives it away: an isolated best pass, a forward unrelated to the in-sample, a result that does not beat what chance alone would produce, and profit that depends on a handful of trades.</li>
       <li data-i18n="guide.overfit.sum.4">You cannot remove it, but you can keep it in check: fewer parameters, minimums set in advance, the center of a plateau instead of the top of the list, and a final test on a period you have never touched.</li>
@@ -140,7 +140,7 @@
     <h3 data-i18n="guide.overfit.s4.h3">3. The best result does not beat chance</h3>
     <p data-i18n="guide.overfit.s4.p3">As we have seen, testing many combinations raises the best result on its own. The Deflated Sharpe Ratio of Bailey and López de Prado (2014) builds on that idea: it estimates the highest Sharpe ratio you would expect from luck alone, given how many trials you ran and how much their results vary, and measures whether yours clears it by enough. If it does not, the top pass may be nothing but noise. If it does, you have ruled out one explanation, the sheer number of trials, but that does not validate the strategy.</p>
     <h3 data-i18n="guide.overfit.s4.h4">4. It only shines in the metric you optimized</h3>
-    <p data-i18n="guide.overfit.s4.p4">Look at several metrics at once: profit factor, drawdown, recovery factor, Sharpe ratio and number of trades. A robust configuration is reasonable in all of them; an overfitted one tends to stand out in the criterion you optimized and fall short in the rest. No criterion protects you on its own, not even the complex one: each only changes which kind of luck gets rewarded.</p>
+    <p data-i18n="guide.overfit.s4.p4">Look at several metrics at once: profit factor, drawdown, recovery factor, Sharpe ratio and number of trades. A robust configuration is reasonable in all of them; an overfitted one tends to stand out in the criterion you optimized and fall short in the rest. No criterion protects you on its own, not even the complex criterion: each only changes which kind of luck gets rewarded.</p>
     <h3 data-i18n="guide.overfit.s4.h5">5. A few trades make all the profit</h3>
     <p data-i18n="guide.overfit.s4.p5">In the Strategy Tester report of the chosen pass, compare the largest winning trade with the total net profit. If taking away the two or three best trades wipes out the result, the backtest rests on a handful of events that may not happen again. A robust edge is spread across many trades.</p>
   </section>
@@ -224,16 +224,16 @@
   <div class="lp-shell lp-foot-inner">
     <div class="lp-foot-brand">
       <strong>Orometra</strong>
-      <span data-i18n="lp.foot.tagline">Tell the fragile from the stable</span>
+      <span data-i18n="lp.foot.tagline">Separate the fragile from the stable</span>
     </div>
-    <nav class="lp-foot-nav" aria-label="Footer">
+    <nav class="lp-foot-nav" aria-label="Footer" data-i18n="nav.footer" data-i18n-attr="aria-label">
       <a href="/">Orometra</a>
       <a href="/methodology/" data-i18n="nav.method">Methodology</a>
       <a href="/guides/" data-i18n="nav.guides">Guides</a>
       <a href="/about/" data-i18n="doc.about.nav">About us</a>
       <a href="/privacy/" data-i18n="doc.privacy.nav">Privacy</a>
       <a href="/app/" data-i18n="lp.cta.footer">App</a>
-      <a href="mailto:hello@orometra.com" title="Contact">hello@orometra.com</a>
+      <a href="mailto:hello@orometra.com" title="Contact" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>
 </footer>
