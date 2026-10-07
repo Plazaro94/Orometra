@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-07 — Páginas de texto: una columna de lectura y letra más grande
+
+- **Metodología, Guías, Privacidad y Quiénes somos:** el contenido va en una columna centrada
+  de 640 px; separadores, listas y diagramas miden lo mismo que el texto. Antes, el texto
+  ocupaba ~470 px pegado a la izquierda y dejaba media pantalla vacía. El índice de la
+  Metodología y las tarjetas de Privacidad y de Guías se abren a 920 px. La cabecera con foto
+  no cambia.
+- **Metodología:** cada paso lleva su diagrama debajo del texto, a lo ancho de la columna, en
+  vez del zigzag (que apretaba el texto de esos pasos en 360 px).
+- **Texto largo a 18 px** (16 en el móvil, antes 15) y entradilla a 20 px; títulos de sección
+  a 24 px para que sigan destacando. Unos 70–80 caracteres por línea en escritorio.
+
 ## 2026-10-07 — Escala de fiabilidad en el móvil y texto del informe más legible
 
 - **Escala de fiabilidad:** en móviles de 361 a ~420 px (iPhone de 390 px), «Insuficiente»

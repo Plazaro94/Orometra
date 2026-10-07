@@ -2290,3 +2290,47 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
    guías): el color de la paleta, no el azul/morado por defecto del navegador. */
 .lp-doc-block a:not([class]),.lp-lead a:not([class]){color:var(--ok-text);text-underline-offset:3px}
 @media (hover:hover){.lp-doc-block a:not([class]):hover,.lp-lead a:not([class]):hover{color:var(--ok-hi)}}
+
+/* ---------------------------------------------------------------- columna de lectura */
+/* Páginas de texto (Metodología, Guías, Privacidad, Quiénes somos): todo va en una sola
+   columna centrada, del ancho del texto, para que los separadores, las listas y los
+   diagramas midan lo mismo que los párrafos. Antes el texto se quedaba en ~470 px pegado a
+   la izquierda y la mitad derecha de la pantalla, vacía. La cabecera con foto sigue a todo
+   el ancho. 640 px a 18 px son unos 70-75 caracteres por línea. */
+:root{--read-w:640px}
+.lp-doc{--doc-fs:18px}
+.lp-doc > :not(.photo-head){max-width:var(--read-w);margin-left:auto;margin-right:auto}
+@media (min-width:1080px){
+  /* Guías: la columna de lectura y el índice a su derecha, centrados juntos. */
+  .lp-doc.guide{grid-template-columns:minmax(0,var(--read-w)) 264px;justify-content:center}
+  .lp-doc.guide > :not(.guide-rail){margin-left:0;margin-right:0}
+}
+/* El texto largo, a 18 px (16 en el móvil): con 15 px costaba leer páginas enteras. */
+.lp-doc .lp-lead{font-size:20px;line-height:1.5}
+.lp-doc-block p,.lp-doc .lp-list,.lp-doc .doc-level dd,.lp-doc .doc-ai-list dd,.lp-doc .guide-summary ol{font-size:var(--doc-fs);line-height:1.65}
+.lp-doc-block p,.lp-doc .guide-step .lp-list,.lp-doc .guide-figure,.lp-doc .doc-ai-list dd{max-width:none}
+@media (max-width:720px){
+  .lp-doc{--doc-fs:16px}
+  .lp-doc .lp-lead{font-size:17px}
+}
+/* Metodología: cada paso, número y texto arriba y su diagrama debajo, a lo ancho de la
+   columna (antes, en zigzag: el texto de los pasos con diagrama se apretaba en 360 px y los
+   pasos sin diagrama dejaban media pantalla vacía). */
+.lp-doc .lp-method-step,.lp-doc .lp-method-step.has-media,.lp-doc .lp-method-step.has-media:nth-child(even){
+  max-width:none;width:auto;flex-wrap:wrap;align-self:stretch;gap:20px;
+}
+.lp-doc .lp-method-step-text,.lp-doc .lp-method-step.has-media .lp-method-step-text{flex:1 1 0;max-width:none}
+.lp-doc .lp-method-step-media,.lp-doc .lp-method-step.has-media:nth-child(even) .lp-method-step-media{
+  order:4;flex:1 1 100%;min-width:0;margin:4px 0 0;aspect-ratio:16/9;
+}
+/* Lo que no es texto corrido (índice de la Metodología, tarjetas de Privacidad y de Guías)
+   necesita más sitio que un párrafo: se abre a 920 px, también centrado. */
+.lp-doc > .doc-index,.lp-doc > .lp-claims,.lp-doc > .guide-list{max-width:920px}
+/* Con el texto a 18 px, los títulos de sección a 19,5 px apenas se distinguían. */
+.lp-doc .lp-doc-block h2{font-size:24px;line-height:1.25}
+.lp-doc .guide-step h3{font-size:20px}
+@media (max-width:720px){
+  .lp-doc .lp-method-step,.lp-doc .lp-method-step.has-media,.lp-doc .lp-method-step.has-media:nth-child(even){gap:12px}
+  .lp-doc .lp-doc-block h2{font-size:21px}
+  .lp-doc .guide-step h3{font-size:18px}
+}
