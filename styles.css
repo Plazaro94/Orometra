@@ -2168,7 +2168,13 @@ html,body{overflow-x:clip}
   .hm-take-card .vx-stats{display:none}
   .hm-final .hm-checks li:nth-child(n+5){display:none}
   .hm-hero.has-photo,.hm-section{margin-bottom:52px}
-  .hm-take,.hm-final{padding-block:48px}
+  .hm-final{padding-block:48px}
+  /* La banda de «Una decisión, no una tabla» es del mismo color que el fondo en oscuro, así que
+     su relleno interior y el margen exterior se sumaban en un hueco de ~100 px (el resto de
+     secciones: 52). Se reparte para que entre el contenido de dos secciones haya siempre 52 px:
+     28 dentro de la banda + 24 fuera. */
+  .hm-take{padding-block:28px;margin-block:-28px 24px}
+  .hm-take .hm-more{margin-top:0}
 }
 
 /* Auditoría de la portada (2026-10) */
