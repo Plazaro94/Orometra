@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-07 — CLAUDE.md
+
+- Nuevo `CLAUDE.md` en la raíz: lo lee Claude Code al empezar cada sesión. Resume cómo
+  trabajar con el autor, los comandos, la estructura, los principios de `docs/SPEC.md`, las
+  normas de código y de texto (español de España con tú, inglés americano, términos
+  asentados), cómo se publica y lo pendiente conocido, para no repetirlo en cada chat.
+
 ## 2026-10-07 — Un solo botón en la portada, «Analizar» en la app y diagrama del paso 9
 
 - **Portada:** fuera el círculo con flecha junto a «Analizar mis resultados» (arriba y en el
