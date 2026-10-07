@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-07 — Portada sin la sección de los estorninos
+
+- Se quita «Ningún estornino vuela solo»: repetía la idea de las vecinas, que la portada ya
+  explica dos secciones antes, con una metáfora que competía con la del relieve. Fuera también
+  sus textos, las 12 fotos de la bandada y su etalonado en `tools/fotos.mjs`.
+
 ## 2026-10-07 — Auditoría de textos en español e inglés
 
 Revisión de todos los textos visibles (diccionario, veredicto, mesetas, periodo no visto,

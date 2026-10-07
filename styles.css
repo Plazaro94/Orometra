@@ -2140,27 +2140,6 @@ html,body{overflow-x:clip}
   .hm-pane .hm-steps .hm-num{grid-row:span 2;margin:0}
 }
 
-/* Respiro entre secciones: la bandada. Texto a un lado y la foto en una tarjeta al otro (como el
-   resto de tarjetas: borde de 1 px y esquinas redondeadas, sin degradados ni franja a todo el
-   ancho). Una versión etalonada por tema. En móvil la foto va arriba. */
-.hm-nature{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,600px);gap:clamp(32px,5vw,80px);align-items:center;
-  max-width:1056px;margin-inline:auto;
-}
-.hm-nature-photo{margin:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface-2)}
-.hm-nature-photo picture,.hm-nature-photo img{display:block;width:100%}
-.hm-nature-photo img{height:auto;aspect-ratio:5/4;object-fit:cover}
-.hm-nature-light{display:none !important}
-[data-theme="light"] .hm-nature-dark{display:none !important}
-[data-theme="light"] .hm-nature-light{display:block !important}
-.hm-nature-copy h2{text-wrap:balance;margin:0 0 14px;font-size:clamp(28px,3.4vw,42px);letter-spacing:-.02em;line-height:1.08;color:var(--text-hi)}
-.hm-nature-copy p{margin:0;color:var(--text-2);font-size:clamp(17px,1.5vw,19px);line-height:1.6;max-width:46ch}
-@media (max-width:860px){
-  .hm-nature{grid-template-columns:minmax(0,1fr);gap:28px}
-  .hm-nature-photo{order:-1;max-width:640px}
-}
-
-
 /* Móvil: la portada en unas 7 pantallas. Lo que se quita aquí sigue en escritorio,
    en el informe de ejemplo o en Metodología. */
 @media (max-width:640px){
@@ -2234,8 +2213,6 @@ svg.brand-mark .bm-top{fill:var(--lime-fill)}
   .hm-actions .hm-go-group .hm-cta,.hm-final .hm-cta{flex:0 0 auto}
   .hm .hm-cta{min-height:48px;padding:12px 24px;font-size:16px}
   .hm .hm-go{display:none}
-  .hm-nature-copy{text-align:center}
-  .hm-nature-copy p{margin:0 auto}
   .hm-faq-head{text-align:center}
   .hm-faq-head h2{margin-left:auto;margin-right:auto}
 }
