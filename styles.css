@@ -2158,6 +2158,18 @@ html,body{overflow-x:clip}
 @media (max-width:860px){
   .hm-nature{grid-template-columns:minmax(0,1fr);gap:28px}
   .hm-nature-photo{order:-1;max-width:640px}
+  /* El título va dentro de la foto, en el cielo vacío de arriba a la izquierda; el párrafo,
+     debajo. El cielo es oscuro en las dos versiones (día y noche), así que el título es
+     blanco en ambos temas, con un degradado suave que solo oscurece esa esquina. */
+  .hm-nature{grid-template-areas:"photo" "body";row-gap:22px}
+  .hm-nature-copy{display:contents}
+  .hm-nature-photo{grid-area:photo;position:relative}
+  .hm-nature-photo::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(160deg,rgba(6,10,18,.5) 0%,rgba(6,10,18,.18) 32%,rgba(6,10,18,0) 55%)}
+  .hm-nature-copy h2{grid-area:photo;align-self:start;justify-self:start;position:relative;z-index:1;
+    max-width:min(82%,440px);margin:0;padding:clamp(16px,4.5vw,28px);text-align:left;color:#fff;
+    text-shadow:0 1px 14px rgba(0,0,0,.35)}
+  .hm-nature-copy p{grid-area:body}
 }
 
 
