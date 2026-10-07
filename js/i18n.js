@@ -515,7 +515,7 @@ const STRINGS = {
     'home.final.c5': 'Complete and genetic optimizations',
     'home.final.c6': 'Checks your backtest on an unseen period',
     'lp.strip': '<b>100% in your browser</b> <span class="lp-strip-long">Your files never leave your computer · </span><span class="lp-strip-short">· </span>Free, no sign-up',
-    'lp.foot.tagline': 'Tell the fragile from the stable',
+    'lp.foot.tagline': 'Separate the fragile from the stable',
 
     'doc.method.eyebrow': 'Methodology',
     'doc.method.h1': 'How the engine decides',

@@ -16,7 +16,7 @@ addStrings({
     "lang.label": "Language",
     "lp.cta": "Analyze my results",
     "lp.cta.footer": "App",
-    "lp.foot.tagline": "Tell the fragile from the stable",
+    "lp.foot.tagline": "Separate the fragile from the stable",
     "lp.strip": "<b>100% in your browser</b> <span class=\"lp-strip-long\">Your files never leave your computer · </span><span class=\"lp-strip-short\">· </span>Free, no sign-up",
     "meta.description.notfound": "This page does not exist.",
     "meta.title.notfound": "Page not found — Orometra",
