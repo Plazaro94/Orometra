@@ -95,11 +95,13 @@ function mountAppMenu() {
   const btn = $('.header-controls .lp-menu-btn');
   const panel = $('#appMenu');
   if (!btn || !panel) return;
-  const open = () => {
+  // El foco pasa al primer elemento solo si el menú se abrió con el teclado. Con un toque,
+  // Safari del iPhone trata ese foco por script como de teclado y le dibuja el recuadro.
+  const open = (viaKeyboard = false) => {
     panel.hidden = false;
     btn.setAttribute('aria-expanded', 'true');
     const first = panel.querySelector('a');
-    if (first) first.focus();
+    if (first && viaKeyboard) first.focus();
   };
   const close = (focusBtn = false) => {
     if (panel.hidden) return;
@@ -107,7 +109,8 @@ function mountAppMenu() {
     btn.setAttribute('aria-expanded', 'false');
     if (focusBtn) btn.focus();
   };
-  btn.addEventListener('click', () => (panel.hidden ? open() : close()));
+  // detail === 0: el clic viene del teclado (Intro o Espacio), no de un toque o del ratón.
+  btn.addEventListener('click', (e) => (panel.hidden ? open(e.detail === 0) : close()));
   // Ir al aviso legal es una pestaña de la propia app: el menú se cierra al elegirla.
   panel.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => close()));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(true); });
