@@ -2092,6 +2092,8 @@ html,body{overflow-x:clip}
 /* Guías y Metodología: la misma altura (y, con ella, la misma proporción) en cada pantalla. */
 .photo-head[data-photo="guias"],.photo-head[data-photo="metodologia"]{min-height:clamp(300px,34vw,460px)}
 @media (max-width:640px){.photo-head[data-photo="guias"],.photo-head[data-photo="metodologia"]{min-height:340px}}
+/* En Guías el título va un poco más arriba que en Metodología: así no roza la cordillera de la izquierda. */
+.photo-head[data-photo="guias"]{padding-top:clamp(24px,3.2vw,44px)}
 /* La entrada va justo debajo de la foto, no encima: así no tapa las mesetas. */
 .lp-lead.ph-after{margin:0 0 40px}
 .photo-head .lp-eyebrow{color:#c3cfea;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
