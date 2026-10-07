@@ -450,7 +450,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 }
 .preflight-head strong{font-size:14px;color:var(--text-hi);letter-spacing:-.015em}
 .preflight-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.set-note{margin:8px 0 0;font-size:13px;line-height:1.4;color:var(--muted-3)}
+.set-note{margin:8px 0 0;font-size:14px;line-height:1.4;color:var(--muted-3)}
 .noscript-note{margin:24px;padding:14px 16px;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn-text);border-radius:8px}
 .preflight-warn{display:block;margin-top:4px;color:var(--warn-text)}
 .preflight-card{
@@ -524,7 +524,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .panel-kicker,.detail-kicker{font-size:13px;letter-spacing:0;font-weight:700;color:var(--muted-2);text-transform:none}
 .panel h2{font-size:17px;margin-top:4px;letter-spacing:-.02em}
 .panel h3{font-size:15px;margin-bottom:9px;color:var(--text-hi)}
-.panel-intro{margin:0 0 15px;color:var(--muted);font-size:14px;max-width:var(--measure)}
+.panel-intro{margin:0 0 15px;color:var(--muted);font-size:var(--fs-base);line-height:1.55;max-width:var(--measure)}
 .muted{color:var(--muted);font-size:13px}
 
 .empty-state{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:24px 26px}
@@ -540,7 +540,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .empty-demo{margin:0;padding-top:16px;border-top:1px solid var(--line-soft);font-size:14px;color:var(--muted)}
 .empty-demo .text-btn{font-size:14px;font-weight:600;color:var(--ok-text)}
 
-.demo-note{border:1px solid var(--line-strong);background:var(--surface-2);border-radius:var(--radius);padding:12px 15px;font-size:13.5px;color:var(--text-2);margin-bottom:12px}
+.demo-note{border:1px solid var(--line-strong);background:var(--surface-2);border-radius:var(--radius);padding:12px 15px;font-size:14px;color:var(--text-2);margin-bottom:12px}
 
 /* ---------------------------------------------------------------- decisión (veredicto)
    Lo primero del informe: qué configuración usar, su fiabilidad y qué hacer ahora. El
@@ -557,12 +557,12 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-pass{font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--text-hi)}
 .vx-pass b{font-family:var(--mono);font-weight:700;letter-spacing:-.04em}
 .vx-pass-risk{font-size:22px;color:var(--warn-text)}
-.vx-pass-note{margin:6px 0 14px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.vx-pass-note{margin:6px 0 14px;font-size:var(--fs-base);line-height:1.5;color:var(--muted)}
 .vx-pass-note b{color:var(--text-hi)}
 .vx-params{margin:0 0 16px}
 .vx-actions{display:flex;flex-wrap:wrap;gap:8px}
 .vx-actions button{padding:11px 18px;font-size:14px}
-.vx-fine{margin:12px 0 0;font-size:13px;line-height:1.45;color:var(--muted-2);max-width:56ch}
+.vx-fine{margin:12px 0 0;font-size:14px;line-height:1.45;color:var(--muted-2);max-width:56ch}
 .vx-meter{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:2px 0 14px}
 /* El medidor se llena tramo a tramo, de rojo (insuficiente) a lima (sólida): el nivel se
    lee por cuánto se llena y por el color del último tramo. El lima queda reservado para
@@ -592,10 +592,11 @@ details.panel > .panel-body{padding:0 20px 20px}
   .vx-main{grid-template-columns:1fr;gap:20px}
   .vx-trust{padding-left:0;border-left:0;padding-top:20px;border-top:1px solid var(--line)}
 }
-/* Cinco nombres no caben bajo el medidor en un móvil estrecho: se deja solo el del nivel
-   actual, bajo su tramo (el aria-label del medidor sigue nombrando el nivel). */
+/* Cinco nombres no caben bajo el medidor en un móvil: se deja solo el del nivel actual,
+   bajo su tramo (el aria-label del medidor sigue nombrando el nivel). Con menos de 356 px,
+   «Insuficiente» y «Débil» quedaban a 1 px (iPhone de 390 px); desde 356, a 8 px o más. */
 .vx-trust{container:vxt/inline-size}
-@container vxt (max-width:312px){
+@container vxt (max-width:355px){
   .vx-seg-name{display:none}
   .vx-seg.is-here .vx-seg-name{display:block;white-space:nowrap}
 }
@@ -615,7 +616,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-stat > strong{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--text-hi);font-variant-numeric:tabular-nums;line-height:1.1}
 .vx-stat > strong small{font-size:13px;font-weight:600;color:var(--muted-2);letter-spacing:0}
 .vx-stat-label{display:block;margin-top:6px;font-size:13.5px;font-weight:700;color:var(--text)}
-.vx-stat-note{display:block;margin-top:3px;font-size:13px;line-height:1.4;color:var(--muted)}
+.vx-stat-note{display:block;margin-top:3px;font-size:14px;line-height:1.4;color:var(--muted)}
 .vx-next{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
 .vx-next .vx-label{margin-bottom:14px}
 .vx-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
@@ -624,8 +625,8 @@ details.panel > .panel-body{padding:0 20px 20px}
   flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
   border:1px solid var(--info-line);color:var(--info-text);font-weight:700;font-size:13px;
 }
-.vx-step strong{display:block;font-size:14px;color:var(--text-hi);line-height:1.35;margin-top:3px}
-.vx-step p{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--muted)}
+.vx-step strong{display:block;font-size:var(--fs-base);color:var(--text-hi);line-height:1.35;margin-top:3px}
+.vx-step p{margin:4px 0 0;font-size:14px;line-height:1.5;color:var(--muted)}
 .vx-step-cta{margin-top:6px;font-weight:600;color:var(--info-text)}
 .vx-next-text{margin:0;font-size:14.5px;line-height:1.55;color:var(--text-2);max-width:80ch}
 /* Por qué: el resumen del motor y, debajo, a favor / en contra con su marca. */
@@ -642,7 +643,7 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-section-title{margin:26px 0 10px;font-size:13px;font-weight:700;color:var(--muted-2);letter-spacing:0}
 .vx-detail{margin-bottom:8px}
 .vx-detail > summary h2{font-size:15px;margin-top:0}
-.vx-detail-hint{margin:3px 0 0;font-size:13.5px;color:var(--muted);font-weight:400}
+.vx-detail-hint{margin:3px 0 0;font-size:14px;color:var(--muted);font-weight:400}
 .vx-detail .panel-body h3{font-size:13px;margin:0 0 10px}
 .vx-detail .grid-secondary{gap:24px}
 .vx-detail-actions{display:flex;justify-content:flex-end;margin:0 0 6px}
@@ -678,11 +679,11 @@ details.panel > .panel-body{padding:0 20px 20px}
 .f-warn .finding-mark{background:var(--warn)}
 .f-ok .finding-mark{background:var(--accent)}
 .f-info .finding-mark{background:var(--muted-2)}
-.finding strong{font-size:13.5px;display:block;margin-bottom:3px}
+.finding strong{font-size:var(--fs-base);display:block;margin-bottom:3px}
 .f-block strong{color:var(--danger-text)}
 .f-warn strong{color:var(--warn-text)}
 .f-ok strong{color:var(--ok-text)}
-.finding p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55;max-width:var(--measure)}
+.finding p{margin:0;color:var(--muted);font-size:var(--fs-base);line-height:1.55;max-width:var(--measure)}
 /* Las negritas dentro del texto son inline: la regla del titulo las partia en lineas sueltas. */
 .finding p strong{display:inline;font-size:inherit;margin:0}
 
@@ -706,8 +707,8 @@ details.panel > .panel-body{padding:0 20px 20px}
 .why-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .why-col li{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid var(--line-soft)}
 .why-col li:first-child{padding-top:0;border-top:0}
-.why-col strong{font-size:var(--fs-sm);color:var(--text-hi);font-weight:700}
-.why-col span{font-size:var(--fs-xs);color:var(--muted);line-height:1.45;max-width:var(--measure)}
+.why-col strong{font-size:var(--fs-base);color:var(--text-hi);font-weight:700}
+.why-col span{font-size:var(--fs-base);color:var(--muted);line-height:1.55;max-width:var(--measure)}
 .why-pros strong{color:var(--ok-text)}
 .why-cons strong{color:var(--warn-text)}
 .why-grid-one{grid-template-columns:1fr}
@@ -852,7 +853,7 @@ th.t3-label{padding-left:2px}
 /* ---------------------------------------------------------------- tablas */
 .detail-head{margin-bottom:16px}
 .detail-head h2{font-size:26px;margin:8px 0;letter-spacing:-.025em}
-.detail-head p{color:var(--muted);font-size:13.5px;margin:0;max-width:var(--measure)}
+.detail-head p{color:var(--muted);font-size:var(--fs-base);margin:0;max-width:var(--measure)}
 .detail-head strong{color:var(--text)}
 .table-wrap{overflow-x:auto;overflow-y:visible;position:relative}
 /* El difuminado va pegado (sticky) al borde visible, no al final del contenido:
@@ -894,7 +895,7 @@ tr.sel td{color:var(--text-2)}
 @media (hover:none){
   .hover-hint{display:none}
   .reasons{flex-direction:column;gap:5px}
-  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:13px}
+  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:14px}
 }
 
 /* En movil, la tabla de descartes se apila en tarjetas: con scroll horizontal
@@ -921,7 +922,7 @@ tr.sel td{color:var(--text-2)}
   .rej-table .reason-detail{display:none}
   /* El título ya dice que es el informe: la etiqueta «Informe» sobra en el móvil. */
   .topbar-report .eyebrow{display:none}
-  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:13px}
+  .reason-detail{position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:normal;display:block;color:var(--muted);font-size:14px}
   .table-wrap:has(table.stack-table).has-hscroll::after{display:none}
 }
 
@@ -936,7 +937,7 @@ tr.sel td{color:var(--text-2)}
 
 .stability-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin-top:6px}
 .stability-cols h3{font-size:13px;margin:0 0 3px;color:var(--text);letter-spacing:-.01em}
-.stability-sub{font-size:13px;color:var(--muted);margin:0 0 10px}
+.stability-sub{font-size:14px;color:var(--muted);margin:0 0 10px}
 .evidence-list strong.big{font-size:15px}
 .evidence-list strong.big.ok{color:var(--ok)}
 .evidence-list strong.big.warn{color:var(--warn)}
@@ -988,7 +989,7 @@ tr.sel td{color:var(--text-2)}
   #plateauSurfaceCanvas{aspect-ratio:16/12}
 }
 
-.limits{margin:0;padding-left:18px;color:var(--muted);font-size:14px;max-width:var(--measure)}
+.limits{margin:0;padding-left:18px;color:var(--muted);font-size:var(--fs-base);line-height:1.55;max-width:var(--measure)}
 .limits li{margin-bottom:9px}
 
 .method-list{list-style:none;margin:0;padding:0}
@@ -997,7 +998,7 @@ tr.sel td{color:var(--text-2)}
 .method-num{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ok-text);width:24px}
 .method-list li>div{flex:1;min-width:0}
 .method-list h3{font-size:14.5px;margin:0 0 2px}
-.method-list p{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+.method-list p{font-size:14px;color:var(--muted);line-height:1.5;margin:0}
 .method-more{flex:none;font-weight:600}
 .method-full{margin:14px 0 0;font-size:14px}
 .method-full a{color:var(--ok-text);font-weight:600;text-underline-offset:3px}
@@ -1011,7 +1012,7 @@ tr.sel td{color:var(--text-2)}
 /* Dos gráficos lado a lado solo si cada uno tiene sitio; si no, uno debajo de otro (a
    1280 px, lado a lado, el texto quedaba a 8 px). */
 .grid-secondary.chart-pair{grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr))}
-.chart-note{margin:12px 0 0;font-size:13.5px;color:var(--muted-2);line-height:1.5;max-width:var(--measure)}
+.chart-note{margin:12px 0 0;font-size:var(--fs-base);color:var(--muted-2);line-height:1.55;max-width:var(--measure)}
 .chart-block{display:flex;flex-direction:column;gap:10px}
 .chart-legend{
   display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;

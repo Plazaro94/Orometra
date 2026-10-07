@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-07 — Escala de fiabilidad en el móvil y texto del informe más legible
+
+- **Escala de fiabilidad:** en móviles de 361 a ~420 px (iPhone de 390 px), «Insuficiente»
+  se salía de su tramo y quedaba pegado a «Débil». Ahora, si la escala mide menos de 356 px,
+  se muestra solo el nivel actual (antes, por debajo de 313 px); desde 356 px hay 8 px o más
+  entre nombres.
+- **Informe de la app:** el 87 % del texto iba a 13–14 px. Los párrafos de lectura (notas de
+  gráficos, introducciones de panel, hallazgos, «A favor / En contra», límites, pasos de
+  «Qué hacer ahora», nota de la pasada elegida) pasan a 15 px, y las notas secundarias a
+  14 px. Etiquetas, cifras, tablas y botones no cambian.
+
 ## 2026-10-07 — Portada sin la sección de los estorninos
 
 - Se quita «Ningún estornino vuela solo»: repetía la idea de las vecinas, que la portada ya
