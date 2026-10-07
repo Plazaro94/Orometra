@@ -5,7 +5,7 @@ import { enhanceRadioGroups } from './radiogroup.js';
 import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
-import { displayVerdictCopy } from './ui-verdict.js';
+import { displayVerdictCopy, displayVerdictLevel, levelName } from './ui-verdict.js';
 
 // ---------------------------------------------------------------- preferencias
 export const PREFS_KEY = 'orometra.gates';
@@ -387,6 +387,12 @@ export function render() {
   if (hayAnalisis && state.analysis) {
     const rt = $('#reportTitle');
     if (rt) rt.textContent = displayVerdictCopy(state.analysis).headline;
+    // El título de la pestaña del navegador sigue al nivel MOSTRADO en cada pintado: al
+    // cargar el periodo no visto el nivel cambia, y antes el título se quedaba en el de
+    // la primera vez. Dice el nivel en palabras («Evidencia moderada · …»).
+    if (state.source) {
+      document.title = `${L('Evidencia', 'Evidence')} ${levelName(displayVerdictLevel(state.analysis)).toLowerCase()} · ${state.source.is} · Orometra`;
+    }
   }
 
   const view = $('#view');

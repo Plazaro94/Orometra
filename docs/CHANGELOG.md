@@ -1,5 +1,86 @@
 # Changelog
 
+## 2026-10-07 — Revisión independiente del PR de la auditoría
+
+- **Reversiones «in/out» (cuentas de compensación):** el stress de costes contaba dos veces
+  el lote que se abre en sentido contrario, así que el punto de equilibrio salía a la
+  mitad. Ahora se usa solo el volumen que cierra cada operación.
+- **Cierres «out by»:** no sacaban sus posiciones de la cola de aperturas, y un solo «out
+  by» descolocaba el emparejado de todo lo que venía detrás (el stress de costes se
+  apagaba). Ahora se consumen, aunque su precio no se usa para el valor del contrato.
+- **Tipos en alemán:** «Verkauf» se leía como compra (contiene «kauf»).
+- **Precios con artefactos de coma flotante** (`1.0876500000000001`): ya no fijan un tamaño
+  de punto absurdo.
+- **Periodo no visto:** la banda ensanchada del factor de beneficio no baja de 0, y la
+  tabla dice que el rango está «ajustado a tu tramo».
+- **Pruebas:** en navegador, dos mesetas (el menú «Exportar» baja M1 aunque se haya mirado
+  M2; con el código anterior bajaba M2) y sin forward (ningún botón .set que dé error).
+  En `tests/report.test.js`, los cuatro casos de emparejado de arriba.
+
+## 2026-10-07 — Auditoría (3): detalles de presentación y del periodo no visto
+
+- **Muestra de menos de 30 días:** ya no enseña «potencia 99 %» junto a «no se distingue
+  de cero». Por debajo de 30 días no se calcula y se dice por qué (`sampleAudit.reason`).
+- **Drawdown del Monte Carlo y del stress de costes:** el capital inicial cuenta como primer
+  pico (`[-100, 50]` caía 0 en vez de 100).
+- **Botones «Descargar .set» sin forward:** ya no aparecen donde solo podían dar error (ficha
+  de meseta, alternativas, periodo no visto). Los de la ficha de meseta y el de
+  refinamiento llevan la meseta explícita.
+- **«Ver la meseta completa»** baja al relieve de esa misma meseta en vez de saltar a M1.
+- **Cómo cargar el .set en MT5:** el paso 1 y el rango de refinamiento lo dicen (pestaña de
+  parámetros de entrada, clic derecho → «Cargar»). El paso 1 cuenta los parámetros que
+  lleva de verdad el .set (también los no optimizados si cargaste el .set de la optimización).
+- **Textos:** la leyenda del gráfico dice «lavanda» (decía «verde»); la configuración se
+  describe igual en la tarjeta y en el .set («elegida por buen puesto…», no «el centro»);
+  las operaciones por parámetro dicen que son la mediana de las configuraciones;
+  «Pasada original» en el .set en español; «minimums» en la leyenda en inglés; el resumen
+  .txt ya no repite el nivel.
+- **Pruebas:** la del bootstrap comparaba el total de cada camino con la media diaria y
+  pasaba solo porque la serie tenía media ~0; ahora compara magnitudes equivalentes.
+
+## 2026-10-07 — Auditoría (2): valores exactos, avisos al día y periodo no visto
+
+- **Los parámetros se muestran exactos, como en el .set.** La tarjeta, el Top 3, la tabla
+  de refinamiento y el resumen .txt redondeaban a 4 decimales y escribían con coma
+  (0.00015 salía «0,0002»; «1,5» en el .txt). Ahora llevan punto decimal y todas sus cifras.
+- **El título de la pestaña y el resumen .txt siguen al nivel mostrado.** El título se
+  quedaba con el nivel del primer análisis y el .txt seguía diciendo «pruébala en un
+  periodo no usado» después de haberlo probado.
+- **Un informe al que le faltan parámetros optimizados ya no «coincide».** Antes bastaba
+  con que hubiera uno y ninguno distinto; si no se leía ninguno, el sello salía en verde.
+  Ahora sale «No valida» y se listan los que faltan.
+- **«Evidencia insuficiente» da la misma cifra en el resumen y en el hallazgo** (las
+  configuraciones que pasan en el periodo optimizado, que es donde se buscan las mesetas).
+- **Contraste del periodo no visto más fiable con tramos cortos** (`core/unseen.js`). El
+  drawdown se corregía por duración con la raíz de n, que vale para una estrategia sin
+  ventaja; ahora con n^0,35 (y el factor de recuperación con n^0,65). Las bandas del factor
+  de beneficio, del beneficio por operación y del Sharpe se ensanchan por
+  √(n_referencia / n_tramo) cuando el tramo es más corto. `bench/unseen.js` mide ahora tres
+  duraciones (×1, ×0,4 y ×0,2 las operaciones del forward). Con 100 semillas por escenario:
+  falsas alarmas con la ventaja intacta 24/29/30 % (antes 27/37/40 %), avisos sin ventaja
+  35/44/45 % (antes 35/48/45 %). La nota de alcance de la app cita estas cifras y la
+  proporción del tramo del usuario frente al forward. Con este banco, la regla anterior
+  daba 35 % de avisos sin ventaja con un tramo como el forward, no el 49 % que citaba.
+
+## 2026-10-07 — Auditoría: exportar, costes y nivel «sólida»
+
+- **El menú «Exportar» baja siempre la configuración propuesta (M1).** Antes usaba la
+  última meseta abierta en la pestaña de mesetas: tras mirar una alternativa, «Configuración
+  propuesta (.set)» bajaba el `.set` de M2.
+- **El stress de costes ya no depende del instrumento ni del lote.** Restaba cantidades
+  fijas de dinero (0,5 por lote, 0,2 por lado…): en EURUSD el escenario moderado equivalía a
+  4 pips por operación con 0,01 lotes y a 0,09 con 1 lote, y en oro o índices no significaba
+  nada. Ahora el coste extra se mide en puntos básicos del precio (moderado +1 pb ≈ 1 pip en
+  EURUSD, severo +3 pb), y el valor en dinero de cada movimiento de precio se deduce de las
+  operaciones del informe emparejando cada cierre con su apertura (`core/report.js`,
+  `core/trades/costs.js#contractValues`). El punto de equilibrio se da en puntos del
+  instrumento, en pb y por lote. Si no se puede deducir el valor del contrato, no se
+  simulan escenarios y se dice por qué.
+- **«Sólida» ya no dice «confirmada».** El medidor decía «validada y confirmada en un
+  periodo no visto» mientras el siguiente paso decía que aprobarlo «no la confirma». Ahora
+  es «validada en el forward y sin contradicción en un periodo no visto», también en
+  Metodología.
+
 ## 2026-10-04 — Limpieza del repositorio
 
 - Fuera lo que ya no usaba nada: unas 30 reglas y 20 variables de `styles.css` de pantallas

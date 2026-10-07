@@ -11,6 +11,7 @@ import {
   sampleAudit,
   dataWarnings,
 } from '../core/trades/index.js';
+import { maxDrawdown } from '../core/trades/util.js';
 
 let failures = 0;
 let checks = 0;
@@ -44,7 +45,20 @@ section('Bootstrap determinista');
   const a = stationaryBootstrap(rets, { sims: 500, seed: 99, meanBlock: 5 });
   const b = stationaryBootstrap(rets, { sims: 500, seed: 99, meanBlock: 5 });
   check('misma semilla = misma media', a.meanReturn === b.meanReturn);
-  check('media sims ~ media serie', Math.abs(a.meanReturn - a.meanOfSeries) < 0.05, `${a.meanReturn} vs ${a.meanOfSeries}`);
+  // `meanReturn` es el TOTAL medio de cada camino (n días) y `meanOfSeries` la media
+  // diaria: se comparan con la serie desplazada a media 1, para que no coincidan solo
+  // porque las dos valgan casi cero.
+  const shifted = rets.map((r) => r + 1);
+  const c = stationaryBootstrap(shifted, { sims: 500, seed: 99, meanBlock: 5 });
+  check('total medio de los caminos ≈ media diaria × días', Math.abs(c.meanReturn / shifted.length - c.meanOfSeries) < 0.01,
+    `${c.meanReturn / shifted.length} vs ${c.meanOfSeries}`);
+}
+
+section('Drawdown máximo');
+{
+  check('el capital inicial cuenta como pico: [-100, 50] cae 100', maxDrawdown([-100, 50]) === 100, String(maxDrawdown([-100, 50])));
+  check('[-5, -5, -5] cae 15', maxDrawdown([-5, -5, -5]) === 15, String(maxDrawdown([-5, -5, -5])));
+  check('[10, -4, 3, -12] cae 13', maxDrawdown([10, -4, 3, -12]) === 13, String(maxDrawdown([10, -4, 3, -12])));
 }
 
 section('Sample audit');
@@ -56,6 +70,13 @@ section('Sample audit');
   const flat = Array.from({ length: 20 }, () => 0);
   const audFlat = sampleAudit(flat, { nTrials: 1 });
   check('muestra insuficiente sin ventaja', audFlat.verdictHint === 'insufficient_evidence');
+
+  // 20 días con ventaja clara: la potencia sale alta, pero con menos de 30 días no se
+  // calcula; el motivo lo dice para que la pantalla no muestre «99 %» y «no se distingue».
+  const short = Array.from({ length: 20 }, (_, i) => 1 + (i % 2 ? 0.1 : -0.1));
+  const audShort = sampleAudit(short, { nTrials: 1 });
+  check('menos de 30 días: insuficiente por pocos días', audShort.verdictHint === 'insufficient_evidence' && audShort.reason === 'few_days', audShort.reason);
+  check('con ventaja clara y días de sobra no hay motivo', aud.reason === null, String(aud.reason));
 }
 
 section('Aviso de swap');

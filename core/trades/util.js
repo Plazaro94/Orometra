@@ -37,7 +37,9 @@ export function cumsum(xs) {
 
 export function maxDrawdown(returns) {
   const eq = cumsum(returns);
-  let peak = -Infinity;
+  // El capital inicial (resultado acumulado 0) es el primer pico: si el tramo empieza
+  // perdiendo, esa pérdida ya es caída. Con -Infinity, [-100, 50] daba 0 en vez de 100.
+  let peak = 0;
   let dd = 0;
   for (const v of eq) {
     if (v > peak) peak = v;

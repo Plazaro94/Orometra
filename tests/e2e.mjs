@@ -58,6 +58,36 @@ const oosXlsx = path.join(tmp, 'ReportOptimizer.forward.xlsx');
 fs.writeFileSync(isXlsx, toXlsx(demo.isTable));
 fs.writeFileSync(oosXlsx, toXlsx(demo.oosTable));
 
+// Dos mesetas: la demo duplicada con un booleano (`InpUseFilter`). Un booleano parte el
+// espacio, así que cada mitad es su propia meseta; la mitad «false» rinde algo menos y queda
+// segunda. Sirve para comprobar que «Exportar» baja la PROPUESTA (M1) aunque se haya mirado
+// otra meseta antes.
+function twoPlateauTables({ isTable, oosTable }) {
+  const n = isTable.rows.length;
+  const worse = (table, row) => {
+    const pf = table.headers.indexOf('Profit Factor');
+    const pr = table.headers.indexOf('Profit');
+    const c = row.slice();
+    c[pf] = Number((1 + (c[pf] - 1) * 0.85).toFixed(2));
+    c[pr] = Number((c[pr] * 0.85).toFixed(2));
+    return c;
+  };
+  const dup = (table) => ({
+    ...table,
+    headers: [...table.headers, 'InpUseFilter'],
+    rows: [
+      ...table.rows.map((r) => [...r, 'true']),
+      ...table.rows.map((r) => [r[0] + n, ...worse(table, r).slice(1), 'false']),
+    ],
+  });
+  return { isTable: dup(isTable), oosTable: dup(oosTable) };
+}
+const two = twoPlateauTables(demo);
+const twoIsXml = path.join(tmp, 'Dos.xml');
+const twoOosXml = path.join(tmp, 'Dos.forward.xml');
+fs.writeFileSync(twoIsXml, toMt5Xml(two.isTable));
+fs.writeFileSync(twoOosXml, toMt5Xml(two.oosTable));
+
 const server = spawn(process.execPath, [path.join(ROOT, 'tools/serve.js'), String(PORT)], { stdio: 'ignore' });
 let browser;
 try {
@@ -154,6 +184,61 @@ try {
 
     await page.click('.tab-next-btn');
     check('«Siguiente» lleva a las mesetas', await page.$eval('.nav-item[data-tab="plateaus"]', (b) => b.classList.contains('active')));
+    await page.context().close();
+  }
+
+  section('3c. Dos mesetas: «Exportar» baja siempre la propuesta');
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [twoIsXml, twoOosXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 180000 });
+    const m1 = (await page.textContent('.vx-pass b')).trim();
+    const alt = page.locator('.t3-alt').first();
+    check('hay una segunda meseta (alternativa)', await alt.count() === 1);
+    const m2 = (await alt.locator('.t3-pass').textContent()).replace(/\D+/g, '');
+    check('la alternativa es otra pasada', Boolean(m2) && m2 !== m1, `${m1} / ${m2}`);
+
+    const save = async (click) => {
+      const [d] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), click()]);
+      return d.suggestedFilename();
+    };
+    // Abrir la alternativa deja M2 seleccionada en la pestaña de mesetas.
+    await alt.locator('[data-plateau]').click();
+    await page.waitForSelector('.rep-card');
+    check('la ficha muestra la meseta 2', (await page.textContent('.rep-card .rep-pass')).includes(m2));
+    const fichaSet = await save(() => page.click('.rep-card [data-export="set"]'));
+    check('el .set de la ficha es el de la meseta 2', fichaSet.includes(`M2-pass${m2}`), fichaSet);
+    await page.click('.rep-card [data-scroll="plateauSurfacePanel"]');
+    check('«Ver la meseta completa» no cambia de meseta', (await page.textContent('.rep-card .rep-pass')).includes(m2));
+
+    // El menú «Exportar» ofrece la configuración PROPUESTA: M1, no la que se miró.
+    await page.click('#exportBtn');
+    const menuSet = await save(() => page.click('.export-menu [data-export="set"]'));
+    check('«Exportar → Configuración propuesta» baja M1', menuSet.includes(`M1-pass${m1}`), menuSet);
+    await page.click('#exportBtn');
+    const menuRefine = await save(() => page.click('.export-menu [data-export="refine"]'));
+    check('«Exportar → Rango de refinamiento» es el de M1', menuRefine.includes('M1-'), menuRefine);
+    await page.context().close();
+  }
+
+  section('3d. Sin forward no hay botones .set que solo darían error');
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [isXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    const visibleSet = async () => page.$$eval('#view [data-export="set"]', (bs) => bs.filter((b) => b.offsetParent !== null).length);
+    check('veredicto: ningún botón «Descargar .set»', await visibleSet() === 0);
+    await page.click('.nav-item[data-tab="plateaus"]');
+    await page.waitForSelector('.rep-card');
+    check('mesetas: ningún botón «Descargar .set»', await visibleSet() === 0);
+    check('pero sí el rango de refinamiento', await page.$$eval('.rep-card [data-export="refine"]', (bs) => bs.length) === 1);
+    check('y ningún error en pantalla', await page.$eval('#errorBox', (e) => e.hidden));
     await page.context().close();
   }
 

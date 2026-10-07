@@ -107,24 +107,26 @@ export function buildVerdict(ctx) {
       : '';
     if (per < 15) {
       add(SEV.CRITICAL, L(`Poca evidencia: ~${fmt(per, 0)} operaciones por parámetro`, `Thin evidence: ~${fmt(per, 0)} trades per parameter`),
-        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones: ~${fmt(per, 0)} por parámetro. Con esa proporción, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
-          `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades: ~${fmt(per, 0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`), null);
+        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones (mediana de las configuraciones probadas): ~${fmt(per, 0)} por parámetro. Con esa proporción, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
+          `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades (median of the tested configurations): ~${fmt(per, 0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`), null);
     } else if (per < 50) {
       add(SEV.WARN, L(`Evidencia limitada: ~${fmt(per, 0)} operaciones por parámetro`, `Limited evidence: ~${fmt(per, 0)} trades per parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Todo lo que sigue debe leerse como provisional.${extraEs}`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. Everything that follows should be read as provisional.${extraEn}`), null);
+        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Todo lo que sigue debe leerse como provisional.${extraEs}`,
+          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). Everything that follows should be read as provisional.${extraEn}`), null);
     } else if (per >= 100) {
       add(SEV.OK, L(`Operaciones de sobra: ~${fmt(per, 0)} por parámetro`, `Plenty of trades: ~${fmt(per, 0)} per parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs}. Con tantas operaciones por parámetro, el tamaño de la muestra no es el punto débil.`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn}. With this many trades per parameter, sample size is not the weak point.`), null);
+        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Con tantas operaciones por parámetro, el tamaño de la muestra no es el punto débil.`,
+          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). With this many trades per parameter, sample size is not the weak point.`), null);
     }
   }
 
   if (!plateaus.length && underpowered) {
-    // No es lo mismo "no hay meseta" que "no hay datos para saberlo".
+    // No es lo mismo "no hay meseta" que "no hay datos para saberlo". La cifra es la del
+    // conjunto donde se buscan las mesetas (`searchPassCount`), la misma que decide
+    // `underpowered` y que da el resumen: antes aquí salía la de los dos periodos, otra.
     add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to pronounce on'),
-      L(`Solo ${gatePassCount} configuraciones superan los mínimos; una meseta necesitaría al menos ${viableNeededForPlateau}, con vecinas que también cumplan. Esto no dice que tu EA sea malo: dice que estos datos no permiten afirmar nada. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
-        `Only ${gatePassCount} configurations clear the minimums; a plateau would need at least ${viableNeededForPlateau}, with neighbors that also pass. This does not say your EA is bad: it says these data cannot support any claim. Widen the parameter ranges, add intermediate values or relax the minimums, and optimize again.`), null);
+      L(`Solo ${searchPassCount} configuraciones superan los mínimos${hasForward && selectionMode === 'isThenOos' ? ' en el periodo optimizado' : ''}; una meseta necesitaría al menos ${viableNeededForPlateau}, con vecinas que también cumplan. Esto no dice que tu EA sea malo: dice que estos datos no permiten afirmar nada. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
+        `Only ${searchPassCount} configurations clear the minimums${hasForward && selectionMode === 'isThenOos' ? ' on the optimized period' : ''}; a plateau would need at least ${viableNeededForPlateau}, with neighbors that also pass. This does not say your EA is bad: it says these data cannot support any claim. Widen the parameter ranges, add intermediate values or relax the minimums, and optimize again.`), null);
   } else if (!plateaus.length) {
     add(SEV.CRITICAL, L('No se ha encontrado ninguna meseta', 'No plateau was found'),
       L('No hay ningún grupo de configuraciones vecinas que superen el umbral de robustez con soporte suficiente. Con datos suficientes para detectarlo, lo que hay son puntos sueltos, y un punto suelto no es un sistema: es una coincidencia.',

@@ -82,9 +82,9 @@ export function renderRepCard(a, p) {
     ${a.meta.hasForward ? `<p class="muted set-note">${esc(setCoverageNote(a, p, state.searchSet))}</p>` : ''}
     <div class="rep-actions">
       <button class="ghost-btn" data-copy="${p.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
-      <button class="ghost-btn" data-export="set">${L('Descargar .set', 'Download .set')}</button>
-      <button class="ghost-btn" data-export="refine">${L('.set de refinamiento', 'Refinement .set')}</button>
-      <button class="text-btn" data-plateau="0">${L('Ver la meseta completa &rarr;', 'View the full plateau &rarr;')}</button>
+      ${hasF ? `<button class="ghost-btn" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
+      <button class="ghost-btn" data-export="refine" data-plateau-index="${p.rank - 1}">${L('.set de refinamiento', 'Refinement .set')}</button>
+      <button class="text-btn" data-scroll="plateauSurfacePanel">${L('Ver la meseta completa &rarr;', 'View the full plateau &rarr;')}</button>
     </div>
   </div>`;
 }
@@ -156,8 +156,8 @@ export function renderPlateaus(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div>
         ${sparseSampling ? `<span class="status-pill warn-pill">${L('Recomendado', 'Recommended')}</span>` : ''}</div>
       <p class="panel-intro">${L(
-        `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Con la búsqueda completa no quedan huecos sin probar y la forma de la meseta se mide mejor. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configuraciones</strong>, un tamaño que se puede ejecutar de verdad.`,
-        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configurations</strong> — a size you can actually run.`,
+        `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Descarga el .set de refinamiento y cárgalo en la pestaña de parámetros de entrada del probador («Inputs»: clic derecho → «Cargar»): ya trae marcados los parámetros que hay que barrer, con su inicio, paso y fin. Con la búsqueda completa no quedan huecos sin probar y la forma de la meseta se mide mejor. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configuraciones</strong>, un tamaño que se puede ejecutar de verdad.`,
+        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. Download the refinement .set and load it in the tester's «Inputs» tab (right-click → «Load»): it already marks the parameters to sweep, with their start, step and stop. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configurations</strong> — a size you can actually run.`,
       )}</p>
       <div class="table-wrap"><table>
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Centro', 'Center')}</th><th>${L('Inicio', 'Start')}</th><th>${L('Paso', 'Step')}</th><th>${L('Fin', 'Stop')}</th><th>${L('Niveles', 'Levels')}</th></tr></thead>
@@ -174,7 +174,7 @@ export function renderPlateaus(a) {
               : `<td class="strong">${paramHtml(x.center)}</td><td>${paramHtml(x.start)}</td><td>${paramHtml(x.step)}</td><td>${paramHtml(x.stop)}</td><td>${int(x.levels)}</td>`}
         </tr>`).join('')}</tbody>
       </table></div>
-      <div class="rep-actions"><button class="ghost-btn" data-export="refine">${L('Descargar .set de refinamiento', 'Download refinement .set')}</button></div>
+      <div class="rep-actions"><button class="ghost-btn" data-export="refine" data-plateau-index="${sel.rank - 1}">${L('Descargar .set de refinamiento', 'Download refinement .set')}</button></div>
     </section>`;
 }
 
@@ -201,7 +201,7 @@ function surfaceAxisOptions(a, selected, excludeDim) {
 function renderPlateauSurfacePanel(a, plateau) {
   const nonConstant = a.sensitivity.filter((s) => !s.constant);
   if (nonConstant.length < 2) {
-    return `<section class="panel">
+    return `<section class="panel" id="plateauSurfacePanel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Visual', 'Visual')}</div><h2>${L('Cómo se ve tu meseta elegida', 'What your chosen plateau looks like')}</h2></div></div>
       <p class="muted">${L('Hacen falta al menos dos parámetros con varios valores para dibujar una superficie.', 'At least two parameters with several values are needed to draw a surface.')}</p>
     </section>`;
@@ -225,7 +225,7 @@ function renderPlateauSurfacePanel(a, plateau) {
       'Full grid for these two parameters: every cell is a real pass.',
     );
 
-  return `<section class="panel">
+  return `<section class="panel" id="plateauSurfacePanel">
     <div class="panel-head compact">
       <div><div class="panel-kicker">${L('Visual', 'Visual')}</div><h2>${L('Cómo se ve tu meseta elegida', 'What your chosen plateau looks like')}</h2></div>
       <div class="surface-axes">

@@ -7,6 +7,8 @@ import { parseBacktestReport, parseBacktestReportGrid, compareParams } from '../
 import { compareOtherParams } from '../core/setfile.js';
 import { parseXmlSpreadsheet } from '../core/parse.js';
 import { auditUnseenTrades } from '../core/trades/from-deals.js';
+import { bpToPoints } from '../core/trades/costs.js';
+import { MIN_SAMPLE_DAYS } from '../core/trades/sample.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
 
@@ -162,6 +164,12 @@ export function renderReportCard(a, plateau) {
         <strong>${L('No se han podido leer los parámetros de este informe.', 'The parameters of this report could not be read.')}</strong>
         ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que el resultado no sube el nivel de evidencia.', 'Without them it cannot be checked that the backtest is of the proposed configuration, so the result does not raise the evidence level.')}
       </div>`
+    : cmp.missing.length
+      ? `<div class="inline-warn report-mismatch">
+        <strong>${L(`Al informe le faltan ${int(cmp.missing.length)} de los ${int(a.meta.paramNames.length)} parámetros optimizados.`, `The report is missing ${int(cmp.missing.length)} of the ${int(a.meta.paramNames.length)} optimized parameters.`)}</strong>
+        ${cmp.missing.slice(0, 8).map((n) => `<code>${esc(n)}</code>`).join(', ')}${cmp.missing.length > 8 ? L(` y ${cmp.missing.length - 8} más`, ` and ${cmp.missing.length - 8} more`) : ''}.
+        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que el resultado no sube el nivel de evidencia.', 'Without them it cannot be checked that the backtest is of the proposed configuration (another EA version, or a different parameter name?), so the result does not raise the evidence level.')}
+      </div>`
     : cmp.same.length
       ? `<div class="report-ok">${L(
         `Los ${int(cmp.same.length)} parámetros del informe coinciden con la configuración propuesta.`,
@@ -228,7 +236,7 @@ export function renderTradesAudit() {
     return `<section class="panel"><div class="panel-head compact"><div><h2>${L('Desde tus operaciones', 'From your trades')}</h2></div></div><p class="muted">${esc(reason)}</p></section>`;
   }
 
-  const { bootstrap: bs, sample: sa, costs, breakEven, warnings } = aud;
+  const { bootstrap: bs, sample: sa, costs, breakEven, warnings, contract } = aud;
 
   // El bootstrap acorta cada horizonte a los días que de verdad hay (core/trades/
   // bootstrap.js: h = min(dias, 63|126|252)). Con menos de 63 días los tres horizontes
@@ -265,10 +273,19 @@ export function renderTradesAudit() {
   const losing = sufficient && Number.isFinite(sa.sharpe) && sa.sharpe < 0;
   const sampleRow = `<div class="evidence-list">
       <div><span>${L('Días de datos', 'Days of data')}</span><strong>${int(sa.n)}</strong></div>
-      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable ? pct(sa.power.power) : '—'}</strong></div>
+      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable && sa.reason !== 'few_days' ? pct(sa.power.power) : '—'}</strong></div>
       <div><span>${L('Intervalo de confianza del resultado diario medio', 'Confidence interval of the average daily result')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 2)} &ndash; ${num(sa.meanCi.ci.p95, 2)}` : '—'}</strong></div>
     </div>
-    <p class="chart-note">${losing
+    <p class="chart-note">${sa.reason === 'few_days'
+      ? L(
+        `Con <strong>menos de ${MIN_SAMPLE_DAYS} días</strong> no se calcula si el resultado medio se distingue de cero: el
+        cálculo se apoya en una aproximación que con tan pocos datos no es fiable. No es un veredicto negativo:
+        hace falta un tramo más largo para decir algo.`,
+        `With <strong>fewer than ${MIN_SAMPLE_DAYS} days</strong> it is not computed whether the average result is
+        distinguishable from zero: the calculation relies on an approximation that is not reliable with so few
+        data. It isn't a negative verdict: a longer segment is needed to say anything.`,
+      )
+      : losing
       ? L(
         'Con estos días, el resultado medio diario se distingue de cero con razonable seguridad, <strong>pero por debajo</strong>: en este periodo la estrategia pierde dinero.',
         'With this many days, the average daily result is distinguishable from zero with reasonable confidence, <strong>but below it</strong>: in this period the strategy loses money.',
@@ -287,31 +304,67 @@ export function renderTradesAudit() {
         sample size.`,
       )}</p>`;
 
-  const scenLabel = { base: L('Base (tal cual)', 'Base (as is)'), moderate: L('Moderado', 'Moderate'), severe: L('Severo', 'Severe') };
-  const costRows = ['base', 'moderate', 'severe'].map((k) => {
+  // Escenarios en puntos básicos del precio (core/trades/costs.js): comparables entre
+  // instrumentos y con cualquier lote. Con un solo símbolo se dice además cuántos puntos
+  // del instrumento son, que es como se lee el spread en MT5.
+  const symName = contract ? esc(contract.symbol || L('el instrumento', 'the instrument')) : '';
+  const pts = (bp) => {
+    const p = bpToPoints(bp, contract);
+    return Number.isFinite(p) ? ` <em>${L(`≈ ${num(p, p < 10 ? 1 : 0)} puntos de ${symName}`, `≈ ${num(p, p < 10 ? 1 : 0)} ${symName} points`)}</em>` : '';
+  };
+  const scenLabel = {
+    base: () => L('Base (tal cual)', 'Base (as is)'),
+    moderate: (bp) => L(`Moderado: +${num(bp, 0)} pb del precio por operación`, `Moderate: +${num(bp, 0)} bp of price per trade`),
+    severe: (bp) => L(`Severo: +${num(bp, 0)} pb del precio por operación`, `Severe: +${num(bp, 0)} bp of price per trade`),
+  };
+  // Solo tiene sentido si hay ventaja que anular (neto positivo).
+  const beOk = breakEven.usable && breakEven.net > 0;
+  const beParts = [];
+  if (beOk && Number.isFinite(breakEven.points)) {
+    beParts.push(L(`${num(breakEven.points, breakEven.points < 10 ? 1 : 0)} puntos de ${symName}`, `${num(breakEven.points, breakEven.points < 10 ? 1 : 0)} ${symName} points`));
+  }
+  if (beOk && Number.isFinite(breakEven.bp)) beParts.push(L(`${num(breakEven.bp, 1)} pb del precio`, `${num(breakEven.bp, 1)} bp of price`));
+  if (beOk && Number.isFinite(breakEven.perLot)) beParts.push(L(`${num(breakEven.perLot, 2)} por lote`, `${num(breakEven.perLot, 2)} per lot`));
+  const beText = beParts.length
+    ? L(` El coste extra por operación que anularía toda la ventaja es de <strong>${beParts.join(' · ')}</strong>: compáralo con el spread y la comisión de tu bróker.`,
+      ` The extra cost per trade that would wipe out the whole edge is <strong>${beParts.join(' · ')}</strong>: compare it with your broker's spread and commission.`)
+    : '';
+
+  const costs2 = costs
+    ? `<div class="table-wrap"><table>
+      <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Caída máx. (dinero)', 'Max drop (money)')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
+      <tbody>${['base', 'moderate', 'severe'].map((k) => {
     const c = costs[k];
     return `<tr>
-      <td class="strong">${scenLabel[k]}</td>
+      <td class="strong">${scenLabel[k](c.bp)}${k === 'base' ? '' : pts(c.bp)}</td>
       <td>${num(c.stressedNet, 2)}</td>
       <td>${pct(c.degradation, 1)}</td>
       <td>${num(c.maxDrawdownStressed, 2)}</td>
       <td><span class="badge ${c.stillProfitable ? 'ok' : 'bad'}">${c.stillProfitable ? L('sí', 'yes') : L('no', 'no')}</span></td>
     </tr>`;
-  }).join('');
-
-  const costs2 = `<div class="table-wrap"><table>
-      <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Caída máx. (dinero)', 'Max drop (money)')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
-      <tbody>${costRows}</tbody>
+  }).join('')}</tbody>
     </table></div>
     <p class="chart-note">${L(
-      `Resta spread, slippage y comisión extra a cada operación (escenarios orientativos, no los costes
-      exactos de tu bróker) y recalcula. El escenario base es tal cual lo mediste; moderado y severo
-      preguntan qué pasa si tus costes reales en vivo son peores que los que usaste al optimizar.
-      ${breakEven.usable ? `El coste extra por operación que anularía toda la ventaja es de <strong>${num(breakEven.breakEven, 2)}</strong>.` : ''}`,
-      `Subtracts extra spread, slippage and commission from every trade (orientative scenarios, not your
-      broker's exact costs) and recalculates. The base scenario is as measured; moderate and severe ask
-      what happens if your real live costs are worse than the ones you optimized with.
-      ${breakEven.usable ? `The extra cost per trade that would wipe out the whole edge is <strong>${num(breakEven.breakEven, 2)}</strong>.` : ''}`,
+      `Resta a cada operación un coste extra (spread, slippage y comisión juntos) proporcional a su tamaño:
+      1 pb (punto básico, 0,01 % del precio) es ~1 pip en EURUSD o ~0,20 en el oro a 2.000. El valor de cada
+      movimiento de precio se deduce de tus propias operaciones, así que el coste crece con el lote como el
+      real. Son escenarios orientativos, no los costes exactos de tu bróker: preguntan qué pasa si tus costes
+      en vivo son peores que los que usaste al probar.${beText}`,
+      `Subtracts from every trade an extra cost (spread, slippage and commission together) proportional to its
+      size: 1 bp (basis point, 0.01% of price) is ~1 pip on EURUSD or ~0.20 on gold at 2,000. The value of each
+      price move is derived from your own trades, so the cost grows with the lot size like the real one. These
+      are orientative scenarios, not your broker's exact costs: they ask what happens if your live costs are
+      worse than the ones you tested with.${beText}`,
+    )}</p>`
+    : `<p class="chart-note">${L(
+      `No se ha podido deducir cuánto vale en dinero un movimiento del precio en este instrumento (hace falta
+      la columna Precio del informe y al menos 5 operaciones con su apertura y su cierre). Sin ese dato, un
+      coste fijo en dinero significaría cosas distintas según el símbolo y el lote, así que no se simulan
+      escenarios.${beText}`,
+      `It was not possible to derive how much a price move is worth in money on this instrument (it needs the
+      report's Price column and at least 5 trades with their opening and closing). Without that, a fixed cost
+      in money would mean different things depending on the symbol and the lot size, so no scenarios are
+      simulated.${beText}`,
     )}</p>`;
 
   // `dataWarnings` (core/trades/risk.js) es un módulo puro y devuelve `detail` en un
@@ -428,7 +481,7 @@ export function renderUnseen(a) {
 
   const params = `<section class="panel">
     <div class="panel-head compact"><div><div class="panel-kicker">${L('Recordatorio', 'Reminder')}</div><h2>${L('Configuración que debes probar', 'Configuration you must test')}</h2></div>
-      <button class="ghost-btn" data-export="set" data-plateau-index="${idx}">${L('Descargar .set', 'Download .set')}</button></div>
+      ${a.meta.hasForward ? `<button class="ghost-btn" data-export="set" data-plateau-index="${idx}">${L('Descargar .set', 'Download .set')}</button>` : ''}</div>
     <div class="param-grid">
       ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramHtml(p.record.params[j])}</strong></div>`).join('')}
     </div>
@@ -439,21 +492,34 @@ export function renderUnseen(a) {
   // Si el informe es de OTRA configuracion, el contraste es aritmeticamente correcto
   // pero no valida nada: seria enganoso ensenarlo en verde. Se degrada a aviso y se
   // dice por que.
-  const paramsOk = !state.report || !compareParams(state.report.params, a.meta.paramNames, p.record.params).different.length;
+  // Lo mismo si no se puede comprobar: sin parámetros leídos, o faltan algunos de los
+  // optimizados. El nivel de evidencia ya no subía (holdoutFact), pero el sello salía en
+  // verde, y la pantalla se contradecía.
+  const pcmp = state.report ? compareParams(state.report.params, a.meta.paramNames, p.record.params) : null;
+  const paramsDiffer = Boolean(pcmp && pcmp.different.length);
+  const paramsUnverified = Boolean(pcmp && !paramsDiffer && !pcmp.matches);
+  const paramsOk = !paramsDiffer && !paramsUnverified;
   const cls = !paramsOk ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
   const stamp = !paramsOk ? L('No valida', 'Does not validate')
     : res.level === 'outside' ? L('Fuera de rango', 'Out of range')
       : res.level === 'tail' ? L('En el límite', 'At the edge') : L('No contradice lo visto', 'Not contradicted');
-  const headline = paramsOk ? res.headline : L('Estas cifras son de otra configuración', 'These figures are from another configuration');
+  const headline = paramsOk ? res.headline
+    : paramsDiffer ? L('Estas cifras son de otra configuración', 'These figures are from another configuration')
+      : L('No consta que estas cifras sean de la configuración propuesta', 'It is not confirmed that these figures are from the proposed configuration');
   const subline = paramsOk
     ? L(
       `Contrastado con ${int(res.reference.observations)} observaciones de la meseta: ${int(res.reference.members)} configuraciones equivalentes por ${res.reference.periods.length} periodo(s).`,
       `Contrasted with ${int(res.reference.observations)} plateau observations: ${int(res.reference.members)} equivalent configurations across ${res.reference.periods.length} period(s).`,
     )
-    : L(
-      'El backtest se lanzó con parámetros distintos de los propuestos, así que este contraste no dice nada sobre la configuración que estás validando. Vuelve a lanzarlo en MT5 con el .set correcto.',
-      'The backtest was run with parameters different from those proposed, so this contrast says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.',
-    );
+    : paramsDiffer
+      ? L(
+        'El backtest se lanzó con parámetros distintos de los propuestos, así que este contraste no dice nada sobre la configuración que estás validando. Vuelve a lanzarlo en MT5 con el .set correcto.',
+        'The backtest was run with parameters different from those proposed, so this contrast says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.',
+      )
+      : L(
+        'En el informe no están todos los parámetros optimizados, así que no se puede comprobar que el backtest sea de la configuración propuesta. Las cifras se muestran, pero no validan nada hasta que eso se pueda comprobar.',
+        'The report does not contain all the optimized parameters, so it cannot be checked that the backtest is of the proposed configuration. The figures are shown, but they validate nothing until that can be checked.',
+      );
 
   const statusMap = unseenStatus();
   const rows = res.results.map((r) => {
@@ -462,7 +528,7 @@ export function renderUnseen(a) {
       <td class="u-label">${esc(r.label)}${r.scaled ? `<span class="u-scaled" title="${esc(L('Corregido por la duración del periodo', 'Corrected for period duration'))}">&#8597;</span>` : ''}</td>
       <td class="strong">${num(r.value, r.digits)}</td>
       <td class="u-band">${unseenBand(r)}</td>
-      <td class="u-range">${num(r.band.q10, r.digits)} &ndash; ${num(r.band.q90, r.digits)}<small>${L('visto', 'seen')}: ${num(r.band.min, r.digits)} ${L('a', 'to')} ${num(r.band.max, r.digits)}</small></td>
+      <td class="u-range">${num(r.band.q10, r.digits)} &ndash; ${num(r.band.q90, r.digits)}<small>${L('extremos', 'extremes')}: ${num(r.band.min, r.digits)} ${L('a', 'to')} ${num(r.band.max, r.digits)}</small></td>
       <td><span class="badge ${st[0] === 'ok' ? 'ok' : st[0] === 'warn' ? 'warn' : 'bad'}">${st[1]}</span></td>
     </tr>`;
   }).join('');
@@ -478,7 +544,7 @@ export function renderUnseen(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>
       <div class="table-wrap"><table class="u-table">
-        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango que el EA ya demostró', 'Range the EA already showed')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
+        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango que el EA ya demostró, ajustado a tu tramo', 'Range the EA already showed, adjusted to your segment')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
       <p class="chart-note">

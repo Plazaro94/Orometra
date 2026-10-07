@@ -82,13 +82,21 @@ export function minBtl({ srObserved, nTrials = 1, targetPower = 0.8 }) {
   };
 }
 
+/**
+ * Por debajo de 30 días la aproximación normal del contraste no es fiable. Antes ese suelo
+ * quedaba escondido dentro de `minBtl` y la pantalla podía enseñar «potencia 99 %» junto a
+ * «no se distingue de cero». Ahora se dice explícitamente (`reason: 'few_days'`).
+ */
+export const MIN_SAMPLE_DAYS = 30;
+
 export function sampleAudit(returns, opts = {}) {
   const n = returns.filter(Number.isFinite).length;
   const sr = sharpe(returns);
   const pow = powerAgainstZero(returns, opts.alpha);
   const ci = meanConfidenceInterval(returns, opts);
   const btl = minBtl({ srObserved: sr, nTrials: opts.nTrials ?? 1 });
-  const insufficient = !pow.sufficient || (btl.usable && n < btl.minObservations);
+  const fewDays = n < MIN_SAMPLE_DAYS;
+  const insufficient = fewDays || !pow.sufficient || (btl.usable && n < btl.minObservations);
   return {
     n,
     sharpe: sr,
@@ -96,5 +104,6 @@ export function sampleAudit(returns, opts = {}) {
     meanCi: ci,
     minBtl: btl,
     verdictHint: insufficient ? 'insufficient_evidence' : 'sample_ok',
+    reason: fewDays ? 'few_days' : insufficient ? 'low_power' : null,
   };
 }

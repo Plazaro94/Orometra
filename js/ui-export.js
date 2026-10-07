@@ -4,7 +4,7 @@ import { track } from './track.js';
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { t, L, localeTag } from './i18n.js';
 import { state, api, $, esc, paramValue } from './ui-state.js';
-import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights } from './ui-verdict.js';
+import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights, nextStepText } from './ui-verdict.js';
 
 const plain = (s) => String(s ?? '').replace(/<[^>]+>/g, '');
 
@@ -27,7 +27,9 @@ export function buildPlainSummary(a) {
   lines.push(L('RESUMEN OROMETRA', 'OROMETRA SUMMARY'));
   lines.push('='.repeat(40));
   lines.push('');
-  lines.push(`${c.label}: ${plain(dv.headline)}`);
+  // El titular ya empieza casi siempre por el nivel («Evidencia buena: …»): no se repite.
+  const headline = plain(dv.headline);
+  lines.push(headline.toLowerCase().startsWith(String(c.label).toLowerCase()) ? headline : `${c.label}: ${headline}`);
   if (dv.summary) lines.push(plain(dv.summary));
   lines.push('');
 
@@ -64,7 +66,8 @@ export function buildPlainSummary(a) {
   lines.push('');
 
   lines.push(L('QUÉ HACER AHORA', 'WHAT TO DO NOW'));
-  lines.push(plain(a.verdict.nextStep));
+  // El mismo siguiente paso que la pantalla: cambia cuando ya se ha probado el periodo no visto.
+  lines.push(plain(nextStepText(a, hold)));
   lines.push('');
 
   lines.push('-'.repeat(40));
@@ -146,7 +149,10 @@ export function toggleExportMenu() {
     <button data-export="refine">${esc(t('export.refine'))}</button>`;
   $('.top-actions').appendChild(menu);
   menu.querySelectorAll('[data-export]').forEach((b) => b.addEventListener('click', () => {
-    doExport(b.dataset.export);
+    // El menú ofrece la configuración PROPUESTA (M1), no la última meseta que se miró en
+    // la pestaña de mesetas: si no, tras abrir una alternativa se bajaba el .set de M2
+    // con la etiqueta «propuesta». Las fichas de cada meseta tienen su propio botón.
+    doExport(b.dataset.export, 0);
     menu.remove();
   }));
   // Un único punto de cierre: así no se acumula un listener por cada apertura.

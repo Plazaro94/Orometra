@@ -98,7 +98,7 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
 - **Calificación de la FUERZA DE LA EVIDENCIA** («Fiabilidad»), no de la estrategia, en cinco
   niveles: insuficiente, débil, moderada, buena y sólida. «Buena» es el tope mientras falte
   el periodo no visto, porque el forward ya se usó para elegir; solo un periodo no visto
-  que lo confirme lleva a «sólida». La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
+  que no lo contradiga lleva a «sólida». La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
   contienen unos datos, no si un EA va a funcionar. Distingue «no hay región conexa»
   de «no hay datos suficientes para saberlo», que son hechos, y deja la decisión al usuario.
 - **Lectura del informe de backtest de MT5** (`Informe → HTML`): se suelta en la app y
@@ -114,8 +114,9 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   por bootstrap estacionario (Politis & Romano 1994) sobre el periodo no visto —
   distribución de resultado, drawdown esperado y probabilidad de pérdida a 3/6/12 meses,
   solo cuando el tramo cubre ese horizonte entero—, tamaño de muestra y potencia
-  estadística, stress de costes (spread/slippage/comisión extra, por escenarios, con
-  punto de equilibrio) y aviso si el swap pesa una parte grande del resultado neto.
+  estadística, stress de costes (coste extra por operación en puntos básicos del precio,
+  con el valor del contrato deducido de las propias operaciones, así que no depende del
+  instrumento ni del lote; con punto de equilibrio en puntos del instrumento) y aviso si el swap pesa una parte grande del resultado neto.
 - Exportación: `.set` de la configuración propuesta, `.set` de **rango de refinamiento**
   acotado a un número de combinaciones ejecutable, informe JSON (con el nivel de evidencia que
   se muestra en pantalla y, aparte, el del motor) y CSV completo en el formato numérico del

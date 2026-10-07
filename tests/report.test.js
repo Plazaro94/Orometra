@@ -8,6 +8,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { auditUnseenTrades } from '../core/trades/from-deals.js';
 import { parseBacktestReport, parseBacktestReportGrid, gridLooksLikeReport, looksLikeReport, compareParams } from '../core/report.js';
 import { parseXmlSpreadsheet } from '../core/parse.js';
 
@@ -92,6 +93,9 @@ section('1. Informe sintetico');
   check('recupera las 40 operaciones cerradas', r.deals.length === 40, String(r.deals.length));
   // Lo importante: el neto de cada operacion incluye la comision de su apertura, que va
   // en otra fila. Si no se arrastrase, la suma no cuadraria con el informe.
+  // Cada cierre se empareja con su apertura (1.1000 -> 1.1050, comprado, 0,5 lotes).
+  check('cierre emparejado con su apertura', r.deals.every((d) => d.openPrice === 1.1 && d.price === 1.105 && d.positionSide === 'buy' && d.closedVolume === 0.5 && d.symbol === 'EURUSD' && d.digits === 4),
+    JSON.stringify(r.deals[0]));
   const net = r.deals.reduce((a, d) => a + d.net, 0);
   check('la suma de los netos reproduce el beneficio del informe',
     Math.abs(net - netProfit) < 0.01, `${net.toFixed(2)} vs ${netProfit.toFixed(2)}`);
@@ -138,6 +142,78 @@ section('2. Comparacion de parametros');
     JSON.stringify(distinto.different));
   const falta = compareParams(reportParams, ['InpA', 'InpZ'], [10, 1]);
   check('detecta un parametro ausente', falta.missing.includes('InpZ'), JSON.stringify(falta.missing));
+  check('un parametro ausente no cuenta como coincidencia', !falta.matches);
+  const ninguno = compareParams({}, ['InpA', 'InpB'], [10, 1]);
+  check('sin parametros leidos no coincide', !ninguno.matches && ninguno.missing.length === 2);
+}
+
+section('2b. Emparejado de operaciones para el stress de costes');
+{
+  // Informe mínimo con la tabla de transacciones; `rows`: {t, type, dir, vol, price, profit}.
+  const mini = (rows) => `<!DOCTYPE html><html><body><div>Informe del Probador de Estrategias</div><table>
+<tr><td>Experto:</td><td><b>X</b></td></tr><tr><td>Beneficio Neto:</td><td>1</td></tr></table><table>
+<tr><th>Fecha/Hora</th><th>Transacci&oacute;n</th><th>S&iacute;mbolo</th><th>Tipo</th><th>Direcci&oacute;n</th><th>Volumen</th><th>Precio</th><th>Orden</th><th>Comisi&oacute;n</th><th>Swap</th><th>Beneficio</th><th>Balance</th><th>Comentario</th></tr>
+${rows.map((r, i) => `<tr><td>${r.t}</td><td>${i + 2}</td><td>EURUSD</td><td>${r.type}</td><td>${r.dir}</td><td>${r.vol}</td><td>${r.price}</td><td>${i}</td><td>0.00</td><td>0.00</td><td>${(r.profit ?? 0).toFixed(2)}</td><td>1000</td><td></td></tr>`).join('\n')}
+</table></body></html>`;
+  const day = (k) => {
+    const d = new Date(Date.UTC(2024, 0, 1) + k * 86400000);
+    return `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCDate()).padStart(2, '0')} 10:00:00`;
+  };
+  // Estrategia que siempre se da la vuelta: escrita como «out» + «in» o como «in/out».
+  const flips = (sar, { types = ['buy', 'sell'] } = {}) => {
+    const [B, S] = types;
+    const rows = [{ t: day(0), type: B, dir: 'in', vol: 1, price: '1.10000' }];
+    let p = 1.1;
+    let long = true;
+    for (let k = 0; k < 120; k++) {
+      const move = k % 3 ? 0.001 : -0.0006;
+      const np = long ? p + move : p - move;
+      const closeType = long ? S : B;
+      const profit = move * 100000;
+      if (sar) rows.push({ t: day(k + 1), type: closeType, dir: 'in/out', vol: 2, price: np.toFixed(5), profit });
+      else {
+        rows.push({ t: day(k + 1), type: closeType, dir: 'out', vol: 1, price: np.toFixed(5), profit });
+        rows.push({ t: day(k + 1), type: closeType, dir: 'in', vol: 1, price: np.toFixed(5) });
+      }
+      p = np;
+      long = !long;
+    }
+    return auditUnseenTrades(parseBacktestReport(mini(rows), 'x.html').deals);
+  };
+  const plain = flips(false);
+  const sar = flips(true);
+  check('valor del contrato deducido (≈100.000)', plain.contract && Math.abs(plain.contract.valuePerPriceUnit / 100000 - 1) < 0.01, JSON.stringify(plain.contract));
+  check('una reversión «in/out» da el mismo punto de equilibrio que «out» + «in»',
+    Math.abs(sar.breakEven.points - plain.breakEven.points) < 1e-6, `${sar.breakEven.points} vs ${plain.breakEven.points}`);
+  check('y la misma degradación en el escenario moderado',
+    Math.abs(sar.costs.moderate.degradation - plain.costs.moderate.degradation) < 1e-9);
+  // Un cierre «out by» al principio y después operaciones normales con el precio cambiando de
+  // una a otra: si el «out by» no saca sus posiciones de la cola, cada cierre se empareja con
+  // la apertura anterior a la suya y no sale ningún valor del contrato coherente.
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const rowsOutBy = [
+    { t: day(0), type: 'buy', dir: 'in', vol: 1, price: '1.05000' },
+    { t: day(0), type: 'sell', dir: 'in', vol: 1, price: '1.05000' },
+    { t: day(0), type: 'buy', dir: 'out by', vol: 1, price: '1.05000', profit: 0 },
+    { t: day(0), type: 'sell', dir: 'out by', vol: 1, price: '1.05000', profit: 0 },
+  ];
+  let px = 1.1;
+  for (let k = 1; k < 80; k++) {
+    px += (rnd() - 0.5) * 0.01;
+    const move = (rnd() - 0.4) * 0.004;
+    rowsOutBy.push({ t: day(k), type: 'buy', dir: 'in', vol: 1, price: px.toFixed(5) });
+    rowsOutBy.push({ t: day(k), type: 'sell', dir: 'out', vol: 1, price: (px + move).toFixed(5), profit: Math.round(move * 1e7) / 100 });
+  }
+  const outBy = auditUnseenTrades(parseBacktestReport(mini(rowsOutBy), 'x.html').deals);
+  check('un «out by» no descoloca el emparejado de lo que viene después', outBy.contract && Math.abs(outBy.contract.valuePerPriceUnit / 100000 - 1) < 0.01, JSON.stringify(outBy.contract));
+  const de = flips(false, { types: ['Kauf', 'Verkauf'] });
+  check('tipos en alemán: «Verkauf» es venta, no compra', de.contract && Math.abs(de.contract.valuePerPriceUnit / 100000 - 1) < 0.01, JSON.stringify(de.contract));
+  const artefact = parseBacktestReport(mini([
+    { t: day(0), type: 'buy', dir: 'in', vol: 1, price: '1.0876500000000001' },
+    { t: day(1), type: 'sell', dir: 'out', vol: 1, price: '1.0886500000000001', profit: 100 },
+  ]), 'x.html').deals[0];
+  check('un precio con artefacto de coma flotante no inventa el tamaño del punto', Number.isNaN(artefact.digits), String(artefact.digits));
 }
 
 section('3. Rechazo de ficheros que no son informes');
