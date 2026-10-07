@@ -82,6 +82,9 @@ export function holdoutFact(a) {
     problem = L('El informe es de otra configuración: no valida la propuesta.', 'The report is from another configuration: it does not validate the proposal.');
   } else if (cmp && !cmp.same.length) {
     problem = L('No se han podido leer los parámetros del informe, así que no consta que sea de la configuración propuesta.', 'The report parameters could not be read, so it is not confirmed that it comes from the proposed configuration.');
+  } else if (cmp && cmp.missing.length) {
+    problem = L(`Al informe le faltan parámetros optimizados (${cmp.missing.slice(0, 4).join(', ')}${cmp.missing.length > 4 ? '…' : ''}), así que no consta que sea de la configuración propuesta.`,
+      `The report is missing optimized parameters (${cmp.missing.slice(0, 4).join(', ')}${cmp.missing.length > 4 ? '…' : ''}), so it is not confirmed that it comes from the proposed configuration.`);
   } else if (idx > 0) {
     problem = L(`Se evaluó la meseta ${idx + 1}, no la recomendada (la 1).`, `Plateau ${idx + 1} was evaluated, not the recommended one (plateau 1).`);
   }

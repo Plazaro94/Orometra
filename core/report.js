@@ -406,5 +406,7 @@ export function compareParams(reportParams, names, values) {
       : a === b;
     (equal ? same : different).push({ name, report: reportParams[name], expected: values[j] });
   });
-  return { same, different, missing, matches: different.length === 0 && missing.length < names.length };
+  // Coincide solo si TODOS los parámetros optimizados están en el informe y son iguales: un
+  // parámetro que falta no se puede comprobar, y antes contaba como coincidencia.
+  return { same, different, missing, matches: names.length > 0 && different.length === 0 && missing.length === 0 };
 }

@@ -79,11 +79,18 @@ export const rawValue = (v) => {
   return String(v);
 };
 
+/**
+ * Valor de un PARÁMETRO tal como se escribe en MT5: exacto, con punto decimal y sin
+ * separador de millares, igual que en el .set (js/export.js#formatSetValue). No se
+ * formatea con el idioma: es una cifra que el usuario va a teclear en el probador, y
+ * redondearla a 4 decimales o escribirla con coma («0,0002» por 0.00015, «1,5») le hacía
+ * copiar en MT5 un valor distinto del recomendado.
+ */
 export const paramValue = (v) => {
   if (typeof v === 'boolean') return v ? 'true' : 'false';
   if (typeof v === 'string') return v;
   if (!Number.isFinite(v)) return '—';
-  return Number.isInteger(v) ? String(v) : nf(4).format(v).replace(/,?0+$/, '');
+  return Number.isInteger(v) ? String(v) : String(Number(v.toFixed(8)));
 };
 
 /**

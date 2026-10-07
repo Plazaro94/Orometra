@@ -121,10 +121,12 @@ export function buildVerdict(ctx) {
   }
 
   if (!plateaus.length && underpowered) {
-    // No es lo mismo "no hay meseta" que "no hay datos para saberlo".
+    // No es lo mismo "no hay meseta" que "no hay datos para saberlo". La cifra es la del
+    // conjunto donde se buscan las mesetas (`searchPassCount`), la misma que decide
+    // `underpowered` y que da el resumen: antes aquí salía la de los dos periodos, otra.
     add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to pronounce on'),
-      L(`Solo ${gatePassCount} configuraciones superan los mínimos; una meseta necesitaría al menos ${viableNeededForPlateau}, con vecinas que también cumplan. Esto no dice que tu EA sea malo: dice que estos datos no permiten afirmar nada. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
-        `Only ${gatePassCount} configurations clear the minimums; a plateau would need at least ${viableNeededForPlateau}, with neighbors that also pass. This does not say your EA is bad: it says these data cannot support any claim. Widen the parameter ranges, add intermediate values or relax the minimums, and optimize again.`), null);
+      L(`Solo ${searchPassCount} configuraciones superan los mínimos${hasForward && selectionMode === 'isThenOos' ? ' en el periodo optimizado' : ''}; una meseta necesitaría al menos ${viableNeededForPlateau}, con vecinas que también cumplan. Esto no dice que tu EA sea malo: dice que estos datos no permiten afirmar nada. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
+        `Only ${searchPassCount} configurations clear the minimums${hasForward && selectionMode === 'isThenOos' ? ' on the optimized period' : ''}; a plateau would need at least ${viableNeededForPlateau}, with neighbors that also pass. This does not say your EA is bad: it says these data cannot support any claim. Widen the parameter ranges, add intermediate values or relax the minimums, and optimize again.`), null);
   } else if (!plateaus.length) {
     add(SEV.CRITICAL, L('No se ha encontrado ninguna meseta', 'No plateau was found'),
       L('No hay ningún grupo de configuraciones vecinas que superen el umbral de robustez con soporte suficiente. Con datos suficientes para detectarlo, lo que hay son puntos sueltos, y un punto suelto no es un sistema: es una coincidencia.',

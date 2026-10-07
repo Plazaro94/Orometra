@@ -4,7 +4,7 @@ import { track } from './track.js';
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { t, L, localeTag } from './i18n.js';
 import { state, api, $, esc, paramValue } from './ui-state.js';
-import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights } from './ui-verdict.js';
+import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights, nextStepText } from './ui-verdict.js';
 
 const plain = (s) => String(s ?? '').replace(/<[^>]+>/g, '');
 
@@ -64,7 +64,8 @@ export function buildPlainSummary(a) {
   lines.push('');
 
   lines.push(L('QUÉ HACER AHORA', 'WHAT TO DO NOW'));
-  lines.push(plain(a.verdict.nextStep));
+  // El mismo siguiente paso que la pantalla: cambia cuando ya se ha probado el periodo no visto.
+  lines.push(plain(nextStepText(a, hold)));
   lines.push('');
 
   lines.push('-'.repeat(40));

@@ -163,6 +163,12 @@ export function renderReportCard(a, plateau) {
         <strong>${L('No se han podido leer los parámetros de este informe.', 'The parameters of this report could not be read.')}</strong>
         ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que el resultado no sube el nivel de evidencia.', 'Without them it cannot be checked that the backtest is of the proposed configuration, so the result does not raise the evidence level.')}
       </div>`
+    : cmp.missing.length
+      ? `<div class="inline-warn report-mismatch">
+        <strong>${L(`Al informe le faltan ${int(cmp.missing.length)} de los ${int(a.meta.paramNames.length)} parámetros optimizados.`, `The report is missing ${int(cmp.missing.length)} of the ${int(a.meta.paramNames.length)} optimized parameters.`)}</strong>
+        ${cmp.missing.slice(0, 8).map((n) => `<code>${esc(n)}</code>`).join(', ')}${cmp.missing.length > 8 ? L(` y ${cmp.missing.length - 8} más`, ` and ${cmp.missing.length - 8} more`) : ''}.
+        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que el resultado no sube el nivel de evidencia.', 'Without them it cannot be checked that the backtest is of the proposed configuration (another EA version, or a different parameter name?), so the result does not raise the evidence level.')}
+      </div>`
     : cmp.same.length
       ? `<div class="report-ok">${L(
         `Los ${int(cmp.same.length)} parámetros del informe coinciden con la configuración propuesta.`,
@@ -476,21 +482,34 @@ export function renderUnseen(a) {
   // Si el informe es de OTRA configuracion, el contraste es aritmeticamente correcto
   // pero no valida nada: seria enganoso ensenarlo en verde. Se degrada a aviso y se
   // dice por que.
-  const paramsOk = !state.report || !compareParams(state.report.params, a.meta.paramNames, p.record.params).different.length;
+  // Lo mismo si no se puede comprobar: sin parámetros leídos, o faltan algunos de los
+  // optimizados. El nivel de evidencia ya no subía (holdoutFact), pero el sello salía en
+  // verde, y la pantalla se contradecía.
+  const pcmp = state.report ? compareParams(state.report.params, a.meta.paramNames, p.record.params) : null;
+  const paramsDiffer = Boolean(pcmp && pcmp.different.length);
+  const paramsUnverified = Boolean(pcmp && !paramsDiffer && !pcmp.matches);
+  const paramsOk = !paramsDiffer && !paramsUnverified;
   const cls = !paramsOk ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
   const stamp = !paramsOk ? L('No valida', 'Does not validate')
     : res.level === 'outside' ? L('Fuera de rango', 'Out of range')
       : res.level === 'tail' ? L('En el límite', 'At the edge') : L('No contradice lo visto', 'Not contradicted');
-  const headline = paramsOk ? res.headline : L('Estas cifras son de otra configuración', 'These figures are from another configuration');
+  const headline = paramsOk ? res.headline
+    : paramsDiffer ? L('Estas cifras son de otra configuración', 'These figures are from another configuration')
+      : L('No consta que estas cifras sean de la configuración propuesta', 'It is not confirmed that these figures are from the proposed configuration');
   const subline = paramsOk
     ? L(
       `Contrastado con ${int(res.reference.observations)} observaciones de la meseta: ${int(res.reference.members)} configuraciones equivalentes por ${res.reference.periods.length} periodo(s).`,
       `Contrasted with ${int(res.reference.observations)} plateau observations: ${int(res.reference.members)} equivalent configurations across ${res.reference.periods.length} period(s).`,
     )
-    : L(
-      'El backtest se lanzó con parámetros distintos de los propuestos, así que este contraste no dice nada sobre la configuración que estás validando. Vuelve a lanzarlo en MT5 con el .set correcto.',
-      'The backtest was run with parameters different from those proposed, so this contrast says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.',
-    );
+    : paramsDiffer
+      ? L(
+        'El backtest se lanzó con parámetros distintos de los propuestos, así que este contraste no dice nada sobre la configuración que estás validando. Vuelve a lanzarlo en MT5 con el .set correcto.',
+        'The backtest was run with parameters different from those proposed, so this contrast says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.',
+      )
+      : L(
+        'En el informe no están todos los parámetros optimizados, así que no se puede comprobar que el backtest sea de la configuración propuesta. Las cifras se muestran, pero no validan nada hasta que eso se pueda comprobar.',
+        'The report does not contain all the optimized parameters, so it cannot be checked that the backtest is of the proposed configuration. The figures are shown, but they validate nothing until that can be checked.',
+      );
 
   const statusMap = unseenStatus();
   const rows = res.results.map((r) => {

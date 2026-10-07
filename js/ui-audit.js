@@ -5,7 +5,6 @@ import { parseTable } from '../core/parse.js';
 import { AnalysisError, CODE, classifyError, errorCopy, withCode } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
 import { state, api, $, $$, esc } from './ui-state.js';
-import { displayVerdictLevel, levelName } from './ui-verdict.js';
 
 export function showProgress(pct, label) {
   const value = Math.max(2, Math.min(100, pct));
@@ -345,11 +344,7 @@ export async function runAudit() {
       oos: state.isDemo ? null : (state.oosFile && state.oosFile.name) || null,
       at: new Date(),
     };
-    // El nivel MOSTRADO (sin periodo no visto, 'sólida' se muestra como moderada).
-    // La pestaña del navegador dice el nivel en palabras («Evidencia moderada · …»): un
-    // «!» suelto delante del nombre parecía un error.
-    const shownLevel = displayVerdictLevel(analysis);
-    document.title = `${L('Evidencia', 'Evidence')} ${levelName(shownLevel).toLowerCase()} · ${state.source.is} · Orometra`;
+    // El título de la pestaña del navegador lo pone render() (ui-chrome.js) en cada pintado.
     // Primer analisis de la sesion: colapsa la ficha de carga de archivos, que si no
     // se repite entera en cada una de las 7 pestanas. Un reanalisis (mismos archivos,
     // otros minimos) no toca el estado expandido/colapsado que ya eligio el usuario.

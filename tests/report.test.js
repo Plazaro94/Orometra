@@ -141,6 +141,9 @@ section('2. Comparacion de parametros');
     JSON.stringify(distinto.different));
   const falta = compareParams(reportParams, ['InpA', 'InpZ'], [10, 1]);
   check('detecta un parametro ausente', falta.missing.includes('InpZ'), JSON.stringify(falta.missing));
+  check('un parametro ausente no cuenta como coincidencia', !falta.matches);
+  const ninguno = compareParams({}, ['InpA', 'InpB'], [10, 1]);
+  check('sin parametros leidos no coincide', !ninguno.matches && ninguno.missing.length === 2);
 }
 
 section('3. Rechazo de ficheros que no son informes');

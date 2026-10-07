@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-10-07 — Auditoría (2): valores exactos, avisos al día y periodo no visto
+
+- **Los parámetros se muestran exactos, como en el .set.** La tarjeta, el Top 3, la tabla
+  de refinamiento y el resumen .txt redondeaban a 4 decimales y escribían con coma
+  (0.00015 salía «0,0002»; «1,5» en el .txt). Ahora llevan punto decimal y todas sus cifras.
+- **El título de la pestaña y el resumen .txt siguen al nivel mostrado.** El título se
+  quedaba con el nivel del primer análisis y el .txt seguía diciendo «pruébala en un
+  periodo no usado» después de haberlo probado.
+- **Un informe al que le faltan parámetros optimizados ya no «coincide».** Antes bastaba
+  con que hubiera uno y ninguno distinto; si no se leía ninguno, el sello salía en verde.
+  Ahora sale «No valida» y se listan los que faltan.
+- **«Evidencia insuficiente» da la misma cifra en el resumen y en el hallazgo** (las
+  configuraciones que pasan en el periodo optimizado, que es donde se buscan las mesetas).
+- **Contraste del periodo no visto más fiable con tramos cortos** (`core/unseen.js`). El
+  drawdown se corregía por duración con la raíz de n, que vale para una estrategia sin
+  ventaja; ahora con n^0,35 (y el factor de recuperación con n^0,65). Las bandas del factor
+  de beneficio, del beneficio por operación y del Sharpe se ensanchan por
+  √(n_referencia / n_tramo) cuando el tramo es más corto. `bench/unseen.js` mide ahora tres
+  duraciones (×1, ×0,4 y ×0,2 las operaciones del forward). Con 100 semillas por escenario:
+  falsas alarmas con la ventaja intacta 24/29/30 % (antes 27/37/40 %), avisos sin ventaja
+  35/44/45 % (antes 35/48/45 %). La nota de alcance de la app cita estas cifras y la
+  proporción del tramo del usuario frente al forward. Con este banco, la regla anterior
+  daba 35 % de avisos sin ventaja con un tramo como el forward, no el 49 % que citaba.
+
 ## 2026-10-07 — Auditoría: exportar, costes y nivel «sólida»
 
 - **El menú «Exportar» baja siempre la configuración propuesta (M1).** Antes usaba la
