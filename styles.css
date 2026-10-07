@@ -1297,7 +1297,8 @@ tr.sel td{color:var(--text-2)}
 }
 .lp-top{
   border-bottom:1px solid var(--line);background:var(--bg);
-  padding:var(--header-pad) 0;
+  /* 10 px arriba y abajo: la barra mide ~59 px (antes 71 px en escritorio), como en móvil. */
+  padding:10px 0;
 }
 .lp-brand{
   display:flex;align-items:center;gap:var(--brand-gap);text-decoration:none;color:inherit;
@@ -1659,7 +1660,6 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
 
 /* Cabecera en movil: una sola fila con la marca, el idioma y el botón de menú. */
 @media (max-width:720px){
-  .lp-top{padding:10px 0}
   .lp-top .lp-shell{flex-wrap:nowrap;gap:12px}
   .lp-top-actions{flex-wrap:nowrap;gap:8px}
   .lp-top-actions .lp-nav-link{display:none}
