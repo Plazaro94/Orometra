@@ -2,7 +2,7 @@
 
 import { DEFAULT_POLICY, gateFailures } from '../core/metrics.js';
 import { enhanceRadioGroups } from './radiogroup.js';
-import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
+import { t, L, getLocale, setLocale, applyStaticI18n, pctSign } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
 import { displayVerdictCopy, displayVerdictLevel, levelName } from './ui-verdict.js';
@@ -161,7 +161,7 @@ export function updatePolicySummary() {
   const tr = parseFloat($('#gTrades').value);
   const parts = [];
   if (Number.isFinite(pf)) parts.push(`PF ≥ ${num(pf, 2)}`);
-  if (Number.isFinite(dd)) parts.push(`DD ≤ ${num(dd, 0)} %`);
+  if (Number.isFinite(dd)) parts.push(`DD ≤ ${num(dd, 0)}${pctSign()}`);
   if (Number.isFinite(tr)) parts.push(`${int(tr)} ${L('ops', 'trades')}`);
   el.textContent = parts.join(' · ');
 }

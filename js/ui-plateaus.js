@@ -4,7 +4,7 @@ import { qualityLabel } from '../core/metrics.js';
 import { topInfluentialPair, buildAxisPairGrid } from '../core/surface.js';
 import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
-import { L } from './i18n.js';
+import { L, pctSign } from './i18n.js';
 import { gloss } from './glossary.js';
 import { fallbackNote } from './ui-verdict.js';
 import { setCoverageNote } from './export.js';
@@ -68,8 +68,8 @@ export function renderRepCard(a, p) {
         ? `<div><span>${L('Huecos no observados', 'Unobserved gaps')}</span><strong>${int(p.neighborhood.gaps)} <em>${L('de', 'of')} ${int(p.neighborhood.slots)}</em></strong></div>`
         : ''}
       <div><span>${gloss('q25', L('Sus vecinos más flojos', 'Its weakest neighbors'))}</span><strong>${num(p.stability.q25, 2)}</strong></div>
-      ${hasF ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}% / ${int(r.oos.trades)}</strong></div>` : ''}
-      <div><span>${L('Periodo optimizado · PF / DD / ops', 'Optimized period · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}% / ${int(r.is.trades)}</strong></div>
+      ${hasF ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}${pctSign()} / ${int(r.oos.trades)}</strong></div>` : ''}
+      <div><span>${L('Periodo optimizado · PF / DD / ops', 'Optimized period · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}${pctSign()} / ${int(r.is.trades)}</strong></div>
     </div>
     ${p.invertedRisk && p.invertedRisk.length ? `<div class="inline-warn">${L(
       `Se apoya en ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, el valor que gana en el periodo optimizado pero que el forward castiga. Puede ser mérito suyo o suerte.`,
@@ -218,7 +218,7 @@ function renderPlateauSurfacePanel(a, plateau) {
   const gapNote = grid.coverage < 0.999
     ? L(
       `Cobertura de esta rejilla 2D: ${Math.round(grid.coverage * 100)} %. Las celdas vacías no son cero: son configuraciones que la optimización (probablemente genética) no probó con el resto de parámetros en el valor de tu meseta — no se inventa un dato ahí.`,
-      `Coverage of this 2D grid: ${Math.round(grid.coverage * 100)} %. Empty cells are not zero: they are configurations the optimization (likely genetic) never tested with the other parameters at your plateau's value — nothing is invented there.`,
+      `Coverage of this 2D grid: ${Math.round(grid.coverage * 100)}%. Empty cells are not zero: they are configurations the optimization (likely genetic) never tested with the other parameters at your plateau's value — nothing is invented there.`,
     )
     : L(
       'Rejilla completa para estos dos parámetros: cada celda es una pasada real.',
@@ -308,10 +308,11 @@ function skippedRanksNote(peaks) {
   for (let r = 1; r <= last; r++) if (!shown.has(r)) missing.push(r);
   if (!missing.length) return '';
   const list = missing.length <= 6 ? missing.map((r) => `#${r}`).join(', ') : L(`${missing.length} puestos`, `${missing.length} ranks`);
-  return `<p class="chart-note">${L(
-    `Faltan ${list}: esas configuraciones forman parte de una meseta, así que no son descartes.`,
-    `${list} are missing: those configurations belong to a plateau, so they are not rejections.`,
-  )}</p>`;
+  return `<p class="chart-note">${missing.length === 1
+    ? L(`Falta ${list}: esa configuración forma parte de una meseta, así que no es un descarte.`,
+      `${list} is missing: that configuration belongs to a plateau, so it is not a rejection.`)
+    : L(`Faltan ${list}: esas configuraciones forman parte de una meseta, así que no son descartes.`,
+      `${list} are missing: those configurations belong to a plateau, so they are not rejections.`)}</p>`;
 }
 
 /**
@@ -324,7 +325,7 @@ function rejectedMinimums(a) {
   const parts = [
     g.requireProfit ? L('beneficio positivo', 'positive profit') : '',
     `${L('factor de beneficio', 'profit factor')} ≥ ${num(g.minProfitFactor, 2)}`,
-    `drawdown ≤ ${num(g.maxDrawdownPct, 0)} %`,
+    `drawdown ≤ ${num(g.maxDrawdownPct, 0)}${pctSign()}`,
     a.meta.hasForward
       ? L(`${int(a.meta.minTradesIs)} operaciones en el periodo optimizado y ${int(a.meta.minTradesOos)} en el forward`,
         `${int(a.meta.minTradesIs)} trades on the optimized period and ${int(a.meta.minTradesOos)} on the forward`)
@@ -384,7 +385,7 @@ export function renderParams(a) {
         'Sensitivity measures how much quality moves as you walk a parameter\'s values. Influential numerics <strong>count when finding neighbors</strong>. Yes/no and list parameters (for example, the moving-average type) <strong>are not measured in distance</strong>: two configurations are neighbors only if they match on them, because enabling a filter is not a small step — it is another strategy. Only demonstrably flat axes are ignored.',
       )}</p>
       ${a.meta.releasedBlockNames && a.meta.releasedBlockNames.length ? `<div class="inline-warn">${L(
-        `Para conseguir vecinos suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, el menos influyente. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
+        `Para conseguir vecinos suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, ${a.meta.releasedBlockNames.length > 1 ? 'los menos influyentes' : 'el menos influyente'}. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
         `To get enough neighbors, partitioning was released on ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, the least influential. Configurations that differ only on ${a.meta.releasedBlockNames.length > 1 ? 'those parameters' : 'that parameter'} are treated as neighbors.`,
       )}</div>` : ''}
     </div>
@@ -512,8 +513,8 @@ export function renderDiagnostics(a) {
         <div class="evidence-list">
           <div><span>${L('Configuraciones posibles', 'Possible configurations')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones analizadas', 'Configurations analyzed')}</span><strong>${int(a.meta.total)}${a.integrity && a.integrity.collapsedTopology > 0 ? ` <em>${L('tras agrupar', 'after grouping')} ${esc((a.meta.flatDims || []).join(', '))}</em>` : ''}</strong></div>
-          <div><span>${L('Parte probada', 'Share tested')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(1).format(a.meta.coverage * 100) + ' %' : '—'}</strong></div>
-          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(1).format(a.meta.searchCoverage.coverageSearch * 100) + ' %' : L('sin .set', 'no .set')}</strong></div>
+          <div><span>${L('Parte probada', 'Share tested')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(1).format(a.meta.coverage * 100) + pctSign() : '—'}</strong></div>
+          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(1).format(a.meta.searchCoverage.coverageSearch * 100) + pctSign() : L('sin .set', 'no .set')}</strong></div>
           <div><span>${L('Distancia entre vecinos', 'Neighbor distance')}</span><strong>${int(a.meta.radius)} ${L('paso(s)', 'step(s)')}</strong></div>
           <div><span>${L('Vecinos por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del periodo optimizado', ' of the optimized period') : '—'}</strong></div>
@@ -560,7 +561,7 @@ export function renderDiagnostics(a) {
       <div class="evidence-list">
         <div><span>${L('Beneficio positivo', 'Positive profit')}</span><strong>${g.requireProfit ? L('exigido', 'required') : L('no exigido', 'not required')}</strong></div>
         <div><span>${gloss('profitFactor', L('Factor de beneficio mínimo', 'Minimum profit factor'))}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
-        <div><span>${gloss('drawdown', L('Drawdown máximo', 'Maximum drawdown'))}</span><strong>${num(g.maxDrawdownPct, 0)} %</strong></div>
+        <div><span>${gloss('drawdown', L('Drawdown máximo', 'Maximum drawdown'))}</span><strong>${num(g.maxDrawdownPct, 0)}${pctSign()}</strong></div>
         <div><span>${L('Operaciones mínimas (periodo optimizado)', 'Minimum trades (optimized period)')}</span><strong>${int(a.meta.minTradesIs)}</strong></div>
         <div><span>${L('Operaciones mínimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>
         ${(a.meta.gateInfluence || []).filter((gi) => gi.name !== 'beneficio').map((gi) => `
@@ -658,7 +659,7 @@ export function renderStabilityPanel(a) {
   return `<details class="panel">
     <summary class="panel-head compact">
       <div><div class="panel-kicker">${L('Auditoría interna', 'Internal audit')}</div><h2>${L('¿Y si moviéramos nuestros propios umbrales?', 'What if we moved our own thresholds?')}</h2></div>
-      <div class="stability-badge ${tone}">${pctRegion.toFixed(0)} %</div>
+      <div class="stability-badge ${tone}">${pctRegion.toFixed(0)}${pctSign()}</div>
     </summary>
     <div class="panel-body">
     <p class="panel-intro">
@@ -669,7 +670,7 @@ export function renderStabilityPanel(a) {
       para ver cuánto de lo que te recomendamos depende de dónde pusimos nosotros los cortes.`,
         `Plateau thresholds (quality floor, minimum robustness, minimum support, minimum size…) are
       calibrated judgments, not quantities derived from any theory. So the search is repeated
-      <strong>${int(st.draws)} times</strong> moving them at random by <strong>±${(100 * st.perturbation).toFixed(0)} %</strong>,
+      <strong>${int(st.draws)} times</strong> moving them at random by <strong>±${(100 * st.perturbation).toFixed(0)}%</strong>,
       to see how much of what we recommend depends on where we placed the cuts.`,
       )}
     </p>

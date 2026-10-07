@@ -50,12 +50,12 @@ function setCompletenessComment(merged) {
   }
   return L(
     [
-      `; OJO: este archivo solo lleva los ${merged.optimized} parámetros que optimizaste. Al cargarlo en MT5,`,
+      `; OJO: este archivo solo lleva ${merged.optimized === 1 ? 'el parámetro' : `los ${merged.optimized} parámetros`} que optimizaste. Al cargarlo en MT5,`,
       '; el resto se queda como lo tengas en ese momento en el probador. Suelta en Orometra el .set',
       '; de tu optimización para obtener uno completo.',
     ],
     [
-      `; NOTE: this file only carries the ${merged.optimized} parameters you optimized. When loaded in MT5,`,
+      `; NOTE: this file only carries ${merged.optimized === 1 ? 'the parameter' : `the ${merged.optimized} parameters`} you optimized. When loaded in MT5,`,
       '; the rest stay as you have them in the tester at that moment. Drop your optimization .set',
       '; in Orometra to get a complete one.',
     ],
@@ -75,8 +75,8 @@ export function setCoverageNote(analysis, plateau, baseSet = null) {
     );
   }
   return L(
-    `El .set solo lleva los ${merged.optimized} parámetros que optimizaste: MT5 no cambiará el resto y quedarán como los tengas en el probador. Suelta el .set de tu optimización para completarlo.`,
-    `The .set only carries the ${merged.optimized} parameters you optimized: MT5 will not change the rest and they will stay as you have them in the tester. Drop your optimization .set to complete it.`,
+    `El .set solo lleva ${merged.optimized === 1 ? 'el parámetro' : `los ${merged.optimized} parámetros`} que optimizaste: MT5 no cambiará el resto y quedarán como los tengas en el probador. Suelta el .set de tu optimización para completarlo.`,
+    `The .set only carries ${merged.optimized === 1 ? 'the parameter' : `the ${merged.optimized} parameters`} you optimized: MT5 will not change the rest and they will stay as you have them in the tester. Drop your optimization .set to complete it.`,
   );
 }
 

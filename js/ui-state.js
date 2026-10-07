@@ -1,6 +1,6 @@
 // Estado compartido de sesión y helpers de formato. Sin imports de otros ui-*.
 
-import { L, localeTag } from './i18n.js';
+import { L, localeTag, pctSign } from './i18n.js';
 
 export const roleBadge = (role) => {
   const ROLE_COPY = {
@@ -68,7 +68,7 @@ export function findingsForCategory(findings, cat) {
 export const nf = (d = 2) => new Intl.NumberFormat(localeTag(), { minimumFractionDigits: d, maximumFractionDigits: d });
 export const num = (v, d = 2) => (Number.isFinite(v) ? nf(d).format(v) : '—');
 export const int = (v) => (Number.isFinite(v) ? new Intl.NumberFormat(localeTag()).format(Math.round(v)) : '—');
-export const pct = (v, d = 1) => (Number.isFinite(v) ? `${nf(d).format(v * 100)} %` : '—');
+export const pct = (v, d = 1) => (Number.isFinite(v) ? `${nf(d).format(v * 100)}${pctSign()}` : '—');
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 /** Escape HTML but keep the inline tags the verdict engine embeds in finding details. */
 export const rich = (s) => esc(s).replace(/&lt;(\/?(?:strong|em))&gt;/gi, '<$1>');

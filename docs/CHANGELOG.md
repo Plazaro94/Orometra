@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-07 — Plurales, «%» en inglés y la banda del periodo no visto
+
+- **Singular con una sola unidad:** «1 configuración supera los mínimos», «1 pasada sin
+  pareja», «solo 1 vecino probado», «Has optimizado 1 parámetro», «Falta #3: esa
+  configuración…», «El .set solo lleva el parámetro que optimizaste»… (antes, siempre en
+  plural). Lo mismo en inglés.
+- **Mínimos que no filtran:** con varios, la frase dice «por ninguno de ellos, así que
+  moverlos» (antes, siempre «moverlo»).
+- **Porcentajes:** nuevo `pctSign()` en `js/i18n-core.js`: «20 %» en español y «20%» en inglés
+  donde la cifra se compone igual para los dos idiomas (antes, en inglés salía «20 %»).
+- **Periodo no visto:** la banda de cada métrica tiene descripción para lectores de pantalla
+  (valor, estado y rango habitual).
+
 ## 2026-10-07 — CLAUDE.md
 
 - Nuevo `CLAUDE.md` en la raíz: lo lee Claude Code al empezar cada sesión. Resume cómo

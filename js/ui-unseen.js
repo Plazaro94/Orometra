@@ -100,8 +100,11 @@ export function unseenBand(r) {
   const b = hi + pad;
   const x = (v) => ((v - a) / (b - a || 1)) * W;
   const mid = H / 2;
-  const cls = unseenStatus()[r.status][0];
-  return `<svg class="ub" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">
+  const [cls, statusText] = unseenStatus()[r.status];
+  // Para lectores de pantalla, lo mismo que dibuja la barra: dónde cae tu tramo y qué era lo habitual.
+  const label = L(`${r.label}: ${num(r.value, r.digits)}, ${statusText}. Lo habitual, entre ${num(r.band.q10, r.digits)} y ${num(r.band.q90, r.digits)}.`,
+    `${r.label}: ${num(r.value, r.digits)}, ${statusText}. Usual range: ${num(r.band.q10, r.digits)} to ${num(r.band.q90, r.digits)}.`);
+  return `<svg class="ub" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${esc(label)}">
     <line class="ub-range" x1="${x(r.band.min).toFixed(1)}" y1="${mid}" x2="${x(r.band.max).toFixed(1)}" y2="${mid}"/>
     <rect class="ub-box" x="${x(r.band.q10).toFixed(1)}" y="${mid - 6}" width="${Math.max(1, x(r.band.q90) - x(r.band.q10)).toFixed(1)}" height="12" rx="2"/>
     <line class="ub-median" x1="${x(r.band.median).toFixed(1)}" y1="${mid - 7}" x2="${x(r.band.median).toFixed(1)}" y2="${mid + 7}"/>
@@ -166,15 +169,16 @@ export function renderReportCard(a, plateau) {
       </div>`
     : cmp.missing.length
       ? `<div class="inline-warn report-mismatch">
-        <strong>${L(`Al informe le faltan ${int(cmp.missing.length)} de los ${int(a.meta.paramNames.length)} parámetros optimizados.`, `The report is missing ${int(cmp.missing.length)} of the ${int(a.meta.paramNames.length)} optimized parameters.`)}</strong>
+        <strong>${L(`Al informe le ${cmp.missing.length === 1 ? 'falta' : 'faltan'} ${int(cmp.missing.length)} de los ${int(a.meta.paramNames.length)} parámetros optimizados.`, `The report is missing ${int(cmp.missing.length)} of the ${int(a.meta.paramNames.length)} optimized parameters.`)}</strong>
         ${cmp.missing.slice(0, 8).map((n) => `<code>${esc(n)}</code>`).join(', ')}${cmp.missing.length > 8 ? L(` y ${cmp.missing.length - 8} más`, ` and ${cmp.missing.length - 8} more`) : ''}.
         ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que el resultado no sube el nivel de evidencia.', 'Without them there is no way to check that the backtest used the proposed configuration (another EA version, or a different parameter name?), so the result does not raise the evidence level.')}
       </div>`
     : cmp.same.length
-      ? `<div class="report-ok">${L(
-        `Los ${int(cmp.same.length)} parámetros del informe coinciden con la configuración propuesta.`,
-        `The ${int(cmp.same.length)} parameters in the report match the proposed configuration.`,
-      )}</div>`
+      ? `<div class="report-ok">${cmp.same.length === 1
+        ? L('El parámetro del informe coincide con la configuración propuesta.',
+          'The parameter in the report matches the proposed configuration.')
+        : L(`Los ${int(cmp.same.length)} parámetros del informe coinciden con la configuración propuesta.`,
+          `The ${int(cmp.same.length)} parameters in the report match the proposed configuration.`)}</div>`
       : '';
 
   // Parámetros que no se optimizaron: si el backtest usa otros valores que tu .set de la

@@ -36,6 +36,11 @@ export function L(es, en) {
   return getLocale() === 'es' ? es : en;
 }
 
+/** Signo de porcentaje tras una cifra: «20 %» en español (con espacio) y «20%» en inglés. */
+export function pctSign() {
+  return L(' %', '%');
+}
+
 export function t(key, vars) {
   const pack = STRINGS[getLocale()] || STRINGS.en;
   let s = pack[key] ?? STRINGS.en[key] ?? key;

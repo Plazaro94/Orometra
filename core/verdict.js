@@ -17,14 +17,16 @@
 // Solo se emite la segunda clase de afirmacion. Los hallazgos concretos -acantilados,
 // bordes de rango, inversiones, puertas inertes- se conservan intactos: son lo valioso.
 
-import { L, localeTag } from '../js/i18n.js';
+import { L, localeTag, pctSign } from '../js/i18n.js';
 
 /** Numero en el formato del idioma activo (1,20 en ES, 1.20 en EN). */
 const fmt = (v, d = 2) => (Number.isFinite(v)
   ? new Intl.NumberFormat(localeTag(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(v)
   : '—');
 /** Cifra observada de un minimo, con las unidades y decimales de ese minimo. */
-const gateValue = (name, v) => (name === 'drawdown' ? `${fmt(v, 1)} %` : name === 'trades' ? fmt(v, 0) : fmt(v, 2));
+/** Singular o plural según la cifra («1 configuración», «2 configuraciones»). */
+const pl = (n, uno, varios) => (Number(n) === 1 ? uno : varios);
+const gateValue = (name, v) => (name === 'drawdown' ? `${fmt(v, 1)}${pctSign()}` : name === 'trades' ? fmt(v, 0) : fmt(v, 2));
 
 export const LEVELS = {
   STRONG: 'strong',            // region amplia y bien sostenida
@@ -63,8 +65,8 @@ export function buildVerdict(ctx) {
   const searchPassCount = Number.isFinite(ctx.searchPassCount) ? ctx.searchPassCount : gatePassCount;
   if (!gatePassCount && hasForward && searchPassCount > 0) {
     add(SEV.CRITICAL, L('Ninguna configuración cumple tus mínimos en el forward', 'No configuration meets your minimums in the forward'),
-      L(`${searchPassCount.toLocaleString(localeTag())} configuraciones los cumplen en el periodo optimizado, pero ninguna en el forward. Con estos mínimos, lo que se encuentra en el periodo optimizado no se sostiene fuera de él.`,
-        `${searchPassCount.toLocaleString(localeTag())} configurations meet them on the optimized period, but none in the forward. With these minimums, what is found on the optimized period does not hold outside it.`), null);
+      L(`${searchPassCount.toLocaleString(localeTag())} ${pl(searchPassCount, 'configuración los cumple', 'configuraciones los cumplen')} en el periodo optimizado, pero ninguna en el forward. Con estos mínimos, lo que se encuentra en el periodo optimizado no se sostiene fuera de él.`,
+        `${searchPassCount.toLocaleString(localeTag())} ${pl(searchPassCount, 'configuration meets', 'configurations meet')} them on the optimized period, but none in the forward. With these minimums, what is found on the optimized period does not hold outside it.`), null);
   } else if (!gatePassCount) {
     add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration passes the minimum gates'),
       hasForward
@@ -107,16 +109,16 @@ export function buildVerdict(ctx) {
       : '';
     if (per < 15) {
       add(SEV.CRITICAL, L(`Poca evidencia: ~${fmt(per, 0)} operaciones por parámetro`, `Thin evidence: ~${fmt(per, 0)} trades per parameter`),
-        L(`Has optimizado ${d.params} parámetros y en ${periodoEs} hay ${tradesN} operaciones (mediana de las configuraciones probadas): ~${fmt(per, 0)} por parámetro. Con esa proporción, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
-          `You optimized ${d.params} parameters and in ${periodoEn} there are ${tradesN} trades (median of the tested configurations): ~${fmt(per, 0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`), null);
+        L(`Has optimizado ${d.params} ${pl(d.params, 'parámetro', 'parámetros')} y en ${periodoEs} hay ${tradesN} operaciones (mediana de las configuraciones probadas): ~${fmt(per, 0)} por parámetro. Con esa proporción, la superficie que medimos es mayoritariamente ruido. No es un defecto de tu EA: faltan datos para tantos parámetros a la vez. Reduce parámetros o alarga el periodo.${extraEs}`,
+          `You optimized ${d.params} ${pl(d.params, 'parameter', 'parameters')} and in ${periodoEn} there are ${tradesN} trades (median of the tested configurations): ~${fmt(per, 0)} per parameter. At that ratio, the surface we measure is mostly noise. Not an EA flaw: there is not enough data for so many parameters at once. Reduce parameters or lengthen the period.${extraEn}`), null);
     } else if (per < 50) {
       add(SEV.WARN, L(`Evidencia limitada: ~${fmt(per, 0)} operaciones por parámetro`, `Limited evidence: ~${fmt(per, 0)} trades per parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Todo lo que sigue debe leerse como provisional.${extraEs}`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). Everything that follows should be read as provisional.${extraEn}`), null);
+        L(`${d.params} ${pl(d.params, 'parámetro optimizado', 'parámetros optimizados')} frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Todo lo que sigue debe leerse como provisional.${extraEs}`,
+          `${d.params} ${pl(d.params, 'optimized parameter', 'optimized parameters')} versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). Everything that follows should be read as provisional.${extraEn}`), null);
     } else if (per >= 100) {
       add(SEV.OK, L(`Operaciones de sobra: ~${fmt(per, 0)} por parámetro`, `Plenty of trades: ~${fmt(per, 0)} per parameter`),
-        L(`${d.params} parámetros optimizados frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Con tantas operaciones por parámetro, el tamaño de la muestra no es el punto débil.`,
-          `${d.params} optimized parameters versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). With this many trades per parameter, sample size is not the weak point.`), null);
+        L(`${d.params} ${pl(d.params, 'parámetro optimizado', 'parámetros optimizados')} frente a ${tradesN} operaciones en ${periodoEs} (mediana de las configuraciones probadas). Con tantas operaciones por parámetro, el tamaño de la muestra no es el punto débil.`,
+          `${d.params} ${pl(d.params, 'optimized parameter', 'optimized parameters')} versus ${tradesN} trades in ${periodoEn} (median of the tested configurations). With this many trades per parameter, sample size is not the weak point.`), null);
     }
   }
 
@@ -125,8 +127,8 @@ export function buildVerdict(ctx) {
     // conjunto donde se buscan las mesetas (`searchPassCount`), la misma que decide
     // `underpowered` y que da el resumen: antes aquí salía la de los dos periodos, otra.
     add(SEV.CRITICAL, L('El conjunto es demasiado pequeño para pronunciarse', 'The set is too small to draw any conclusion'),
-      L(`Solo ${searchPassCount} configuraciones superan los mínimos${hasForward && selectionMode === 'isThenOos' ? ' en el periodo optimizado' : ''}; una meseta necesitaría al menos ${viableNeededForPlateau}, con vecinas que también cumplan. Esto no dice que tu EA sea malo: dice que estos datos no permiten afirmar nada. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
-        `Only ${searchPassCount} configurations clear the minimums${hasForward && selectionMode === 'isThenOos' ? ' on the optimized period' : ''}; a plateau would need at least ${viableNeededForPlateau}, with neighbors that also pass. This does not say your EA is bad: it says these data cannot support any claim. Widen the parameter ranges, add intermediate values or relax the minimums, and optimize again.`), null);
+      L(`Solo ${searchPassCount} ${pl(searchPassCount, 'configuración supera', 'configuraciones superan')} los mínimos${hasForward && selectionMode === 'isThenOos' ? ' en el periodo optimizado' : ''}; una meseta necesitaría al menos ${viableNeededForPlateau}, con vecinas que también cumplan. Esto no dice que tu EA sea malo: dice que estos datos no permiten afirmar nada. Amplía el rango de los parámetros, añade valores intermedios o relaja los mínimos, y vuelve a optimizar.`,
+        `Only ${searchPassCount} ${pl(searchPassCount, 'configuration clears', 'configurations clear')} the minimums${hasForward && selectionMode === 'isThenOos' ? ' on the optimized period' : ''}; a plateau would need at least ${viableNeededForPlateau}, with neighbors that also pass. This does not say your EA is bad: it says these data cannot support any claim. Widen the parameter ranges, add intermediate values or relax the minimums, and optimize again.`), null);
   } else if (!plateaus.length) {
     add(SEV.CRITICAL, L('No se ha encontrado ninguna meseta', 'No plateau was found'),
       L('No hay ningún grupo de configuraciones vecinas que superen el umbral de robustez con soporte suficiente. Con datos suficientes para detectarlo, lo que hay son puntos sueltos, y un punto suelto no es un sistema: es una coincidencia.',
@@ -250,15 +252,15 @@ export function buildVerdict(ctx) {
         return `<strong>${ETIQUETA_EN[g.name]}</strong>${obs}`;
       }).join('; ');
       const domEs = dominante && dominante.sole > 0
-        ? ` Quien decide aquí es <strong>${ETIQUETA_ES[dominante.name]}</strong>: descarta ${dominante.sole.toLocaleString(localeTag())} configuraciones él solo.`
+        ? ` Quien decide aquí es <strong>${ETIQUETA_ES[dominante.name]}</strong>: descarta ${dominante.sole.toLocaleString(localeTag())} ${dominante.sole === 1 ? 'configuración' : 'configuraciones'} él solo.`
         : '';
       const domEn = dominante && dominante.sole > 0
-        ? ` What decides here is <strong>${ETIQUETA_EN[dominante.name]}</strong>: it alone discards ${dominante.sole.toLocaleString(localeTag())} configurations.`
+        ? ` What decides here is <strong>${ETIQUETA_EN[dominante.name]}</strong>: it alone discards ${dominante.sole.toLocaleString(localeTag())} ${dominante.sole === 1 ? 'configuration' : 'configurations'}.`
         : '';
       add(SEV.INFO, L(`${inertes.length === 1 ? 'Uno de tus mínimos no está filtrando nada' : `${inertes.length} de tus mínimos no están filtrando nada`}`,
           `${inertes.length === 1 ? 'One of your minimums is not filtering anything' : `${inertes.length} of your minimums are not filtering anything`}`),
-        L(`${listEs}. Ninguna configuración queda fuera únicamente por ese motivo, así que moverlo no cambiará el resultado.${domEs}`,
-          `${listEn}. No configuration is excluded solely for that reason, so moving it will not change the outcome.${domEn}`), 'gates');
+        L(`${listEs}. Ninguna configuración queda fuera únicamente por ${inertes.length === 1 ? 'ese motivo, así que moverlo' : 'ninguno de ellos, así que moverlos'} no cambiará el resultado.${domEs}`,
+          `${listEn}. No configuration is excluded solely for ${inertes.length === 1 ? 'that reason, so moving it' : 'any of them, so moving them'} will not change the outcome.${domEn}`), 'gates');
     }
   }
 
@@ -525,8 +527,8 @@ export function buildVerdict(ctx) {
   if (integrity) {
     if (integrity.provenance && integrity.provenance.checked && integrity.provenance.mismatches > 0) {
       add(SEV.CRITICAL, L('Los dos archivos no parecen de la misma optimización', 'The two files do not appear to be from the same optimization'),
-        L(`En ${integrity.provenance.mismatches} filas el resultado del backtest del archivo forward no coincide con el del archivo de la optimización. Revisa que no hayas mezclado exportaciones.`,
-          `In ${integrity.provenance.mismatches} rows the forward file's backtest result does not match the optimization file. Check that you have not mixed exports.`), 'integrity');
+        L(`En ${integrity.provenance.mismatches} ${pl(integrity.provenance.mismatches, 'fila', 'filas')} el resultado del backtest del archivo forward no coincide con el del archivo de la optimización. Revisa que no hayas mezclado exportaciones.`,
+          `In ${integrity.provenance.mismatches} ${pl(integrity.provenance.mismatches, 'row', 'rows')} the forward file's backtest result does not match the optimization file. Check that you have not mixed exports.`), 'integrity');
     }
     if (integrity.forwardSelectionSuspect) {
       const pct = Number.isFinite(integrity.forwardRowRatio)
@@ -544,19 +546,22 @@ export function buildVerdict(ctx) {
           'The first appearance of each duplicate Pass was kept.'), 'integrity');
     }
     if (integrity.unmatchedIs > 0 && integrity.unmatchedUsedForDiscovery) {
-      add(SEV.INFO, L(`${integrity.unmatchedIs} pasadas sin forward`, `${integrity.unmatchedIs} passes without forward`),
+      add(SEV.INFO, L(`${integrity.unmatchedIs} ${pl(integrity.unmatchedIs, 'pasada', 'pasadas')} sin forward`, `${integrity.unmatchedIs} ${pl(integrity.unmatchedIs, 'pass', 'passes')} without forward`),
         L('MT5 solo prueba en el forward las mejores pasadas. Las demás se usan para buscar las mesetas en el periodo optimizado, porque así se ven también las vecinas que fallan tus mínimos, pero no cuentan como validadas en el forward.',
           'MT5 only tests the best passes on the forward. The rest are used to find the plateaus on the optimized period, because that way the neighbors that fail your minimums are seen too, but they do not count as validated on the forward.'), 'integrity');
     } else if (integrity.unmatchedIs > 0) {
       const sev = (integrity.isRows > 0 && integrity.unmatchedIs / integrity.isRows > 0.05) ? SEV.WARN : SEV.INFO;
-      add(sev, L(`${integrity.unmatchedIs} pasadas sin pareja`, `${integrity.unmatchedIs} unpaired passes`),
-        L('Estas filas existen en un archivo y no en el otro, y se han descartado del análisis.',
-          'These rows exist in one file and not the other, and were discarded from the analysis.'), 'integrity');
+      add(sev, L(`${integrity.unmatchedIs} ${pl(integrity.unmatchedIs, 'pasada', 'pasadas')} sin pareja`, `${integrity.unmatchedIs} ${pl(integrity.unmatchedIs, 'unpaired pass', 'unpaired passes')}`),
+        integrity.unmatchedIs === 1
+          ? L('Esta fila existe en un archivo y no en el otro, y se ha descartado del análisis.',
+            'This row exists in one file and not the other, and was discarded from the analysis.')
+          : L('Estas filas existen en un archivo y no en el otro, y se han descartado del análisis.',
+            'These rows exist in one file and not the other, and were discarded from the analysis.'), 'integrity');
     }
     if (integrity.duplicateParamVectors > 0) {
       const base = integrity.matchedRows || integrity.isRows || 0;
       const sev = base > 0 && integrity.duplicateParamVectors / base > 0.05 ? SEV.WARN : SEV.INFO;
-      add(sev, L(`${integrity.duplicateParamVectors} pasadas con parámetros repetidos`, `${integrity.duplicateParamVectors} passes with repeated parameters`),
+      add(sev, L(`${integrity.duplicateParamVectors} ${pl(integrity.duplicateParamVectors, 'pasada', 'pasadas')} con parámetros repetidos`, `${integrity.duplicateParamVectors} ${pl(integrity.duplicateParamVectors, 'pass', 'passes')} with repeated parameters`),
         L('Varias pasadas tienen exactamente los mismos valores de parámetros, algo habitual en la optimización genética. Se analiza una sola por configuración. Si son muchas, revisa en «Columnas detectadas» que ningún parámetro se haya tomado por una métrica.',
           'Several passes have exactly the same parameter values, which is common in genetic optimization. Only one per configuration is analyzed. If there are many, check in "Detected columns" that no parameter was taken for a metric.'), 'integrity');
     }
@@ -580,8 +585,8 @@ export function buildVerdict(ctx) {
     level = LEVELS.INSUFFICIENT;
     headline = L('Evidencia insuficiente', 'Insufficient evidence');
     const where = hasForward && selectionMode === 'isThenOos';
-    summary = L(`Con ${searchPassCount} configuraciones por encima de tus mínimos${where ? ' en el periodo optimizado' : ''} no hay masa suficiente para que pudiera existir una meseta: harían falta al menos ${viableNeededForPlateau}. Esto no dice nada sobre tu EA: dice que estos datos no permiten pronunciarse en ninguna dirección.`,
-      `With ${searchPassCount} configurations above your minimums${where ? ' on the optimized period' : ''} there is not enough mass for a plateau to exist; at least ${viableNeededForPlateau} would be needed. This says nothing about your EA: it says these data do not support a conclusion either way.`);
+    summary = L(`Con ${searchPassCount} ${pl(searchPassCount, 'configuración', 'configuraciones')} por encima de tus mínimos${where ? ' en el periodo optimizado' : ''} no hay masa suficiente para que pudiera existir una meseta: harían falta al menos ${viableNeededForPlateau}. Esto no dice nada sobre tu EA: dice que estos datos no permiten pronunciarse en ninguna dirección.`,
+      `With ${searchPassCount} ${pl(searchPassCount, 'configuration', 'configurations')} above your minimums${where ? ' on the optimized period' : ''} there is not enough mass for a plateau to exist; at least ${viableNeededForPlateau} would be needed. This says nothing about your EA: it says these data do not support a conclusion either way.`);
   } else if (criticas.length) {
     level = LEVELS.WEAK;
     headline = regiones
@@ -634,7 +639,7 @@ function gateFailLabel(token) {
   let m = /^PF < (.+)$/.exec(token);
   if (m) return L(`factor de beneficio < ${fmt(Number(m[1]), 2)}`, `profit factor < ${fmt(Number(m[1]), 2)}`);
   m = /^DD > (.+)%$/.exec(token);
-  if (m) return `drawdown > ${fmt(Number(m[1]), 0)} %`;
+  if (m) return `drawdown > ${fmt(Number(m[1]), 0)}${pctSign()}`;
   m = /^operaciones < (.+)$/.exec(token);
   if (m) return L(`operaciones < ${m[1]}`, `trades < ${m[1]}`);
   if (token === 'beneficio <= 0') return L('beneficio ≤ 0', 'profit ≤ 0');
@@ -663,7 +668,7 @@ export function peakRejectTags(p, opts = {}) {
     tagged(L(`Solo ${p.st.support} ${p.st.support === 1 ? 'vecino' : 'vecinos'}`, `Only ${p.st.support} ${p.st.support === 1 ? 'neighbor' : 'neighbors'}`),
       p.st.support === 1
         ? L('solo 1 vecino probado', 'only 1 neighbor tested')
-        : L(`solo ${p.st.support} vecinos probados`, `only ${p.st.support} neighbors tested`));
+        : L(`solo ${p.st.support} ${pl(p.st.support, 'vecino probado', 'vecinos probados')}`, `only ${p.st.support} ${pl(p.st.support, 'neighbor tested', 'neighbors tested')}`));
   }
   if (Number.isFinite(p.st.peakZ) && p.st.peakZ > 2) {
     tagged(L('Pico de suerte', 'Lucky peak'),
