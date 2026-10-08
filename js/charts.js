@@ -19,11 +19,12 @@ function legend(items) {
  * Apertura del <svg> con alternativa textual: la conclusion del grafico, no su
  * descripcion. Sin ella un lector de pantalla no obtenia nada de estos graficos.
  */
-function svgOpen(W, H, label) {
+function svgOpen(W, H, label, minW = W) {
   // El SVG escala su texto con el ancho: en un móvil (caja de ~310 px para 620 unidades)
   // las etiquetas salían a 5 px y en un escritorio ancho a 18. --w deja que el CSS
   // limite cuánto crece y, en el móvil, le dé su ancho natural y se deslice de lado.
-  return `<div class="chart-scroll" style="--w:${Math.round(W)}px"><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" preserveAspectRatio="xMidYMid meet"><title>${esc(label)}</title>`;
+  // minW: lo mínimo que puede medir en el móvil (los compactos encogen algo más, hasta 240 px).
+  return `<div class="chart-scroll" style="--w:${Math.round(minW)}px"><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}" preserveAspectRatio="xMidYMid meet"><title>${esc(label)}</title>`;
 }
 
 function wrapChart(svg, legendHtml) {
@@ -42,10 +43,10 @@ function niceTicks(lo, hi, count = 5) {
   return out;
 }
 
-function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = [], yTicks = [], xScale, yScale, label = '' } = {}) {
+function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = [], yTicks = [], xScale, yScale, label = '', minW = width } = {}) {
   const gx = xTicks.map((t) => `<line class="ch-grid" x1="${fx(xScale(t))}" y1="${pad.t}" x2="${fx(xScale(t))}" y2="${height - pad.b}"/><text class="ch-tick" x="${fx(xScale(t))}" y="${height - pad.b + 14}" text-anchor="middle">${esc(formatTick(t))}</text>`).join('');
   const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${width - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 3)}" text-anchor="end">${esc(formatTick(t))}</text>`).join('');
-  return `${svgOpen(width, height, label || xLabel)}
+  return `${svgOpen(width, height, label || xLabel, minW)}
     ${gx}${gy}
     <line class="ch-axis" x1="${pad.l}" y1="${height - pad.b}" x2="${width - pad.r}" y2="${height - pad.b}"/>
     <line class="ch-axis" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${height - pad.b}"/>
@@ -53,6 +54,17 @@ function frame(width, height, pad, body, { xLabel = '', yLabel = '', xTicks = []
     ${xLabel ? `<text class="ch-axis-label" x="${(pad.l + width - pad.r) / 2}" y="${height - 4}" text-anchor="middle">${esc(xLabel)}</text>` : ''}
     ${yLabel ? `<text class="ch-axis-label" x="${12}" y="${(pad.t + height - pad.b) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(pad.t + height - pad.b) / 2})">${esc(yLabel)}</text>` : ''}
   </svg></div>`;
+}
+
+/**
+ * Pantalla estrecha (móvil): los gráficos que siguen siendo SVG (la nube de puntos y los
+ * deciles) se dibujan con un ancho de diseño de 280 unidades en vez de 620, para que quepan
+ * sin deslizar de lado y su texto no encoja. Si cambia (al girar el móvil), la interfaz los
+ * vuelve a dibujar (refreshCompactCharts en ui-verdict.js).
+ */
+export const COMPACT_QUERY = '(max-width:480px)';
+export function isCompact() {
+  return typeof matchMedia === 'function' && matchMedia(COMPACT_QUERY).matches;
 }
 
 function formatTick(v) {
@@ -63,8 +75,9 @@ function formatTick(v) {
 }
 
 /** Dispersión calidad IS frente a calidad OOS. La diagonal marca "no se degrada". */
-export function scatterIsOos(analysis) {
-  const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 44 };
+export function scatterIsOos(analysis, compact = isCompact()) {
+  const W = compact ? 280 : 620; const H = compact ? 280 : 320;
+  const pad = compact ? { l: 52, r: 10, t: 12, b: 40 } : { l: 52, r: 16, t: 16, b: 44 };
   if (!analysis.meta.hasForward) return `<p class="muted">${L('Sin periodo forward no hay comparación entre la optimización y la validación.', 'Without a forward period there is no comparison between optimization and validation.')}</p>`;
   const xScale = (v) => pad.l + v * (W - pad.l - pad.r);
   const yScale = (v) => H - pad.b - v * (H - pad.t - pad.b);
@@ -74,11 +87,14 @@ export function scatterIsOos(analysis) {
     const r = analysis.records[i];
     if (!Number.isFinite(r.qualityIs) || !Number.isFinite(r.qualityOos)) continue;
     const cls = analysis.inPlateau[i] >= 0 ? 'pt-plateau' : r.passes ? 'pt-pass' : 'pt-fail';
-    pts.push(`<circle class="${cls}" cx="${fx(xScale(r.qualityIs))}" cy="${fx(yScale(r.qualityOos))}" r="2"/>`);
+    pts.push(`<circle class="${cls}" cx="${fx(xScale(r.qualityIs))}" cy="${fx(yScale(r.qualityOos))}" r="${compact ? 1.6 : 2}"/>`);
   }
   const reps = analysis.plateaus.slice(0, 5).map((p, i) => {
     const r = p.record;
-    return `<circle class="pt-rep" cx="${fx(xScale(r.qualityIs))}" cy="${fx(yScale(r.qualityOos))}" r="6"/><text class="ch-point-label" x="${fx(xScale(r.qualityIs) + 10)}" y="${fx(yScale(r.qualityOos) - 8)}">${i === 0 ? esc(L('Elegida', 'Selected')) : i + 1}</text>`;
+    // La etiqueta, a la izquierda del punto si a la derecha no cabe (en el móvil, la elegida
+    // suele estar arriba a la derecha, junto al borde).
+    const px = xScale(r.qualityIs); const left = px > W - pad.r - 60;
+    return `<circle class="pt-rep" cx="${fx(px)}" cy="${fx(yScale(r.qualityOos))}" r="${compact ? 5 : 6}"/><text class="ch-point-label" x="${fx(left ? px - 10 : px + 10)}" y="${fx(yScale(r.qualityOos) - 8)}"${left ? ' text-anchor="end"' : ''}>${i === 0 ? esc(L('Elegida', 'Selected')) : i + 1}</text>`;
   }).join('');
   const diagonal = `<line class="ch-diagonal" x1="${xScale(0)}" y1="${yScale(0)}" x2="${xScale(1)}" y2="${yScale(1)}"/>`;
   const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1];
@@ -87,9 +103,10 @@ export function scatterIsOos(analysis) {
   const svg = frame(W, H, pad, diagonal + pts.join('') + reps, {
     label: L(`Calidad en el periodo optimizado frente al forward: el ${worse} % de las configuraciones pierde calidad en el forward.`,
       `Optimized-period versus forward quality: ${worse}% of configurations lose quality on the forward.`),
-    xLabel: L('Calidad en el periodo optimizado', 'Quality on the optimized period'),
+    xLabel: compact ? L('Calidad optimizando', 'Quality when optimizing') : L('Calidad en el periodo optimizado', 'Quality on the optimized period'),
     yLabel: L('Calidad en el forward', 'Quality on the forward'),
-    xTicks: ticks, yTicks: ticks, xScale, yScale,
+    xTicks: compact ? [0, 0.25, 0.5, 0.75, 1] : ticks, yTicks: compact ? [0, 0.25, 0.5, 0.75, 1] : ticks, xScale, yScale,
+    minW: compact ? 240 : W,
   });
   return wrapChart(svg, legend([
     { cls: 'chart-swatch-fail', label: L('No pasan mínimos', 'Fail the minimums') },
@@ -138,10 +155,11 @@ export function parameterProfile(analysis, paramIndex) {
 }
 
 /** Degradacion de la mediana OOS por decil del criterio in-sample. */
-export function degradationChart(analysis) {
+export function degradationChart(analysis, compact = isCompact()) {
   const rows = analysis.stats.degradation;
   if (!rows.length) return `<p class="muted">${L('No hay suficientes datos para el análisis por deciles.', 'Not enough data for the decile analysis.')}</p>`;
-  const W = 620; const H = 320; const pad = { l: 52, r: 16, t: 16, b: 48 };
+  const W = compact ? 280 : 620; const H = compact ? 250 : 320;
+  const pad = compact ? { l: 42, r: 8, t: 12, b: 46 } : { l: 52, r: 16, t: 16, b: 48 };
   const allVals = rows.flatMap((r) => [r.oosMedian, r.oosQ25]).filter(Number.isFinite);
   let [lo, hi] = extent(allVals);
   const span = hi - lo || 1;
@@ -156,7 +174,8 @@ export function degradationChart(analysis) {
     return `<rect class="${cls}" x="${fx(xScale(k) - w / 2)}" y="${fx(y)}" width="${fx(w)}" height="${fx(Math.max(1, base - y))}" rx="2"/>`;
   }).join('');
   const q25line = rows.map((r, k) => `${k ? 'L' : 'M'}${fx(xScale(k))},${fx(yScale(r.oosQ25))}`).join(' ');
-  const labels = rows.map((r, k) => `<text class="ch-tick" x="${fx(xScale(k))}" y="${H - pad.b + 15}" text-anchor="middle">D${r.decile}</text>`).join('');
+  // En el móvil, «D1…D10» no cabe bajo diez barras de 23 unidades: solo el número.
+  const labels = rows.map((r, k) => `<text class="ch-tick" x="${fx(xScale(k))}" y="${H - pad.b + 15}" text-anchor="middle">${compact ? r.decile : `D${r.decile}`}</text>`).join('');
   const yTicks = niceTicks(lo, hi, 5);
   const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${W - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 3)}" text-anchor="end">${formatTick(t)}</text>`).join('');
   const top = rows[rows.length - 1];
@@ -166,11 +185,11 @@ export function degradationChart(analysis) {
     `Forward criterion by optimized-period criterion decile: your best (D10) have median ${formatTick(top.oosMedian)} versus ${formatTick(restMedian)} for the rest.`,
   );
   const yMid = (pad.t + H - pad.b) / 2;
-  const svg = `${svgOpen(W, H, degLabel)}
+  const svg = `${svgOpen(W, H, degLabel, compact ? 240 : W)}
     ${gy}${bars}<path class="ch-line-q25" d="${q25line}"/>${labels}
-    <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(L('Resultado en el forward (mediana)', 'Result on the forward (median)'))}</text>
+    <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(compact ? L('Forward (mediana)', 'Forward (median)') : L('Resultado en el forward (mediana)', 'Result on the forward (median)'))}</text>
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
-    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(L('Grupos según su puesto en la optimización (D10 = tu 10 % mejor)', 'Groups by optimization rank (D10 = your best 10%)'))}</text>
+    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(compact ? L('Decil de puesto (10 = tu 10 % mejor)', 'Rank decile (10 = your best 10%)') : L('Grupos según su puesto en la optimización (D10 = tu 10 % mejor)', 'Groups by optimization rank (D10 = your best 10%)'))}</text>
   </svg></div>`;
   return wrapChart(svg, legend([
     { cls: 'chart-swatch-bar', label: L('Mediana en el forward', 'Forward median') },

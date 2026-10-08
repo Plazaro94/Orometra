@@ -392,6 +392,16 @@ function nextSteps(a, best, hold) {
   </div>`;
 }
 
+/**
+ * Al cruzar el ancho de móvil (girar la pantalla, redimensionar), vuelve a dibujar solo los
+ * dos gráficos SVG del veredicto con el formato que toca, sin repintar la pestaña: así el
+ * desplegable donde están no se cierra.
+ */
+export function refreshCompactCharts(a) {
+  document.querySelectorAll('[data-chart="scatter"]').forEach((el) => { el.innerHTML = scatterIsOos(a); });
+  document.querySelectorAll('[data-chart="degradation"]').forEach((el) => { el.innerHTML = degradationChart(a); });
+}
+
 /** La tarjeta principal: qué configuración usar, su fiabilidad y qué hacer ahora. */
 function renderDecision(a, dv, best, hold) {
   const c = verdictCopy(dv.level);
@@ -500,7 +510,7 @@ export function renderVerdict(a) {
       `<div class="grid-secondary chart-pair">
         <div>
           <h3>${L('Calidad en la optimización frente a la validación', 'Quality in optimization vs validation')}</h3>
-          ${scatterIsOos(a)}
+          <div data-chart="scatter">${scatterIsOos(a)}</div>
           <p class="chart-note">${L(
             'Cada punto es una configuración. La diagonal marca &laquo;no se degrada&raquo;. Los puntos por debajo pierden calidad fuera de la muestra. En lavanda, las que forman meseta.',
             'Each point is a configuration. The diagonal marks &ldquo;no degradation&rdquo;. Points below lose quality out of sample. In lavender, those that form a plateau.',
@@ -508,7 +518,7 @@ export function renderVerdict(a) {
         </div>
         <div>
           <h3>${L('Qué les pasa a tus mejores', 'What happens to your best ones')}</h3>
-          ${degradationChart(a)}
+          <div data-chart="degradation">${degradationChart(a)}</div>
           <p class="chart-note">${L(
             'Las configuraciones, en diez grupos según su puesto en la optimización (D10 = tu 10 % mejor). Si D10 no destaca en la validación, el orden de MT5 no predice nada.',
             'Configurations in ten groups by their optimization rank (D10 = your best 10%). If D10 does not stand out on validation, the MT5 order predicts nothing.',

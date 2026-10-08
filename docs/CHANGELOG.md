@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-10-08 — Portada equilibrada, guías en el móvil, tarjeta de ejemplo clicable y gráficos del veredicto en el móvil
+
+Comprobado a 320, 390, 768, 1024, 1440 y 1920 px, en los dos temas.
+
+- **Portada, «En MT5, el n.º 1 suele ser el más frágil»:** las dos tarjetas comparten filas
+  (subgrid): título, recuadro, imagen y texto quedan a la misma altura. Antes, a la de MT5 le
+  sobraban 118–149 px abajo en escritorio. Lleva un recuadro neutro gemelo del lima: «La n.º 1
+  de MT5: pasada 1842 · El Resultado más alto entre miles de pasadas». En el móvil, una
+  debajo de otra como siempre. Las etiquetas del diagrama crecen (de 8 a 10 px a 320 px).
+- **Guías en el móvil:** sin huecos de hasta 46 px sobre «Leer la guía». Las tarjetas solo se
+  igualan en altura cuando van a dos columnas.
+- **Tarjeta de ejemplo de la portada:** sus botones («Descargar .set», «Copiar parámetros»)
+  parecían funcionar y no hacían nada. Ahora toda la tarjeta es una vista previa: tocarla en
+  cualquier punto abre el informe de ejemplo completo, donde esos botones funcionan. Lo hace
+  el enlace «Ver el informe de ejemplo completo», estirado sobre el bloque (el texto se sigue
+  leyendo como texto); al pasar el ratón la tarjeta se eleva, y con teclado se ve el foco.
+- **Veredicto → «Gráficos: optimización frente a validación» en el móvil:** la nube de puntos
+  y los deciles se dibujan con un formato compacto (280 unidades, ejes y etiquetas más cortos)
+  y caben sin deslizar desde 320 px. Al girar el móvil se redibujan solos sin cerrar el
+  desplegable. En escritorio, igual que antes.
+- **Medidor de fiabilidad:** no cambia. El comentario de la regla de color de `styles.css`
+  recoge ahora la escala de rojo a lima como excepción deliberada.
+
 ## 2026-10-08 — Diagrama de cajas y mapa de calor enteros en el móvil
 
 - **Parámetros → «Calidad por valor del parámetro» y «Los dos parámetros más

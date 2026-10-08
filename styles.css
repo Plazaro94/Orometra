@@ -11,6 +11,9 @@
    * aplicación NO afirma: dice «esto ha pasado la auditoría». Por eso:
    *
    *     veredicto  ->  lima (sólida) · oro (moderada) · gris (débil e insuficiente)
+   *                    EXCEPCIÓN deliberada (#139): la escala de fiabilidad de cinco tramos
+   *                    va de rojo a lima (--lv-1…--lv-5). Es una escala ordinal con su
+   *                    nombre debajo, no una cifra de dinero, y se queda así.
    *     acción     ->  lima (solo el botón principal y la configuración recomendada)
    *     navegación ->  lavanda (marcas A/B/C, pasos, enlaces, la meseta en los gráficos)
    *     estructura ->  azul noche (fondo, franja superior, bandas, barra lateral)
@@ -1576,13 +1579,13 @@ tr.sel td{color:var(--text-2)}
 .lp-list li+li{margin-top:8px}
 
 /* Guias */
-.guide-list{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:14px;grid-auto-rows:1fr}
+.guide-list{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:14px}
 .guide-list>li{display:flex}
 .guide-card{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:6px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--text);text-decoration:none;transition:border-color .15s}
 .guide-card:hover,.guide-card:focus-visible{border-color:var(--accent)}
 .guide-card strong{font-size:var(--fs-lg);line-height:1.35}
 .guide-card span{color:var(--text-2);line-height:1.5}
-/* Todas las tarjetas miden lo que la más alta; «Leer la guía» queda siempre al pie. */
+/* «Leer la guía» queda siempre al pie de la tarjeta (a dos columnas, todas miden lo que la más alta). */
 .guide-card .guide-card-more{color:var(--accent);font-weight:600;margin-top:auto;padding-top:4px}
 .guide-summary{margin:24px 0 32px;padding:18px 20px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius);background:var(--surface)}
 .guide-summary h2{margin:0 0 10px;font-size:var(--fs-base);text-transform:uppercase;letter-spacing:.06em;color:var(--text-2)}
@@ -1689,7 +1692,13 @@ html.i18n-pending body{visibility:hidden}
 .hm-card-ok{border-color:var(--ok-line)}
 .hm-card-ok .hm-card-kicker{color:var(--ok-text) !important}
 
-.hm-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+/* Las dos tarjetas comparten filas (título, recuadro, imagen, texto) con subgrid: sus
+ * textos quedan a la misma altura y ninguna deja un hueco abajo, mida lo que mida la
+ * imagen de cada una (la tabla de MT5 o el diagrama) en cada ancho de pantalla. */
+.hm-compare{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto 1fr auto;column-gap:20px;row-gap:0}
+.hm-compare > .hm-card{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;align-content:start}
+.hm-compare .hm-table{align-self:center}
+.hm-compare .hm-fig{align-self:center}
 .hm-table{width:100%;border-collapse:collapse;margin:0 0 16px;font-family:var(--mono);font-size:13px}
 .hm-table th{text-align:left;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted);padding:6px 10px;border-bottom:1px solid var(--line)}
 .hm-table td{padding:8px 10px;border-bottom:1px solid var(--line-soft);color:var(--text-2)}
@@ -1701,8 +1710,13 @@ html.i18n-pending body{visibility:hidden}
 }
 .hm-pick > span:first-child{font-weight:700;color:var(--lime-text);font-size:16px}
 .hm-pick-note{font-size:var(--fs-sm);color:var(--muted)}
+/* El recuadro gemelo de la tarjeta de MT5: lo que MT5 pone arriba, en gris de pico. */
+.hm-pick-mt5{background:var(--surface-2)}
+.hm-pick.hm-pick-mt5 > span:first-child{color:var(--peak-text)}
 /* Pico frente a meseta en la tarjeta «Lo que hace Orometra»: lo que dice la tabla de al lado, dibujado. */
 .hm-fig{display:block;width:100%;height:auto;max-width:460px;margin:0 auto 16px}
+/* En móviles estrechos, el diagrama usa también el relleno de la tarjeta: el texto crece un 10 %. */
+@media (max-width:400px){.hm-fig{width:calc(100% + 24px);max-width:none;margin:0 -12px 16px}}
 
 .hm-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
 .hm-steps li{min-width:0}
@@ -1747,6 +1761,9 @@ html.i18n-pending body{visibility:hidden}
 }
 @media (max-width:720px){
   .hm-compare,.hm-steps{grid-template-columns:1fr}
+  /* Una tarjeta debajo de otra: cada una con sus filas, y aire entre ellas. */
+  .hm-compare{grid-template-rows:none;row-gap:20px}
+  .hm-compare > .hm-card{display:block;grid-row:auto}
 }
 @media (max-width:480px){
   .hm-actions .hm-cta{flex:1 1 100%;justify-content:center}
@@ -1823,6 +1840,23 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
 /* Portada: lo que te llevas. La misma tarjeta del informe (clases .vx), con tres marcas
    numeradas que explica la columna de al lado, y un trozo del .set. */
 .hm-take-grid{display:flex;flex-direction:column;gap:28px}
+/* La tarjeta de ejemplo es una vista previa: tocarla en cualquier punto (también sus
+ * botones, que aquí son de muestra) abre el informe de ejemplo completo, donde funcionan de
+ * verdad. Lo hace el enlace «Ver el informe de ejemplo completo», que se estira sobre todo
+ * el bloque: el texto de la tarjeta se sigue leyendo como texto, no como un enlace enorme. */
+.hm-take-grid{position:relative}
+.hm-take-grid .hm-more a::after{content:"";position:absolute;inset:0;z-index:1;border-radius:var(--radius-lg)}
+.hm-take-card .vx{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+@media (hover:hover){
+  .hm-take-grid:has(.hm-more a:hover) .vx{transform:translateY(-3px);border-color:var(--ok-line);box-shadow:0 26px 56px -26px rgba(0,0,0,.6)}
+  .hm-take-grid:has(.hm-more a:hover) .hm-more a{color:var(--ok-hi)}
+}
+.hm-take-grid:has(.hm-more a:focus-visible) .vx{outline:2px solid var(--accent);outline-offset:4px}
+.hm-take-grid .hm-more a:focus-visible{outline:none}
+@media (prefers-reduced-motion:reduce){
+  .hm-take-card .vx{transition:none}
+  .hm-take-grid:has(.hm-more a:hover) .vx{transform:none}
+}
 .hm-take-card{margin:0;min-width:0}
 .hm-take-card .vx{margin:0;box-shadow:0 18px 48px -24px rgba(0,0,0,.55)}
 .hm-take-card .vx-label{display:flex;align-items:center;gap:8px}
@@ -1934,7 +1968,9 @@ html{zoom:var(--z)}
 
 /* Índice de guías: dos columnas cuando hay sitio. */
 @media (min-width:860px){
-  .guide-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  /* A dos columnas, todas las tarjetas miden lo que la más alta (en una sola columna no:
+     dejaba huecos de hasta 46 px sobre «Leer la guía» en el móvil). */
+  .guide-list{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr}
 }
 
 /* Preguntas frecuentes: el título a la izquierda y las preguntas a la derecha. */

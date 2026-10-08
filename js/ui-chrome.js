@@ -5,7 +5,8 @@ import { enhanceRadioGroups } from './radiogroup.js';
 import { t, L, getLocale, setLocale, applyStaticI18n, pctSign } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
-import { displayVerdictCopy, displayVerdictLevel, levelName, compactSummary, compactAction } from './ui-verdict.js';
+import { displayVerdictCopy, displayVerdictLevel, levelName, compactSummary, compactAction, refreshCompactCharts } from './ui-verdict.js';
+import { COMPACT_QUERY } from './charts.js';
 
 // ---------------------------------------------------------------- preferencias
 export const PREFS_KEY = 'orometra.gates';
@@ -52,6 +53,15 @@ export function initChrome() {
   // bindViewEvents(), que repasa [data-export] en todo el documento en cada pintado.
   const topSet = $('#topSetBtn');
   if (topSet) topSet.addEventListener('click', () => api.doExport(topSet.dataset.kind, 0));
+
+  // Gráficos SVG del veredicto: formato compacto en el móvil, normal en el resto.
+  if (typeof matchMedia === 'function') {
+    matchMedia(COMPACT_QUERY).addEventListener('change', () => {
+      if (!state.analysis) return;
+      refreshCompactCharts(state.analysis);
+      markScrollableTables();
+    });
+  }
 
   // Redimensionar puede hacer que una tabla deje de necesitar scroll, o empiece a necesitarlo.
   let resizeTimer = 0;
