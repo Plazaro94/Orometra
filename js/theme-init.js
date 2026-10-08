@@ -7,21 +7,30 @@
 // o si el navegador es espanol y aun no hay preferencia guardada.
 (function () {
   function syncThemeColor() {
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) return;
     var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    var meta = document.querySelector('meta[name="theme-color"]');
     var map = { dark: '#0b1019', light: '#f4f6fa' };
-    meta.setAttribute('content', map[theme] || map.dark);
+    if (meta) meta.setAttribute('content', map[theme] || map.dark);
+    // El lienzo que pinta el navegador antes de leer los estilos sigue a esta etiqueta: sin
+    // actualizarla, quien tiene el sistema en claro veía un instante de fondo oscuro.
+    var scheme = document.querySelector('meta[name="color-scheme"]');
+    if (scheme) scheme.setAttribute('content', theme === 'light' ? 'light' : 'dark');
   }
 
+  // Tema: el que eligió el usuario; si aún no eligió, el de su sistema (antes, siempre
+  // oscuro). landing.js y ui-chrome.js siguen al sistema si cambia mientras no haya elección.
+  var t = null;
   try {
-    var t = localStorage.getItem('orometra.theme');
+    t = localStorage.getItem('orometra.theme');
     if (t === 'cream') {
       t = 'light';
       try { localStorage.setItem('orometra.theme', 'light'); } catch (eWrite) { /* privado */ }
     }
-    if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
   } catch (e) { /* modo privado */ }
+  if (t !== 'light' && t !== 'dark') {
+    t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  document.documentElement.dataset.theme = t;
   syncThemeColor();
 
   // Portada: la foto de la tarjeta principal es un fondo CSS, y el navegador no la pide

@@ -29,11 +29,12 @@ function syncLang() {
   $$('[data-lang-set]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.langSet === lang)));
 }
 
-try {
-  const saved = localStorage.getItem(THEME_KEY);
-  setTheme(saved || 'dark', false);
-} catch {
-  setTheme('dark', false);
+// Sin elección guardada, el tema del sistema, y se sigue si cambia (modo noche automático).
+const systemLight = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)') : null;
+const savedTheme = () => { try { return localStorage.getItem(THEME_KEY); } catch { return null; } };
+setTheme(savedTheme() || (systemLight && systemLight.matches ? 'light' : 'dark'), false);
+if (systemLight) {
+  systemLight.addEventListener('change', (e) => { if (!savedTheme()) setTheme(e.matches ? 'light' : 'dark', false); });
 }
 
 $$('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));

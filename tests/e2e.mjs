@@ -315,6 +315,20 @@ try {
     await ctx.close();
   }
 
+  section('5b. Tema: el del sistema hasta que el usuario elige');
+  for (const [scheme, saved, want] of [['light', null, 'light'], ['dark', null, 'dark'], ['light', 'dark', 'dark'], ['dark', 'light', 'light']]) {
+    const ctx = await browser.newContext({ colorScheme: scheme });
+    if (saved) await ctx.addInitScript((t) => { try { localStorage.setItem('orometra.theme', t); } catch { /* */ } }, saved);
+    const page = await ctx.newPage();
+    watch(page);
+    for (const path of ['/', '/app/']) {
+      await page.goto(`${BASE}${path}`);
+      const got = await page.evaluate(() => document.documentElement.dataset.theme);
+      check(`${path}: sistema ${scheme}${saved ? `, eligió ${saved}` : ''} → ${want}`, got === want, got);
+    }
+    await ctx.close();
+  }
+
   section('6. Sin errores de JavaScript');
   check('ninguna página ha lanzado un error', pageErrors.length === 0, pageErrors.join(' | '));
 } finally {

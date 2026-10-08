@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-08 — Tema según el sistema en la primera visita
+
+- Sin elección guardada, la web usa el tema del sistema (claro u oscuro) en lugar de
+  empezar siempre en oscuro, y lo sigue si el sistema cambia (modo noche automático). En
+  cuanto el usuario elige un tema, manda su elección. Vale para portada, páginas de texto y
+  app.
+- La etiqueta `color-scheme` sigue al tema antes de pintar: con el sistema en claro ya no
+  hay un instante de fondo oscuro al cargar.
+- Prueba de navegador nueva: sistema claro u oscuro, con y sin elección guardada, en la
+  portada y en la app (8 comprobaciones).
+
 ## 2026-10-08 — Portada equilibrada, guías en el móvil, tarjeta de ejemplo clicable y gráficos del veredicto en el móvil
 
 Comprobado a 320, 390, 768, 1024, 1440 y 1920 px, en los dos temas.
