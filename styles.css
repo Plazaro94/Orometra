@@ -2462,6 +2462,30 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
 /* Con el texto a 18 px, los títulos de sección a 19,5 px apenas se distinguían. */
 .lp-doc .lp-doc-block h2{font-size:24px;line-height:1.25}
 .lp-doc .guide-step h3{font-size:20px}
+/* Metodología en pantallas anchas (portátil, monitor): el índice y los pasos se abren a
+   1100 px con los bordes alineados, y cada paso con diagrama pone el texto a la izquierda y
+   el diagrama a la derecha (480 px: su texto interno, al menos al tamaño de su diseño). Los
+   pasos sin diagrama, a 640 px como el resto de la página. Por debajo de 1200 px, una sola
+   columna como siempre. La página baja de ~6.950 a ~5.700 px a 1440. */
+@media (min-width:1200px){
+  .lp-doc > .doc-index,.lp-doc > .lp-method-steps{max-width:1100px}
+  .lp-doc .lp-method-step.has-media,.lp-doc .lp-method-step.has-media:nth-child(even){
+    display:grid;grid-template-columns:52px minmax(0,1fr) 480px;column-gap:20px;row-gap:0;align-items:start;
+  }
+  /* Columna del número con ancho fijo: el texto de todos los pasos empieza en el mismo sitio. */
+  .lp-doc .lp-method-step .lp-method-num{flex:0 0 52px;width:52px;min-width:0}
+  .lp-doc .lp-method-step:not(.has-media){gap:20px}
+  .lp-doc .lp-method-step.has-media .lp-method-step-text{grid-column:2}
+  .lp-doc .lp-method-step.has-media .lp-method-step-media,.lp-doc .lp-method-step.has-media:nth-child(even) .lp-method-step-media{
+    grid-column:3;grid-row:1;align-self:center;margin:0 0 0 20px;width:auto;
+  }
+  .lp-doc .lp-method-step:not(.has-media) .lp-method-step-text{max-width:640px}
+  /* El resto del texto (entradilla, «Lo que no hace», «¿Y una IA?»…) empieza donde el texto
+     de los pasos (72 px = número + hueco), para que toda la página lea con un solo borde. */
+  .lp-doc:has(> .lp-method-steps) > :not(.photo-head):not(.doc-index):not(.lp-method-steps){
+    margin-left:calc((100% - min(100%, 1100px)) / 2 + 72px);margin-right:auto;
+  }
+}
 @media (max-width:720px){
   .lp-doc .lp-method-step,.lp-doc .lp-method-step.has-media,.lp-doc .lp-method-step.has-media:nth-child(even){gap:12px}
   .lp-doc .lp-doc-block h2{font-size:21px}
