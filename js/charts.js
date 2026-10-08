@@ -204,37 +204,26 @@ export function dimRole(analysis, sens) {
 export function sensitivityBars(analysis) {
   const eff = (r) => (Number.isFinite(r.effective) ? r.effective : r.sensitivity);
   const rows = [...analysis.sensitivity].sort((a, b) => eff(b) - eff(a));
-  const rowH = 26;
-  const W = 620; const H = rows.length * rowH + 30; const labelW = 190;
-  // Deja hueco a la derecha para el texto largo ("(0.87 · aislado 0.67)"), que si no
-  // se sale del viewBox: .chart tiene overflow:visible y no se recorta solo.
-  const rightMargin = 170;
   const [, maxS] = extent(rows.map(eff));
-  const scale = (v) => (maxS > 0 ? (v / maxS) * (W - labelW - rightMargin) : 0);
-  const body = rows.map((r, k) => {
+  const pct = (v) => (maxS > 0 ? Math.min(100, Math.max(0, (v / maxS) * 100)) : 0);
+  // En HTML y no en SVG: es una lista de filas, y así se adapta al ancho. En el móvil, el
+  // SVG de 620 px se deslizaba de lado y las cifras quedaban fuera de vista.
+  const body = rows.map((r) => {
     const role = dimRole(analysis, r);
-    const cls = role === 'distancia' ? 'ch-sens-active' : role === 'particion' ? 'ch-sens-block' : 'ch-sens-flat';
+    const cls = role === 'distancia' ? 'is-active' : role === 'particion' ? 'is-block' : 'is-flat';
     const roleNote = role === 'distancia' ? '' : ({ particion: L('partición', 'partition'), plano: L('plano', 'flat'), liberado: L('liberado', 'released'), 'no optimizado': L('no optimizado', 'not optimized') }[role] || role);
     const value = eff(r);
     const marginal = r.sensitivity || 0;
     // Diferencia real, no solo redondeo: la combinada rescata a este parametro.
     const rescued = Number.isFinite(r.conditional) && value - marginal > 0.05;
-    const y = 14 + k * rowH;
-    const wEff = Math.max(2, scale(value));
-    const wMarg = Math.max(0, scale(marginal));
-    const marker = rescued
-      ? `<line class="ch-sens-marginal" x1="${fx(labelW + wMarg)}" y1="${y + 2}" x2="${fx(labelW + wMarg)}" y2="${y + 18}"/>`
-      : '';
-    const note = rescued ? ` (${fmt2(value)} · ${L('aislado', 'isolated')} ${fmt2(marginal)})` : `${fmt2(value)}${roleNote ? ' · ' + roleNote : ''}`;
-    const label = rescued ? note.trim() : note;
-    return `<text class="ch-row-label" x="${labelW - 8}" y="${y + 13}" text-anchor="end">${esc(r.name)}</text>
-      <rect class="ch-sens-track" x="${labelW}" y="${y + 6}" width="${fx(scale(maxS))}" height="8" rx="4"/>
-      <rect class="${cls}" x="${labelW}" y="${y + 6}" width="${fx(wEff)}" height="8" rx="4"/>
-      ${marker}
-      <text class="ch-count" x="${fx(labelW + scale(maxS) + 10)}" y="${y + 14}">${esc(label)}</text>`;
+    const marker = rescued ? `<span class="sens-mark" style="left:${fx(pct(marginal))}%"></span>` : '';
+    const label = rescued
+      ? `(${fmt2(value)} · ${L('aislado', 'isolated')} ${fmt2(marginal)})`
+      : `${fmt2(value)}${roleNote ? ' · ' + roleNote : ''}`;
+    return `<li class="sens-row"><span class="sens-name">${esc(r.name)}</span><span class="sens-val">${esc(label)}</span><span class="sens-track" aria-hidden="true"><span class="sens-fill ${cls}" style="width:${fx(Math.max(1, pct(value)))}%"></span>${marker}</span></li>`;
   }).join('');
   const topName = rows.length ? rows[0].name : '';
-  return `${svgOpen(W, H, L(`Influencia relativa de cada parámetro; el más influyente es ${topName}.`, `Relative influence of each parameter; the most influential is ${topName}.`))}${body}</svg></div>`;
+  return `<ol class="sens-chart" aria-label="${esc(L(`Influencia relativa de cada parámetro; el más influyente es ${topName}.`, `Relative influence of each parameter; the most influential is ${topName}.`))}">${body}</ol>`;
 }
 
 /** Mapa 2D: calidad mediana por pareja de valores de los dos parámetros dados. */

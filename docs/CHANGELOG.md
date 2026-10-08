@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-08 — Auditoría de diseño: seis arreglos visuales
+
+- **Influencia relativa (pestaña Parámetros):** pasa de SVG de 620 px a una lista HTML que
+  se adapta al ancho. En el móvil, el gráfico se deslizaba de lado y las cifras
+  («0.87 · aislado 0.67») quedaban fuera de vista; ahora va nombre y cifra en una línea y la
+  barra debajo. En escritorio se ve como antes. Las barras se imprimen
+  (`print-color-adjust`).
+- **Tablas apiladas en el móvil:** las etiquetas («Parámetro», «Valores») salían en
+  monoespaciada si la celda lo era; ahora siempre en la letra del texto.
+- **Títulos de pestaña** con interlineado 1,2 (heredaban 1,55: en el móvil, dos líneas muy
+  separadas).
+- **Índice de las guías:** sin doble número («01 1. Antes de optimizar…» → «01 Antes de
+  optimizar…»).
+- **Accesibilidad:** `role="group"` en la tarjeta de ejemplo de la portada y en los valores
+  recomendados del informe (un `aria-label` en un `div` sin rol no se anuncia); fuera un
+  `aria-labelledby` redundante en las preguntas frecuentes.
+- **Portada:** «12 de 12» como en la app (antes «12 / 12»). Caché de estilos `?v=20261008a`.
+
 ## 2026-10-07 — Plurales, «%» en inglés y la banda del periodo no visto
 
 - **Singular con una sola unidad:** «1 configuración supera los mínimos», «1 pasada sin

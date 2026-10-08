@@ -37,7 +37,7 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261007e">
+<link rel="stylesheet" href="/styles.css?v=20261008a">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separa lo frágil de lo estable en tu optimización de MT5: qué configuración de tu EA es estable y cuánta evidencia la respalda. Gratis y en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js" data-hero-photo></script>
 </head>
@@ -114,7 +114,7 @@
     <p class="hm-sub" data-i18n="home.take.sub">Es lo primero que muestra el informe: qué configuración elegir, qué fiabilidad tiene y qué hacer después (datos de ejemplo).</p>
     <div class="hm-take-grid">
       <figure class="hm-take-card">
-        <div class="vx v-go" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Tarjeta de veredicto de ejemplo">
+        <div class="vx v-go" role="group" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Tarjeta de veredicto de ejemplo">
           <div class="vx-main">
             <div class="vx-pick">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">A</b><span data-i18n="home.take.pick.label">Qué configuración usar</span></span>
@@ -135,7 +135,7 @@
               <p class="vx-trust-line" data-i18n="home.take.trust.line">Meseta validada. Para llegar a sólida falta probarla en un periodo que no hayas usado.</p>
               <div class="vx-stats">
                 <div class="vx-stat"><strong>88<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustez</span></div>
-                <div class="vx-stat"><strong>12<small> / 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Vecinas que cumplen</span></div>
+                <div class="vx-stat"><strong>12<small data-i18n="home.take.stat.of"> de 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Vecinas que cumplen</span></div>
                 <div class="vx-stat"><strong data-i18n="home.take.stat.pct">94 %</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Se mantiene al validar</span></div>
               </div>
             </div>
@@ -216,7 +216,7 @@
       <h2 id="hm-faq-title" data-i18n="home.faq.title">Preguntas frecuentes</h2>
       <p data-i18n-html="home.faq.more">¿Otra duda? Escríbenos a <a href="mailto:hello@orometra.com">hello@orometra.com</a>.</p>
     </div>
-    <div class="hm-faq" aria-labelledby="hm-faq-title">
+    <div class="hm-faq">
       <details><summary data-i18n="home.faq.1.q">¿Qué archivos necesito?</summary><p data-i18n-html="home.faq.1.a">El XML que exporta MT5 con los resultados de tu optimización: clic derecho en la tabla y exportar a XML. Si activaste el forward, exporta también esa tabla. El archivo .opt no sirve. <a href="/es/guias/exportar-optimizacion-mt5-xml/">Guía paso a paso</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">¿Y si no activé el forward?</summary><p data-i18n="home.faq.2.a">Puedes analizarla igual, pero la evidencia no pasará de «débil»: sin datos que la optimización no haya visto, no se distingue una meseta robusta de una con suerte. Para la próxima, actívalo en los ajustes del probador (una cuarta o una tercera parte del periodo).</p></details>
       <details><summary data-i18n="home.faq.3.q">¿Sirve con optimización genética?</summary><p data-i18n="home.faq.3.a">Sí. Como la genética no prueba todas las combinaciones, las mesetas se miden con prudencia: el resultado puede quedarse corto, pero nunca se inventa respaldo. El informe te lo avisa.</p></details>

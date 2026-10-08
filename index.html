@@ -36,7 +36,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=20261007e">
+<link rel="stylesheet" href="styles.css?v=20261008a">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separate the fragile from the stable in your MT5 optimization: which configuration of your EA is stable and how much evidence backs it. Free, in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js" data-hero-photo></script>
 </head>
@@ -113,7 +113,7 @@
     <p class="hm-sub" data-i18n="home.take.sub">This is the first thing the report shows: which configuration to pick, how reliable it is and what to do next (example data).</p>
     <div class="hm-take-grid">
       <figure class="hm-take-card">
-        <div class="vx v-go" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Example verdict card">
+        <div class="vx v-go" role="group" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Example verdict card">
           <div class="vx-main">
             <div class="vx-pick">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">A</b><span data-i18n="home.take.pick.label">Which configuration to use</span></span>
@@ -134,7 +134,7 @@
               <p class="vx-trust-line" data-i18n="home.take.trust.line">A validated plateau. To reach strong it still needs a test on a period you have not used.</p>
               <div class="vx-stats">
                 <div class="vx-stat"><strong>88<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustness</span></div>
-                <div class="vx-stat"><strong>12<small> / 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Neighbors that pass</span></div>
+                <div class="vx-stat"><strong>12<small data-i18n="home.take.stat.of"> of 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Neighbors that pass</span></div>
                 <div class="vx-stat"><strong data-i18n="home.take.stat.pct">94%</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Holds on validation</span></div>
               </div>
             </div>
@@ -215,7 +215,7 @@
       <h2 id="hm-faq-title" data-i18n="home.faq.title">Frequently asked questions</h2>
       <p data-i18n-html="home.faq.more">Something else? Write to us at <a href="mailto:hello@orometra.com">hello@orometra.com</a>.</p>
     </div>
-    <div class="hm-faq" aria-labelledby="hm-faq-title">
+    <div class="hm-faq">
       <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n-html="home.faq.1.a">The XML that MT5 exports with your optimization results: right-click the table and export to XML. If you enabled forward, export that table too. The .opt file does not work. <a href="/guides/export-mt5-optimization-xml/">Step-by-step guide</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">What if I did not enable forward?</summary><p data-i18n="home.faq.2.a">You can still analyze it, but the evidence will not go beyond “weak”: without data the optimization never saw, a robust plateau cannot be told apart from a lucky one. Next time, enable it in the tester settings (a quarter or a third of the period).</p></details>
       <details><summary data-i18n="home.faq.3.q">Does it work with genetic optimization?</summary><p data-i18n="home.faq.3.a">Yes. Since the genetic algorithm does not test every combination, plateaus are measured conservatively: the result may fall short, but it never invents support. The report tells you.</p></details>

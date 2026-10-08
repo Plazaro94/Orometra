@@ -855,7 +855,7 @@ th.t3-label{padding-left:2px}
 
 /* ---------------------------------------------------------------- tablas */
 .detail-head{margin-bottom:16px}
-.detail-head h2{font-size:26px;margin:8px 0;letter-spacing:-.025em}
+.detail-head h2{font-size:26px;line-height:1.2;margin:8px 0;letter-spacing:-.025em}
 .detail-head p{color:var(--muted);font-size:var(--fs-base);margin:0;max-width:var(--measure)}
 .detail-head strong{color:var(--text)}
 .table-wrap{overflow-x:auto;overflow-y:visible;position:relative}
@@ -910,7 +910,9 @@ tr.sel td{color:var(--text-2)}
   tr.stack-row{display:block;padding:10px 0;border-bottom:1px solid var(--line)}
   tr.stack-row:last-child{border-bottom:none}
   tr.stack-row td{display:flex;align-items:flex-start;gap:10px;padding:3px 0;border:none;white-space:normal;max-width:none}
-  tr.stack-row td::before{content:attr(data-label);flex:0 0 40%;color:var(--muted);font-size:13px;text-transform:none;letter-spacing:0}
+  /* La etiqueta va siempre en la letra del texto, aunque la celda sea monoespaciada
+     (nombre del parámetro, valores probados). */
+  tr.stack-row td::before{content:attr(data-label);flex:0 0 40%;color:var(--muted);font-family:var(--font);font-size:13px;text-transform:none;letter-spacing:0}
   tr.stack-row td.reasons-cell{flex-direction:column;align-items:flex-start}
   /* Descartes: tarjeta compacta. Puesto, pasada y resultado en una fila; las tres
      cifras en otra; los motivos debajo. Antes, siete filas etiqueta/valor por
@@ -919,7 +921,6 @@ tr.sel td{color:var(--text-2)}
   .rej-table tr.stack-row td{display:block;padding:0}
   .rej-table tr.stack-row td::before{display:block;margin-bottom:2px;font-size:12.5px}
   .rej-table tr.stack-row td.reasons-cell{grid-column:1 / -1}
-  .rej-table tr.stack-row td::before{font-family:var(--font)}
   /* El detalle de cada motivo repite los mínimos que ya se explican arriba: en la
      tarjeta compacta quedan solo las etiquetas, como en la tabla de escritorio. */
   .rej-table .reason-detail{display:none}
@@ -1054,13 +1055,26 @@ tr.sel td{color:var(--text-2)}
 .ch-bar{fill:var(--info-line)}
 .ch-bar-top{fill:var(--accent2)}
 .ch-line-q25{fill:none;stroke:var(--warn);stroke-width:1.6;stroke-dasharray:3 3}
-.ch-sens-active{fill:var(--accent)}
-.ch-sens-block{fill:var(--accent2)}
-.ch-sens-flat{fill:var(--line-strong)}
+/* Influencia relativa (sensitivityBars en charts.js): lista HTML, no SVG, para que se
+ * adapte al ancho. En escritorio, nombre | barra | cifra; en el móvil, nombre y cifra
+ * en una línea y la barra debajo, a todo el ancho. */
+.sens-chart{list-style:none;margin:22px 0 20px;padding:0;display:grid;grid-template-columns:max-content minmax(120px,300px) max-content;column-gap:12px;row-gap:12px;align-items:center}
+.sens-row{display:grid;grid-column:1 / -1;grid-template-columns:subgrid;align-items:center}
+.sens-name{grid-column:1;grid-row:1;text-align:right;font-family:var(--mono);font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.sens-track{grid-column:2;grid-row:1;position:relative;display:block;height:8px;border-radius:4px;background:color-mix(in srgb,var(--line) 55%,transparent)}
+.sens-val{grid-column:3;grid-row:1;font-size:13px;color:var(--muted-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sens-fill{display:block;height:100%;border-radius:4px;background:var(--line-strong)}
+.sens-fill.is-active{background:var(--accent)}
+.sens-fill.is-block{background:var(--accent2)}
 /* Marca donde cae la sensibilidad AISLADA dentro de la barra del EFECTIVO: solo se
- * dibuja cuando la combinada rescata al parametro (ver sensitivityBars en charts.js). */
-.ch-sens-track{fill:var(--line);opacity:.55}
-.ch-sens-marginal{stroke:var(--text-hi);stroke-width:2;stroke-linecap:round}
+ * dibuja cuando la combinada rescata al parametro. */
+.sens-mark{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;border-radius:1px;background:var(--text-hi)}
+@media (max-width:480px){
+  .sens-chart{grid-template-columns:minmax(0,1fr) max-content;row-gap:14px;margin:16px 0 18px}
+  .sens-name{text-align:left}
+  .sens-val{grid-column:2}
+  .sens-track{grid-column:1 / -1;grid-row:2;margin-top:6px}
+}
 .ch-sens-marginal-swatch{display:inline-block;width:2px;height:12px;background:var(--text-hi);vertical-align:middle;margin:0 1px}
 .hm-empty{fill:var(--surface-2)}
 /* Rampa secuencial de 6 tonos (de fondo a lavanda) y cifra que conmuta de color con el tono. */
@@ -1277,6 +1291,9 @@ tr.sel td{color:var(--text-2)}
   .param strong{color:#000}
   .chart{max-width:100%}
   .ch-tick,.ch-axis-label,.ch-count,.ch-row-label{fill:var(--muted-2)}
+  .sens-name,.sens-val{color:var(--muted-2)}
+  /* Las barras de influencia son fondos HTML: sin esto no se imprimen. */
+  .sens-track,.sens-fill,.sens-mark{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .ch-grid{stroke:var(--line)}
   .ch-axis{stroke:var(--muted)}
   .pt-fail{fill:var(--line-strong)}

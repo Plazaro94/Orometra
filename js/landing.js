@@ -188,7 +188,8 @@ function mountGuideRail() {
     const li = document.createElement('li');
     const a = document.createElement('a');
     a.href = `#${h.id}`;
-    a.textContent = h.textContent.trim();
+    // El índice ya numera con su contador: sin el «1.» que llevan algunos títulos.
+    a.textContent = h.textContent.trim().replace(/^\d+\.\s+/, '');
     li.append(a);
     list.append(li);
   });
