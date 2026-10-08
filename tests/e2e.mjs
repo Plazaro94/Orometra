@@ -302,6 +302,16 @@ try {
       return parseFloat(getComputedStyle(t).fontSize) * svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
     })));
     check('el texto de los gráficos se lee en el móvil (≥ 10 px)', minText >= 10, `${minText.toFixed(1)} px`);
+    // El diagrama de cajas, el mapa de calor y la influencia son HTML: se adaptan al ancho en
+    // vez de deslizarse de lado, y su texto tampoco baja de 10 px.
+    const htmlCharts = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll('#view .bx-chart, #view .hm-grid, #view .sens-chart')];
+      const sizes = nodes.flatMap((c) => [...c.querySelectorAll('span, b, li')].filter((e) => e.textContent.trim()).map((e) => parseFloat(getComputedStyle(e).fontSize)));
+      const scrolls = nodes.filter((c) => { const w = c.closest('.chart-scroll'); return w && w.scrollWidth > w.clientWidth + 1; }).length;
+      return { n: nodes.length, min: Math.min(...sizes), scrolls };
+    });
+    check('los gráficos de Parámetros caben en el móvil sin deslizar', htmlCharts.n === 3 && htmlCharts.scrolls === 0, JSON.stringify(htmlCharts));
+    check('y su texto se lee (≥ 10 px)', htmlCharts.min >= 10, JSON.stringify(htmlCharts));
     await ctx.close();
   }
 

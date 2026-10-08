@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-08 — Diagrama de cajas y mapa de calor enteros en el móvil
+
+- **Parámetros → «Calidad por valor del parámetro» y «Los dos parámetros más
+  influyentes»:** pasan de SVG de 620 unidades a HTML con rejilla CSS. En el móvil se
+  deslizaban de lado y a 390 px solo se veían 3 de los 7 valores del diagrama y 5 de las 7
+  columnas del mapa; ahora caben enteros desde 360 px. En escritorio se ven como antes.
+  Solo si hay más valores de los que caben (o en pantallas de 320 px) se vuelve a deslizar,
+  con el mismo difuminado que avisa.
+- Celdas y cajas se imprimen (`print-color-adjust`); el detalle de cada celda sigue al pasar
+  el ratón.
+- El aviso «Se necesitan dos parámetros con varios valores» salía solo en español; ahora
+  también en inglés.
+- Prueba de navegador nueva: en el móvil, los tres gráficos de Parámetros caben sin deslizar y
+  su texto no baja de 10 px.
+
 ## 2026-10-08 — Tarjetas anchas del informe a dos columnas
 
 Medido a 1440 px: tres tarjetas usaban la mitad de su ancho (el texto va a 72 caracteres

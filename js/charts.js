@@ -101,7 +101,6 @@ export function scatterIsOos(analysis) {
 
 /** Perfil de un parámetro: mediana y recorrido intercuartilico por nivel. */
 export function parameterProfile(analysis, paramIndex) {
-  const W = 620; const H = 260; const pad = { l: 52, r: 16, t: 16, b: 48 };
   const sens = analysis.sensitivity[paramIndex];
   if (!sens || sens.constant) return `<p class="muted">${L('Parámetro constante: no se optimizó.', 'Constant parameter: it was not optimized.')}</p>`;
   const levels = analysis.levels[paramIndex];
@@ -111,31 +110,31 @@ export function parameterProfile(analysis, paramIndex) {
     const z = levels.indexOf(r.params[paramIndex]);
     if (z >= 0) buckets[z].push(analysis.scores[i]);
   });
-  const xScale = (k) => pad.l + ((k + 0.5) / levels.length) * (W - pad.l - pad.r);
-  const yScale = (v) => H - pad.b - v * (H - pad.t - pad.b);
-  const bars = buckets.map((b, k) => {
-    if (b.length < 2) return '';
+  // En HTML (rejilla CSS) y no en SVG: cada valor probado es una columna que se reparte el
+  // ancho que haya. El SVG de 620 unidades obligaba a deslizar de lado en el móvil y dejaba
+  // fuera de vista la mitad de los valores. Solo con muchos valores, más de los que caben,
+  // se vuelve a deslizar (min-width de cada columna).
+  const p100 = (v) => fx(Math.min(1, Math.max(0, v)) * 100);
+  const cols = buckets.map((b) => {
+    if (b.length < 2) return '<div class="bx-col"></div>';
     const q1 = quantile(b, 0.25); const q3 = quantile(b, 0.75); const m = median(b);
-    const x = xScale(k);
-    const w = Math.max(6, (W - pad.l - pad.r) / levels.length * 0.46);
-    return `<rect class="ch-iqr" x="${fx(x - w / 2)}" y="${fx(yScale(q3))}" width="${fx(w)}" height="${fx(Math.max(1, yScale(q1) - yScale(q3)))}" rx="2"/>
-            <line class="ch-median" x1="${fx(x - w / 2)}" y1="${fx(yScale(m))}" x2="${fx(x + w / 2)}" y2="${fx(yScale(m))}"/>`;
+    return `<div class="bx-col"><span class="bx-box" style="bottom:${p100(q1)}%;height:${p100(q3 - q1)}%"></span><span class="bx-med" style="bottom:${p100(m)}%"></span></div>`;
   }).join('');
-  const labels = levels.map((v, k) => `<text class="ch-tick" x="${fx(xScale(k))}" y="${H - pad.b + 15}" text-anchor="middle">${esc(formatTick(v))}</text>`).join('');
-  const counts = buckets.map((b, k) => `<text class="ch-count" x="${fx(xScale(k))}" y="${H - pad.b + 28}" text-anchor="middle">${b.length}</text>`).join('');
+  const xLabels = levels.map((v, k) => `<span><b>${esc(formatTick(v))}</b>${buckets[k].length}</span>`).join('');
   const yTicks = [0, 0.25, 0.5, 0.75, 1];
-  const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${W - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 3)}" text-anchor="end">${formatTick(t)}</text>`).join('');
+  const grid = yTicks.map((t) => `<i style="bottom:${p100(t)}%"></i>`).join('');
+  const yLabels = yTicks.map((t) => `<span style="bottom:${p100(t)}%">${formatTick(t)}</span>`).join('');
   const medians = buckets.map((b) => (b.length >= 2 ? median(b) : -Infinity));
   const bestK = medians.indexOf(Math.max(...medians));
   const profileLabel = bestK >= 0 && Number.isFinite(medians[bestK])
     ? L(`Calidad por valor de ${sens.name}: la mediana más alta está en ${formatTick(levels[bestK])}.`, `Quality by value of ${sens.name}: the highest median is at ${formatTick(levels[bestK])}.`)
     : L(`Calidad por valor de ${sens.name}.`, `Quality by value of ${sens.name}.`);
-  return `${svgOpen(W, H, profileLabel)}
-    ${gy}${bars}${labels}${counts}
-    <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
-    <line class="ch-axis" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}"/>
-    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(sens.name)} ${esc(L('— valor probado (abajo, nº de configuraciones)', '— tested value (below, number of configurations)'))}</text>
-  </svg></div>`;
+  return `<div class="chart-scroll"><div class="bx-chart" role="img" aria-label="${esc(profileLabel)}" style="--n:${levels.length}">
+    <div class="bx-y" aria-hidden="true">${yLabels}</div>
+    <div class="bx-plot" aria-hidden="true">${grid}${cols}</div>
+    <div class="bx-x" aria-hidden="true">${xLabels}</div>
+    <div class="bx-title" aria-hidden="true">${esc(sens.name)} ${esc(L('— valor probado (abajo, nº de configuraciones)', '— tested value (below, number of configurations)'))}</div>
+  </div></div>`;
 }
 
 /** Degradacion de la mediana OOS por decil del criterio in-sample. */
@@ -230,20 +229,13 @@ export function sensitivityBars(analysis) {
 export function plateauHeatmap(analysis, dimA, dimB) {
   const la = analysis.levels[dimA];
   const lb = analysis.levels[dimB];
-  if (!la || !lb || la.length < 2 || lb.length < 2) return '<p class="muted">Se necesitan dos parámetros con varios valores.</p>';
+  if (!la || !lb || la.length < 2 || lb.length < 2) return `<p class="muted">${esc(L('Se necesitan dos parámetros con varios valores.', 'Two parameters with several values are needed.'))}</p>`;
   const cells = Array.from({ length: la.length }, () => Array.from({ length: lb.length }, () => []));
   analysis.records.forEach((r, i) => {
     const a = la.indexOf(r.params[dimA]);
     const b = lb.indexOf(r.params[dimB]);
     if (a >= 0 && b >= 0 && Number.isFinite(analysis.scores[i])) cells[a][b].push(analysis.scores[i]);
   });
-  const cw = 46; const ch = 30; const pad = { l: 72, t: 34, r: 16, b: 34 };
-  // Suelo de 620 en el ancho del viewBox: con pocos niveles el grid es mas estrecho que
-  // los demas graficos (620 fijo en el resto), y como .chart escala por ancho el mismo
-  // font-size en unidades SVG se ve mas grande aqui que en "Profile" al lado. Igualando
-  // el ancho de referencia, el texto sale al mismo tamano fisico en toda la pestana.
-  const W = Math.max(620, pad.l + la.length * cw + pad.r);
-  const H = pad.t + lb.length * ch + pad.b;
   // Color por tramos del rango observado (no por opacidad del valor bruto): con calidades
   // de 0,23 a 0,62 todo salía del mismo gris y las cifras no se leían. Seis tonos reales,
   // y la cifra en claro u oscuro según el tono de su celda.
@@ -251,28 +243,30 @@ export function plateauHeatmap(analysis, dimA, dimB) {
   const lo = meds.length ? Math.min(...meds) : 0;
   const hi = meds.length ? Math.max(...meds) : 1;
   const step = (m) => (hi > lo ? Math.min(5, Math.floor(((m - lo) / (hi - lo)) * 6)) : 5);
-  let body = '';
-  for (let a = 0; a < la.length; a++) {
-    for (let b = 0; b < lb.length; b++) {
+  const nameA = analysis.meta.paramNames[dimA];
+  const nameB = analysis.meta.paramNames[dimB];
+  // En HTML (rejilla CSS) y no en SVG: las celdas se reparten el ancho que haya (entre 32
+  // y 54 px), así que en el móvil caben enteras sin deslizar de lado. Con muchos valores,
+  // más de los que caben, se vuelve a deslizar.
+  let rows = '';
+  for (let b = lb.length - 1; b >= 0; b--) {
+    rows += `<span class="hm-ytick">${esc(formatTick(lb[b]))}</span>`;
+    for (let a = 0; a < la.length; a++) {
       const vals = cells[a][b];
-      const x = pad.l + a * cw;
-      const y = pad.t + (lb.length - 1 - b) * ch;
-      if (!vals.length) {
-        body += `<rect class="hm-empty" x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2"/>`;
-        continue;
-      }
+      if (!vals.length) { rows += '<span class="hm-cell hm-empty"></span>'; continue; }
       const m = median(vals);
       const k = step(m);
-      body += `<rect class="hm-cell hm-c${k}" x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="2"><title>${esc(analysis.meta.paramNames[dimA])}=${esc(String(la[a]))}, ${esc(analysis.meta.paramNames[dimB])}=${esc(String(lb[b]))}\ncalidad mediana ${m.toFixed(3)} (${vals.length} configs)</title></rect>`;
-      if (cw >= 40) body += `<text class="hm-text${k >= 4 ? ' hm-text-on' : ''}" x="${x + (cw - 2) / 2}" y="${y + ch / 2 + 4}" text-anchor="middle">${fmt2(m)}</text>`;
+      const tip = `${nameA}=${la[a]}, ${nameB}=${lb[b]} · ${L('calidad mediana', 'median quality')} ${m.toFixed(3)} (${vals.length} configs)`;
+      rows += `<span class="hm-cell hm-c${k}${k >= 4 ? ' hm-on' : ''}" title="${esc(tip)}">${fmt2(m)}</span>`;
     }
   }
-  const xl = la.map((v, a) => `<text class="ch-tick" x="${pad.l + a * cw + (cw - 2) / 2}" y="${H - pad.b + 14}" text-anchor="middle">${esc(formatTick(v))}</text>`).join('');
-  const yl = lb.map((v, b) => `<text class="ch-tick" x="${pad.l - 8}" y="${pad.t + (lb.length - 1 - b) * ch + ch / 2 + 3}" text-anchor="end">${esc(formatTick(v))}</text>`).join('');
+  const xl = la.map((v) => `<span class="hm-xtick">${esc(formatTick(v))}</span>`).join('');
   const scale = `<div class="hm-legend" aria-hidden="true"><span>${esc(L('Calidad mediana', 'Median quality'))}</span><span>${fmt2(lo)}</span><span class="hm-ramp">${[0, 1, 2, 3, 4, 5].map((i) => `<i class="hm-c${i}"></i>`).join('')}</span><span>${fmt2(hi)}</span></div>`;
-  return `${scale}${svgOpen(W, H, L(`Calidad mediana de cada par de valores de ${analysis.meta.paramNames[dimA]} y ${analysis.meta.paramNames[dimB]}.`, `Median quality of each pair of values of ${analysis.meta.paramNames[dimA]} and ${analysis.meta.paramNames[dimB]}.`))}
-    ${body}${xl}${yl}
-    <text class="ch-axis-label" x="${pad.l + (la.length * cw) / 2}" y="${H - 6}" text-anchor="middle">${esc(analysis.meta.paramNames[dimA])}</text>
-    <text class="ch-axis-label" x="14" y="${pad.t + (lb.length * ch) / 2}" text-anchor="middle" transform="rotate(-90 14 ${pad.t + (lb.length * ch) / 2})">${esc(analysis.meta.paramNames[dimB])}</text>
-  </svg></div>`;
+  const label = L(`Calidad mediana de cada par de valores de ${nameA} y ${nameB}.`, `Median quality of each pair of values of ${nameA} and ${nameB}.`);
+  return `${scale}<div class="chart-scroll"><div class="hm-grid" role="img" aria-label="${esc(label)}" style="--n:${la.length};--m:${lb.length}">
+    <span class="hm-ytitle" aria-hidden="true">${esc(nameB)}</span>
+    ${rows}
+    <span class="hm-corner"></span>${xl}
+    <span class="hm-xtitle" aria-hidden="true">${esc(nameA)}</span>
+  </div></div>`;
 }
