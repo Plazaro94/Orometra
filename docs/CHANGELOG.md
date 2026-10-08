@@ -1,18 +1,5 @@
 # Changelog
 
-## 2026-10-08 — Metodología: texto y diagrama lado a lado en pantallas anchas
-
-- Desde 1200 px (portátil, monitor), el índice y los pasos se abren a 1100 px con los bordes
-  alineados. Los pasos con diagrama (02, 04, 07, 09) llevan el texto a la izquierda y el
-  diagrama a la derecha (480 px). Los pasos sin diagrama mantienen la medida de lectura de
-  640 px, y el resto del texto (entradilla, «Lo que no hace», «¿Y una IA?») empieza en el
-  mismo borde que el de los pasos.
-- A 1440 px la página baja de 6.946 a 5.485 px (−21 %). Por debajo de 1200 px, tablet y
-  móvil, no cambia nada.
-- Coste aceptado: el texto más pequeño de los diagramas baja de 14 a 10 px a 1440.
-- Se descartó poner los pasos de 2 en 2: medido, ahorraba solo un 6 % y dejaba huecos de
-  hasta ~600 px (los pasos miden de 208 a 800 px).
-
 ## 2026-10-08 — Tema según el sistema en la primera visita
 
 - Sin elección guardada, la web usa el tema del sistema (claro u oscuro) en lugar de
