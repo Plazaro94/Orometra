@@ -5,7 +5,7 @@ import { enhanceRadioGroups } from './radiogroup.js';
 import { t, L, getLocale, setLocale, applyStaticI18n, pctSign } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
-import { displayVerdictCopy, displayVerdictLevel, levelName } from './ui-verdict.js';
+import { displayVerdictCopy, displayVerdictLevel, levelName, compactSummary, compactAction } from './ui-verdict.js';
 
 // ---------------------------------------------------------------- preferencias
 export const PREFS_KEY = 'orometra.gates';
@@ -48,6 +48,10 @@ export function initChrome() {
   // La marca es un enlace a la landing; no conviene interceptarlo.
   const reiniciar = $('#resetAll');
   if (reiniciar) reiniciar.addEventListener('click', resetSession);
+  // «Descargar .set» de la cabecera compacta: se enlaza una vez aquí, no en
+  // bindViewEvents(), que repasa [data-export] en todo el documento en cada pintado.
+  const topSet = $('#topSetBtn');
+  if (topSet) topSet.addEventListener('click', () => api.doExport(topSet.dataset.kind, 0));
 
   // Redimensionar puede hacer que una tabla deje de necesitar scroll, o empiece a necesitarlo.
   let resizeTimer = 0;
@@ -317,7 +321,11 @@ function scrollToView() {
   const view = $('#view');
   if (!view) return;
   const strip = $('.sidebar-scroll');
-  const stuck = narrow.matches && strip ? strip.getBoundingClientRect().height : 0;
+  // En escritorio, lo fijo arriba es la cabecera compacta del informe (si la hay).
+  const bar = $('.topbar');
+  const stuck = narrow.matches
+    ? (strip ? strip.getBoundingClientRect().height : 0)
+    : (document.body.classList.contains('compact-top') && bar ? bar.getBoundingClientRect().height : 0);
   const top = view.getBoundingClientRect().top;
   if (top >= stuck && top < window.innerHeight * 0.6) return;
   const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -396,6 +404,21 @@ export function render() {
     if (state.source) {
       document.title = `${L('Evidencia', 'Evidence')} ${levelName(displayVerdictLevel(state.analysis)).toLowerCase()} · ${state.source.is} · Orometra`;
     }
+  }
+  // Fuera del veredicto, la cabecera se reduce a una línea (nivel, pasada y «Descargar
+  // .set») y en escritorio queda fija arriba: el titular completo ya se leyó en el veredicto.
+  const compact = hayAnalisis && state.tab !== 'verdict';
+  document.body.classList.toggle('compact-top', compact);
+  const rc = $('#reportCompact');
+  if (rc) {
+    rc.hidden = !compact;
+    rc.innerHTML = compact ? compactSummary(state.analysis) : '';
+  }
+  const topSet = $('#topSetBtn');
+  if (topSet) {
+    const act = compact ? compactAction(state.analysis) : null;
+    topSet.hidden = !act;
+    if (act) { topSet.textContent = act.label; topSet.dataset.kind = act.kind; }
   }
 
   const view = $('#view');

@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-08 — Cabecera compacta en el informe y pico frente a meseta en la portada
+
+- **Informe, fuera del veredicto:** la cabecera pasa de un titular de tres líneas (~285 px
+  antes del contenido en cada pestaña) a una línea con el nivel («● Evidencia buena»), la
+  pasada y «Descargar .set» junto a «Empezar de cero» y «Exportar». En escritorio queda fija
+  arriba al bajar; en el móvil no, porque ya están fijas las pestañas. Sin forward, el botón
+  es «Descargar rango»; sin meseta, no hay botón y se dice «Ninguna configuración con
+  garantías» (o la sugerencia orientativa). El titular completo sigue en el h1 para el lector
+  de pantalla y al imprimir; la pestaña del veredicto no cambia.
+- **Portada, «Lo que hace Orometra»:** un diagrama con las mismas pasadas que la tabla de al
+  lado: la n.º 1 de MT5 (1842) es un pico solo cuyas vecinas no pasan tus mínimos; la 4283,
+  el centro de una meseta que sí los pasa. Pico en gris y elegida en lima, como en la tabla.
+  Es SVG en la propia página, sin código 3D. Desde que salieron el relieve 3D (#117) y los
+  estorninos, ninguna imagen de la portada contaba la idea de pico frente a meseta.
+
 ## 2026-10-08 — Auditoría de diseño: seis arreglos visuales
 
 - **Influencia relativa (pestaña Parámetros):** pasa de SVG de 620 px a una lista HTML que

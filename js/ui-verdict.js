@@ -247,6 +247,32 @@ export function trustLine(a, level) {
     'The most these data can support: a plateau validated on the forward and not contradicted by the unseen period.');
 }
 
+/**
+ * Cabecera compacta de las pestañas que no son el veredicto: el nivel y la pasada en una
+ * línea, en vez del titular de tres líneas que empujaba cada pestaña ~285 px hacia abajo.
+ * El titular completo sigue en el h1 (oculto a la vista, no al lector de pantalla).
+ */
+export function compactSummary(a) {
+  const level = displayVerdictLevel(a);
+  const name = levelName(level);
+  const pill = `<span class="rc-level" style="--s:var(--lv-${LEVEL_ORDER.indexOf(level) + 1})"><span class="rc-dot" aria-hidden="true"></span>${esc(L(`Evidencia ${name.toLowerCase()}`, `${name} evidence`))}</span>`;
+  const best = a.plateaus[0];
+  const pick = best
+    ? `<span class="rc-pass">${L('Pasada', 'Pass')} <b>${esc(best.record.id)}</b></span>`
+    : a.fallback
+      ? `<span class="rc-pass">${L('Orientativa: pasada', 'Tentative: pass')} <b>${esc(a.fallback.record.id)}</b></span>`
+      : `<span class="rc-pass">${esc(L('Ninguna configuración con garantías', 'No configuration you can rely on'))}</span>`;
+  return pill + pick;
+}
+
+/** La acción principal de la cabecera compacta: la misma que el botón lima del veredicto. */
+export function compactAction(a) {
+  if (!a.plateaus[0]) return null;
+  return a.meta.hasForward
+    ? { kind: 'set', label: L('Descargar .set', 'Download .set') }
+    : { kind: 'refine', label: L('Descargar rango', 'Download range') };
+}
+
 /** Medidor de cinco tramos: dónde está este análisis y cuánto le falta. */
 function evidenceMeter(level) {
   const at = LEVEL_ORDER.indexOf(level);

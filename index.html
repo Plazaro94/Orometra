@@ -36,7 +36,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=20261008a">
+<link rel="stylesheet" href="styles.css?v=20261008b">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separate the fragile from the stable in your MT5 optimization: which configuration of your EA is stable and how much evidence backs it. Free, in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js" data-hero-photo></script>
 </head>
@@ -102,6 +102,27 @@
       <article class="hm-card hm-card-ok">
         <p class="hm-card-kicker" data-i18n="home.problem.oro.kicker">What Orometra does</p>
         <p class="hm-pick"><span data-i18n="home.problem.oro.pick">Recommended: Pass 4283</span><span class="hm-pick-note" data-i18n="home.problem.oro.note">#1 rejected: isolated peak</span></p>
+        <!-- Pico frente a meseta, con las pasadas de la tabla de al lado: el n.º 1 de MT5 es un pico solo; la elegida, el centro de una zona que pasa tus mínimos. -->
+        <svg class="hm-fig" viewBox="0 0 420 190" role="img" data-i18n="home.problem.fig.aria" data-i18n-attr="aria-label" aria-label="Example: MT5’s #1 is an isolated peak whose neighbors miss your minimums; Orometra picks the center of a plateau where they all clear them.">
+          <polygon points="236,76 290,68 344,79 344,118 236,118" fill="var(--ok-bg)"/>
+          <line x1="8" y1="118" x2="412" y2="118" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <polyline points="28,160 78,150 128,44 178,156 236,76 290,68 344,79 396,158" fill="none" stroke="var(--line-strong)" stroke-width="1.5"/>
+          <text x="12" y="108" font-size="13" font-weight="700" letter-spacing="1" fill="var(--muted-2)" stroke="var(--surface)" stroke-width="5" stroke-linejoin="round" paint-order="stroke" data-i18n="home.problem.fig.floor">YOUR MINIMUMS</text>
+          <circle cx="28" cy="160" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="78" cy="150" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="178" cy="156" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="396" cy="158" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="236" cy="76" r="5.5" fill="var(--plateau)"/>
+          <circle cx="344" cy="79" r="5.5" fill="var(--plateau)"/>
+          <line x1="128" y1="32" x2="128" y2="37" stroke="var(--line-strong)" stroke-width="1.5"/>
+          <rect x="60" y="6" width="136" height="26" rx="13" fill="var(--surface-2)" stroke="var(--line)"/>
+          <text x="128" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="var(--peak-text)" data-i18n="home.problem.fig.peak">MT5 #1 · 1842</text>
+          <circle cx="128" cy="44" r="7" fill="var(--peak)"/>
+          <line x1="290" y1="56" x2="290" y2="61" stroke="var(--lime-line)" stroke-width="1.5"/>
+          <rect x="228" y="30" width="124" height="26" rx="13" fill="var(--lime-bg)" stroke="var(--lime-line)"/>
+          <text x="290" y="48" text-anchor="middle" font-size="14" font-weight="700" fill="var(--lime-text)" data-i18n="home.problem.fig.pick">Pass 4283</text>
+          <circle cx="290" cy="68" r="8" fill="var(--lime-fill)" stroke="var(--surface)" stroke-width="2"/>
+        </svg>
         <p data-i18n="home.problem.oro.body">It looks for zones where neighboring values also work — a plateau. That is harder to get by chance, so it tends to hold up better.</p>
       </article>
     </div>
