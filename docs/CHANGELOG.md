@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-08 — Tarjetas anchas del informe a dos columnas
+
+Medido a 1440 px: tres tarjetas usaban la mitad de su ancho (el texto va a 72 caracteres
+como máximo) y dejaban la otra mitad vacía. Ahora, cuando la tarjeta mide 880 px o más (se
+mide la tarjeta, no la ventana: *container queries*), se reparten en dos columnas. En tablet
+y móvil no cambian.
+
+- **«Por qué este nivel»** con un solo lado (solo «A favor» o solo «En contra»): las
+  razones en dos columnas. Del 54 % al 98 % del ancho y de 667 a 509 px de alto.
+- **«Influencia relativa»:** el gráfico a la izquierda y su explicación a la derecha
+  (del 49 % al 98 %; de 408 a 330 px).
+- **«Carga aquí el informe del backtest»** (periodo no visto): el texto a la izquierda y, a la
+  derecha, dónde soltar el informe, con el botón (del 49 % al 92 %).
+- El mapa de calor se queda como estaba: partido, salía un 17 % más pequeño (su ancho de
+  referencia de 620 unidades es a propósito) y su lado derecho ya es parte del SVG.
+
 ## 2026-10-08 — Cabecera compacta en el informe y pico frente a meseta en la portada
 
 - **Informe, fuera del veredicto:** la cabecera pasa de un titular de tres líneas (~285 px

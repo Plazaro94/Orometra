@@ -736,6 +736,26 @@ details.panel > .panel-body{padding:0 20px 20px}
 .why-cons strong{color:var(--warn-text)}
 .why-grid-one{grid-template-columns:1fr}
 .why-none{margin:0;color:var(--muted-2);font-size:var(--fs-sm)}
+/* Tarjetas anchas (escritorio): lo que en una sola columna de lectura dejaba media tarjeta
+ * vacía se reparte en dos. Se mide la tarjeta, no la ventana: con la barra lateral, una
+ * ventana ancha no garantiza una tarjeta ancha. */
+.panel-why,.panel-split,.report-drop{container-type:inline-size}
+.report-drop-target .rdt-icon,.report-drop-target .rdt-title,.report-drop-target .rdt-sub{display:none}
+@container (min-width:880px){
+  /* «Por qué este nivel» con un solo lado: las razones, en dos columnas. */
+  .why-grid-one .why-col ul{display:grid;grid-template-columns:1fr 1fr;gap:16px 36px}
+  .why-grid-one .why-col li:nth-child(2){padding-top:0;border-top:0}
+  /* Gráfico a la izquierda y su explicación a la derecha. */
+  .split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,1fr);gap:40px;align-items:center}
+  .split > .chart-note{margin:0}
+  /* Periodo no visto: el texto a la izquierda y, a la derecha, dónde soltar el informe. */
+  .report-drop-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,320px);gap:40px;align-items:center}
+  .report-drop-text .panel-intro:last-child{margin-bottom:0}
+  .report-drop-target{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:28px 22px;border-radius:var(--radius);background:var(--surface-2);border:1px solid var(--line)}
+  .report-drop-target .rdt-icon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:6px;border-radius:var(--radius);background:var(--ok-bg);color:var(--accent);font-size:20px;font-weight:700}
+  .report-drop-target .rdt-title{display:block;color:var(--text-hi);font-size:var(--fs-base)}
+  .report-drop-target .rdt-sub{display:block;color:var(--muted-2);font-size:var(--fs-sm);margin-bottom:10px}
+}
 .range-table-wrap{overflow:auto;margin-top:8px;position:relative}
 .range-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
 .range-table th{

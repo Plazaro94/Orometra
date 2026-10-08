@@ -389,13 +389,13 @@ export function renderParams(a) {
         `To get enough neighbors, partitioning was released on ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, the least influential. Configurations that differ only on ${a.meta.releasedBlockNames.length > 1 ? 'those parameters' : 'that parameter'} are treated as neighbors.`,
       )}</div>` : ''}
     </div>
-    <section class="panel">
+    <section class="panel panel-split">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Sensibilidad', 'Sensitivity')}</div><h2>${L('Influencia relativa', 'Relative influence')}</h2></div></div>
-      ${sensitivityBars(a)}
+      <div class="split">${sensitivityBars(a)}
       <p class="chart-note">${L(
         `La barra es la influencia que cuenta: la mayor entre <strong>por sí solo</strong> (agrupando por el valor del parámetro) y <strong>con el resto fijo</strong> (dejando fijo todo lo demás). Donde aparece la marca <span class="ch-sens-marginal-swatch"></span> y un valor entre paréntesis, el parámetro parecía plano mirado solo — con el resto fijo sí influye. El detalle completo está en Diagnóstico.`,
         `The bar is the influence that counts: the larger of <strong>on its own</strong> (grouped by the parameter's value) and <strong>with the rest fixed</strong> (everything else held fixed). Where the <span class="ch-sens-marginal-swatch"></span> mark and a parenthesized value appear, the parameter looked flat on its own — with the rest fixed it does matter. The full breakdown is in Diagnostics.`,
-      )}</p>
+      )}</p></div>
     </section>
     ${a.inversions && a.inversions.length ? `<section class="panel warn-panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Aviso', 'Warning')}</div><h2>${L('Parámetros invertidos entre periodos', 'Parameters inverted across periods')}</h2></div>

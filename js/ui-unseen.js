@@ -120,7 +120,10 @@ export function unseenBand(r) {
 export function renderReportCard(a, plateau) {
   const rep = state.report;
   if (!rep) {
+    // En una tarjeta ancha, el texto a la izquierda y a la derecha dónde soltar el archivo
+    // (antes, medio panel vacío). En el móvil solo se ve el botón, como siempre.
     return `<section class="panel report-drop" id="reportDrop">
+      <div class="report-drop-body"><div class="report-drop-text">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Atajo', 'Shortcut')}</div><h2>${L('Carga aquí el informe del backtest', 'Load the backtest report here')}</h2></div></div>
       ${state.unseen.reportError ? `<div class="inline-warn">${esc(state.unseen.reportError)}</div>` : ''}
       <p class="panel-intro">
@@ -147,7 +150,13 @@ export function renderReportCard(a, plateau) {
         below — nothing else to install.`,
         )}
       </p>
-      <button class="ghost-btn report-pick" type="button" data-pick-report>${L('Elegir el informe', 'Choose the report')}</button>
+      </div>
+      <div class="report-drop-target">
+        <span class="rdt-icon" aria-hidden="true">&#8593;</span>
+        <strong class="rdt-title">${L('Suelta aquí el informe', 'Drop the report here')}</strong>
+        <span class="rdt-sub">${L('HTML u Open XML del probador', 'HTML or Open XML from the tester')}</span>
+        <button class="ghost-btn report-pick" type="button" data-pick-report>${L('Elegir el informe', 'Choose the report')}</button>
+      </div></div>
     </section>`;
   }
 
