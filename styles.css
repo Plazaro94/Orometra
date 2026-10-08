@@ -303,6 +303,58 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 /* Cabecera compacta (fuera del veredicto): nivel y pasada en una línea, el titular solo
  * para el lector de pantalla y «Descargar .set» junto a «Exportar». En escritorio queda
  * fija arriba al bajar; en el móvil no, porque ya están fijas las pestañas. */
+/* Historial local (js/ui-history.js): comparación bajo el veredicto y pestaña Historial. */
+.hist-notice{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 18px;margin:0 0 12px;padding:12px 16px;border:1px solid var(--ok-line);border-radius:var(--radius);background:var(--ok-bg)}
+.hist-notice p{margin:0;flex:1 1 320px;font-size:14.5px;line-height:1.5;color:var(--text-2)}
+.hist-notice-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hist-panel .panel-head{align-items:flex-start}
+.hist-meta{margin:-4px 0 14px;font-size:13.5px;color:var(--muted-2);overflow-wrap:anywhere}
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0 0 16px}
+.hist-stat{padding:12px 14px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.hist-stat > span{display:block;margin-bottom:6px;font-size:13px;font-weight:700;color:var(--muted-2)}
+.hist-stat > div{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:15px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.hist-stat b{color:var(--text-hi)}
+.hist-arrow{color:var(--muted-3)}
+.hist-pill{padding:3px 10px 3px 8px;font-size:13px;gap:6px}
+.hist-pill .rc-dot{width:8px;height:8px}
+.hist-panel h3{margin:4px 0 6px;font-size:var(--fs-base);color:var(--text-hi)}
+.hist-lead{margin:0 0 10px;font-size:var(--fs-base);line-height:1.55;color:var(--text-2);max-width:var(--measure)}
+.hist-params{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.hist-params li{display:inline-flex;align-items:baseline;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:13.5px;color:var(--text-2)}
+.hist-params li code{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.hist-params li b{font-family:var(--mono);color:var(--text-hi)}
+.hist-params li span{font-size:13px;color:var(--muted-2)}
+.hist-params li.is-in{border-color:var(--ok-line)}
+.hist-params li.is-out{border-style:dashed}
+.hist-fine{margin:0;font-size:13.5px;line-height:1.5;color:var(--muted-2);max-width:var(--measure)}
+.hist-caveat{margin:0 0 14px;font-size:14px;line-height:1.5;color:var(--warn-text)}
+.hist-attempts{margin:14px 0 0;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--warn-line);background:var(--warn-bg);font-size:14px;line-height:1.55;color:var(--text-2)}
+.hist-attempts strong{display:block;margin-bottom:2px;color:var(--warn-text)}
+.hist-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 20px}
+.hist-switch{display:inline-flex;align-items:center;gap:10px;font-size:var(--fs-base);color:var(--text-2);cursor:pointer}
+.hist-switch input{width:18px;height:18px;accent-color:var(--accent)}
+.hist-clear.is-armed{border-color:var(--danger-line);color:var(--danger-text)}
+.hist-empty{margin:0;color:var(--muted)}
+.hist-group-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-bottom:8px}
+.hist-label{flex:1 1 260px;min-width:0}
+.hist-label input{width:100%;max-width:420px;padding:7px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--text-hi);font:inherit;font-weight:700;font-size:16px}
+.hist-label input::placeholder{color:var(--muted-2);font-weight:600}
+.hist-count{font-size:13.5px;color:var(--muted-2)}
+.hist-params-names{margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
+.hist-params-names code{font-family:var(--mono);font-size:12.5px;color:var(--muted);padding:2px 6px;border-radius:4px;background:var(--surface-2)}
+.hist-table td{vertical-align:top}
+.hist-files{overflow-wrap:anywhere;max-width:220px}
+.hist-files div{min-width:0}
+.hist-files span{display:block;color:var(--muted-2)}
+.hist-pick{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted)}
+.hist-pick b{font-family:var(--mono);color:var(--text-hi)}
+.hist-actions{text-align:right;white-space:nowrap}
+@media (max-width:480px){
+  .hist-table tr.stack-row td.hist-actions{justify-content:flex-end}
+  .hist-table tr.stack-row td.hist-actions::before{content:none}
+  .hist-files{max-width:none}
+}
+
 .report-compact{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;margin:0}
 .rc-level{display:inline-flex;align-items:center;gap:8px;padding:5px 13px 5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px;font-weight:700;color:var(--text-hi);white-space:nowrap}
 .rc-dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--s)}

@@ -611,5 +611,6 @@ export function runUnseenCheck() {
   } catch (err) {
     state.unseen.error = err && err.message ? err.message : String(err);
   }
+  if (api.updateHistoryUnseen) api.updateHistoryUnseen(a);
   api.render();
 }

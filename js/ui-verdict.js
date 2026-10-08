@@ -7,7 +7,7 @@ import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag, pctSign } from './i18n.js';
-import { state, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding } from './ui-state.js';
+import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding } from './ui-state.js';
 import { gloss } from './glossary.js';
 
 /*
@@ -533,6 +533,7 @@ export function renderVerdict(a) {
   ${renderDecision(a, dv, best, hold)}
   ${stamp}
   ${demoNote}
+  ${api.renderHistoryCompare ? api.renderHistoryCompare(a) : ''}
   ${renderWhyGrade(a, highlights, dv.summary)}
   ${renderTop3(a)}
   ${details ? `<h2 class="vx-section-title">${L('Detalle técnico', 'Technical detail')}</h2>${details}` : ''}`;

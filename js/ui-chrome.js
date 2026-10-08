@@ -82,7 +82,7 @@ export function resetSession() {
     'This will discard the current analysis and loaded files. Continue?',
   ))) return;
   state.isFile = null; state.oosFile = null; state.isTable = null; state.oosTable = null;
-  state.analysis = null; state.isDemo = false; state.report = null;
+  state.analysis = null; state.isDemo = false; state.report = null; state.historyId = null; state.historyFirst = false;
   state.searchSet = null; state.searchSetName = null;
   state.selectedPlateau = 0; state.selectedParam = 0;
   state.surfaceDimA = null; state.surfaceDimB = null;
@@ -300,7 +300,7 @@ export function updatePolicyPreview() {
 export const TAB_HASH = {
   verdict: 'veredicto', plateaus: 'mesetas', rejected: 'descartes', params: 'parametros',
   diagnostics: 'diagnostico', unseen: 'periodo-no-visto', method: 'metodologia',
-  legal: 'legal',
+  history: 'historial', legal: 'legal',
 };
 export const HASH_TAB = Object.fromEntries(Object.entries(TAB_HASH).map(([k, v]) => [v, k]));
 
@@ -438,9 +438,9 @@ export function render() {
 
   const view = $('#view');
   // Metodologia y legal no necesitan analisis cargado: se pueden leer siempre.
-  if (state.tab === 'method' || state.tab === 'legal') {
+  if (state.tab === 'method' || state.tab === 'legal' || state.tab === 'history') {
     api.disposePlateauSurface();
-    view.innerHTML = state.tab === 'legal' ? renderLegal() : renderMethod();
+    view.innerHTML = state.tab === 'legal' ? renderLegal() : state.tab === 'history' ? api.renderHistoryView() : renderMethod();
     bindViewEvents();
     return;
   }
@@ -698,12 +698,14 @@ export function renderLegal() {
         measure can be tied to what you analyze.`,
         )}</li>
         <li>${L(
-          `<strong>Se guardan tres cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
-        nadie): el tema de color, el idioma y los mínimos que configures, para no tener que repetirlos. Puedes
-        borrarlos vaciando los datos del sitio.`,
-          `<strong>Three things are stored in your own browser</strong> (local storage, never sent to
-        anyone): the color theme, the language and the minimums you set, so you do not have to repeat them. You can
-        clear them by wiping the site data.`,
+          `<strong>Se guardan cuatro cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
+        nadie): el tema de color, el idioma, los mínimos que configures, para no tener que repetirlos, y el historial
+        de análisis (un resumen de cada uno, nunca tus archivos), que puedes desactivar o borrar en la pestaña
+        Historial. Puedes borrarlo todo vaciando los datos del sitio.`,
+          `<strong>Four things are stored in your own browser</strong> (local storage, never sent to
+        anyone): the color theme, the language, the minimums you set, so you do not have to repeat them, and the
+        analysis history (a summary of each one, never your files), which you can turn off or delete in the History
+        tab. You can clear everything by wiping the site data.`,
         )}</li>
         <li>${L(
           `<strong>Lo que no podemos evitar:</strong> el proveedor que aloja la página y el servicio de

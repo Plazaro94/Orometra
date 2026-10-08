@@ -361,6 +361,8 @@ export async function runAudit() {
     state.unseen = {
       plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: state.unseen.tradesAudit,
     };
+    // Historial local: un resumen de este análisis en el navegador (no del ejemplo).
+    if (api.recordAnalysis) api.recordAnalysis(analysis);
     state.selectedParam = api.mostSensitiveIndex(analysis);
     state.surfaceDimA = null;
     state.surfaceDimB = null;

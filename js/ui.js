@@ -43,6 +43,7 @@ import {
 
 import { setReport, runUnseenCheck, readUnseenForm, renderUnseen } from './ui-unseen.js';
 import { renderVerdict } from './ui-verdict.js';
+import { recordAnalysis, updateHistoryUnseen, renderHistoryCompare, renderHistoryView, initHistory } from './ui-history.js';
 import {
   renderPlateaus,
   renderRejected,
@@ -97,7 +98,13 @@ Object.assign(api, {
   renderUnseen,
   mountPlateauSurfaceView,
   disposePlateauSurface,
+  recordAnalysis,
+  updateHistoryUnseen,
+  renderHistoryCompare,
+  renderHistoryView,
 });
+
+initHistory();
 
 initChrome();
 loadPrefs();
@@ -126,12 +133,12 @@ $('#policyRerun').addEventListener('click', () => {
 // Ancla inicial y botón de atrás del navegador.
 window.addEventListener('hashchange', () => {
   const tab = HASH_TAB[location.hash.replace('#', '')];
-  const noAnalysisNeeded = tab === 'method' || tab === 'legal' || tab === 'verdict';
+  const noAnalysisNeeded = tab === 'method' || tab === 'legal' || tab === 'history' || tab === 'verdict';
   if (tab && tab !== state.tab && (state.analysis || noAnalysisNeeded)) setTab(tab, true);
 });
 {
   const initial = HASH_TAB[location.hash.replace('#', '')];
-  if (initial === 'method' || initial === 'legal') setTab(initial, true);
+  if (initial === 'method' || initial === 'legal' || initial === 'history') setTab(initial, true);
 }
 $$('.nav-item').forEach((b) => b.addEventListener('click', () => {
   if (!b.disabled) setTab(b.dataset.tab);

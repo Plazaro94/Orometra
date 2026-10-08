@@ -329,6 +329,53 @@ try {
     await ctx.close();
   }
 
+  section('5c. Historial local');
+  {
+    const ctx = await browser.newContext();
+    await ctx.addInitScript(() => { try { localStorage.setItem('orometra.lang', 'en'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    watch(page);
+    const stored = () => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('orometra.history')); } catch { return null; } });
+    // El ejemplo no se guarda.
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    check('el ejemplo no se guarda en el historial', !(await stored()));
+    // Primer análisis propio: se guarda y se avisa una vez.
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [isXml, oosXml]);
+    await page.waitForSelector('#analyzeBtn:not([disabled])');
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    const s1 = await stored();
+    check('un análisis propio se guarda (un resumen, sin las tablas)', s1 && s1.entries.length === 1 && JSON.stringify(s1).length < 4000, s1 ? `${JSON.stringify(s1).length} bytes` : 'nada');
+    check('la primera vez se avisa', Boolean(await page.$('.hist-notice')));
+    await page.click('[data-hist="ack"]');
+    check('«Entendido» quita el aviso', !(await page.$('.hist-notice')));
+    // Segundo análisis del mismo EA con otros mínimos: compara y avisa de que no son comparables.
+    await page.click('#intakeExpandBtn').catch(() => {});
+    await page.fill('#gPf', '1.10');
+    await page.dispatchEvent('#gPf', 'input');
+    await page.click('#analyzeBtn');
+    await page.waitForFunction(() => { try { return JSON.parse(localStorage.getItem('orometra.history')).entries.length === 2; } catch { return false; } }, null, { timeout: 120000 });
+    await page.waitForSelector('.hist-panel', { timeout: 30000 });
+    check('el segundo análisis del mismo EA se compara con el anterior', Boolean(await page.$('.hist-panel')));
+    check('y dice que con otros mínimos el nivel no es comparable', Boolean(await page.$('.hist-panel .hist-caveat')));
+    check('la meseta cae en el mismo sitio (mismos datos)', /all 6 parameters/.test(await page.$eval('.hist-lead', (e) => e.textContent)));
+    // Pestaña Historial: se ve, se borra uno y se apaga.
+    await page.click('.nav-item[data-tab="history"]');
+    check('la pestaña Historial lista los análisis', (await page.$$('.hist-table tbody tr')).length === 2);
+    await page.click('[data-hist="delete"]');
+    check('se puede borrar uno', (await stored()).entries.length === 1);
+    await page.uncheck('[data-hist="toggle"]');
+    check('el interruptor lo desactiva', (await stored()).off === true);
+    await page.click('.nav-item[data-tab="verdict"]');
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.waitForTimeout(300);
+    check('desactivado, no guarda nada más', (await stored()).entries.length === 1);
+    await ctx.close();
+  }
+
   section('6. Sin errores de JavaScript');
   check('ninguna página ha lanzado un error', pageErrors.length === 0, pageErrors.join(' | '));
 } finally {

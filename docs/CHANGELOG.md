@@ -1,5 +1,32 @@
 # Changelog
 
+## 2026-10-08 — Historial local de análisis
+
+- **Qué guarda:** tras cada análisis (no el ejemplo), un resumen de ~0,7 KB en el navegador
+  (`orometra.history`): nombres de archivo y de parámetros, mínimos, nivel mostrado,
+  configuración recomendada, tamaño, robustez y tramo de su meseta por parámetro, y el
+  resultado del periodo no visto si se comprueba. Nunca los archivos ni las tablas. Se
+  conservan los 50 más recientes. Volver a analizar exactamente lo mismo no cuenta como otro
+  intento. Activado por defecto, con un aviso la primera vez («Entendido» / «No guardar
+  historial») y un interruptor en la pestaña.
+- **El mismo EA:** el XML de MT5 no trae nombre, símbolo ni fechas, así que se reconoce por
+  sus parámetros (huella FNV-1a del conjunto de nombres). Cada EA admite una etiqueta propia.
+- **En el veredicto:** «Frente a tu análisis anterior de este EA»: nivel antes y ahora,
+  tamaño y robustez de la meseta y, sobre todo, si la configuración recomendada ahora cae
+  dentro del tramo de la meseta de la otra vez, parámetro a parámetro. Si cambiaron los
+  mínimos o el forward, se dice que los niveles no son comparables. «Coherente con una meseta
+  real; si son los mismos datos, no es una prueba independiente».
+- **Aviso de intentos:** desde el 3.er análisis del mismo EA, «subir de nivel tras varios
+  intentos no es más evidencia: es probar más veces». No se sabe si el periodo es el mismo
+  (no hay fechas) y se dice.
+- **Pestaña Historial** (08, accesible sin análisis): lista por EA con fecha, archivos,
+  mínimos, nivel, configuración recomendada y periodo no visto; borrar uno o todo (con
+  confirmación) e interruptor.
+- **Privacidad** (página y aviso legal de la app, ES/EN) al día; la prueba AUD-08 exige ahora
+  que se nombre el historial. `core/history.js` con 34 pruebas de respuesta conocida
+  (`tests/history.test.js`) y 11 comprobaciones de navegador nuevas.
+- Sin exportar ni importar el historial por ahora (decisión del autor).
+
 ## 2026-10-08 — Tema según el sistema en la primera visita
 
 - Sin elección guardada, la web usa el tema del sistema (claro u oscuro) en lugar de

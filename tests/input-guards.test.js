@@ -127,9 +127,9 @@ section('AUD-08: el texto legal nombra todo lo que se guarda en el navegador');
     for (const m of src.matchAll(/'(orometra\.[a-z]+)'/g)) keys.add(m[1]);
   }
   const legal = fs.readFileSync(path.join(ROOT, 'js/ui-chrome.js'), 'utf8');
-  const words = { 'orometra.theme': /tema de color/, 'orometra.lang': /idioma/, 'orometra.gates': /mínimos que configures/ };
+  const words = { 'orometra.theme': /tema de color/, 'orometra.lang': /idioma/, 'orometra.gates': /mínimos que configures/, 'orometra.history': /historial\s+de análisis/ };
   check('solo se usan claves conocidas', [...keys].every((k) => k in words), [...keys].join(', '));
-  check('el aviso legal dice "tres cosas"', /Se guardan tres cosas/.test(legal) && keys.size === 3, String(keys.size));
+  check('el aviso legal dice "cuatro cosas"', /Se guardan cuatro cosas/.test(legal) && keys.size === 4, String(keys.size));
   for (const k of keys) check(`el aviso legal menciona ${k}`, words[k] && words[k].test(legal));
 }
 
