@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-10-08 — Guías revisadas una a una y ampliadas
+
+Revisión de las seis guías (EN y ES) contra la ayuda de MetaQuotes y el código.
+
+- **Errores corregidos:**
+  - Informe del probador: el drawdown relativo no es «esa misma caída en porcentaje»: el
+    máximo en dinero y el relativo en % son dos máximos distintos y pueden ser episodios
+    diferentes (ayuda de MT5). Ejemplo resuelto en la guía.
+  - Forward: decía que Orometra contrasta «sin mezclar ni promediar los dos periodos», y el
+    motor elige dentro de la meseta por puesto conjunto in-sample + forward. Ahora lo
+    explica tal cual, y por qué eso obliga a pedir un periodo no visto.
+- **Precisión:** el forward prueba el 10 % (completa) o el 25 % (genética) mejor, con un
+  número mínimo de pasadas (ayuda de MT5; el export real de `MT5_ASSUMPTIONS.md`, 810 → 256,
+  encaja con el mínimo de 256 que se cita en los foros). Los criterios «Profit Factor max» y
+  similares se describían en la ayuda antigua combinados con el balance: la guía lo dice y
+  remite a la ayuda del propio terminal. Los rótulos del MT5 en español, sin confirmar, van
+  con el inglés entre paréntesis.
+- **Ampliadas** (de ~650 a ~1.150–1.450 palabras cada una), con ejemplos resueltos:
+  exportar (preparar el probador, columnas de cada archivo, Back Result, comprobar los
+  archivos); forward (cuántas operaciones necesita, qué pasadas llegan y por qué no es una
+  muestra al azar, cómo leer su tabla con un ejemplo, el tercer tramo); genética o completa
+  (contar combinaciones, estimar el tiempo con los agentes, cobertura, decidir paso a paso);
+  criterio (tabla de qué premia cada uno, criterio complejo de la versión 2615, ejemplo de
+  `OnTester()`); informe (fórmulas de cada cifra, drawdowns con ejemplo, Sharpe de la versión
+  3210 y sus franjas, calidad del histórico, modos de modelado y costes). Sobreoptimización:
+  el mínimo de pasadas del forward y la prueba de tus mínimos en «Se examina a sí mismo».
+- Tablas, ejemplos y código con estilo propio (`guide-table`, `guide-note`, `guide-code`),
+  desplazables con teclado si no caben. Fecha de revisión de las seis guías: 2026-10-08.
+
 ## 2026-10-08 — Historial local de análisis
 
 - **Qué guarda:** tras cada análisis (no el ejemplo), un resumen de ~0,7 KB en el navegador

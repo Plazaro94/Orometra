@@ -39,7 +39,7 @@ const PAGES = [
 // Guias: fecha de publicacion y prefijo de sus claves i18n.
 const PUBLISHED = { 'guide-export': '2026-09-28', 'guide-overfit': '2026-09-28', 'guide-forward': '2026-09-28', 'guide-report': '2026-09-28', 'guide-genetic': '2026-09-28', 'guide-criterion': '2026-09-28' };
 // Fecha de la última revisión a fondo de una guía (si no está, la de publicación).
-const MODIFIED = { 'guide-overfit': '2026-10-04' };
+const MODIFIED = { 'guide-overfit': '2026-10-08', 'guide-export': '2026-10-08', 'guide-forward': '2026-10-08', 'guide-report': '2026-10-08', 'guide-genetic': '2026-10-08', 'guide-criterion': '2026-10-08' };
 const GUIDE_KEYS = { 'guide-export': 'guide.export', 'guide-overfit': 'guide.overfit', 'guide-forward': 'guide.forward', 'guide-report': 'guide.report', 'guide-genetic': 'guide.genetic', 'guide-criterion': 'guide.criterion' };
 const LOCALIZED = new Map(PAGES.map(([, en, es]) => [en, es]));
 

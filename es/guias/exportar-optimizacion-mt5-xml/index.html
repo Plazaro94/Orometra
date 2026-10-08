@@ -33,8 +33,8 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261008g">
-<script type="application/ld+json" data-ld="guide-export">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Cómo exportar los resultados de la optimización de MT5 a XML","description":"Paso a paso: cómo exportar a XML los resultados de la optimización y del forward del probador de estrategias de MetaTrader 5, y los errores que estropean el análisis.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/","url":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Cómo exportar los resultados de la optimización de MT5 a XML","item":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/"}]}]}</script>
+<link rel="stylesheet" href="/styles.css?v=20261008i">
+<script type="application/ld+json" data-ld="guide-export">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Cómo exportar los resultados de la optimización de MT5 a XML","description":"Paso a paso: cómo exportar a XML los resultados de la optimización y del forward del probador de estrategias de MetaTrader 5, y los errores que estropean el análisis.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/","url":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Cómo exportar los resultados de la optimización de MT5 a XML","item":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -70,47 +70,65 @@
 <main id="main" class="lp-main lp-doc guide">
   <p class="lp-eyebrow"><a href="/es/guias/" data-i18n="guide.export.eyebrow">Guía</a></p>
   <h1 data-i18n="guide.export.h1">Cómo exportar los resultados de la optimización de MT5 a XML</h1>
-  <p class="lp-lead" data-i18n="guide.export.lead">Para analizar una optimización fuera de MetaTrader 5 —en Excel o en Orometra— necesitas sus resultados en un archivo. MT5 lo hace en pocos clics, pero hay detalles que, si se te escapan, estropean el análisis.</p>
+  <p class="lp-lead" data-i18n="guide.export.lead">Para analizar una optimización fuera de MetaTrader 5, en Excel o en Orometra, necesitas sus resultados en un archivo. MT5 lo hace en pocos clics, pero un par de detalles deciden si el archivo sirve. Esta guía recorre todo el proceso: preparar el probador, exportar las dos tablas, comprobar los archivos y los errores que estropean el análisis.</p>
 
   <aside class="guide-summary" aria-labelledby="guide-sum-title">
     <h2 id="guide-sum-title" data-i18n="guide.export.sum.title">En resumen</h2>
     <ol>
-      <li data-i18n="guide.export.sum.1">Antes de optimizar, activa el Forward en los ajustes del probador de estrategias.</li>
-      <li data-i18n="guide.export.sum.2">Al terminar, haz clic derecho sobre la tabla de resultados de la optimización y elige exportar a XML.</li>
-      <li data-i18n="guide.export.sum.3">Haz lo mismo en la tabla de resultados del forward.</li>
-      <li data-i18n="guide.export.sum.4">Guarda los dos archivos juntos: tienen que ser de la misma optimización.</li>
+      <li data-i18n-html="guide.export.sum.1">Antes de optimizar, activa el <strong>Forward</strong> en la pestaña de ajustes del probador de estrategias.</li>
+      <li data-i18n-html="guide.export.sum.2">Al terminar, haz clic derecho sobre la tabla de resultados de la optimización y expórtala a XML.</li>
+      <li data-i18n-html="guide.export.sum.3">Haz lo mismo en la pestaña del forward: es otra tabla, con su propio archivo.</li>
+      <li data-i18n-html="guide.export.sum.4">Si quieres, guarda también el .set de la pestaña de parámetros, con los rangos que optimizaste.</li>
+      <li data-i18n-html="guide.export.sum.5">Guarda los archivos juntos: tienen que salir de la misma optimización.</li>
     </ol>
   </aside>
 
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.export.s1.title">1. Antes de optimizar: activa el Forward</h2>
-    <p data-i18n="guide.export.s1.body">En el probador de estrategias (Ctrl+R), en la pestaña de ajustes, la opción Forward hace que MT5 reserve la última parte de tu periodo: optimiza con la primera parte (in-sample) y después prueba las mejores pasadas en el resto (forward). Una cuarta o una tercera parte del periodo es una elección habitual. Sin forward solo tienes resultados in-sample, y ningún análisis puede distinguir con confianza una configuración robusta de una con suerte.</p>
+    <h2 data-i18n="guide.export.s1.title">Antes de optimizar: prepara el probador</h2>
+    <p data-i18n-html="guide.export.s1.p1">Abre el probador de estrategias con <strong>Ctrl+R</strong> (en un terminal en inglés, View → Strategy Tester). En la pestaña de ajustes eliges el EA, el símbolo, el marco temporal y las fechas. Tres de esos ajustes deciden qué podrás concluir después:</p>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.export.s1.l1.1"><strong>Forward.</strong> Elige 1/2, 1/3 o 1/4, o la opción personalizada (Custom) para fijar tú la fecha de inicio. MT5 reserva esa parte final de tus fechas: optimiza con la primera parte (el in-sample) y después vuelve a probar las mejores pasadas en el resto (el forward). Sin forward solo tienes resultados in-sample, y ningún análisis puede distinguir con confianza una configuración robusta de una con suerte. La <a href="/es/guias/forward-testing-mt5/">guía del forward testing</a> lo explica en detalle.</li>
+      <li data-i18n-html="guide.export.s1.l1.2"><strong>Modelado.</strong> Decide con qué fidelidad se simulan los precios. Los modos rápidos sirven para explorar; la configuración que acabes eligiendo merece «Cada tick basado en ticks reales» (Every tick based on real ticks). La <a href="/es/guias/informe-probador-estrategias-mt5/">guía del informe</a> explica cada modo.</li>
+      <li data-i18n-html="guide.export.s1.l1.3"><strong>Optimización.</strong> El algoritmo lento y completo (Slow complete algorithm) prueba todas las combinaciones; el genético rápido (Fast genetic based algorithm), solo una parte. Al lado eliges el criterio. Las guías sobre <a href="/es/guias/optimizacion-genetica-o-completa-mt5/">optimización genética o completa</a> y sobre el <a href="/es/guias/criterio-optimizacion-mt5/">criterio de optimización</a> te ayudan a elegir.</li>
+    </ul>
+    <p data-i18n-html="guide.export.s1.p2">En la pestaña de parámetros de entrada, marca los que quieras optimizar y dale a cada uno un <strong>inicio</strong>, un <strong>paso</strong> y un <strong>final</strong> (Start, Step, Stop). Los que dejes sin marcar mantienen su <strong>valor</strong> (Value) durante toda la optimización. Antes de lanzarla, multiplica el número de valores de cada parámetro: es cuántos backtests hará MT5 en una búsqueda completa.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.export.s2.title">2. Exporta los resultados de la optimización</h2>
-    <p data-i18n="guide.export.s2.body">Cuando termine la optimización, abre la pestaña de resultados de la optimización y asegúrate de ver la tabla, no el gráfico. Haz clic derecho en cualquier parte de la tabla y elige exportar a XML (el texto exacto depende del idioma de tu MT5; en inglés es «Export to XML»). Guárdalo con un nombre claro, por ejemplo EURUSD-H1-in-sample.xml.</p>
+    <h2 data-i18n="guide.export.s2.title">Exporta los resultados de la optimización</h2>
+    <p data-i18n-html="guide.export.s2.p1">Cuando termine la optimización, abre la pestaña de resultados de la optimización y asegúrate de ver la tabla, no el gráfico de optimización. Haz clic derecho en cualquier parte de la tabla y elige la opción de exportar a XML (en inglés, «Export to XML»; el texto exacto varía con la versión y el idioma de MT5). MT5 te pregunta dónde guardarlo: usa un nombre que reconozcas después, por ejemplo <code>EURUSD-H1-2020-2024-in-sample.xml</code>.</p>
+    <p data-i18n-html="guide.export.s2.p2">Pese a la extensión, el archivo es una hoja de cálculo en el formato XML Spreadsheet de Microsoft: Excel y LibreOffice lo abren como una tabla. Tiene una fila por pasada y una columna por métrica y por parámetro. En un terminal en inglés, las columnas de métricas suelen ser <strong>Pass</strong>, <strong>Result</strong> (el valor del criterio que optimizaste), <strong>Profit</strong>, <strong>Expected Payoff</strong>, <strong>Profit Factor</strong>, <strong>Recovery Factor</strong>, <strong>Sharpe Ratio</strong>, <strong>Custom</strong>, <strong>Equity DD %</strong> y <strong>Trades</strong>, seguidas de tus parámetros, uno por columna.</p>
+    <p data-i18n-html="guide.export.s2.p3">Lo que <strong>no</strong> trae es la curva de equity ni la lista de operaciones de cada pasada: solo estos totales. Es un límite de la exportación de MT5, y por eso algunos análisis que necesitan la curva de cada configuración no se pueden hacer con este archivo.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.export.s3.title">3. Exporta los resultados del forward</h2>
-    <p data-i18n="guide.export.s3.body">Si activaste el Forward, hay una segunda pestaña con los resultados del forward. Expórtala igual, por ejemplo como EURUSD-H1-forward.xml. Este archivo trae el resultado del forward junto al de la misma pasada en el periodo de optimización; así lo reconoce Orometra, lo sueltes donde lo sueltes.</p>
+    <h2 data-i18n="guide.export.s3.title">Exporta los resultados del forward</h2>
+    <p data-i18n-html="guide.export.s3.p1">Si activaste el Forward, hay otra pestaña con una segunda tabla: los resultados del forward. Expórtala igual, por ejemplo como <code>EURUSD-H1-2020-2024-forward.xml</code>. Tiene menos filas que la primera, porque MT5 solo vuelve a probar en el forward las mejores pasadas de la optimización, ordenadas por tu criterio: el 10 % mejor con el algoritmo completo y el 25 % con el genético, según la ayuda de MT5, que además fija un número mínimo de pasadas.</p>
+    <p data-i18n-html="guide.export.s3.p2">Sus columnas son casi las mismas, con dos que importan: <strong>Forward Result</strong>, el criterio medido en el periodo forward, y <strong>Back Result</strong>, el criterio de esa misma pasada en el periodo de optimización. El resto de métricas (beneficio, drawdown, operaciones…) son las del forward. Así distingue Orometra los dos archivos, los sueltes en el orden que los sueltes, y así comprueba que son de la misma optimización: el Back Result de cada pasada tiene que coincidir con su Result en el otro archivo.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.export.s4.title">4. Opcional: el .set con tus rangos</h2>
-    <p data-i18n="guide.export.s4.body">En la pestaña de parámetros de entrada del probador puedes guardar el conjunto de parámetros, con el inicio, el paso y el final que pediste optimizar, como archivo .set. No es obligatorio, pero con él Orometra puede decirte qué parte de ese rango se llegó a probar: útil sobre todo con la optimización genética, que se salta combinaciones.</p>
+    <h2 data-i18n="guide.export.s4.title">Opcional: el .set con tus rangos</h2>
+    <p data-i18n-html="guide.export.s4.p1">En la pestaña de parámetros de entrada, haz clic derecho sobre la lista y elige <strong>Guardar</strong> (Save) para guardar la configuración como archivo .set. Cada línea lleva un parámetro con su valor y, para la optimización, su inicio, su paso, su final y si estaba marcado.</p>
+    <p data-i18n-html="guide.export.s4.p2">No es obligatorio, pero si lo sueltas junto con el XML, Orometra sabe exactamente qué rangos pediste probar a MT5. Así puede decirte qué parte de ese espacio se llegó a cubrir, algo que importa sobre todo con el algoritmo genético, y el .set que descargas al final lleva todos los parámetros del EA, no solo los que optimizaste.</p>
   </section>
-
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.export.s5.title">Comprueba los archivos antes de analizarlos</h2>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.export.s5.l1.1">Abre cada XML en Excel o LibreOffice. Tienes que ver una fila por pasada, las columnas de métricas y tus parámetros. Una sola celda o texto ilegible significa que no exportaste la tabla de resultados.</li>
+      <li data-i18n-html="guide.export.s5.l1.2">El archivo de la optimización tiene tantas filas como pasadas hizo MT5; el del forward, menos. Si los dos tienen exactamente las mismas filas y las mismas columnas, seguramente exportaste dos veces la misma tabla. Orometra lo detecta y te lo dice.</li>
+      <li data-i18n-html="guide.export.s5.l1.3">Cada pasada del archivo del forward tiene que estar también en el de la optimización, con el mismo número en la columna Pass.</li>
+    </ul>
+  </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.export.err.title">Los errores que estropean el análisis</h2>
     <ul class="lp-list">
-      <li data-i18n="guide.export.err.1">Usar el archivo .opt. MT5 guarda su propia caché de resultados en la carpeta del probador, pero es un formato interno: exporta siempre a XML.</li>
-      <li data-i18n="guide.export.err.2">Mezclar archivos de optimizaciones distintas. El in-sample y el forward tienen que salir de la misma ejecución: misma versión del EA, símbolo, marco temporal y rangos. Si no, las pasadas no casan (Orometra lo comprueba y te avisa).</li>
-      <li data-i18n="guide.export.err.3">Archivos enormes. Si el XML ocupa decenas de megas, acota los rangos o el número de parámetros y vuelve a optimizar: además de ser lento, con tantas combinaciones es más fácil que algo salga bien por puro azar.</li>
+      <li data-i18n-html="guide.export.err.l.1"><strong>Usar el archivo .opt.</strong> MT5 guarda su propia caché de resultados en la carpeta del probador, pero es un formato interno que solo lee MT5: exporta siempre a XML.</li>
+      <li data-i18n-html="guide.export.err.l.2"><strong>Mezclar archivos de optimizaciones distintas.</strong> El de la optimización y el del forward tienen que salir de la misma ejecución: misma versión del EA, símbolo, marco temporal, fechas y rangos. Si cambias algo y vuelves a optimizar, exporta otra vez las dos tablas. Orometra lo comprueba con la columna Back Result y te avisa si no casan.</li>
+      <li data-i18n-html="guide.export.err.l.3"><strong>Exportar un backtest suelto en vez de la optimización.</strong> Una prueba individual produce un informe (HTML u Open XML) de una sola configuración, no la tabla de pasadas. Ese informe sirve para otra cosa: comprobar la configuración elegida en un periodo que no hayas usado.</li>
+      <li data-i18n-html="guide.export.err.l.4"><strong>Archivos enormes.</strong> Si el XML ocupa decenas de megas, acota los rangos o el número de parámetros y vuelve a optimizar: además de ser lento, con tantas combinaciones es más fácil que algo salga bien por puro azar.</li>
     </ul>
   </section>
-
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.export.next.title">Siguiente paso</h2>
-    <p data-i18n="guide.export.next.body">Suelta los dos archivos en Orometra. En segundos tendrás la configuración que aguanta de verdad, cuánta evidencia la respalda y un .set listo para MT5. Todo funciona en tu navegador: tus archivos no salen de tu ordenador.</p>
+    <p data-i18n-html="guide.export.next.body">Suelta los dos archivos, y el .set si lo tienes, en Orometra. En segundos ves qué configuración es estable, cuánta evidencia la respalda y un .set listo para MT5. Todo funciona en tu navegador: tus archivos no salen de tu ordenador.</p>
   </section>
 
   <section class="lp-doc-cta">

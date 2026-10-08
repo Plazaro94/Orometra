@@ -32,8 +32,8 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261008g">
-<script type="application/ld+json" data-ld="guide-criterion">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Which optimization criterion to choose in MT5","description":"Balance, profit factor, drawdown, Sharpe, complex criterion or custom: what each MetaTrader 5 optimization criterion rewards, which risks it hides and how to choose one.","inLanguage":"en","mainEntityOfPage":"https://orometra.com/guides/mt5-optimization-criterion/","url":"https://orometra.com/guides/mt5-optimization-criterion/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://orometra.com/guides/"},{"@type":"ListItem","position":3,"name":"Which optimization criterion to choose in MT5","item":"https://orometra.com/guides/mt5-optimization-criterion/"}]}]}</script>
+<link rel="stylesheet" href="/styles.css?v=20261008i">
+<script type="application/ld+json" data-ld="guide-criterion">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Which optimization criterion to choose in MT5","description":"Balance, profit factor, drawdown, Sharpe, complex criterion or custom: what each MetaTrader 5 optimization criterion rewards, which risks it hides and how to choose one.","inLanguage":"en","mainEntityOfPage":"https://orometra.com/guides/mt5-optimization-criterion/","url":"https://orometra.com/guides/mt5-optimization-criterion/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://orometra.com/guides/"},{"@type":"ListItem","position":3,"name":"Which optimization criterion to choose in MT5","item":"https://orometra.com/guides/mt5-optimization-criterion/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -69,52 +69,74 @@
 <main id="main" class="lp-main lp-doc guide">
   <p class="lp-eyebrow"><a href="/guides/" data-i18n="guide.criterion.eyebrow">Guide</a></p>
   <h1 data-i18n="guide.criterion.h1">Which optimization criterion to choose in MT5</h1>
-  <p class="lp-lead" data-i18n="guide.criterion.lead">Before optimizing, MT5 asks you for a criterion: what it should maximize. It looks like a detail, but it decides which passes you see at the top and, in a genetic optimization, which combinations get tested at all.</p>
+  <p class="lp-lead" data-i18n="guide.criterion.lead">Before optimizing, MT5 asks you for a criterion: what it should maximize. It looks like a detail, but it decides which passes you see at the top, which ones are re-tested on the forward and, in a genetic optimization, which combinations get tested at all. This guide explains what each criterion rewards, what it hides and how to choose.</p>
 
   <aside class="guide-summary" aria-labelledby="guide-sum-title">
     <h2 id="guide-sum-title" data-i18n="guide.criterion.sum.title">In short</h2>
     <ol>
-      <li data-i18n="guide.criterion.sum.1">The criterion only ranks; it does not make any configuration robust.</li>
-      <li data-i18n="guide.criterion.sum.2">Maximizing balance alone rewards high risk.</li>
-      <li data-i18n="guide.criterion.sum.3">The complex criterion weighs several metrics at once and is a reasonable starting point.</li>
-      <li data-i18n="guide.criterion.sum.4">With the genetic search the criterion also decides what gets explored: choose it with more care.</li>
+      <li data-i18n-html="guide.criterion.sum.1">The criterion ranks passes; it does not make any configuration robust.</li>
+      <li data-i18n-html="guide.criterion.sum.2">It also decides which passes go to the forward and, in a genetic search, what gets explored.</li>
+      <li data-i18n-html="guide.criterion.sum.3">Maximizing balance alone rewards high risk.</li>
+      <li data-i18n-html="guide.criterion.sum.4">The complex criterion combines several metrics and is a reasonable starting point.</li>
+      <li data-i18n-html="guide.criterion.sum.5">Set your minimums first, and do not switch criteria to make the table look better.</li>
     </ol>
   </aside>
 
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.criterion.s1.title">What the criterion does</h2>
-    <p data-i18n="guide.criterion.s1.body">It is the number MT5 uses to score each pass: it appears in the Result column and sets the order of the table. In a complete search it only changes the order, because everything is tested anyway. In a genetic search it also changes what gets tested, because the algorithm chases what scores high. And with Forward enabled, it decides which passes go to the forward: the best ones by that criterion.</p>
+    <p data-i18n-html="guide.criterion.s1.p1">You choose it in the Settings tab of the Strategy Tester, next to the optimization type. It is the number MT5 uses to score each pass: it appears in the <strong>Result</strong> column and sets the order of the table. It has three effects:</p>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.criterion.s1.l1.1"><strong>The order of the table.</strong> What you see at the top is what scores highest on that criterion.</li>
+      <li data-i18n-html="guide.criterion.s1.l1.2"><strong>Which passes go to the forward.</strong> With Forward enabled, MT5 only re-tests the best passes by that criterion.</li>
+      <li data-i18n-html="guide.criterion.s1.l1.3"><strong>What gets tested, in a genetic search.</strong> The algorithm breeds new combinations from those that score high, so the criterion steers the whole exploration. In a complete search everything is tested anyway.</li>
+    </ul>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.criterion.s2.title">The options</h2>
-    <p data-i18n="guide.criterion.s2.body">MT5 lets you maximize balance, profit factor, expected payoff, recovery factor or Sharpe ratio, minimize drawdown, use a custom criterion (whatever the EA's OnTester() function returns) or the complex criterion. Each one rewards something different, and each one has its blind spot.</p>
+    <h2 data-i18n="guide.criterion.s2.title">The options and what each one rewards</h2>
+    <div class="guide-table-wrap" tabindex="0" data-i18n-html="guide.criterion.s2.t1"><table class="guide-table"><thead><tr><th scope="col">Criterion</th><th scope="col">What it rewards</th><th scope="col">Its blind spot</th></tr></thead><tbody><tr><td>Balance max</td><td>The final balance</td><td>Ignores the risk taken to get there</td></tr><tr><td>Profit Factor max</td><td>Gross profit relative to gross loss</td><td>On its own, a high profit factor can come from very few trades</td></tr><tr><td>Expected Payoff max</td><td>The average profit per trade</td><td>Can favor few large trades</td></tr><tr><td>Drawdown min</td><td>The smallest drop</td><td>Can favor passes that barely trade</td></tr><tr><td>Recovery Factor max</td><td>Net profit per unit of maximal drawdown</td><td>Rests on the single worst drop of the test</td></tr><tr><td>Sharpe Ratio max</td><td>Return relative to its variability</td><td>Can favor smooth but tiny returns</td></tr><tr><td>Complex Criterion max</td><td>A 0–100 score combining several metrics</td><td>Its exact formula is not published</td></tr><tr><td>Custom max</td><td>Whatever your EA’s OnTester() returns</td><td>The easiest one to fit to the result</td></tr></tbody></table></div>
+    <p data-i18n-html="guide.criterion.s2.p1">The names are those of an English terminal. In older versions of the MT5 help several of these criteria were described combined with the balance (for example “Balance + max Profit Factor”, the product of the balance and the profit factor), and the current menus show the short names. If the exact definition matters to you, check the help of your own terminal (F1), which describes the version you have installed.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.criterion.s3.title">Why maximum balance is dangerous</h2>
-    <p data-i18n="guide.criterion.s3.body">The pass with the most profit is usually the one that risks the most: big lots, distant stops or many trades at once. It can have a drawdown you would never sit through live. If you rank by balance, the top of the list tends to fill up with the passes most exposed to risk and to luck. Profit factor has the opposite blind spot: it can crown a pass with a handful of trades.</p>
+    <p data-i18n-html="guide.criterion.s3.p1">The pass with the most profit is usually the one that risks the most: big lots, distant stops or many trades at once. It can have a drawdown you would never sit through live. If you rank by balance, the top of the list tends to fill up with the passes most exposed to risk and to luck, and with Forward enabled, those are also the ones MT5 sends to the forward.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.criterion.s4.title">The complex criterion</h2>
-    <p data-i18n="guide.criterion.s4.body">It gives a score from 0 to 100 that combines several metrics, such as the number of trades, the expected payoff and the recovery factor, instead of looking at just one. It is a reasonable starting point if you have no clear preference. Its exact formula is not published, so treat it as a useful ordering, not as a quality measure you can interpret in detail.</p>
+    <p data-i18n-html="guide.criterion.s4.p1">It arrived in MT5 build 2615 (2020). It gives each pass a score from 0 to 100 that combines several metrics at once: according to MetaQuotes, the number of trades, the drawdown, the recovery factor, the expected payoff and the Sharpe ratio. In the results table, scores below 20 are shown in red and above 80 in dark green.</p>
+    <p data-i18n-html="guide.criterion.s4.p2">It is a reasonable starting point if you have no clear preference, and, because it weighs the drawdown too, a single risky pass finds it harder to top the table than with the balance. Its exact formula has not been published, so treat it as a useful ordering, not as a quality measure you can interpret point by point: a 70 is not “twice as good” as a 35.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.criterion.s5.title">The custom criterion</h2>
-    <p data-i18n="guide.criterion.s5.body">If you code your EA, the OnTester() function can return any score you like: for example, the recovery factor penalized when there are few trades. It is the most powerful option and the easiest to overfit: the more you tune the formula until the results look good, the more you are optimizing with your eyes on the result.</p>
+    <p data-i18n-html="guide.criterion.s5.p1">If you code your EA, the <code>OnTester()</code> function runs at the end of each pass and can return any score you like; choose “Custom max” and MT5 will rank by it. Inside it, <code>TesterStatistics()</code> gives you the figures of the pass. For example, this one discards passes with fewer than 100 trades and ranks the rest by recovery factor:</p>
+    <pre class="guide-code" tabindex="0"><code data-i18n="guide.criterion.s5.c1">double OnTester()
+  {
+   // Fewer than 100 trades: discard the pass
+   if(TesterStatistics(STAT_TRADES) &lt; 100)
+      return 0.0;
+   return TesterStatistics(STAT_RECOVERY_FACTOR);
+  }</code></pre>
+    <p data-i18n-html="guide.criterion.s5.p2">It is the most powerful option and the easiest to overfit: the more you tune the formula until the results look good, the more you are optimizing with your eyes on the result. Write it once, before optimizing, from what you would accept live.</p>
   </section>
-
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.criterion.s6.title">How to choose in practice</h2>
+    <ol class="lp-list">
+      <li data-i18n-html="guide.criterion.s6.l1.1">Write down your minimums first: profit factor, maximum drawdown and number of trades you would accept live. Whatever does not meet them is out, whatever the criterion says.</li>
+      <li data-i18n-html="guide.criterion.s6.l1.2">With a complete search, the criterion matters less: choose one that does not reward profit alone (the complex criterion or the recovery factor) and judge with several metrics.</li>
+      <li data-i18n-html="guide.criterion.s6.l1.3">With a genetic search, the criterion steers the exploration, so avoid those that reward a single figure: balance alone tends to send the search towards risky zones.</li>
+      <li data-i18n-html="guide.criterion.s6.l1.4">Keep the criterion you chose. Switching until the table looks the way you expected is another way of optimizing with your eyes on the result.</li>
+    </ol>
+  </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.criterion.err.title">What to keep in mind</h2>
     <ul class="lp-list">
-      <li data-i18n="guide.criterion.err.1">No criterion prevents overfitting: all of them reward what did well in that period, luck included.</li>
-      <li data-i18n="guide.criterion.err.2">Do not switch criteria until you get what you expected: it is another way of optimizing with your eyes on the result.</li>
-      <li data-i18n="guide.criterion.err.3">Always look at several metrics, not just the Result column: a good pass is reasonable in all of them.</li>
-      <li data-i18n="guide.criterion.err.4">Set minimums first (profit factor, drawdown, trades) and discard whatever does not meet them, whatever the criterion says.</li>
+      <li data-i18n-html="guide.criterion.err.l.1">No criterion prevents overfitting: all of them reward what did well in that period, luck included.</li>
+      <li data-i18n-html="guide.criterion.err.l.2">Always look at several metrics, not just the Result column: a good pass is reasonable in all of them.</li>
+      <li data-i18n-html="guide.criterion.err.l.3">A pass that only shines in the criterion you optimized and falls short in the rest is a warning sign.</li>
     </ul>
   </section>
-
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.criterion.next.title">Next step</h2>
-    <p data-i18n="guide.criterion.next.body">Orometra does not use the Result column to decide: it measures quality with several metrics at once, requires your minimums before ranking anything and looks for plateaus instead of the top of the list. That way, the criterion you chose in MT5 weighs as little as possible on the recommendation.</p>
+    <p data-i18n-html="guide.criterion.next.body">Orometra does not use the Result column to decide: it measures quality with several metrics at once, requires your minimums before ranking anything and looks for plateaus instead of the top of the list. That way, the criterion you chose in MT5 weighs as little as possible on the recommendation.</p>
   </section>
 
   <section class="lp-doc-cta">

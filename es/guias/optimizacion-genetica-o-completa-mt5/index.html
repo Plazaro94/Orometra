@@ -33,8 +33,8 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261008g">
-<script type="application/ld+json" data-ld="guide-genetic">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Optimización genética o completa en MT5: cuál usar","description":"La diferencia entre la optimización completa y la genética en el probador de estrategias de MetaTrader 5, cuándo usar cada una y por qué la genética exige más prudencia con el mejor resultado.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/","url":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Optimización genética o completa en MT5: cuál usar","item":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/"}]}]}</script>
+<link rel="stylesheet" href="/styles.css?v=20261008i">
+<script type="application/ld+json" data-ld="guide-genetic">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Optimización genética o completa en MT5: cuál usar","description":"La diferencia entre la optimización completa y la genética en el probador de estrategias de MetaTrader 5, cuándo usar cada una y por qué la genética exige más prudencia con el mejor resultado.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/","url":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Optimización genética o completa en MT5: cuál usar","item":"https://orometra.com/es/guias/optimizacion-genetica-o-completa-mt5/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -70,52 +70,70 @@
 <main id="main" class="lp-main lp-doc guide">
   <p class="lp-eyebrow"><a href="/es/guias/" data-i18n="guide.genetic.eyebrow">Guía</a></p>
   <h1 data-i18n="guide.genetic.h1">Optimización genética o completa en MT5: cuál usar</h1>
-  <p class="lp-lead" data-i18n="guide.genetic.lead">Al optimizar en MT5 eliges entre probar todas las combinaciones o dejar que un algoritmo genético busque las mejores. La elección no solo cambia cuánto esperas: cambia qué puedes concluir de los resultados.</p>
+  <p class="lp-lead" data-i18n="guide.genetic.lead">Al optimizar en MT5 eliges entre probar todas las combinaciones o dejar que un algoritmo genético busque las mejores. La elección no solo cambia cuánto esperas: cambia qué puedes concluir de los resultados. Esta guía explica cómo funciona cada una, cómo contar tus combinaciones y estimar el tiempo, y cómo decidir.</p>
 
   <aside class="guide-summary" aria-labelledby="guide-sum-title">
     <h2 id="guide-sum-title" data-i18n="guide.genetic.sum.title">En resumen</h2>
     <ol>
-      <li data-i18n="guide.genetic.sum.1">La completa prueba todas las combinaciones: lenta, pero no deja huecos.</li>
-      <li data-i18n="guide.genetic.sum.2">La genética prueba una parte, guiada por el criterio que optimizas: rápida, pero deja zonas sin explorar.</li>
-      <li data-i18n="guide.genetic.sum.3">Si la completa tarda horas y no días, úsala.</li>
-      <li data-i18n="guide.genetic.sum.4">Si usas la genética, fíate aún menos de lo que aparece arriba de la lista y comprueba sus vecinas.</li>
+      <li data-i18n-html="guide.genetic.sum.1">La completa prueba todas las combinaciones: lenta, pero no deja huecos.</li>
+      <li data-i18n-html="guide.genetic.sum.2">La genética prueba una parte, guiada por tu criterio: rápida, pero deja zonas sin explorar.</li>
+      <li data-i18n-html="guide.genetic.sum.3">Cuenta tus combinaciones y estima el tiempo antes de elegir.</li>
+      <li data-i18n-html="guide.genetic.sum.4">Si la completa tarda horas y no días, úsala; si no, reduce antes el problema.</li>
+      <li data-i18n-html="guide.genetic.sum.5">Con la genética, fíate aún menos de lo primero de la lista y comprueba sus vecinas.</li>
     </ol>
   </aside>
 
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.genetic.s1.title">Optimización completa</h2>
-    <p data-i18n="guide.genetic.s1.body">El algoritmo lento y completo prueba cada combinación de tus rangos. Con 3 parámetros de 20 valores cada uno son 8.000 pasadas; con 5, 3,2 millones. Su ventaja es que el mapa queda entero: puedes ver cómo cambia el resultado al mover cada parámetro y si la mejor zona es amplia o un punto suelto.</p>
+    <h2 data-i18n="guide.genetic.s1.title">Dónde se elige</h2>
+    <p data-i18n-html="guide.genetic.s1.p1">En la pestaña de ajustes del probador de estrategias (Ctrl+R), el campo <strong>Optimización</strong> ofrece, entre otras opciones, el algoritmo lento y completo (Slow complete algorithm) y el genético rápido (Fast genetic based algorithm). Al lado eliges el criterio. Los parámetros que se optimizan, con su inicio, paso y final, se fijan en la pestaña de parámetros de entrada.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.genetic.s2.title">Optimización genética</h2>
-    <p data-i18n="guide.genetic.s2.body">El algoritmo genético rápido empieza con combinaciones al azar, se queda con las que mejor puntúan según tu criterio y las cruza y muta para generar las siguientes, generación tras generación, hasta que dejan de mejorar. Puede encontrar buenas zonas en una fracción del tiempo, pero no lo prueba todo: se concentra donde el criterio es alto y apenas visita el resto.</p>
+    <h2 data-i18n="guide.genetic.s2.title">Cuántas combinaciones estás pidiendo</h2>
+    <p data-i18n-html="guide.genetic.s2.p1">Cada parámetro optimizado toma <code>(final − inicio) / paso + 1</code> valores. El total de combinaciones es el producto de esos números, y en una búsqueda completa cada combinación es un backtest entero.</p>
+    <p class="guide-note" data-i18n-html="guide.genetic.s2.n1"><strong>Ejemplo.</strong> FastMA de 10 a 30 en pasos de 2: 11 valores. SlowMA de 50 a 150 en pasos de 10: 11 valores. Stop loss de 1 a 3 ATR en pasos de 0,5: 5 valores. Take profit de 1 a 6 ATR en pasos de 1: 6 valores. Total: 11 × 11 × 5 × 6 = 3.630 combinaciones. Añade un quinto parámetro de 10 valores y llegas a 36.300.</p>
+    <p data-i18n-html="guide.genetic.s2.p2">Para estimar el tiempo, haz una prueba individual con las mismas fechas y el mismo modelado y cronométrala. MT5 reparte las pasadas entre los agentes de prueba de tu ordenador (normalmente uno por núcleo del procesador, los ves en la pestaña de agentes), así que la búsqueda completa tarda más o menos el número de combinaciones por la duración de una prueba, dividido entre el número de agentes. Con 3.630 combinaciones, 20 segundos por prueba y 8 agentes: 3.630 × 20 / 8 ≈ 9.000 segundos, unas dos horas y media.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.genetic.s3.title">Por qué la genética facilita la sobreoptimización</h2>
-    <p data-i18n="guide.genetic.s3.body">El algoritmo persigue activamente la combinación que más puntúa, y esa búsqueda también premia a la que tuvo suerte. Además, deja el mapa a trozos: alrededor de la mejor pasada puede haber pocas vecinas probadas, y sin ellas no puedes saber si estás en una meseta o en un pico. Por eso, con la genética, lo que aparece arriba de la lista merece todavía menos confianza.</p>
+    <h2 data-i18n="guide.genetic.s3.title">Optimización completa</h2>
+    <p data-i18n-html="guide.genetic.s3.p1">El algoritmo lento y completo hace todas las combinaciones de tus rangos. Su ventaja es que el mapa queda entero: puedes ver cómo cambia el resultado al mover cada parámetro y si la mejor zona es amplia o un punto suelto. La pestaña del gráfico de optimización puede incluso dibujar el resultado frente a dos parámetros, en 2D o en 3D, y es una forma directa de ver una meseta o un pico.</p>
+    <p data-i18n-html="guide.genetic.s3.p2">En una búsqueda completa el criterio no cambia lo que se prueba, solo el orden de la tabla y, con el Forward activado, qué pasadas se vuelven a probar en el forward.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.genetic.s4.title">Cuál elegir</h2>
-    <p data-i18n="guide.genetic.s4.body">Si la completa cabe en un tiempo razonable, úsala. Si no, antes de pasar a la genética, mira si puedes reducir el problema: quitar parámetros que apenas influyen, ampliar el paso o recortar rangos absurdos. Menos combinaciones no solo es más rápido: también da menos oportunidades a que gane el azar. Si aun así necesitas la genética, úsala para explorar: localiza la zona prometedora y después optimiza esa zona con la completa y un rango más estrecho.</p>
+    <h2 data-i18n="guide.genetic.s4.title">Optimización genética</h2>
+    <p data-i18n-html="guide.genetic.s4.p1">El algoritmo genético rápido empieza con combinaciones al azar, se queda con las que mejor puntúan según tu criterio y las cruza y muta para generar las siguientes, generación tras generación, hasta que dejan de mejorar. Puede encontrar buenas zonas en una fracción del tiempo, pero no lo prueba todo: se concentra donde el criterio es alto y apenas visita el resto.</p>
+    <p data-i18n-html="guide.genetic.s4.p2">Dos consecuencias prácticas. El criterio decide qué se explora, así que un criterio mal elegido manda la búsqueda al sitio equivocado. Y como empieza al azar, dos ejecuciones idénticas pueden dar tablas distintas: que una segunda ejecución tenga otra pasada en cabeza no significa que haya cambiado nada en tu EA.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.genetic.s5.title">Cuánto se exploró</h2>
-    <p data-i18n="guide.genetic.s5.body">Compara el número de pasadas con el total de combinaciones de tus rangos: si la genética hizo 5.000 de 3 millones, ha visto menos del 0,2 %. Orometra lo calcula si le das también el .set con tus rangos, y con búsquedas genéticas es más prudente: no se inventa vecinas que no se probaron, y te lo avisa.</p>
+    <h2 data-i18n="guide.genetic.s5.title">Por qué la genética facilita la sobreoptimización</h2>
+    <p data-i18n-html="guide.genetic.s5.p1">El algoritmo persigue activamente la combinación que más puntúa, y esa búsqueda también premia a la que tuvo suerte. Además, deja el mapa a trozos: alrededor de la mejor pasada puede haber pocas vecinas probadas, y sin ellas no puedes saber si estás en una meseta o en un pico. Por eso, con la genética, lo primero de la lista merece todavía menos confianza.</p>
   </section>
-
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.s6.title">Cuánto del espacio se exploró</h2>
+    <p data-i18n-html="guide.genetic.s6.p1">Divide el número de pasadas entre el total de combinaciones. Si una genética hizo 5.000 pasadas de 3 millones de combinaciones, ha visto menos del 0,2 % del espacio. No es motivo para tirar el resultado, pero sí para ser prudente al juzgar si la mejor pasada está en una meseta: lo más probable es que la mayoría de sus vecinas no se probaran nunca.</p>
+    <p data-i18n-html="guide.genetic.s6.p2">Orometra lo calcula si le das también el .set con tus rangos. Con búsquedas genéticas no se inventa vecinas que no se probaron: mide las mesetas solo con las configuraciones que existen, así que puede quedarse corto pero nunca infla el apoyo, y te avisa cuando la cobertura limita las conclusiones.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.genetic.s7.title">Cuál elegir, paso a paso</h2>
+    <ol class="lp-list">
+      <li data-i18n-html="guide.genetic.s7.l1.1">Cuenta tus combinaciones y estima el tiempo de una búsqueda completa como arriba.</li>
+      <li data-i18n-html="guide.genetic.s7.l1.2">Si tarda horas y no días, usa la completa.</li>
+      <li data-i18n-html="guide.genetic.s7.l1.3">Si no, reduce antes el problema: quita parámetros que apenas cambian nada, amplía los pasos y recorta los rangos que no tienen sentido para tu idea. Menos combinaciones no solo es más rápido: también da menos oportunidades a que gane el azar.</li>
+      <li data-i18n-html="guide.genetic.s7.l1.4">Si sigue siendo demasiado, usa la genética para explorar: localiza la zona prometedora y después optimiza esa zona con la completa y rangos más estrechos.</li>
+    </ol>
+    <p data-i18n-html="guide.genetic.s7.p1">Esa segunda optimización completa y más estrecha es justo para lo que sirve el .set de «rango para reoptimizar» que ofrece Orometra: está centrado en la configuración recomendada y tiene un tamaño que se puede ejecutar de verdad.</p>
+  </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.genetic.err.title">Errores habituales</h2>
     <ul class="lp-list">
-      <li data-i18n="guide.genetic.err.1">Usar la genética por costumbre cuando la completa tardaría poco.</li>
-      <li data-i18n="guide.genetic.err.2">Optimizar demasiados parámetros «porque la genética puede con ello». Puede calcularlo, pero eso no hace el resultado más fiable.</li>
-      <li data-i18n="guide.genetic.err.3">Tomar lo primero de la lista de una genética como la respuesta. Son las pasadas que el algoritmo persiguió, y las que más fácilmente pueden deber su resultado a la suerte.</li>
-      <li data-i18n="guide.genetic.err.4">Comparar dos ejecuciones genéticas y concluir que algo cambió: como empiezan al azar, dos ejecuciones idénticas pueden dar tablas distintas.</li>
+      <li data-i18n-html="guide.genetic.err.l.1">Usar la genética por costumbre cuando la completa tardaría poco.</li>
+      <li data-i18n-html="guide.genetic.err.l.2">Optimizar demasiados parámetros «porque la genética puede con ello». Puede calcularlo, pero eso no hace el resultado más fiable.</li>
+      <li data-i18n-html="guide.genetic.err.l.3">Tomar lo primero de la lista de una genética como la respuesta. Son las pasadas que el algoritmo persiguió, y las que más fácilmente pueden deber su resultado a la suerte.</li>
+      <li data-i18n-html="guide.genetic.err.l.4">Comparar dos ejecuciones genéticas y concluir que algo cambió: como empiezan al azar, dos ejecuciones idénticas pueden dar tablas distintas.</li>
     </ul>
   </section>
-
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.genetic.next.title">Siguiente paso</h2>
-    <p data-i18n="guide.genetic.next.body">Suelta en Orometra los XML de tu optimización, completa o genética. Tiene en cuenta cuánto del espacio se probó, es más prudente cuando la búsqueda fue genética y te dice si detrás de la mejor pasada hay una meseta o solo un punto afortunado.</p>
+    <p data-i18n-html="guide.genetic.next.body">Suelta en Orometra los XML de tu optimización, completa o genética, con el .set si lo tienes. Tiene en cuenta cuánto del espacio se probó, es más prudente cuando la búsqueda fue genética y te dice si detrás de la mejor pasada hay una meseta o solo un punto afortunado.</p>
   </section>
 
   <section class="lp-doc-cta">

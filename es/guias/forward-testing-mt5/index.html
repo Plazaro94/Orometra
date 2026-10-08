@@ -33,8 +33,8 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261008g">
-<script type="application/ld+json" data-ld="guide-forward">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Forward testing en MT5: qué es y cómo configurarlo","description":"Cómo funciona el forward testing en el probador de estrategias de MetaTrader 5: cómo activarlo, cuánto periodo reservar, qué pasadas prueba y cómo leer el resultado sin engañarte.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/forward-testing-mt5/","url":"https://orometra.com/es/guias/forward-testing-mt5/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Forward testing en MT5: qué es y cómo configurarlo","item":"https://orometra.com/es/guias/forward-testing-mt5/"}]}]}</script>
+<link rel="stylesheet" href="/styles.css?v=20261008i">
+<script type="application/ld+json" data-ld="guide-forward">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Forward testing en MT5: qué es y cómo configurarlo","description":"Cómo funciona el forward testing en el probador de estrategias de MetaTrader 5: cómo activarlo, cuánto periodo reservar, qué pasadas prueba y cómo leer el resultado sin engañarte.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/forward-testing-mt5/","url":"https://orometra.com/es/guias/forward-testing-mt5/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Forward testing en MT5: qué es y cómo configurarlo","item":"https://orometra.com/es/guias/forward-testing-mt5/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -70,52 +70,67 @@
 <main id="main" class="lp-main lp-doc guide">
   <p class="lp-eyebrow"><a href="/es/guias/" data-i18n="guide.forward.eyebrow">Guía</a></p>
   <h1 data-i18n="guide.forward.h1">Forward testing en MT5: qué es y cómo configurarlo</h1>
-  <p class="lp-lead" data-i18n="guide.forward.lead">El forward es la forma más sencilla de saber si una optimización ha encontrado algo real o solo se ha ajustado al pasado. MT5 lo trae de serie, pero hay que activarlo y saber leerlo.</p>
+  <p class="lp-lead" data-i18n="guide.forward.lead">El forward es la forma más sencilla de saber si una optimización ha encontrado algo real o solo se ha ajustado al pasado. MT5 lo trae de serie, pero hay que activarlo, darle datos suficientes y saber leerlo. Esta guía cubre las tres cosas, con un ejemplo de cómo leer la tabla del forward.</p>
 
   <aside class="guide-summary" aria-labelledby="guide-sum-title">
     <h2 id="guide-sum-title" data-i18n="guide.forward.sum.title">En resumen</h2>
     <ol>
-      <li data-i18n="guide.forward.sum.1">Activa el Forward en la pestaña de ajustes del probador y elige qué parte del periodo reservar.</li>
-      <li data-i18n="guide.forward.sum.2">MT5 optimiza con la primera parte y prueba las mejores pasadas en la última.</li>
-      <li data-i18n="guide.forward.sum.3">Lo que buscas es que las buenas sigan siendo razonables, no que el forward sea igual de bueno.</li>
-      <li data-i18n="guide.forward.sum.4">No elijas la pasada por su forward: entonces deja de ser una prueba.</li>
+      <li data-i18n-html="guide.forward.sum.1">Activa el Forward en la pestaña de ajustes del probador y elige qué parte del periodo reservar.</li>
+      <li data-i18n-html="guide.forward.sum.2">MT5 optimiza con la primera parte y vuelve a probar solo las mejores pasadas en la última.</li>
+      <li data-i18n-html="guide.forward.sum.3">Lo que importa es el número de operaciones del forward, no su duración en meses.</li>
+      <li data-i18n-html="guide.forward.sum.4">Espera que el forward salga peor; preocúpate por los hundimientos y por que el orden se dé la vuelta.</li>
+      <li data-i18n-html="guide.forward.sum.5">No elijas la pasada solo por su forward, y guarda un tercer tramo que no toques.</li>
     </ol>
   </aside>
 
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s1.title">Qué es el forward testing</h2>
-    <p data-i18n="guide.forward.s1.body">El in-sample son los datos que se usan para elegir los parámetros. El forward es un tramo posterior que el optimizador no usó. Como no se puede probar con el futuro, reservar el final de tu histórico simula lo que habría pasado si hubieras optimizado y después operado.</p>
+    <p data-i18n-html="guide.forward.s1.p1">El <strong>in-sample</strong> son los datos que se usan para elegir los parámetros. El <strong>forward</strong> es un tramo posterior que el optimizador no usó. Como no se puede probar con el futuro, reservar el final de tu histórico simula lo que habría pasado si hubieras optimizado con el pasado y después operado los meses siguientes.</p>
+    <p data-i18n-html="guide.forward.s1.p2">Por qué importa: cuando pruebas miles de combinaciones, la mejor es en parte la mejor y en parte la que más suerte tuvo, y el backtest no puede separar las dos cosas (la <a href="/es/guias/sobreoptimizacion-mt5/">guía de la sobreoptimización</a> explica por qué). El forward no participó en la elección, así que la suerte que subió una pasada al primer puesto en el in-sample no está ahí. Lo que sobrevive del resultado te dice cuánto era real.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s2.title">Cómo activarlo en MT5</h2>
-    <p data-i18n="guide.forward.s2.body">En el probador de estrategias (Ctrl+R), pestaña de ajustes, junto a las fechas está la opción Forward. Puedes elegir 1/2, 1/3 o 1/4 del periodo, o Personalizado para fijar tú la fecha de inicio. MT5 siempre toma el tramo final: con un periodo de enero de 2020 a enero de 2024 y 1/4, optimiza con los tres primeros años y deja el último para el forward. Solo se aplica al optimizar.</p>
+    <p data-i18n-html="guide.forward.s2.p1">En el probador de estrategias (Ctrl+R), pestaña de ajustes, junto a las fechas está la opción <strong>Forward</strong>. Puedes elegir 1/2, 1/3 o 1/4 del periodo, o la opción personalizada (Custom) para fijar la fecha en la que empieza el forward. MT5 siempre toma el tramo final. Solo se aplica al optimizar.</p>
+    <p class="guide-note" data-i18n-html="guide.forward.s2.n1"><strong>Ejemplo.</strong> Fechas del 1 de enero de 2020 al 1 de enero de 2024 con Forward 1/4: MT5 optimiza con 2020–2022 (tres años) y vuelve a probar las mejores pasadas en 2023 (un año). Con 1/3 serían 32 meses de optimización y 16 de forward, desde el 1 de septiembre de 2022.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s3.title">Cuánto periodo reservar</h2>
-    <p data-i18n="guide.forward.s3.body">No hay una cifra mágica. Una cuarta o una tercera parte suele ser un equilibrio razonable: bastante histórico para optimizar y bastante forward para que signifique algo. Lo que importa es el número de operaciones: si tu EA solo hace 10 o 15 en el forward, cualquier resultado puede ser casualidad. Si opera poco, alarga el periodo total antes que recortar el forward.</p>
+    <p data-i18n-html="guide.forward.s3.p1">No hay una fracción mágica. Una cuarta o una tercera parte suele ser un equilibrio razonable: bastante histórico para optimizar y bastante forward para que signifique algo. Lo que decide es el <strong>número de operaciones</strong> que tendrá el forward, porque un factor de beneficio o un drawdown medidos sobre 10 o 15 operaciones son casi puro azar.</p>
+    <p data-i18n-html="guide.forward.s3.p2">Estímalo antes de optimizar: mira cuántas operaciones al año hace tu EA en una prueba individual y multiplica por la duración del forward. Un EA con unas 120 operaciones al año deja unas 120 en un forward de un año, pero solo unas 40 en uno de cuatro meses. Si sale poco, alarga el periodo total antes que recortar el forward.</p>
+    <p data-i18n-html="guide.forward.s3.p3">Como referencia, Orometra exige en el forward el mismo mínimo de operaciones que pones para el in-sample, reescalado a la duración estimada del forward, y nunca menos de 30.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.forward.s4.title">Qué pasadas se prueban</h2>
-    <p data-i18n="guide.forward.s4.body">MT5 no prueba todas las pasadas en el forward, solo las mejores de la optimización según el criterio que elegiste: un 10 % en la búsqueda completa y un 25 % en la genética. Por eso la pestaña forward tiene menos filas que la de resultados. Cada fila del forward trae también el resultado de esa misma pasada en el periodo de optimización, para que puedas compararlos.</p>
+    <h2 data-i18n="guide.forward.s4.title">Qué pasadas se prueban en el forward</h2>
+    <p data-i18n-html="guide.forward.s4.p1">MT5 no prueba todas las pasadas en el periodo forward, solo las mejores de la optimización según el criterio que elegiste: el 10 % mejor en una búsqueda completa y el 25 % en una genética, según la ayuda de MT5. La ayuda fija además un número mínimo de pasadas. En una exportación real que hemos examinado, una optimización genética de 810 pasadas mandó 256 al forward, más que el 25 % (202), lo que encaja con el mínimo de 256 pasadas que se cita en los foros de MQL5.</p>
+    <p data-i18n-html="guide.forward.s4.p2">Esto tiene dos consecuencias. La primera, que la tabla del forward no es una muestra al azar: solo trae pasadas que ya eran buenas en el in-sample, elegidas por tu criterio. La segunda, que las vecinas de la mejor pasada, las configuraciones a un paso, pueden no estar en ella, así que el forward por sí solo no siempre puede decirte si la zona alrededor de tu pasada aguanta.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.forward.s5.title">Cómo leer el resultado</h2>
-    <p data-i18n="guide.forward.s5.body">Es normal que el forward sea peor que el in-sample: la optimización eligió lo que mejor encajaba con el pasado, y parte de eso era suerte. Buenas señales: las mejores pasadas siguen siendo rentables con un drawdown aceptable, y las configuraciones cercanas se comportan de forma parecida. Malas señales: se hunden, pasan a perder o el orden cambia por completo.</p>
+    <h2 data-i18n="guide.forward.s5.title">Cómo leer la tabla del forward</h2>
+    <p data-i18n-html="guide.forward.s5.p1">Cada fila es una pasada. <strong>Back Result</strong> es su criterio en el periodo de optimización y <strong>Forward Result</strong>, el mismo criterio en el forward. El resto de columnas (beneficio, factor de beneficio, drawdown, operaciones) son las del periodo forward. Ordena la tabla por Back Result y baja leyendo la columna Forward Result.</p>
+    <div class="guide-table-wrap" tabindex="0" data-i18n-html="guide.forward.s5.t1"><table class="guide-table"><caption>Ejemplo ilustrativo, criterio: balance (beneficio en dinero)</caption><thead><tr><th scope="col">Pasada</th><th scope="col">Back Result</th><th scope="col">Forward Result</th><th scope="col">Operaciones forward</th></tr></thead><tbody><tr><td>1842</td><td>12.400</td><td>−900</td><td>38</td></tr><tr><td>991</td><td>10.900</td><td>1.700</td><td>41</td></tr><tr><td>4283</td><td>9.800</td><td>2.300</td><td>44</td></tr><tr><td>4290</td><td>9.600</td><td>2.100</td><td>45</td></tr><tr><td>4277</td><td>9.500</td><td>2.000</td><td>43</td></tr></tbody></table></div>
+    <p data-i18n-html="guide.forward.s5.p2">Cómo se lee: la ganadora del in-sample, la pasada 1842, pierde dinero en el forward; las pasadas 4283, 4290 y 4277, que en este ejemplo se diferencian en un paso de un parámetro y eran algo peores en el in-sample, siguen ganando todas. Ese patrón, una ganadora aislada que se hunde junto a un grupo de configuraciones parecidas que aguantan, es el aspecto que tiene un pico frente a una meseta. Comprueba también que el forward tiene operaciones suficientes: con unas 40, estas cifras orientan, no concluyen.</p>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.forward.s5.l1.1"><strong>Buenas señales:</strong> las mejores pasadas del in-sample siguen ganando con un drawdown aceptable, la caída es moderada y las configuraciones parecidas se comportan igual.</li>
+      <li data-i18n-html="guide.forward.s5.l1.2"><strong>Malas señales:</strong> las primeras pasadas se hunden o pasan a perder, el orden de las dos listas no tiene relación, o solo una pasada aislada sale bien.</li>
+    </ul>
+    <p data-i18n-html="guide.forward.s5.p3">Que el forward salga peor es normal y esperable: la optimización eligió lo que mejor encajaba con el pasado, y parte de eso era suerte. La pregunta no es si empeora, sino si lo que queda sigue mereciendo la pena.</p>
   </section>
-
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.forward.s6.title">El tercer tramo: el periodo que no tocas</h2>
+    <p data-i18n-html="guide.forward.s6.p1">En cuanto usas el forward para decidir (elegir una pasada, cambiar un rango o retocar el EA y volver a optimizar), participa en la elección y deja de ser una prueba a ciegas. Por eso conviene dejar un tercer tramo fuera de las fechas del probador. Si tu histórico llega hasta finales de 2024, por ejemplo, optimiza con forward hasta finales de 2023 y no mires 2024. Cuando hayas elegido tu configuración, haz con ella una prueba individual en 2024, una sola vez. Esa prueba es la evidencia más limpia que tendrás; en Orometra la llamamos el periodo no visto.</p>
+  </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.err.title">Errores habituales</h2>
     <ul class="lp-list">
-      <li data-i18n="guide.forward.err.1">Elegir la pasada con mejor forward. El forward deja de ser una prueba independiente: has optimizado dos veces.</li>
-      <li data-i18n="guide.forward.err.2">Repetir la optimización hasta que el forward salga bien. Es el mismo error en más pasos: al final el forward también queda ajustado.</li>
-      <li data-i18n="guide.forward.err.3">Un forward demasiado corto. Con pocas operaciones no demuestra nada, ni a favor ni en contra.</li>
-      <li data-i18n="guide.forward.err.4">Creer que un buen forward garantiza el futuro. Es una prueba más, no una promesa; la prueba más limpia es un periodo que no hayas usado ni para optimizar ni para validar.</li>
+      <li data-i18n-html="guide.forward.err.l.1"><strong>Elegir la pasada con mejor forward.</strong> El forward deja de ser una prueba independiente: has optimizado dos veces, y sus cifras heredan la misma inflación.</li>
+      <li data-i18n-html="guide.forward.err.l.2"><strong>Repetir la optimización hasta que el forward salga bien.</strong> Es el mismo error en más pasos: al final el forward también queda ajustado.</li>
+      <li data-i18n-html="guide.forward.err.l.3"><strong>Un forward con pocas operaciones.</strong> No demuestra nada, ni a favor ni en contra. Cuenta operaciones, no meses.</li>
+      <li data-i18n-html="guide.forward.err.l.4"><strong>Creer que un buen forward garantiza el futuro.</strong> Es una prueba más, no una promesa: los mercados cambian, y un solo periodo puede salir bien por casualidad.</li>
     </ul>
   </section>
-
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.next.title">Siguiente paso</h2>
-    <p data-i18n="guide.forward.next.body">Exporta a XML la pestaña de resultados y la del forward y suéltalas en Orometra. Contrasta con el forward las mesetas que encuentra en el in-sample, sin mezclar ni promediar los dos periodos, y te dice cuánta evidencia respalda la configuración. Todo funciona en tu navegador.</p>
+    <p data-i18n-html="guide.forward.next.body">Exporta a XML la pestaña de la optimización y la del forward y suelta los dos archivos en Orometra. Busca las mesetas en el in-sample y después vuelve a exigir tus mínimos en el forward para validarlas: si muchas configuraciones de una meseta fallan allí, la meseta baja de puesto. Dentro de la meseta validada elige la configuración con mejor puesto conjunto en in-sample y forward, promediado con sus vecinas. Como el forward participa en esa elección, no es una prueba a ciegas, y Orometra pide un periodo que no hayas usado antes de llegar a su nivel más alto.</p>
   </section>
 
   <section class="lp-doc-cta">

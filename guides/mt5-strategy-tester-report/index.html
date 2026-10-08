@@ -32,8 +32,8 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261008g">
-<script type="application/ld+json" data-ld="guide-report">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"How to read the MT5 Strategy Tester report","description":"What profit factor, drawdown, recovery factor, number of trades, expected payoff and Sharpe ratio mean in the MetaTrader 5 backtest report, and which values should make you suspicious.","inLanguage":"en","mainEntityOfPage":"https://orometra.com/guides/mt5-strategy-tester-report/","url":"https://orometra.com/guides/mt5-strategy-tester-report/","datePublished":"2026-09-28","dateModified":"2026-09-28","image":"https://orometra.com/og-image.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://orometra.com/guides/"},{"@type":"ListItem","position":3,"name":"How to read the MT5 Strategy Tester report","item":"https://orometra.com/guides/mt5-strategy-tester-report/"}]}]}</script>
+<link rel="stylesheet" href="/styles.css?v=20261008i">
+<script type="application/ld+json" data-ld="guide-report">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"How to read the MT5 Strategy Tester report","description":"What profit factor, drawdown, recovery factor, number of trades, expected payoff and Sharpe ratio mean in the MetaTrader 5 backtest report, and which values should make you suspicious.","inLanguage":"en","mainEntityOfPage":"https://orometra.com/guides/mt5-strategy-tester-report/","url":"https://orometra.com/guides/mt5-strategy-tester-report/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://orometra.com/guides/"},{"@type":"ListItem","position":3,"name":"How to read the MT5 Strategy Tester report","item":"https://orometra.com/guides/mt5-strategy-tester-report/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -69,53 +69,84 @@
 <main id="main" class="lp-main lp-doc guide">
   <p class="lp-eyebrow"><a href="/guides/" data-i18n="guide.report.eyebrow">Guide</a></p>
   <h1 data-i18n="guide.report.h1">How to read the MT5 Strategy Tester report</h1>
-  <p class="lp-lead" data-i18n="guide.report.lead">An MT5 backtest report has dozens of figures. Almost everything important is in a handful of them. What each one means, what values are reasonable and which ones should make you suspicious.</p>
+  <p class="lp-lead" data-i18n="guide.report.lead">An MT5 backtest report has dozens of figures, and almost everything important is in a handful of them. This guide explains what each one means and how MT5 calculates it, with worked examples, what values are reasonable, which ones should make you suspicious and what to check about the test conditions before trusting any of them.</p>
 
   <aside class="guide-summary" aria-labelledby="guide-sum-title">
-    <h2 id="guide-sum-title" data-i18n="guide.report.sum.title">The figures that matter</h2>
+    <h2 id="guide-sum-title" data-i18n="guide.report.sum.title">In short</h2>
     <ol>
-      <li data-i18n="guide.report.sum.1">Net profit and profit factor: whether it makes money, and by what margin.</li>
-      <li data-i18n="guide.report.sum.2">Drawdown: how much it lost from a peak.</li>
-      <li data-i18n="guide.report.sum.3">Recovery factor: how much it earns per unit of drawdown.</li>
-      <li data-i18n="guide.report.sum.4">Number of trades: whether there are enough to conclude anything.</li>
-      <li data-i18n="guide.report.sum.5">Expected payoff and Sharpe ratio: what each trade leaves and how steady it is.</li>
+      <li data-i18n-html="guide.report.sum.1">Net profit and profit factor: whether it makes money, and by what margin.</li>
+      <li data-i18n-html="guide.report.sum.2">Drawdown: the worst drop, in money and in percentage, which can be two different episodes.</li>
+      <li data-i18n-html="guide.report.sum.3">Recovery factor, expected payoff and Sharpe ratio: how much it earns per unit of risk.</li>
+      <li data-i18n-html="guide.report.sum.4">Number of trades: whether there are enough to conclude anything.</li>
+      <li data-i18n-html="guide.report.sum.5">The test conditions: modeling, history quality and costs decide whether the rest is believable.</li>
     </ol>
   </aside>
 
   <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s0.title">How to get the report</h2>
+    <p data-i18n-html="guide.report.s0.p1">The report belongs to a <strong>single test</strong>, not to an optimization. To get the report of a configuration, set its values in the Inputs tab (or load its .set), choose “Disabled” in the Optimization field of the Settings tab and run the test. When it finishes, the Backtest tab shows the report; right-click it and choose Report to save it as HTML or Open XML.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.report.s1.title">Net profit and profit factor</h2>
-    <p data-i18n="guide.report.s1.body">Net profit is everything won minus everything lost. Profit factor divides gross profit by gross loss: 1 means it makes nothing, 1.5 means it wins 1.5 for every unit it loses. Around 1.3–1.5 is often considered reasonable; values of 3 or more over many trades are rare and deserve suspicion, especially when they come out of an optimization.</p>
+    <p data-i18n-html="guide.report.s1.p1"><strong>Gross Profit</strong> is the sum of all winning trades and <strong>Gross Loss</strong>, the sum of all losing ones (shown as a negative number). <strong>Total Net Profit</strong> is the two added together. <strong>Profit Factor</strong> is gross profit divided by gross loss in absolute value: 1 means it makes nothing, 1.5 means it wins 1.5 for every unit it loses.</p>
+    <p class="guide-note" data-i18n-html="guide.report.s1.n1"><strong>Example.</strong> Gross profit 15,000 and gross loss −10,000: net profit 5,000 and profit factor 15,000 / 10,000 = 1.5.</p>
+    <p data-i18n-html="guide.report.s1.p2">As a rule of thumb, not a law, a profit factor around 1.3–1.5 over many trades is often considered reasonable. Values of 3 or more over many trades are rare and deserve suspicion, especially when they come out of an optimization. With few trades, the profit factor swings wildly: a couple of losing trades turned into winners can change it drastically.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.report.s2.title">Drawdown: absolute, maximal and relative</h2>
-    <p data-i18n="guide.report.s2.body">MT5 gives several versions. Absolute is how far it fell below the initial deposit. Maximal is the largest drop from a peak to the next low, in money; relative is that drop as a percentage. Each one appears for balance (closed trades) and for equity (including open ones). Look at equity: balance can hide trades that went deep against you before closing. Ask yourself whether you would sit through that drop with real money.</p>
+    <p data-i18n-html="guide.report.s2.p1">MT5 gives three drawdowns, each one for the balance (closed trades only) and for the equity (including the open ones):</p>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.report.s2.l1.1"><strong>Absolute</strong>: how far the account fell below the initial deposit. If it never went below it, it is zero.</li>
+      <li data-i18n-html="guide.report.s2.l1.2"><strong>Maximal</strong>: the largest drop in money from a local peak to the next low, with that same drop as a percentage of its peak in brackets.</li>
+      <li data-i18n-html="guide.report.s2.l1.3"><strong>Relative</strong>: the largest drop as a percentage of its peak, with that drop in money in brackets.</li>
+    </ul>
+    <p data-i18n-html="guide.report.s2.p2">The maximal and the relative are two separate maxima, and they can come from different episodes: the largest drop in money is not necessarily the largest in percentage.</p>
+    <p class="guide-note" data-i18n-html="guide.report.s2.n1"><strong>Example.</strong> The balance goes from 10,000 down to 7,000, then up to 20,000 and down to 16,000. The first drop is 3,000 (30% of its peak); the second, 4,000 (20%). The report shows a maximal drawdown of 4,000 (20%) and a relative drawdown of 30% (3,000).</p>
+    <p data-i18n-html="guide.report.s2.p3">Look at the equity figures: the balance only moves when a trade closes, so it can hide trades that went deep against you before closing. Then ask yourself whether you would sit through that drop with real money, because the next one can be larger.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.report.s3.title">Recovery factor</h2>
-    <p data-i18n="guide.report.s3.body">Net profit divided by maximal drawdown. It sums up in one figure whether the profit made up for the risk you had to sit through: at 1, you earned as much as you lost at the worst moment. Higher is better; compare it between configurations tested over the same period, because it grows with the length of the test.</p>
+    <p data-i18n-html="guide.report.s3.p1"><strong>Recovery Factor</strong> is net profit divided by the maximal drawdown. With a net profit of 5,000 and a maximal drawdown of 2,500, it would be 2: you earned twice what you lost at the worst moment. Higher is better.</p>
+    <p data-i18n-html="guide.report.s3.p2">Compare it only between tests of the same length: profit tends to grow in proportion to time while the worst drop grows more slowly, so a longer test usually shows a higher recovery factor without the strategy being any better.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.report.s4.title">Number of trades</h2>
-    <p data-i18n="guide.report.s4.body">It is the most ignored figure and the one that decides whether the others mean anything. With 30 trades, a couple of lucky wins change the profit factor completely; with 300, much less. There is no universal minimum, but below about 100 over the whole period it pays to be very cautious, even more so if the optimization tried thousands of combinations.</p>
+    <h2 data-i18n="guide.report.s4.title">Expected payoff</h2>
+    <p data-i18n-html="guide.report.s4.p1"><strong>Expected Payoff</strong> is net profit divided by the number of trades: what each trade leaves on average. With 5,000 of net profit over 250 trades, it is 20 per trade.</p>
+    <p data-i18n-html="guide.report.s4.p2">Compare it with your cost per trade. If your lot makes each point worth 1, those 20 are 20 points per trade; a broker with a spread one or two points wider, or a little slippage, takes a visible part of it. If the expected payoff is only a few points, a slightly worse execution eats it whole.</p>
   </section>
   <section class="lp-doc-block guide-step">
-    <h2 data-i18n="guide.report.s5.title">Expected payoff and Sharpe ratio</h2>
-    <p data-i18n="guide.report.s5.body">Expected payoff is the average profit per trade. Compare it with your cost per trade (spread, commission, slippage): if it is only a few points, a slightly worse broker eats it. The Sharpe ratio measures return relative to how irregular it is; in the tester, below 0 means it loses and above 1 is considered a sign that the risk pays off. Use it to compare configurations with each other rather than as an absolute grade.</p>
+    <h2 data-i18n="guide.report.s5.title">Sharpe ratio</h2>
+    <p data-i18n-html="guide.report.s5.p1">The <strong>Sharpe Ratio</strong> measures return relative to how irregular it is: the average return divided by its standard deviation, with a risk-free rate of zero in the tester. Since build 3210 (2022), MT5 calculates it on the equity, including the swings of open trades, and scales it to a one-year interval.</p>
+    <p data-i18n-html="guide.report.s5.p2">MetaQuotes gives these bands: below 0 the strategy loses; between 0 and 1 the risk does not pay off; from 1 it is considered good; from 3, very good. Over short tests the figure is noisy, so use it above all to compare configurations tested over the same period.</p>
   </section>
-
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s6.title">Number of trades and how the profit is spread</h2>
+    <p data-i18n-html="guide.report.s6.p1"><strong>Total Trades</strong> is the most ignored figure and the one that decides whether the others mean anything. With 30 trades, a couple of lucky wins change the profit factor completely; with 300, much less. There is no universal minimum, but below about 100 over the whole period it pays to be very cautious, even more so if the configuration came out of an optimization that tried thousands of combinations.</p>
+    <p data-i18n-html="guide.report.s6.p2">Then look at how the profit is spread. The report gives the <strong>largest profit trade</strong> and the <strong>maximum consecutive losses</strong>, among others. If the largest trade is 1,800 out of a net profit of 5,000, more than a third of the result comes from a single trade: take away the two or three best ones and there may be nothing left. A robust edge is spread across many trades.</p>
+  </section>
+  <section class="lp-doc-block guide-step">
+    <h2 data-i18n="guide.report.s7.title">The test conditions</h2>
+    <p data-i18n-html="guide.report.s7.p1">Before believing any figure, check how the test was run. The top of the report shows the settings and the <strong>History Quality</strong>: according to the MT5 help, the share of correct one-minute data in the history used, where gaps and malformed bars count as incorrect. A figure well below 100% means part of the history was missing or faulty.</p>
+    <ul class="lp-list">
+      <li data-i18n-html="guide.report.s7.l1.1"><strong>Every tick based on real ticks</strong>: uses your broker’s real tick history, with its real spread. It is the most faithful mode and the slowest.</li>
+      <li data-i18n-html="guide.report.s7.l1.2"><strong>Every tick</strong>: generates ticks from one-minute bars. Faster, but the moves inside each minute are simulated.</li>
+      <li data-i18n-html="guide.report.s7.l1.3"><strong>1 minute OHLC</strong>: only the open, high, low and close of each one-minute bar. Fast, fine for exploring.</li>
+      <li data-i18n-html="guide.report.s7.l1.4"><strong>Open prices only</strong>: only the opening price of each bar. It only makes sense if the EA makes its decisions at the opening of a new bar.</li>
+    </ul>
+    <p data-i18n-html="guide.report.s7.p2">Also check the costs: if the report shows no commission and your broker charges one, or the spread of the test is narrower than what you get live, the backtest is optimistic. The Delays option in the settings simulates execution latency, including a random delay.</p>
+  </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.report.err.title">Traps when reading the report</h2>
     <ul class="lp-list">
-      <li data-i18n="guide.report.err.1">Looking only at net profit. Without drawdown and number of trades, it says nothing about risk or about whether it is chance.</li>
-      <li data-i18n="guide.report.err.2">Comparing reports with different periods or deposits: profit and drawdown in money depend on both.</li>
-      <li data-i18n="guide.report.err.3">Trusting a backtest with unrealistic modeling. “Every tick based on real ticks” is the most faithful; “Open prices only” only makes sense if the EA acts at the open of the bar.</li>
-      <li data-i18n="guide.report.err.4">Reading the report of the best pass of an optimization as if it were a clean test: that pass was chosen precisely because it did well in that period.</li>
+      <li data-i18n-html="guide.report.err.l.1"><strong>Looking only at net profit.</strong> Without drawdown and number of trades, it says nothing about risk or about whether it is chance.</li>
+      <li data-i18n-html="guide.report.err.l.2"><strong>Comparing reports with different periods or deposits.</strong> Profit and drawdown in money depend on both; percentages and ratios travel better.</li>
+      <li data-i18n-html="guide.report.err.l.3"><strong>Trusting a test with poor modeling or poor history.</strong> Check the modeling mode and the history quality before anything else.</li>
+      <li data-i18n-html="guide.report.err.l.4"><strong>Reading the report of the best pass of an optimization as if it were a clean test.</strong> That pass was chosen precisely because it did well in that period; only a period you did not use to choose it is a clean test.</li>
     </ul>
   </section>
-
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.report.next.title">Next step</h2>
-    <p data-i18n="guide.report.next.body">A single report cannot tell you whether a configuration is robust or the lucky one among thousands; for that, Orometra analyzes the whole optimization. And when you test the chosen one on a new period, drop that report into Orometra: it tells you whether the result is normal for your EA, with a Monte Carlo over your own trades.</p>
+    <p data-i18n-html="guide.report.next.body">A single report cannot tell you whether a configuration is robust or the lucky one among thousands; for that, Orometra analyzes the whole optimization. And when you test the chosen configuration on a period you have not used, drop that report into Orometra: it checks that the parameters match, tells you whether the result is normal for that plateau, runs a Monte Carlo over your own trades, tells you whether there are enough of them and shows what happens if costs get worse.</p>
   </section>
 
   <section class="lp-doc-cta">
