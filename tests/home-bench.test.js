@@ -50,8 +50,10 @@ for (const lang of ['en', 'es']) {
   check('falsas alarmas: porcentaje', t('home.bench.1.n') === fp(lang, fpPct, 1), `${t('home.bench.1.n')} frente a ${fpPct}`);
   check('falsas alarmas: n de N', t('home.bench.1.body').includes(String(noEdgeCases)) && t('home.bench.1.body').includes(` ${falseAlarms} `), t('home.bench.1.body'));
   check('potencia: porcentaje', t('home.bench.2.n') === fp(lang, powerPct, 0), `${t('home.bench.2.n')} frente a ${powerPct}`);
-  const of = lang === 'es' ? `${detected} de ${powerCases}` : `${detected} of ${powerCases}`;
-  check('potencia: n de N', t('home.bench.2.body').includes(of), t('home.bench.2.body'));
+  // «De 40 optimizaciones con una ventaja real clara, 34 recibieron…»
+  const of = lang === 'es' ? `De ${powerCases} optimizaciones` : `Out of ${powerCases} optimizations`;
+  const got = ` ${detected} `;
+  check('potencia: n de N', t('home.bench.2.body').includes(of) && t('home.bench.2.body').includes(got), t('home.bench.2.body'));
   // La portada se queda con dos cifras y remite a Metodología para el resto (elección,
   // dónde no gana y por qué).
   const crit = lang === 'es' ? `${passed} de los ${passed + failed}` : `${passed} of the ${passed + failed}`;
@@ -62,7 +64,7 @@ for (const lang of ['en', 'es']) {
   // Metodología cita las mismas cifras («Cómo sabemos que funciona»).
   const m1 = t('doc.method.bench.1');
   check('metodología: falsas alarmas', m1.includes(` ${falseAlarms} `) && m1.includes(String(noEdgeCases)), m1);
-  check('metodología: ventajas detectadas', t('doc.method.bench.2').includes(of), t('doc.method.bench.2'));
+  check('metodología: ventajas detectadas', t('doc.method.bench.2').includes(of) && t('doc.method.bench.2').includes(got), t('doc.method.bench.2'));
   check('metodología: elección', t('doc.method.bench.3').includes(dec(lang, oAll)) && t('doc.method.bench.3').includes(dec(lang, b1All)));
   const m2 = t('doc.method.bench.p2');
   check('metodología: criterios, S5 y media con vecinas', m2.includes(crit) && m2.includes(s5) && m2.includes(dec(lang, b4All)), m2);

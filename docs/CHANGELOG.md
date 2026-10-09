@@ -2,6 +2,9 @@
 
 ## 2026-10-09 — Portada: la franja del banco de pruebas, más sencilla
 
+- «Ventajas detectadas» dicho como la cifra de al lado: «De 40 optimizaciones con una ventaja
+  real clara, 34 recibieron «moderada» o más» (antes, «le dio…», sin sujeto). Igual en Metodología.
+
 - Dos cifras que se entienden solas (falsas alarmas y ventajas detectadas), con la misma letra
   que el resto de la web; antes llevaban una tipografía con remates que no se usa en ningún otro
   sitio.
