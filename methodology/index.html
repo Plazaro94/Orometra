@@ -33,7 +33,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261009j">
+<link rel="stylesheet" href="../styles.css?v=20261009k">
 <script src="../js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -277,7 +277,7 @@
       <li data-i18n-html="doc.method.bench.3"><strong>The choice.</strong> On the unseen period, the chosen configuration lands a median 0.23 away from the best possible one, versus 0.29 for MT5’s #1 (0 is picking the best; 1, picking an average one).</li>
       <li data-i18n-html="doc.method.bench.4"><strong>Consistent levels.</strong> The higher the level, the better the chosen configuration really is.</li>
     </ul>
-    <p data-i18n-html="doc.method.bench.p2">And where it fails: it passed 10 of the 13 criteria. When the edge exists only in the in-sample, it gives “moderate” or higher in 8 of 100 cases, above the 5% set in advance; averaging each configuration with its neighbors comes out slightly ahead overall (0.20 versus 0.23); and on the grid taken from a real export, MT5’s #1 beats it by more than allowed. These are simulated data: the test on real MT5 optimizations is still pending. <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener">The rules, written in advance</a> and <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam5.md" target="_blank" rel="noopener">the full results</a> are public (in Spanish).</p>
+    <p data-i18n-html="doc.method.bench.p2">And where it fails: it passed 10 of the 13 criteria. When the edge exists only in the in-sample, it gives “moderate” or higher in 8 of 100 cases, above the 5% set in advance. When it sees no plateau, Orometra does not propose one (at most, a tentative suggestion), and the exam counts each of those cases as a miss: that is why averaging each configuration with its neighbors comes out slightly ahead overall (0.20 versus 0.23), and why MT5’s #1 beats it in genetic searches and on the grid taken from a real export, there by more than allowed. These are simulated data: the test on real MT5 optimizations is still pending. <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener">The rules, written in advance</a> and <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam5.md" target="_blank" rel="noopener">the full results</a> are public (in Spanish).</p>
   </section>
 
   <section class="lp-doc-block doc-limits" id="limites" aria-labelledby="doc-lim-title">

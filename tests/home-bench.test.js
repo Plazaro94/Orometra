@@ -42,7 +42,6 @@ const fp = (lang, x, d) => (lang === 'es' ? `${x.toFixed(d).replace('.', ',')}\u
 const dec = (lang, x) => (lang === 'es' ? x.toFixed(2).replace('.', ',') : x.toFixed(2));
 const falseAlarms = Math.round((fpPct / 100) * noEdgeCases);
 const detected = Math.round((powerPct / 100) * powerCases);
-const withEdge = cases - noEdgeCases;
 
 for (const lang of ['en', 'es']) {
   setLocale(lang);
@@ -53,15 +52,13 @@ for (const lang of ['en', 'es']) {
   check('potencia: porcentaje', t('home.bench.2.n') === fp(lang, powerPct, 0), `${t('home.bench.2.n')} frente a ${powerPct}`);
   const of = lang === 'es' ? `${detected} de ${powerCases}` : `${detected} of ${powerCases}`;
   check('potencia: n de N', t('home.bench.2.body').includes(of), t('home.bench.2.body'));
-  check('elección: Orometra', t('home.bench.3.n') === dec(lang, oAll), `${t('home.bench.3.n')} frente a ${oAll}`);
-  check('elección: n.º 1 de MT5', t('home.bench.3.vs').includes(dec(lang, b1All)));
-  check('elección: casos con ventaja', t('home.bench.3.body').includes(String(withEdge)));
-  check('dónde no gana: media con vecinas', t('home.bench.note').includes(`(${dec(lang, b4All)})`), t('home.bench.note'));
+  // La portada se queda con dos cifras y remite a Metodología para el resto (elección,
+  // dónde no gana y por qué).
   const crit = lang === 'es' ? `${passed} de los ${passed + failed}` : `${passed} of the ${passed + failed}`;
   check('criterios aprobados', t('home.bench.note').includes(crit), crit);
   check('ninguna «sólida» sin ventaja', strongPct === 0 && /(none|ninguna) [«“](strong|sólida)[»”]/.test(t('home.bench.1.body')), `${strongPct}`);
   const s5 = lang === 'es' ? `${Math.round(s5Pos)} de 100` : `${Math.round(s5Pos)} of 100`;
-  check('S5: moderada o más', s5Pos > 5 && t('home.bench.note').includes(s5), `${s5Pos}`);
+  check('S5: moderada o más (en Metodología)', s5Pos > 5 && t('doc.method.bench.p2').includes(s5), `${s5Pos}`);
   // Metodología cita las mismas cifras («Cómo sabemos que funciona»).
   const m1 = t('doc.method.bench.1');
   check('metodología: falsas alarmas', m1.includes(` ${falseAlarms} `) && m1.includes(String(noEdgeCases)), m1);
@@ -70,10 +67,19 @@ for (const lang of ['en', 'es']) {
   const m2 = t('doc.method.bench.p2');
   check('metodología: criterios, S5 y media con vecinas', m2.includes(crit) && m2.includes(s5) && m2.includes(dec(lang, b4All)), m2);
   check('metodología: enlaza al mismo examen', m2.includes('REPORT-exam5.md'));
+  check('metodología: dice por qué no gana en el total y dónde gana la n.º 1 de MT5', /(sugerencia orientativa|tentative suggestion)/.test(m2) && /(genéticas|genetic)/.test(m2), m2);
 }
 setLocale('en');
 
-console.log('\nLo que la nota da por cierto');
+console.log('\nLa franja de la portada');
+for (const [file, href] of [['index.html', '/methodology/#banco'], ['es/index.html', '/es/methodology/#banco']]) {
+  const html = fs.readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+  const strip = (html.match(/<section class="hm-section hm-bench"[\s\S]*?<\/section>/) || [''])[0];
+  check(`${file}: la franja no manda a GitHub`, strip && !/github\.com/.test(strip));
+  check(`${file}: remite a «Cómo sabemos que funciona» de Metodología`, strip.includes(`href="${href}"`));
+}
+
+console.log('\nLo que Metodología da por cierto');
 check('Orometra gana a la n.º 1 de MT5 en el total', oAll < b1All);
 check('la media con vecinas queda por delante en el total', b4All < oAll);
 check('la n.º 1 de MT5 gana en genética (S7) y en la rejilla real (S8)', b1S7 < oS7 && b1S8 < oS8);

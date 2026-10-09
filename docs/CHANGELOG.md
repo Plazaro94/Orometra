@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-09 — Portada: la franja del banco de pruebas, más sencilla
+
+- Dos cifras que se entienden solas (falsas alarmas y ventajas detectadas), con la misma letra
+  que el resto de la web; antes llevaban una tipografía con remates que no se usa en ningún otro
+  sitio.
+- La distancia a la mejor configuración (0,23 frente a 0,29) y «Dónde no gana» pasan a
+  Metodología, que ahora explica también por qué: si no ve meseta no propone ninguna, y el
+  examen lo cuenta como fallo. En la portada queda una nota corta («superó 10 de los 13
+  criterios… son datos simulados») y un solo enlace, «Cómo lo probamos →», a Metodología.
+- Sin enlaces a GitHub en la franja (la tarjeta «El código es público» sigue igual).
+  `tests/home-bench.test.js` lo comprueba, junto con las cifras.
+
 ## 2026-10-09 — Buscadores y redes: fechas del sitemap y etiquetas que faltaban
 
 - **Sitemap:** 18 direcciones seguían con fecha del 29 de septiembre aunque la portada,
