@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-09 — Carga de archivos (3/3): textos de los avisos y los mínimos
+
+- **Errores con título de trader:** «Error de datos / esquema» pasa a «Los archivos no encajan»,
+  con una pista que dice qué hacer (exportar los dos de la misma optimización). Un solo
+  archivo sin parámetros reconocibles ya no sale como un problema de emparejar archivos.
+- **Pistas que contradecían al mensaje:** la de «datos no utilizables» ya no habla del forward
+  cuando no hay; un .set ilegible ya no pide «volver a exportar el XML» (dice cómo guardar el
+  .set); la del informe del backtest ya no repite el mensaje.
+- **Dos optimizaciones soltadas juntas:** era una alerta roja aunque se podía seguir; ahora es
+  un aviso en la caja.
+- **Mínimos no válidos:** salían como «Datos no utilizables» con una pista sobre columnas.
+  Ahora «Revisa los mínimos», se abren los ajustes y se enfoca el campo. El drawdown dice lo
+  que acepta («mayor que 0 y como mucho 100 %»).
+- **«1,5» se guardaba como 15** en los mínimos y en el formulario del periodo no visto: los
+  campos pasan a texto (con teclado decimal en el móvil) y aceptan coma o punto; con los dos,
+  el último es el decimal. Prueba de respuesta conocida (`tests/number-input.test.js`).
+- El selector de archivos admite `.xlsm`, como ya hacía la carga.
+
 ## 2026-10-09 — Carga de archivos (2/3): la ficha y el botón dicen lo que hay
 
 - **Solo el forward:** la ficha decía «Listo para analizar · Los archivos se leen bien» con el

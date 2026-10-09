@@ -69,7 +69,10 @@ export async function setSearchSet(file) {
     const text = decodeHead(await file.arrayBuffer());
     const parsed = parseSetText(text);
     if (!parsed.params.length) {
-      api.showError(L('El .set no contiene parámetros legibles.', 'The .set contains no readable parameters.'), CODE.FILE_ERROR);
+      api.showError(L(
+        'El .set no contiene parámetros legibles. Guárdalo desde el probador: pestaña Parámetros, clic derecho → Guardar.',
+        'The .set contains no readable parameters. Save it from the tester: Inputs tab, right-click → Save.',
+      ), CODE.FILE_ERROR, { noHint: true });
       return;
     }
     state.searchSet = parsed;
@@ -220,12 +223,14 @@ function placeTables(allFiles, allRoles, preferred) {
     extraNote([files[oosIdx], isPick]);
   } else if (roles[0] === 'is' && roles[1] === 'is') {
     // Ambos parecen in-sample: no asignar el segundo a forward en silencio.
+    // Un aviso, no un error: se puede seguir con el primero.
     setFile('is', files[0]);
+    addDropNote(L(
+      `Los dos archivos parecen exports de la optimización (ninguno trae Forward Result / Back Result): se ha cargado solo ${files[0].name}. Si tienes el del forward, suéltalo también; si no, puedes analizar solo la optimización.`,
+      `Both files look like optimization exports (neither has Forward Result / Back Result): only ${files[0].name} was loaded. If you have the forward one, drop it too; if not, you can analyze the optimization alone.`,
+    ));
     noteIgnored();
-    api.showError(L(
-      'Los dos archivos parecen exports de la optimización (ninguno trae columnas Forward Result / Back Result). Se ha cargado solo el primero. Si tienes el export forward, suéltalo también; si no, puedes auditar solo la optimización.',
-      'Both files look like optimization exports (neither has Forward Result / Back Result columns). Only the first one was loaded. If you have the forward export, drop it too; if not, you can audit the optimization alone.',
-    ), CODE.SCHEMA_ERROR);
+    updateDropStatus();
   } else {
     setFile('is', files[0]);
     setFile('oos', files[1]);

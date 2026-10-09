@@ -253,6 +253,13 @@ try {
     await page.waitForFunction(() => !document.querySelector('#errorBox').hidden, null, { timeout: 120000 });
     check('forward de otra optimización: la ficha dice que no se pueden analizar así', /No se pueden analizar/.test(await title()), await title());
     check('y el botón no invita a repetir', await disabled());
+    check('el título del error no habla de «esquema»', /Los archivos no encajan/.test(await page.textContent('#errorTitle')), await page.textContent('#errorTitle'));
+    // Dos optimizaciones: se sigue con la primera, y es un aviso, no un error rojo.
+    await page.setInputFiles('#mainFile', [isXml, fewXml]);
+    await page.waitForFunction(() => /se ha cargado solo/.test(document.querySelector('#mainDropStatus').textContent), null, { timeout: 60000 }).catch(() => {});
+    check('dos optimizaciones: aviso en la caja, sin error rojo',
+      /se ha cargado solo ReportOptimizer\.xml/.test(await page.textContent('#mainDropStatus')) && await page.$eval('#errorBox', (e) => e.hidden),
+      await page.textContent('#mainDropStatus'));
     // Menos de 10 configuraciones: se dice en la ficha, sin tener que pulsar.
     await page.setInputFiles('#mainFile', [fewXml]);
     await page.waitForFunction(() => document.querySelector('.preflight-bad'), null, { timeout: 60000 });
@@ -275,6 +282,24 @@ try {
     await page.setInputFiles('#mainFile', [optFile]);
     await page.waitForFunction(() => document.querySelector('#mainDrop').classList.contains('error'), null, { timeout: 15000 }).catch(() => {});
     check('tras analizar, un .opt rechazado se ve', await page.$eval('#mainDropStatus', (e) => e.offsetParent !== null && /\.opt/.test(e.textContent)));
+    await page.context().close();
+  }
+
+  section('2d. Los mínimos');
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.click('#policyToggle');
+    await page.fill('#gPf', '1,5');
+    await page.dispatchEvent('#gPf', 'input');
+    const summary = await page.textContent('#policySummary');
+    check('«1,5» en el factor de beneficio es 1,5 (no 15)', summary.includes('PF ≥ 1,50'), summary);
+    await page.fill('#gDd', '0');
+    await page.setInputFiles('#mainFile', [isXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    check('un mínimo inválido se dice como tal', /Revisa los mínimos/.test(await page.textContent('#errorTitle')) && await page.$eval('#errorHint', (e) => e.hidden), await page.textContent('#errorTitle'));
+    check('y se abren los ajustes con el campo enfocado', await page.evaluate(() => document.body.classList.contains('policy-open') && document.activeElement && document.activeElement.id === 'gDd'));
     await page.context().close();
   }
 

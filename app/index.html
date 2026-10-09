@@ -21,7 +21,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261009i">
+<link rel="stylesheet" href="../styles.css?v=20261009j">
 <script src="../js/theme-init.js"></script>
 </head>
 <body>
@@ -137,7 +137,7 @@
       </div>
       <div class="upload-grid">
         <div class="dropzone dropzone-main" id="mainDrop">
-          <input id="mainFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
+          <input id="mainFile" type="file" accept=".xls,.xlsx,.xlsm,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
           <div class="file-icon" aria-hidden="true">&#8593;</div>
           <div class="drop-copy">
             <strong data-i18n="drop.main.title">Drop your MT5 files here</strong>
@@ -181,15 +181,15 @@
         <div class="policy-grid">
           <label class="field">
             <span data-i18n="policy.pf">Minimum profit factor</span>
-            <input type="number" id="gPf" step="0.01" min="0" value="1.20">
+            <input type="text" inputmode="decimal" autocomplete="off" id="gPf" value="1.20">
           </label>
           <label class="field">
             <span data-i18n="policy.dd">Maximum drawdown (%)</span>
-            <input type="number" id="gDd" step="1" min="1" max="100" value="20">
+            <input type="text" inputmode="decimal" autocomplete="off" id="gDd" value="20">
           </label>
           <label class="field">
             <span data-i18n="policy.trades">Minimum trades (in-sample)</span>
-            <input type="number" id="gTrades" step="10" min="0" value="100">
+            <input type="text" inputmode="numeric" autocomplete="off" id="gTrades" value="100">
           </label>
           <label class="field checkbox">
             <span class="field-check-spacer" aria-hidden="true">&nbsp;</span>

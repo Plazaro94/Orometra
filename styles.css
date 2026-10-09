@@ -499,7 +499,7 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .policy-head p{margin:0 0 15px;color:var(--muted);font-size:13.5px;max-width:760px}
 .policy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:14px}
 .field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
-.field input[type=number]{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px;font-variant-numeric:tabular-nums}
+.field input[type=number],.field input[type=text]{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px;font-variant-numeric:tabular-nums}
 /* El check no lleva una etiqueta encima como sus vecinos (PF, DD, operaciones):
    sin un espaciador con su misma altura, queda mas abajo que el texto de los
    otros campos pase lo que pase con align-items del grid. El espaciador es

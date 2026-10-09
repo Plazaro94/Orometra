@@ -158,6 +158,23 @@ export function changeLanguage(lang) {
   render();
 }
 
+/**
+ * Los campos de mínimos son de texto (inputmode decimal): un <input type=number> convertía
+ * «1,5» en 15 en algunos navegadores, y el teclado del móvil en español escribe coma.
+ * Factor de beneficio y drawdown admiten coma o punto decimal; las operaciones, separador
+ * de miles («1.000»).
+ */
+export function decimalField(sel) {
+  const raw = String(($(sel) && $(sel).value) || '').trim().replace(/\s/g, '').replace(',', '.');
+  return raw === '' || !/^-?\d*\.?\d+$/.test(raw) ? NaN : Number(raw);
+}
+export function integerField(sel) {
+  let raw = String(($(sel) && $(sel).value) || '').trim().replace(/\s/g, '');
+  if (/^\d{1,3}([.,]\d{3})+$/.test(raw)) raw = raw.replace(/[.,]/g, '');
+  raw = raw.replace(',', '.');
+  return raw === '' || !/^-?\d*\.?\d+$/.test(raw) ? NaN : Number(raw);
+}
+
 export function loadPrefs() {
   try {
     const raw = localStorage.getItem(PREFS_KEY);
@@ -176,9 +193,9 @@ export function loadPrefs() {
 export function updatePolicySummary() {
   const el = $('#policySummary');
   if (!el) return;
-  const pf = parseFloat($('#gPf').value);
-  const dd = parseFloat($('#gDd').value);
-  const tr = parseFloat($('#gTrades').value);
+  const pf = decimalField('#gPf');
+  const dd = decimalField('#gDd');
+  const tr = integerField('#gTrades');
   const parts = [];
   if (Number.isFinite(pf)) parts.push(`PF ≥ ${num(pf, 2)}`);
   if (Number.isFinite(dd)) parts.push(`DD ≤ ${num(dd, 0)}${pctSign()}`);
@@ -196,9 +213,9 @@ export function togglePolicy(open) {
 export function savePrefs() {
   try {
     localStorage.setItem(PREFS_KEY, JSON.stringify({
-      pf: parseFloat($('#gPf').value),
-      dd: parseFloat($('#gDd').value),
-      trades: parseFloat($('#gTrades').value),
+      pf: decimalField('#gPf'),
+      dd: decimalField('#gDd'),
+      trades: integerField('#gTrades'),
       profit: $('#gProfit').checked,
     }));
   } catch {
@@ -208,9 +225,9 @@ export function savePrefs() {
 
 // ---------------------------------------------------------------- análisis
 export function readPolicy() {
-  const pf = parseFloat($('#gPf').value);
-  const dd = parseFloat($('#gDd').value);
-  const tr = parseFloat($('#gTrades').value);
+  const pf = decimalField('#gPf');
+  const dd = decimalField('#gDd');
+  const tr = integerField('#gTrades');
   return {
     ...DEFAULT_POLICY,
     gates: {
@@ -232,15 +249,27 @@ export function readPolicy() {
  * al momento si el resultado aguanta al apretar, que es la pregunta que todo el mundo se
  * hace y que hasta ahora exigía un análisis entero para responder.
  */
+/** El primer campo de mínimos no válido: { sel, text }, o null. */
+function policyCheck() {
+  const pf = decimalField('#gPf');
+  const dd = decimalField('#gDd');
+  const tr = integerField('#gTrades');
+  if (!Number.isFinite(pf) || pf < 0) return { sel: '#gPf', text: L('El factor de beneficio mínimo tiene que ser un número mayor o igual que 0 (por ejemplo, 1,2).', 'The minimum profit factor must be a number greater than or equal to 0 (for example, 1.2).') };
+  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return { sel: '#gDd', text: L('El drawdown máximo tiene que ser mayor que 0 y como mucho 100\u00A0%.', 'The maximum drawdown must be greater than 0 and at most 100%.') };
+  if (!Number.isFinite(tr) || tr < 0) return { sel: '#gTrades', text: L('Las operaciones mínimas tienen que ser un número mayor o igual que 0.', 'The minimum trades must be a number greater than or equal to 0.') };
+  return null;
+}
+
 /** Texto del problema de los campos de minimos, o null si son validos. */
 export function policyInputProblem() {
-  const pf = parseFloat($('#gPf').value);
-  const dd = parseFloat($('#gDd').value);
-  const tr = parseFloat($('#gTrades').value);
-  if (!Number.isFinite(pf) || pf < 0) return L('El factor de beneficio mínimo tiene que ser un número mayor o igual que 0.', 'The minimum profit factor must be a number greater than or equal to 0.');
-  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return L('El drawdown máximo tiene que estar entre 1 y 100\u00A0%.', 'The maximum drawdown must be between 1 and 100%.');
-  if (!Number.isFinite(tr) || tr < 0) return L('Las operaciones mínimas tienen que ser un número mayor o igual que 0.', 'The minimum trades must be a number greater than or equal to 0.');
-  return null;
+  const c = policyCheck();
+  return c ? c.text : null;
+}
+
+/** El campo que hay que corregir, para enfocarlo (ui-audit.js). */
+export function policyInputField() {
+  const c = policyCheck();
+  return c ? $(c.sel) : null;
 }
 
 export function updatePolicyPreview() {

@@ -478,7 +478,7 @@ export function renderUnseen(a) {
 
   const fields = fieldsDef.map((f) => `<label class="field">
       <span>${esc(f.label)}${f.required ? ' <em class="req-mark">*</em>' : ''}</span>
-      <input type="number" step="${f.step}" id="u_${f.key}" data-unseen="${f.key}"
+      <input type="text" inputmode="${f.key === 'trades' ? 'numeric' : f.key === 'profit' || f.key === 'sharpe' ? 'text' : 'decimal'}" autocomplete="off" id="u_${f.key}" data-unseen="${f.key}"
         value="${v[f.key] !== undefined && v[f.key] !== '' ? esc(v[f.key]) : ''}" placeholder="${esc(f.hint)}">
     </label>`).join('');
 
@@ -633,6 +633,21 @@ export function readUnseenForm() {
   return out;
 }
 
+/**
+ * Lo que se teclea en el formulario (campos de texto: un type=number convertía «1,5» en 15
+ * en algunos navegadores). Coma o punto decimal; con los dos, el último es el decimal
+ * («1.234,56» o «1,234.56»).
+ */
+export function looseNumber(value) {
+  let t = String(value === undefined || value === null ? '' : value).trim().replace(/[\s\u00A0]/g, '');
+  if (t.includes(',') && t.includes('.')) {
+    t = t.lastIndexOf(',') > t.lastIndexOf('.') ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');
+  } else {
+    t = t.replace(',', '.');
+  }
+  return /^[-+]?\d*\.?\d+$/.test(t) ? Number(t) : NaN;
+}
+
 export function runUnseenCheck({ fromState = false } = {}) {
   const a = state.analysis;
   if (!a || !a.plateaus.length) return;
@@ -647,7 +662,7 @@ export function runUnseenCheck({ fromState = false } = {}) {
   const raw = state.unseen.values;
   const observed = {};
   unseenFields().forEach((f) => {
-    const n = parseFloat(String(raw[f.key] === undefined ? '' : raw[f.key]).replace(',', '.'));
+    const n = looseNumber(raw[f.key]);
     if (Number.isFinite(n)) observed[f.key] = n;
   });
   try {

@@ -156,7 +156,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   } else {
     const inferred = inferParamsSingle(isTable);
     if (!inferred.params.length) {
-      throw new AnalysisError(CODE.SCHEMA_ERROR, L(
+      throw new AnalysisError(CODE.DATA_ERROR, L(
         'No se ha podido identificar ningún parámetro en el archivo. Con un solo archivo se descartan las columnas con más de 80 valores distintos (o demasiado pocos datos por valor); si tus parámetros tienen rangos muy finos, sube también el archivo forward: con los dos, los parámetros se reconocen por estructura.',
         'No parameter could be identified in the file. With a single file, columns with more than 80 distinct values (or too little data per value) are discarded; if your parameters have very fine ranges, upload the forward file too: with both, parameters are recognized by structure.',
       ));

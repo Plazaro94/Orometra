@@ -4,6 +4,8 @@
 export const CODE = {
   FILE_ERROR: 'FILE_ERROR',
   SCHEMA_ERROR: 'SCHEMA_ERROR',
+  // Los mínimos tecleados no son válidos: no es culpa de ningún archivo.
+  POLICY_ERROR: 'POLICY_ERROR',
   DATA_ERROR: 'DATA_ERROR',
   INSUFFICIENT_DATA: 'INSUFFICIENT_DATA',
   NO_QUALIFYING_CONFIGS: 'NO_QUALIFYING_CONFIGS',
@@ -98,17 +100,21 @@ export function errorCopy(code, L) {
       ),
     },
     [CODE.SCHEMA_ERROR]: {
-      title: L('Error de datos / esquema', 'Data / schema error'),
+      title: L('Los archivos no encajan', 'The files do not match'),
       hint: L(
-        'Los archivos no encajan como la optimización y el forward de una misma ejecución (Pass, parámetros o procedencia).',
-        'The files do not match as the optimization and forward exports of the same run (Pass, parameters, or provenance).',
+        'Exporta los dos de la misma optimización: la tabla de resultados de la optimización y la del forward, sin volver a lanzarla entre medias.',
+        'Export both from the same optimization: the optimization results table and the forward one, without running it again in between.',
       ),
+    },
+    [CODE.POLICY_ERROR]: {
+      title: L('Revisa los mínimos', 'Check the minimums'),
+      hint: '',
     },
     [CODE.DATA_ERROR]: {
       title: L('Datos no utilizables', 'Unusable data'),
       hint: L(
-        'Quedan muy pocas configuraciones legibles. Revisa columnas, valores vacíos o el emparejado entre la optimización y el forward.',
-        'Too few readable configurations remained. Check columns, empty values, or the optimization/forward pairing.',
+        'Comprueba que el export es la tabla completa de resultados de MT5, sin filtrar ni recortar.',
+        'Check that the export is the full MT5 results table, unfiltered and untrimmed.',
       ),
     },
     [CODE.WORKER_ERROR]: {
@@ -142,8 +148,8 @@ export function errorCopy(code, L) {
     [CODE.REPORT_ERROR]: {
       title: L('No se ha podido leer el informe del backtest', 'The backtest report could not be read'),
       hint: L(
-        'Para el periodo no visto hace falta el informe de un backtest individual (HTML u Open XML): en el probador, pestaña Backtest, clic derecho → Informe.',
-        'The unseen period needs the report of a single backtest (HTML or Open XML): in the tester, Backtest tab, right-click → Report.',
+        'El periodo no visto se contrasta con el informe de un backtest individual de la configuración elegida, no con una optimización.',
+        'The unseen period is checked against the report of a single backtest of the chosen configuration, not an optimization.',
       ),
     },
     [CODE.TOO_LARGE]: {

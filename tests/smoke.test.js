@@ -140,7 +140,7 @@ section('4. Errores tipados: título + pista, no solo “Analysis failed”');
   check('classifyError conserva el código del worker', classifyError(new AnalysisError(CODE.WORKER_ERROR, 'Worker timeout')).code === CODE.WORKER_ERROR);
 
   check('ui importa errorCopy/classifyError', /errorCopy/.test(uiSrc) && /classifyError/.test(uiSrc));
-  check('showError rellena errorHint', /function showError[\s\S]{0,600}errorHint/.test(uiSrc));
+  check('showError rellena errorHint', /function showError[\s\S]{0,1200}errorHint/.test(uiSrc));
   check('holdout en sello del veredicto', /function holdoutFact/.test(uiSrc) && /run-holdout/.test(uiSrc));
   check('evidencia fuerte sin holdout se atenúa', /function displayVerdictLevel/.test(uiSrc));
 }

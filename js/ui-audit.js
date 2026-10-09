@@ -27,7 +27,7 @@ export function analyzedCurrentFiles() {
     && run.isDemo === state.isDemo && run.isFile === state.isFile && run.oosFile === state.oosFile);
 }
 
-export function showError(errOrMessage, code = CODE.DATA_ERROR) {
+export function showError(errOrMessage, code = CODE.DATA_ERROR, { noHint = false } = {}) {
   // Los avisos de la interfaz traen su propio codigo: antes todo texto suelto caia en
   // "Datos insuficientes tras la limpieza", tambien "has soltado dos forward".
   const classified = typeof errOrMessage === 'string'
@@ -39,9 +39,12 @@ export function showError(errOrMessage, code = CODE.DATA_ERROR) {
   if (titleEl) titleEl.textContent = copy.title;
   $('#errorText').textContent = classified.message;
   const hintEl = $('#errorHint');
+  // Sin pista cuando el propio mensaje ya dice qué hacer: la genérica lo repetía o hablaba
+  // de otra cosa (del forward sin forward, del XML ante un .set).
+  const hint = noHint || (classified.details && classified.details.noHint) ? '' : copy.hint;
   if (hintEl) {
-    hintEl.textContent = copy.hint;
-    hintEl.hidden = !copy.hint;
+    hintEl.textContent = hint;
+    hintEl.hidden = !hint;
   }
   $('#statusBar').hidden = true;
   $('#errorBox').dataset.code = classified.code;
@@ -296,7 +299,13 @@ export async function runAudit() {
   clearError();
   const policyProblem = api.policyInputProblem && api.policyInputProblem();
   if (policyProblem) {
-    showError(policyProblem);
+    showError(policyProblem, CODE.POLICY_ERROR);
+    // El campo está en «Ajustes», plegado (y con la carga plegada tras un análisis): se abre
+    // y se enfoca para que se vea qué corregir.
+    document.body.classList.remove('intake-collapsed');
+    if (api.togglePolicy) api.togglePolicy(true);
+    const field = api.policyInputField && api.policyInputField();
+    if (field) field.focus();
     return;
   }
   const demoOk = state.isDemo && state.isTable && state.oosTable;
