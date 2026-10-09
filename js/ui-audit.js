@@ -8,11 +8,23 @@ import { state, api, $, $$, esc } from './ui-state.js';
 
 export function showProgress(pct, label) {
   const value = Math.max(2, Math.min(100, pct));
+  state.progressPct = value;
+  state.progressText = label;
   $('#statusBar').hidden = false;
   $('#progressFill').style.width = `${value}%`;
   const bar = $('#progressBar');
   if (bar) bar.setAttribute('aria-valuenow', String(Math.round(value)));
-  $('#progressLabel').textContent = label;
+  // Lo soltado durante el análisis espera (ui-files.js, acceptFiles): que se vea.
+  $('#progressLabel').textContent = state.pendingDrop
+    ? `${label} · ${L('Los archivos que acabas de soltar se cargarán al terminar.', 'The files you just dropped will be loaded when it finishes.')}`
+    : label;
+}
+
+/** El análisis en pantalla es de los archivos cargados ahora (mismos objetos). */
+export function analyzedCurrentFiles() {
+  const run = state.analyzedFrom;
+  return Boolean(state.analysis && run
+    && run.isDemo === state.isDemo && run.isFile === state.isFile && run.oosFile === state.oosFile);
 }
 
 export function showError(errOrMessage, code = CODE.DATA_ERROR) {
@@ -295,6 +307,12 @@ export async function runAudit() {
     ));
     return;
   }
+  // Lo que se analiza se fija aquí: los nombres del informe y del historial salen de esta
+  // copia, no de lo que haya cargado cuando el cálculo termine.
+  const run = {
+    isFile: state.isFile, oosFile: state.oosFile, isDemo: Boolean(demoOk),
+    isTable: state.isTable, oosTable: state.oosTable,
+  };
   setBusy(true);
   showProgress(2, L('Leyendo archivos', 'Reading files'));
   const cancelBtn = $('#cancelBtn');
@@ -302,10 +320,10 @@ export async function runAudit() {
   try {
     const policy = api.readPolicy();
     let payload;
-    if (state.isDemo && state.isTable) {
+    if (run.isDemo) {
       payload = {
-        isTable: state.isTable,
-        oosTable: state.oosTable,
+        isTable: run.isTable,
+        oosTable: run.oosTable,
         policy,
         locale: getLocale(),
         searchSet: state.searchSet || null,
@@ -313,8 +331,8 @@ export async function runAudit() {
     } else {
       // Solo se manda el contenido de los archivos que el worker no tenga ya leídos.
       const build = async (force) => {
-        const is = await filePart(state.isFile, force || !getWorker());
-        const oos = state.oosFile ? await filePart(state.oosFile, force || !getWorker()) : null;
+        const is = await filePart(run.isFile, force || !getWorker());
+        const oos = run.oosFile ? await filePart(run.oosFile, force || !getWorker()) : null;
         // Se pudo pedir cancelar mientras se leían los archivos, antes de llegar al worker.
         if (cancelRequested) throw CANCELLED();
         return {
@@ -334,14 +352,15 @@ export async function runAudit() {
     // Se pudo pedir cancelar mientras se leían los archivos, antes de llegar al worker.
     if (cancelRequested) throw CANCELLED();
     const analysis = typeof payload === 'function' ? await askWorker(payload) : await runInWorker(payload);
-    if (!state.isDemo) {
-      workerKeys.add(fileKey(state.isFile));
-      if (state.oosFile) workerKeys.add(fileKey(state.oosFile));
+    if (!run.isDemo) {
+      workerKeys.add(fileKey(run.isFile));
+      if (run.oosFile) workerKeys.add(fileKey(run.oosFile));
     }
     state.analysis = analysis;
+    state.analyzedFrom = { isFile: run.isFile, oosFile: run.oosFile, isDemo: run.isDemo };
     state.source = {
-      is: state.isDemo ? L('Ejemplo sintético', 'Synthetic example') : (state.isFile && state.isFile.name) || '—',
-      oos: state.isDemo ? null : (state.oosFile && state.oosFile.name) || null,
+      is: run.isDemo ? L('Ejemplo sintético', 'Synthetic example') : (run.isFile && run.isFile.name) || '—',
+      oos: run.isDemo ? null : (run.oosFile && run.oosFile.name) || null,
       at: new Date(),
     };
     // El título de la pestaña del navegador lo pone render() (ui-chrome.js) en cada pintado.
@@ -362,7 +381,7 @@ export async function runAudit() {
       plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: state.unseen.tradesAudit,
     };
     // Historial local: un resumen de este análisis en el navegador (no del ejemplo).
-    if (api.recordAnalysis) api.recordAnalysis(analysis);
+    if (api.recordAnalysis) api.recordAnalysis(analysis, { isDemo: run.isDemo });
     state.selectedParam = api.mostSensitiveIndex(analysis);
     state.surfaceDimA = null;
     state.surfaceDimB = null;
@@ -384,7 +403,7 @@ export async function runAudit() {
     api.setTab('verdict', false, { scroll: false });
     window.scrollTo({ top: 0 });
     api.updatePolicyPreview();
-    track(state.isDemo ? 'analisis-ejemplo' : analysis.meta.hasForward ? 'analisis-is-forward' : 'analisis-solo-is');
+    track(run.isDemo ? 'analisis-ejemplo' : analysis.meta.hasForward ? 'analisis-is-forward' : 'analisis-solo-is');
   } catch (error) {
     if (error && error.code === CODE.CANCELLED) {
       $('#statusBar').hidden = true;
@@ -392,9 +411,11 @@ export async function runAudit() {
     }
     const code = showError(error);
     // Los fallos nuestros se cuentan aparte: son los que hay que arreglar.
-    if (!state.isDemo) track(code === CODE.INTERNAL_ERROR ? 'analisis-error-interno' : 'analisis-error');
+    if (!run.isDemo) track(code === CODE.INTERNAL_ERROR ? 'analisis-error-interno' : 'analisis-error');
   } finally {
     if (cancelBtn) cancelBtn.hidden = true;
     setBusy(false);
+    // También al cancelar o fallar: lo soltado mientras tanto no se pierde.
+    if (state.pendingDrop && api.flushPendingDrop) await api.flushPendingDrop();
   }
 }

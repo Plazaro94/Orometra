@@ -12,6 +12,7 @@ import {
   loadDemo,
   updateDropStatus,
   acceptFiles,
+  flushPendingDrop,
 } from './ui-files.js';
 
 import {
@@ -24,6 +25,7 @@ import {
   cancelAudit,
   runInWorker,
   preflightFile,
+  analyzedCurrentFiles,
 } from './ui-audit.js';
 
 import {
@@ -74,6 +76,8 @@ Object.assign(api, {
   runAudit,
   runInWorker,
   preflightFile,
+  analyzedCurrentFiles,
+  flushPendingDrop,
   readPolicy,
   refreshAnalyzeButton,
   renderPreflight,

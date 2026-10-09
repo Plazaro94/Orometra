@@ -51,6 +51,8 @@ const junk = path.join(tmp, 'notas.xml');
 fs.writeFileSync(isXml, toMt5Xml(demo.isTable));
 fs.writeFileSync(oosXml, toMt5Xml(demo.oosTable));
 fs.writeFileSync(junk, 'esto no es una exportación de MT5');
+const setFile = path.join(tmp, 'DemoEA.set');
+fs.writeFileSync(setFile, 'InpFastMA=16||4||2||30||Y\nInpSlowMA=70||20||10||120||Y\n');
 // Lo mismo como libros de Excel (.xlsx), por si el usuario los guardó desde Excel.
 const toXlsx = (table) => Buffer.from(zip(libro({ filas: [table.headers, ...table.rows], compartidas: table.headers })));
 const isXlsx = path.join(tmp, 'ReportOptimizer.xlsx');
@@ -153,6 +155,55 @@ try {
     check('se marca como error', await page.$eval('#mainDrop', (e) => e.classList.contains('error')));
     check('y no se puede analizar', await page.$eval('#analyzeBtn', (b) => b.disabled));
     await page.context().close();
+  }
+
+  section('2b. Del ejemplo a tus archivos, y lo que se suelta mientras se analiza');
+  {
+    const ctx = await browser.newContext();
+    await ctx.addInitScript(() => { try { localStorage.setItem('orometra.lang', 'es'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    watch(page);
+    const stored = () => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('orometra.history')); } catch { return null; } });
+    const ready = () => page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    const analyzed = () => page.waitForFunction(() => !document.querySelector('#analyzeBtn').classList.contains('busy') && document.querySelector('.vx'), null, { timeout: 120000 });
+    // Tras el ejemplo, un solo archivo propio no se mezcla con la otra mitad del ejemplo.
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.setInputFiles('#mainFile', [isXml]);
+    await ready();
+    const drop = await page.textContent('#mainDropStatus');
+    check('tras el ejemplo, un archivo propio no se junta con el forward del ejemplo', drop.includes('ReportOptimizer.xml') && !/DEMO/i.test(drop), drop);
+    await page.click('#analyzeBtn');
+    await analyzed();
+    check('y se analiza sin error', await page.$eval('#errorBox', (e) => e.hidden), await page.textContent('#errorBox'));
+    check('solo con la optimización', !(await page.textContent('#intakeSummaryText')).includes('forward'), await page.textContent('#intakeSummaryText'));
+    // Los tres archivos de golpe (optimización, forward y .set) con un análisis en pantalla:
+    // el .set no lanza el análisis por su cuenta con los archivos a medio cargar.
+    await page.evaluate(() => localStorage.removeItem('orometra.history'));
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.setInputFiles('#mainFile', [setFile, isXml, oosXml]);
+    await ready();
+    await page.waitForTimeout(500);
+    check('el .set de la tanda no analiza solo', await page.$eval('#statusBar', (e) => e.hidden) && !(await stored()));
+    check('el .set queda cargado', (await page.textContent('#setStatus')).includes('DemoEA.set'));
+    // Durante un análisis, lo soltado espera y no se cuela en el informe.
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [isXml]);
+    await ready();
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('#analyzeBtn.busy');
+    await page.setInputFiles('#mainFile', [oosXml]);
+    const label = await page.textContent('#progressLabel');
+    check('lo soltado durante el análisis espera, y se dice', /al terminar/.test(label), label);
+    await analyzed();
+    await page.waitForFunction(() => /forward\.xml/.test(document.querySelector('#mainDropStatus').textContent), null, { timeout: 30000 });
+    const s2 = await stored();
+    check('el informe y el historial dicen lo que se analizó (sin el forward soltado después)',
+      !(await page.textContent('#intakeSummaryText')).includes('forward') && s2 && s2.entries.length === 1 && !s2.entries[0].files.oos,
+      JSON.stringify(s2 && s2.entries.map((e) => e.files)));
+    check('y al terminar el forward queda cargado para el siguiente análisis', (await page.textContent('#mainDropStatus')).includes('ReportOptimizer.forward.xml'));
+    await ctx.close();
   }
 
   section('3. Tus archivos de MT5, de principio a fin');

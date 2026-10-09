@@ -35,10 +35,10 @@ let seq = 0;
 const newId = () => `${Date.now().toString(36)}-${(seq++).toString(36)}`;
 
 /** Tras cada análisis (no del ejemplo): guarda su resumen. Llamada desde ui-audit.js. */
-export function recordAnalysis(analysis) {
+export function recordAnalysis(analysis, { isDemo = state.isDemo } = {}) {
   state.historyId = null;
   state.historyFirst = false;
-  if (state.isDemo || !analysis) return;
+  if (isDemo || !analysis) return;
   const store = loadStore();
   if (store.off) return;
   const entry = summarize(analysis, {

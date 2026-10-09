@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-09 — Carga de archivos (1/3): lo que se analiza es lo que se ve
+
+- **Del ejemplo a tus archivos:** soltar un solo archivo propio tras ver el ejemplo lo
+  juntaba con la otra mitad del ejemplo (que no es un archivo) y el análisis acababa en
+  «Error interno». Ahora un archivo propio vacía las dos ranuras del ejemplo.
+- **El .set ya no lanza el análisis por su cuenta.** En una tanda se procesaba antes que las
+  tablas y analizaba lo que hubiera cargado: con el ejemplo en pantalla y tus tres archivos,
+  salía el informe del ejemplo con el nombre de tu archivo, y así se guardaba en el
+  Historial. Ahora se colocan primero las tablas, después el .set y al final el informe del
+  backtest, y el .set solo vuelve a analizar si lo cargado es lo que ya se analizó.
+- **Lo que se suelta durante un análisis espera** y se coloca al terminar (o al cancelar);
+  la barra de progreso lo dice. Antes se colaba a medias en el análisis en marcha.
+- `runAudit` fija al empezar los archivos que analiza: los nombres del informe y del
+  Historial salen de esa copia. La barra de progreso pasa a la línea siguiente en el móvil
+  en vez de quedarse sin ancho.
+- Prueba de navegador con los tres recorridos (falla con el código anterior).
+
 ## 2026-10-09 — Lo que te llevas: .set, refinamiento, resumen, impresión, CSV y JSON
 
 - **.set en UTF-16 con BOM**, como los guarda MT5 (antes UTF-8 sin BOM). Sin confirmar todavía

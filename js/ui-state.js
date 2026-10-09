@@ -42,6 +42,9 @@ export const state = {
   preflight: { is: null, oos: null },
   searchSet: null,
   searchSetName: null,
+  // Archivos del análisis en pantalla (ui-audit.js) y lo soltado mientras se analizaba.
+  analyzedFrom: null,
+  pendingDrop: null,
 };
 
 /** Cableado tardío entre módulos UI para evitar imports circulares. */

@@ -84,6 +84,7 @@ export function resetSession() {
   state.isFile = null; state.oosFile = null; state.isTable = null; state.oosTable = null;
   state.analysis = null; state.isDemo = false; state.report = null; state.historyId = null; state.historyFirst = false;
   state.searchSet = null; state.searchSetName = null;
+  state.analyzedFrom = null; state.pendingDrop = null;
   state.selectedPlateau = 0; state.selectedParam = 0;
   state.surfaceDimA = null; state.surfaceDimB = null;
   state.unseen = {

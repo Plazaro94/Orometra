@@ -77,10 +77,9 @@ export async function setSearchSet(file) {
     api.clearError();
     const status = $('#setStatus');
     if (status) status.textContent = `${file.name} · ${parsed.params.length} ${L('parámetros', 'parameters')}`;
-    if (state.isFile || state.isDemo) {
-      // Re-auditar con el contraste de cobertura cuando ya hay datos.
-      if (!state.busy && (state.isTable || state.isFile)) api.runAudit();
-    }
+    // Volver a analizar con el contraste de cobertura solo si lo cargado es lo que se
+    // analizó: con archivos nuevos (sin comprobar aún) se espera a que se pulse Analizar.
+    if (!state.busy && api.analyzedCurrentFiles && api.analyzedCurrentFiles()) await api.runAudit();
   } catch (err) {
     api.showError(err && err.message ? err.message : String(err));
   }
@@ -94,60 +93,64 @@ function sameFile(a, b) {
 }
 
 /** Reparte una tanda de archivos entre las dos cajas según lo que sean. */
-export async function acceptFiles(fileList, preferred, nested = false) {
-  // Hasta cuatro: IS, forward, informe unseen y .set de rangos.
+export async function acceptFiles(fileList, preferred) {
   const all = Array.from(fileList || []);
-  const files = all.slice(0, 4);
-  if (!files.length) return;
-  if (!nested) {
-    state.dropNote = all.length > files.length
-      ? L(
-        `Has soltado ${all.length} archivos y solo se leen 4 (optimización, forward, informe del backtest y .set). Los demás se han ignorado.`,
-        `You dropped ${all.length} files and only 4 are read (optimization, forward, backtest report and .set). The rest were ignored.`,
-      )
-      : '';
+  if (!all.length) return;
+  // Durante un análisis no se toca nada de lo cargado: el análisis en marcha leería a
+  // medias los archivos nuevos y el informe saldría con nombres que no son los suyos.
+  // Lo soltado espera y se coloca al terminar (o al cancelar).
+  if (state.busy) {
+    state.pendingDrop = { files: all, preferred };
+    api.showProgress(state.progressPct || 2, state.progressText || t('progress'));
+    return;
   }
+  // Hasta cuatro: IS, forward, informe unseen y .set de rangos.
+  const files = all.slice(0, 4);
+  state.dropNote = all.length > files.length
+    ? L(
+      `Has soltado ${all.length} archivos y solo se leen 4 (optimización, forward, informe del backtest y .set). Los demás se han ignorado.`,
+      `You dropped ${all.length} files and only 4 are read (optimization, forward, backtest report and .set). The rest were ignored.`,
+    )
+    : '';
+  const roles = await Promise.all(files.map(detectRole));
+  // En la pestaña del periodo no visto, lo que se suelta es el informe del backtest
+  // (salvo que sea claramente otra cosa: un forward o un .set).
+  if (files.length === 1 && state.tab === 'unseen' && state.analysis && roles[0] !== 'oos' && roles[0] !== 'set') {
+    await api.setReport(files[0]);
+    return;
+  }
+  // Primero las tablas, después el .set y al final el informe. El .set solo vuelve a
+  // analizar si los archivos cargados son los del análisis que hay en pantalla: si se
+  // procesara antes que las tablas de su misma tanda, analizaría las anteriores.
+  const setIdx = roles.indexOf('set');
+  const reportIdx = roles.indexOf('report');
+  const data = files.filter((_, i) => roles[i] !== 'set' && roles[i] !== 'report');
+  const dataRoles = roles.filter((r) => r !== 'set' && r !== 'report');
+  if (data.length) placeTables(data, dataRoles, preferred);
+  if (setIdx >= 0) await setSearchSet(files[setIdx]);
+  if (reportIdx >= 0) await api.setReport(files[reportIdx]);
+}
+
+/** Lo soltado durante un análisis, al terminar. Llamada desde ui-audit.js. */
+export async function flushPendingDrop() {
+  const pending = state.pendingDrop;
+  state.pendingDrop = null;
+  if (pending) await acceptFiles(pending.files, pending.preferred);
+}
+
+/** Coloca las tablas de optimización/forward de una tanda en su ranura. */
+function placeTables(files, roles, preferred) {
   if (files.length === 1) {
-    const role = await detectRole(files[0]);
-    // En la pestaña del periodo no visto, lo que se suelta es el informe del backtest
-    // (salvo que sea claramente otra cosa: un forward o un .set).
-    if (state.tab === 'unseen' && state.analysis && role !== 'oos' && role !== 'set') {
-      await api.setReport(files[0]);
-      return;
-    }
     // Un segundo in-sample soltado solo sustituye al primero. Puede ser a propósito
     // (cambiar de archivo), pero si se quería añadir el forward, hay que decirlo.
-    const target = role || preferred || 'is';
-    if (target === 'is' && state.isFile && !state.oosFile && !sameFile(state.isFile, files[0])) {
+    const target = roles[0] || preferred || 'is';
+    if (target === 'is' && state.isFile && !state.oosFile && !state.isDemo && !sameFile(state.isFile, files[0])) {
       state.dropNote = L(
         `${state.isFile.name} se ha sustituido por ${files[0].name}: los dos son exportaciones de la optimización (ninguno trae Forward Result / Back Result). Si querías añadir el forward, exporta la tabla de la pestaña de resultados del forward.`,
         `${state.isFile.name} was replaced by ${files[0].name}: both are optimization exports (neither has Forward Result / Back Result). If you meant to add the forward, export the table from the forward results tab.`,
       );
     }
-    if (role === 'report') {
-      await api.setReport(files[0]);
-      return;
-    }
-    if (role === 'set') {
-      await setSearchSet(files[0]);
-      return;
-    }
-    setFile(role || preferred || 'is', files[0]);
-    return;
-  }
-  const roles = await Promise.all(files.map(detectRole));
-  const setIdx = roles.indexOf('set');
-  if (setIdx >= 0) {
-    await setSearchSet(files[setIdx]);
-    const rest = files.filter((_, i) => i !== setIdx);
-    if (rest.length) await acceptFiles(rest, preferred, true);
-    return;
-  }
-  const reportIdx = roles.indexOf('report');
-  if (reportIdx >= 0) {
-    await api.setReport(files[reportIdx]);
-    const rest = files.filter((_, i) => i !== reportIdx);
-    if (rest.length) await acceptFiles(rest, preferred, true);
+    setFile(target, files[0]);
     return;
   }
   const pair = files.slice(0, 2);
@@ -238,6 +241,14 @@ export function setFile(which, file) {
       `${file.name}: unsupported format. Use the XML that MT5 exports (or .xls, or CSV).`,
     ));
     return;
+  }
+  if (state.isDemo) {
+    // Las ranuras del ejemplo no son archivos (solo llevan el nombre): un archivo propio
+    // junto a la otra mitad del ejemplo acababa en «Error interno» al analizar.
+    state.isFile = null; state.oosFile = null;
+    state.isTable = null; state.oosTable = null; state.demoTruth = null;
+    state.preflight = { is: null, oos: null };
+    preflightToken.is++; preflightToken.oos++;
   }
   state[which === 'is' ? 'isFile' : 'oosFile'] = file;
   state.isDemo = false;
