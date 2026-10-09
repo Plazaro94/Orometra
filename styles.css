@@ -1018,6 +1018,25 @@ tr.sel td{color:var(--text-2)}
   .rej-table tr.stack-row td{display:block;padding:0}
   .rej-table tr.stack-row td::before{display:block;margin-bottom:2px;font-size:12.5px}
   .rej-table tr.stack-row td.reasons-cell{grid-column:1 / -1}
+  /* Costes del periodo no visto: el escenario arriba y sus cuatro cifras en dos columnas.
+     Con scroll horizontal, «¿Sigue rentable?» (lo que importa) quedaba fuera de vista. */
+  .cost-table tr.stack-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;padding:14px 0}
+  .cost-table tr.stack-row td{display:block;padding:0}
+  .cost-table tr.stack-row td::before{display:block;margin-bottom:2px;font-size:12.5px}
+  .cost-table tr.stack-row td.cost-scen{grid-column:1 / -1}
+  .cost-table tr.stack-row td.cost-scen::before{display:none}
+  /* Métrica a métrica: nombre y veredicto arriba, tu cifra y el habitual debajo, la caja a
+     todo el ancho. La insignia (normal / en la cola) quedaba fuera de vista a la derecha. */
+  .u-table tr.stack-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:14px 10px}
+  .u-table tr.stack-row td{display:block;padding:0}
+  .u-table tr.stack-row td::before{display:block;margin-bottom:2px;font-size:12.5px}
+  .u-table tr.stack-row td.u-label{grid-column:1;grid-row:1;white-space:normal;font-weight:600}
+  .u-table tr.stack-row td.u-label::before,.u-table tr.stack-row td.u-status::before,.u-table tr.stack-row td.u-band::before{display:none}
+  .u-table tr.stack-row td.u-status{grid-column:2;grid-row:1;justify-self:end}
+  .u-table tr.stack-row td.u-value{grid-column:1;grid-row:2}
+  .u-table tr.stack-row td.u-range{grid-column:2;grid-row:2;text-align:right}
+  .u-table tr.stack-row td.u-band{grid-column:1 / -1;grid-row:3;width:auto}
+  .u-table tr.stack-row td.u-band .ub{width:100%;max-width:270px}
   /* El detalle de cada motivo repite los mínimos que ya se explican arriba: en la
      tarjeta compacta quedan solo las etiquetas, como en la tabla de escritorio. */
   .rej-table .reason-detail{display:none}

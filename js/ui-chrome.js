@@ -332,8 +332,8 @@ const narrow = matchMedia('(max-width:720px)');
  * (en el móvil, 2.000 px por debajo de su título). En el móvil, las pestañas quedan fijas
  * arriba y el título tiene que caer justo debajo de ellas, no tapado.
  */
-function scrollToView() {
-  const view = $('#view');
+function scrollToView(target) {
+  const view = target || $('#view');
   if (!view) return;
   const strip = $('.sidebar-scroll');
   // En escritorio, lo fijo arriba es la cabecera compacta del informe (si la hay).
@@ -558,7 +558,8 @@ export function bindViewEvents() {
     render();
   });
   const unseenBtn = $('#unseenCheck');
-  if (unseenBtn) unseenBtn.addEventListener('click', () => api.runUnseenCheck());
+  // El resultado va encima del formulario: al comparar a mano, se lleva la vista hasta él.
+  if (unseenBtn) unseenBtn.addEventListener('click', () => { api.runUnseenCheck(); scrollToView($('.u-result')); });
   const unseenClear = $('#unseenClear');
   if (unseenClear) unseenClear.addEventListener('click', () => {
     state.unseen = {

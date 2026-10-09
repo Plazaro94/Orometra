@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-09 — Pestañas del informe (2/3): el móvil
+
+- **Periodo no visto:** el resultado va justo después del informe cargado (antes, detrás del
+  Monte Carlo y del formulario, a ~5.500 px en el móvil); al comparar a mano, la vista baja
+  hasta él.
+- **Tablas que se cortaban en el móvil:** en la de costes, «¿Sigue rentable?», y en «Métrica
+  a métrica», la insignia normal / en la cola, quedaban fuera de pantalla a la derecha. Ahora
+  cada fila es una tarjeta (el patrón de la tabla de descartes): el escenario arriba con sus
+  cuatro cifras, y la métrica con su veredicto, tu cifra, lo habitual y la caja a lo ancho.
+
 ## 2026-10-09 — Pestañas del informe (1/3): textos que decían algo que no era cierto
 
 Revisión de Mesetas, Descartes, Parámetros, Diagnóstico, Periodo no visto y Método contra el

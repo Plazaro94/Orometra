@@ -347,16 +347,16 @@ export function renderTradesAudit() {
     : '';
 
   const costs2 = costs
-    ? `<div class="table-wrap"><table>
+    ? `<div class="table-wrap"><table class="stack-table cost-table">
       <thead><tr><th>${L('Escenario', 'Scenario')}</th><th>${L('Neto tras el coste extra', 'Net after the extra cost')}</th><th>${L('Degradación', 'Degradation')}</th><th>${L('Caída máx. (dinero)', 'Max drop (money)')}</th><th>${L('¿Sigue rentable?', 'Still profitable?')}</th></tr></thead>
       <tbody>${['base', 'moderate', 'severe'].map((k) => {
     const c = costs[k];
-    return `<tr>
-      <td class="strong">${scenLabel[k](c.bp)}${k === 'base' ? '' : pts(c.bp)}</td>
-      <td>${num(c.stressedNet, 2)}</td>
-      <td>${pct(c.degradation, 1)}</td>
-      <td>${num(c.maxDrawdownStressed, 2)}</td>
-      <td><span class="badge ${c.stillProfitable ? 'ok' : 'bad'}">${c.stillProfitable ? L('sí', 'yes') : L('no', 'no')}</span></td>
+    return `<tr class="stack-row">
+      <td class="strong cost-scen">${scenLabel[k](c.bp)}${k === 'base' ? '' : pts(c.bp)}</td>
+      <td data-label="${L('Neto tras el coste extra', 'Net after the extra cost')}">${num(c.stressedNet, 2)}</td>
+      <td data-label="${L('Degradación', 'Degradation')}">${pct(c.degradation, 1)}</td>
+      <td data-label="${L('Caída máx. (dinero)', 'Max drop (money)')}">${num(c.maxDrawdownStressed, 2)}</td>
+      <td data-label="${L('¿Sigue rentable?', 'Still profitable?')}"><span class="badge ${c.stillProfitable ? 'ok' : 'bad'}">${c.stillProfitable ? L('sí', 'yes') : L('no', 'no')}</span></td>
     </tr>`;
   }).join('')}</tbody>
     </table></div>
@@ -517,7 +517,7 @@ export function renderUnseen(a) {
     </div>
   </section>`;
 
-  if (!res) return `${head}${reportCard}${tradesAudit}${form}${params}`;
+  if (!res) return `${head}${reportCard}${form}${tradesAudit}${params}`;
 
   // Si el informe es de OTRA configuracion, el contraste es aritmeticamente correcto
   // pero no valida nada: seria enganoso ensenarlo en verde. Se degrada a aviso y se
@@ -573,12 +573,12 @@ export function renderUnseen(a) {
   const statusMap = unseenStatus();
   const rows = res.results.map((r) => {
     const st = statusMap[r.status];
-    return `<tr class="u-${st[0]}">
+    return `<tr class="u-${st[0]} stack-row">
       <td class="u-label">${esc(r.label)}${r.scaled ? `<span class="u-scaled" title="${esc(L('Corregido por la duración del periodo', 'Corrected for period duration'))}">&#8597;</span>` : ''}</td>
-      <td class="strong">${num(r.value, r.digits)}</td>
+      <td class="strong u-value" data-label="${L('Tu tramo', 'Your segment')}">${num(r.value, r.digits)}</td>
       <td class="u-band">${unseenBand(r)}</td>
-      <td class="u-range">${num(r.band.q10, r.digits)} &ndash; ${num(r.band.q90, r.digits)}<small>${L('extremos', 'extremes')}: ${num(r.band.min, r.digits)} ${L('a', 'to')} ${num(r.band.max, r.digits)}</small></td>
-      <td><span class="badge ${st[0] === 'ok' ? 'ok' : st[0] === 'warn' ? 'warn' : 'bad'}">${st[1]}</span></td>
+      <td class="u-range" data-label="${L('Habitual', 'Typical')}">${num(r.band.q10, r.digits)} &ndash; ${num(r.band.q90, r.digits)}<small>${L('extremos', 'extremes')}: ${num(r.band.min, r.digits)} ${L('a', 'to')} ${num(r.band.max, r.digits)}</small></td>
+      <td class="u-status"><span class="badge ${st[0] === 'ok' ? 'ok' : st[0] === 'warn' ? 'warn' : 'bad'}">${st[1]}</span></td>
     </tr>`;
   }).join('');
 
@@ -593,7 +593,7 @@ export function renderUnseen(a) {
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>
-      <div class="table-wrap"><table class="u-table">
+      <div class="table-wrap"><table class="u-table stack-table">
         <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango de su meseta, ajustado a tu tramo', 'Range of its plateau, adjusted to your segment')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
@@ -617,7 +617,9 @@ export function renderUnseen(a) {
       <ul class="limits">${res.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
     </section>`;
 
-  return `${head}${reportCard}${tradesAudit}${form}${result}${params}`;
+  // El resultado va justo después del informe: es lo que se viene a ver. Antes iba detrás
+  // del Monte Carlo y del formulario, a ~5.500 px en el móvil.
+  return `${head}${reportCard}${result}${form}${tradesAudit}${params}`;
 }
 
 export function readUnseenForm() {
