@@ -97,6 +97,7 @@ async function evaluateCase(scenario, seed) {
       underpowered: a.meta.underpowered, needed: a.meta.viableNeededForPlateau,
       sampling: a.meta.sampling, radius: a.meta.radius, medianSupport: a.meta.medianSupport,
       crit: a.verdict.findings.filter((f) => f.severity === 'critical').map((f) => f.title),
+      warn: a.verdict.findings.filter((f) => f.severity === 'warn').map((f) => f.title),
       region: a.stats.stabilityCheck ? a.stats.stabilityCheck.regionRate : null,
       plateauSize: a.plateaus[0] ? a.plateaus[0].size : 0,
       fwdPass: a.plateaus[0] && a.plateaus[0].oosValidation ? a.plateaus[0].oosValidation.passFrac : null,

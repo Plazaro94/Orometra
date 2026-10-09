@@ -11,3 +11,4 @@ Cada `.jsonl` tiene una línea por caso; cada `REPORT-*.md` es su informe (`node
 | `calib-final`, `test-final` | `40f79b7` | 1-100 / 1001-1100 | Primer examen (no del todo ciego: ver enmienda del 2026-09-29) |
 | `calib-final2` | esta versión | 1-100 | Calibración tras la segunda auditoría |
 | `exam2`, `exam2-40f79b7`, `exam2-c948971` | esta versión / anteriores | 2001-2100 | **Segundo examen, ciego**, con los tres motores |
+| `calib-warn.jsonl` | `2cb1fe5` | 1-100 | Calibración con los avisos de cada caso (`diag.warn`), para estudiar cuándo podría salir «sólida» (2026-10-09) |
