@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-09 — Portada: cifras del banco de pruebas y foto del cierre más ligera
+
+- **Sección nueva en la portada, «Puesto a prueba donde se sabe la respuesta»**, entre la
+  tarjeta de ejemplo y «Lo que hay detrás». Tres cifras del segundo examen, ciego
+  (`bench/results/REPORT-exam2.md`): falsas alarmas 1,7 % (5 de 300 optimizaciones sin
+  ventaja con «moderada» o más), ventajas detectadas 85 % (35 de 41 con ventaja clara) y
+  distancia mediana a la mejor configuración en el periodo no visto 0,22 frente a 0,30 de la
+  n.º 1 de MT5. Debajo, en caja, dónde no gana: la media con vecinas queda por delante en el
+  total (0,19) y la n.º 1 de MT5 gana en S7 (genética) y S8 (rejilla de un export real),
+  porque cada abstención cuenta como fallo; 9 de 11 criterios; datos simulados. Enlaces al
+  prerregistro y a los resultados.
+- Antes de citarlas, el examen se repitió con el motor actual (`BENCH_TAG=now node
+  bench/run.js exam2`): el informe sale idéntico al publicado, salvo los tiempos.
+- `tests/home-bench.test.js` lee `REPORT-exam2.md` y comprueba que los textos en los dos
+  idiomas citan esas cifras, y que lo que afirma la nota es cierto en el informe (incluido
+  el «por eso»: con la sugerencia orientativa, gana en S7, S8 y a la media con vecinas).
+- **Foto del cierre en móvil** (`cierre-mov-915`): AVIF de 192 a 98 KB y WebP de reserva de
+  216 a 164 KB, sin diferencia visible. La portada en móvil baja de 599 a 508 KB. El resto
+  de la portada ya estaba en su sitio (485-732 KB en escritorio según tema y pantalla).
+- Caché de estilos `?v=20261009a`.
+
 ## 2026-10-08 — Guías revisadas una a una y ampliadas
 
 Revisión de las seis guías (EN y ES) contra la ayuda de MetaQuotes y el código.

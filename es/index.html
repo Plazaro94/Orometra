@@ -37,7 +37,7 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261008i">
+<link rel="stylesheet" href="/styles.css?v=20261009a">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separa lo frágil de lo estable en tu optimización de MT5: qué configuración de tu EA es estable y cuánta evidencia la respalda. Gratis y en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js" data-hero-photo></script>
 </head>
@@ -174,6 +174,19 @@
       </figure>
       <p class="hm-more"><a href="/app/?demo=1" data-track="portada-informe-ejemplo" data-i18n="home.take.more">Ver el informe de ejemplo completo →</a></p>
     </div>
+  </section>
+
+  <!-- 2b. Banco de pruebas: cifras medidas en bench/ (segundo examen, ciego). Las comprueba tests/home-bench.test.js. -->
+  <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
+    <h2 id="hm-bench-title" data-i18n="home.bench.title">Puesto a prueba donde se sabe la respuesta</h2>
+    <p class="hm-sub" data-i18n="home.bench.sub">Antes de publicarlo, pasamos el motor por 800 optimizaciones simuladas en las que sabemos si hay una ventaja real o no. Los criterios para aprobar se escribieron antes de ver ningún resultado, y el examen se hizo a ciegas.</p>
+    <ul class="hm-bench-grid">
+      <li><h3 class="hm-bench-k" data-i18n="home.bench.1.k">Falsas alarmas</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">1,7 %</p><p data-i18n="home.bench.1.body">De 300 optimizaciones sin ninguna ventaja real, solo 5 recibieron «moderada» o más.</p></li>
+      <li><h3 class="hm-bench-k" data-i18n="home.bench.2.k">Ventajas detectadas</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">85 %</p><p data-i18n="home.bench.2.body">Cuando la ventaja real era clara, le dio «moderada» o más en 35 de 41 casos.</p></li>
+      <li><h3 class="hm-bench-k" data-i18n="home.bench.3.k">Más cerca de la mejor</h3><p class="hm-bench-n"><span data-i18n="home.bench.3.n">0,22</span> <small data-i18n="home.bench.3.vs">frente a 0,30 de la n.º 1 de MT5</small></p><p data-i18n="home.bench.3.body">Distancia mediana a la mejor configuración posible en el periodo no visto, en 500 optimizaciones con ventaja real. 0 es acertar con la mejor; 1, elegir una del montón.</p></li>
+    </ul>
+    <p class="hm-bench-note" data-i18n-html="home.bench.note"><strong>Dónde no gana.</strong> Si no ve una meseta, Orometra no propone ninguna (como mucho, una sugerencia orientativa), y el examen cuenta cada uno de esos casos como un fallo. Por eso una regla sencilla, promediar cada configuración con sus vecinas, queda algo por delante en el total (0,19), y la n.º 1 de MT5 le gana en búsquedas genéticas y en una rejilla tomada de un export real. Superó 9 de los 11 criterios fijados de antemano. Son datos simulados: falta la prueba con optimizaciones reales.</p>
+    <p class="hm-more hm-bench-links"><a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener" data-track="portada-banco-prerregistro" data-i18n="home.bench.prereg">Las reglas, escritas antes →</a><a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam2.md" target="_blank" rel="noopener" data-track="portada-banco-resultados" data-i18n="home.bench.results">Resultados completos →</a></p>
   </section>
 
   <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->

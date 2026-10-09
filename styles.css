@@ -1941,6 +1941,37 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
   .hm-take-card .vx-steps{display:grid;grid-template-columns:1fr;gap:10px}
 }
 
+/* Portada: banco de pruebas. Tres cifras medidas y, debajo, dónde no gana. Sin cajas en las
+   cifras (como el motor por dentro); la nota sí va en caja para que no se pase por alto. */
+.hm-bench-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 32px}
+.hm-bench-grid li{min-width:0;padding-top:18px;border-top:1px solid var(--line)}
+.hm-bench-k{margin:0;font-size:var(--fs-sm);font-weight:600;letter-spacing:.02em;color:var(--muted)}
+.hm-bench-n{
+  margin:10px 0 14px;font-family:var(--serif);font-weight:600;font-size:clamp(44px,4.6vw,60px);line-height:1;
+  letter-spacing:-.02em;color:var(--text-hi);font-variant-numeric:tabular-nums;
+}
+.hm-bench-n small{display:block;margin-top:8px;font-family:var(--font);font-size:15px;font-weight:600;letter-spacing:0;color:var(--muted)}
+.hm-bench-grid li > p:last-child{margin:0;color:var(--text-2);line-height:1.6}
+.hm-bench-note{
+  margin:40px auto 0;max-width:74ch;padding:18px 22px;border:1px solid var(--line);border-radius:var(--radius-lg);
+  background:var(--surface);color:var(--text-2);line-height:1.65;
+}
+.hm-bench-note strong{color:var(--text-hi)}
+.hm-bench-links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 28px}
+@media (max-width:860px){
+  .hm-bench-grid{grid-template-columns:1fr;gap:28px}
+  .hm-bench-grid li{display:grid;grid-template-columns:13rem minmax(0,1fr);column-gap:24px;align-items:baseline}
+  .hm-bench-k{grid-column:1 / -1}
+  .hm-bench-n{margin:8px 0 0;font-size:44px}
+  .hm-bench-n small{font-size:14px}
+  .hm-bench-grid li > p:last-child{margin-top:8px}
+}
+@media (max-width:560px){
+  .hm-bench-grid li{display:block}
+  .hm-bench-n{margin:8px 0 10px;font-size:40px}
+  .hm-bench-note{padding:16px 18px}
+}
+
 /* Portada: confianza comprobable. Cuatro pruebas, cada una con su enlace. */
 .hm-proof-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .hm-proof-grid li{
