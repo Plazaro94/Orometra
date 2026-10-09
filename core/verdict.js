@@ -550,8 +550,8 @@ export function buildVerdict(ctx) {
       add(SEV.WARN,
         L('MT5 solo pasó al forward una parte de las configuraciones (las mejores)',
           'MT5 only passed part of the configurations to the forward (the best ones)'),
-        L(`El export del forward trae ${integrity.oosRows} filas frente a ${integrity.isRows} del export de la optimización (~${pct}\u00A0%). MT5 solo prueba en el forward las mejores pasadas según tu criterio de optimización, así que las mesetas y la fragilidad en forward se miden solo entre candidatas ya preseleccionadas: la validación queda sesgada al alza. Interpreta el forward con cautela.`,
-          `The forward export has ${integrity.oosRows} rows versus ${integrity.isRows} in the optimization export (~${pct}%). MT5 only tests the best passes by your optimization criterion in the forward, so plateaus and forward fragility are measured only among already pre-selected candidates: validation is biased upward. Treat the forward with caution.`), 'integrity');
+        L(`El export del forward trae ${integrity.oosRows.toLocaleString(localeTag())} filas frente a ${integrity.isRows.toLocaleString(localeTag())} del export de la optimización (~${pct}\u00A0%). MT5 solo prueba en el forward las mejores pasadas según tu criterio de optimización, así que las mesetas y la fragilidad en forward se miden solo entre candidatas ya preseleccionadas: la validación queda sesgada al alza. Interpreta el forward con cautela.`,
+          `The forward export has ${integrity.oosRows.toLocaleString(localeTag())} rows versus ${integrity.isRows.toLocaleString(localeTag())} in the optimization export (~${pct}%). MT5 only tests the best passes by your optimization criterion in the forward, so plateaus and forward fragility are measured only among already pre-selected candidates: validation is biased upward. Treat the forward with caution.`), 'integrity');
       tableOnly();
     }
     if (integrity.duplicateIds > 0) {

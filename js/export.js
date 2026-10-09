@@ -90,20 +90,34 @@ export function buildRefinementSetFile(analysis, plateau, baseSet = null) {
     '; ================================================================',
     L('; Orometra - rango de refinamiento', '; Orometra - refinement range'),
     ';',
-    ...L(
-      [
-        '; Cárgalo en el probador y lanza una optimización con el algoritmo lento',
-        '; (búsqueda completa) sobre este rango reducido. Con la búsqueda completa la',
-        '; geometría de mesetas se mide de verdad, sin los huecos que deja el genético.',
-        '; Después vuelve a subir los dos archivos a la aplicación.',
-      ],
-      [
-        '; Load it in the tester and run an optimization with the slow complete',
-        '; algorithm over this reduced range. With the complete search the plateau',
-        '; geometry is measured for real, without the gaps the genetic algorithm leaves.',
-        '; Then upload the two files to the application again.',
-      ],
-    ),
+    ...(analysis.meta.sampling === 'grid'
+      ? L(
+        [
+          '; Tu optimización ya probó la rejilla entera: este rango pone el paso a la',
+          '; mitad alrededor de la configuración recomendada, para ver los valores',
+          '; intermedios. Cárgalo en el probador y lanza una optimización con el',
+          '; algoritmo lento (búsqueda completa). Después suelta el resultado en Orometra.',
+        ],
+        [
+          '; Your optimization already tested the whole grid: this range halves the',
+          '; step around the recommended configuration, to see the in-between values.',
+          '; Load it in the tester and run an optimization with the slow complete',
+          '; algorithm. Then drop the result into Orometra.',
+        ],
+      )
+      : L(
+        [
+          '; Cárgalo en el probador y lanza una optimización con el algoritmo lento',
+          '; (búsqueda completa) sobre este rango reducido. Con la búsqueda completa',
+          '; no quedan huecos sin probar alrededor de la meseta. Después suelta el',
+          '; resultado en Orometra.',
+        ],
+        [
+          '; Load it in the tester and run an optimization with the slow complete',
+          '; algorithm over this reduced range. With the complete search no gaps are',
+          '; left untested around the plateau. Then drop the result into Orometra.',
+        ],
+      )),
     ';',
     // Sin separador de miles ni formato regional: es un archivo para una máquina.
     L(`; Combinaciones del rango: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1)}`, `; Combinations in the range: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1)}`),
@@ -172,9 +186,15 @@ export function buildReport(analysis, extra = {}) {
     // El nivel que el usuario vio en pantalla, no el crudo del motor: exportar "strong"
     // mientras la interfaz dice "moderada" hacia que el informe compartido contradijera
     // a la app. El del motor se conserva aparte, para trazabilidad.
-    verdict: extra.shownVerdict
-      ? { ...analysis.verdict, level: extra.shownVerdict.level, headline: extra.shownVerdict.headline, summary: extra.shownVerdict.summary, engineLevel: analysis.verdict.level }
-      : analysis.verdict,
+    // Los textos de los hallazgos llevan algo de HTML para la pantalla (<strong>, <code>): en
+    // el JSON van en texto plano.
+    verdict: (() => {
+      const v = extra.shownVerdict
+        ? { ...analysis.verdict, level: extra.shownVerdict.level, headline: extra.shownVerdict.headline, summary: extra.shownVerdict.summary, engineLevel: analysis.verdict.level }
+        : { ...analysis.verdict };
+      const plain = (x) => (typeof x === 'string' ? x.replace(/<[^>]+>/g, '') : x);
+      return { ...v, headline: plain(v.headline), summary: plain(v.summary), nextStep: plain(v.nextStep), findings: (v.findings || []).map((f) => ({ ...f, title: plain(f.title), detail: plain(f.detail) })) };
+    })(),
     meta: analysis.meta,
     integrity: analysis.integrity,
     statistics: analysis.stats,
@@ -201,7 +221,7 @@ export function buildReport(analysis, extra = {}) {
         metricsIs: p.record.is,
         metricsOos: p.record.oos,
         support: p.stability.support,
-        neighbourFloorQ25: p.stability.q25,
+        neighborFloorQ25: p.stability.q25,
       },
       boundaryAtRepresentative: p.boundary,
       refinement: p.refinement,
@@ -239,7 +259,7 @@ export function buildCsv(analysis) {
   const { paramNames } = analysis.meta;
   const hasF = analysis.meta.hasForward;
   const head = es
-    ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinos', 'suelo_vecindad_q25', 'frac_vecinos_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta']
+    ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinas', 'suelo_vecindad_q25', 'frac_vecinas_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta']
     : ['pass', ...paramNames, 'quality_is', 'quality_forward', 'score', 'robustness', 'neighbors', 'neighborhood_floor_q25', 'neighbors_ok_share', 'cliff', 'peak_z', 'meets_minima_is', 'meets_minima_forward', 'plateau'];
   const rows = analysis.records.map((r, i) => {
     const st = analysis.stability[i];
@@ -255,8 +275,25 @@ export function buildCsv(analysis) {
   return [head.map(cell).join(sep), ...rows].join('\r\n');
 }
 
+/**
+ * Texto en UTF-16 little-endian con BOM, que es como guarda MT5 sus propios .set: así el
+ * terminal lo lee igual que uno suyo, también los comentarios con tildes.
+ */
+export function encodeUtf16le(text) {
+  const bytes = new Uint8Array(2 + text.length * 2);
+  bytes[0] = 0xFF;
+  bytes[1] = 0xFE;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    bytes[2 + 2 * i] = c & 0xFF;
+    bytes[3 + 2 * i] = c >> 8;
+  }
+  return bytes;
+}
+
 export function downloadText(filename, text, mime = 'text/plain;charset=utf-8') {
-  const blob = new Blob([text], { type: mime });
+  const utf16 = /charset=utf-16le/i.test(mime);
+  const blob = new Blob([utf16 ? encodeUtf16le(text) : text], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

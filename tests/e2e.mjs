@@ -172,8 +172,10 @@ try {
       page.waitForEvent('download', { timeout: 15000 }),
       page.click('.vx [data-export="set"]'),
     ]);
-    const setText = fs.readFileSync(await download.path(), 'utf8').replace(/\u0000/g, '');
+    const setBytes = fs.readFileSync(await download.path());
+    const setText = setBytes.toString('utf16le').replace(/^\uFEFF/, '');
     check('el .set se descarga', /\.set$/.test(download.suggestedFilename()), download.suggestedFilename());
+    check('en UTF-16 con BOM, como los de MT5', setBytes[0] === 0xFF && setBytes[1] === 0xFE, String(setBytes.slice(0, 4).toString('hex')));
     check('y trae los parámetros del EA', ['InpFastMA', 'InpSlowMA', 'InpATR_SL'].every((n) => new RegExp(`^${n}=`, 'm').test(setText)), setText.slice(0, 200));
 
     // Cambiar de idioma con el informe en pantalla: se traduce sin volver a analizar.

@@ -481,7 +481,7 @@ export function renderVerdict(a) {
         <span class="run-sep">·</span>
         <span>${esc(L('analizado', 'analyzed'))} ${esc(src.at.toLocaleString(localeTag(), { dateStyle: 'short', timeStyle: 'short' }))}</span>
         <span class="run-sep">·</span>
-        <span title="${esc(L('Mínimos exigidos en este análisis: factor de beneficio, drawdown máximo y operaciones', 'Minimums required in this analysis: profit factor, maximum drawdown and trades'))}">${esc(L('Mínimos', 'Minimums'))}: PF ≥ ${num(a.meta.policy.gates.minProfitFactor, 2)} · ${esc(L('drawdown', 'drawdown'))} ≤ ${num(a.meta.policy.gates.maxDrawdownPct, 0)}${pctSign()} · ${int(a.meta.minTradesIs)} ${esc(L('operaciones', 'trades'))}</span>
+        <span title="${esc(L('Mínimos exigidos en este análisis: factor de beneficio, drawdown máximo y operaciones', 'Minimums required in this analysis: profit factor, maximum drawdown and trades'))}">${esc(L('Mínimos', 'Minimums'))}: PF ≥ ${num(a.meta.policy.gates.minProfitFactor, 2)} · ${esc(L('drawdown', 'drawdown'))} ≤ ${num(a.meta.policy.gates.maxDrawdownPct, 0)}${pctSign()} · ${int(a.meta.minTradesIs)} ${esc(L('operaciones', 'trades'))}${a.meta.hasForward ? ` (${int(a.meta.minTradesOos)} ${esc(L('en el forward', 'on the forward'))})` : ''}</span>
         <span class="run-sep">·</span>
         <span class="run-holdout" title="${esc(hold.note)}">${esc(hold.short)}</span>
       </div>`
@@ -678,7 +678,9 @@ export function renderEvidenceSheet(a, best) {
  * veces en la misma pestana. */
 export function whyGradeHighlights(a) {
   const findings = a.verdict.findings || [];
-  const pros = findings.filter((f) => f.severity === 'ok' || f.severity === 'info').slice(0, 4);
+  // Solo lo que de verdad juega a favor: las notas informativas («la meseta se busca en el
+  // periodo optimizado…») no son un punto a favor y se quedan en la lista de hallazgos.
+  const pros = findings.filter((f) => f.severity === 'ok').slice(0, 4);
   // Primero lo que pesa en el nivel (críticos y avisos sobre la meseta) y después los
   // avisos sobre el orden de la tabla, que no lo bajan: con una «sólida» no puede parecer
   // que lo de arriba de «En contra» la contradice.

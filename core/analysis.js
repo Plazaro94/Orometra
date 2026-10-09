@@ -8,7 +8,7 @@ import { DEFAULT_POLICY, resolvePolicy, periodQuality, payoffScale, gateFailures
 import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
   conditionalSensitivity, selectDims, buildNeighborhood, localStability, robustnessScores,
-  findPlateaus, coreMembers, chooseRepresentative, boundaryParams, refinementRange,
+  findPlateaus, coreMembers, chooseRepresentative, boundaryParams, refinementRange, finerRefinement,
   countPossibleNeighbors, detectInversions, gridRegularity, componentExtent,
   collapseToTopology,
 } from './engine.js';
@@ -541,7 +541,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       const crossed = g.jumps.filter((jp) => occupied.has(jp.fromIndex) && occupied.has(jp.toIndex));
       if (crossed.length) spansIrregular.push({ name: g.name, jumps: crossed });
     }
-    const refinement = refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes, undefined, dims.flatDims);
+    // Con la rejilla ya probada entera, el refinamiento propone el paso a la mitad: repetir
+    // los mismos pasos no aportaría nada.
+    const baseRefinement = refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes, undefined, dims.flatDims);
+    const refinement = sampling === 'grid' ? finerRefinement(baseRefinement, levels, sensitivity) : baseRefinement;
     const st = stability[rep];
     const passing = Number.isFinite(st.passCount)
       ? st.passCount

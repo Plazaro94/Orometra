@@ -1035,6 +1035,70 @@ export function detectInversions(coords, levels, paramNames, isQuality, oosQuali
  * Aquí se parte del representante, se abre un paso en cada eje y después se reparte
  * el presupuesto dando más amplitud a los parámetros más influyentes.
  */
+/**
+ * Refinamiento con el paso a la mitad, para cuando la optimización ya probó la rejilla
+ * entera: repetir los mismos pasos no aporta nada, lo único que queda por ver son los
+ * valores intermedios. Parte de `refinementRange` y, para cada parámetro numérico que se
+ * barre, pone el paso a la mitad (en los enteros, a la mitad redondeada hacia abajo y nunca
+ * por debajo de 1) alrededor de la configuración recomendada, sin salir de lo que ya se
+ * probó. Si no cabe en el presupuesto, deja fijos los menos influyentes; si sobra, amplía
+ * el tramo de los más influyentes hasta tres pasos originales a cada lado.
+ */
+export function finerRefinement(refinement, levels, sensitivity, budget = 20000) {
+  const sensOf = (j) => {
+    const s = sensitivity && sensitivity[j];
+    return s && Number.isFinite(s.sensitivity) ? s.sensitivity : 0;
+  };
+  const round = (v) => Number(v.toFixed(8));
+  const items = refinement.map((r, j) => {
+    if (r.constant || r.categorical || !(r.step > 0) || !levels[j] || levels[j].length < 2) return null;
+    const lv = levels[j];
+    const integer = lv.every((v) => Number.isInteger(v));
+    const step = r.step;
+    const fine = integer ? Math.max(1, Math.floor(step / 2)) : round(step / 2);
+    return { j, step, fine, min: lv[0], max: lv[lv.length - 1], center: r.center, radius: 1, fixed: false };
+  });
+  const span = (it) => {
+    if (it.fixed) return { lo: it.center, hi: it.center, n: 1 };
+    const lo = Math.max(it.min, round(it.center - it.radius * it.step));
+    const hi = Math.min(it.max, round(it.center + it.radius * it.step));
+    return { lo, hi, n: Math.floor((hi - lo) / it.fine + 1e-9) + 1 };
+  };
+  const live = items.filter(Boolean);
+  const total = () => live.reduce((acc, it) => acc * span(it).n, 1);
+  // Si no cabe con un paso original a cada lado, se fijan los menos influyentes.
+  for (const it of live.slice().sort((a, b) => sensOf(a.j) - sensOf(b.j))) {
+    if (total() <= budget) break;
+    it.fixed = true;
+  }
+  // Y si sobra, se amplía el tramo de los más influyentes.
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const it of live.filter((x) => !x.fixed && x.radius < 3).sort((a, b) => sensOf(b.j) - sensOf(a.j))) {
+      const before = span(it).n;
+      it.radius += 1;
+      if (span(it).n > before && total() <= budget) { grew = true; break; }
+      it.radius -= 1;
+    }
+  }
+  return refinement.map((r, j) => {
+    const it = items[j];
+    if (!it) return r;
+    const sp = span(it);
+    return {
+      ...r,
+      start: sp.lo,
+      stop: sp.hi,
+      step: it.fixed ? 0 : it.fine,
+      levels: sp.n,
+      fixed: it.fixed || sp.n === 1,
+      finer: !it.fixed && it.fine < it.step,
+      originalStep: it.step,
+    };
+  });
+}
+
 export function refinementRange(repIndex, coords, levels, paramNames, sensitivity, types, budget = 20000, flat = []) {
   const z0 = coords[repIndex];
   const optimised = [];

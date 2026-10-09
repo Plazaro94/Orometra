@@ -1425,6 +1425,12 @@ tr.sel td{color:var(--text-2)}
   td{color:#111}
   th,td{border-bottom:1px solid var(--line)}
   .vx{border:2px solid #111;background:#fff !important;break-inside:avoid;padding:14px 16px;margin-bottom:3mm}
+  /* En papel, el nivel activo del medidor con los colores del tema claro: el lima del
+     oscuro sobre blanco no se leía. */
+  .vx-seg:nth-child(1){--t:#b4232a} .vx-seg:nth-child(2){--t:#a8510f} .vx-seg:nth-child(3){--t:#7a5a00}
+  .vx-seg:nth-child(4){--t:#4a6b00} .vx-seg:nth-child(5){--t:#4c6000}
+  /* Marca en el papel: un PDF que circula tiene que decir de dónde sale. */
+  .print-brand{display:block !important;margin:0 0 2px;font-size:11px;color:#2d3853}
   .vx-pass,.vx-stat > strong,.vx-step strong{color:#000}
   .vx-stat{background:#fff;border-color:var(--line-strong)}
   .vx-actions,.vx-step-cta,.vx-section-title,.vx-detail{display:none !important}
@@ -2521,6 +2527,7 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
   .sidebar-head .lp-menu{z-index:45}
 }
 @media print{.sidebar-help{display:none}}
+.print-brand{display:none}
 .empty-steps a{color:var(--ok-text);font-weight:600;text-underline-offset:3px;white-space:nowrap}
 .empty-steps a:hover{color:var(--ok-hi)}
 /* Portátiles con poca altura: la barra lateral se compacta y, si aun así no cabe, se

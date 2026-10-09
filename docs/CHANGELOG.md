@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-09 — Lo que te llevas: .set, refinamiento, resumen, impresión, CSV y JSON
+
+- **.set en UTF-16 con BOM**, como los guarda MT5 (antes UTF-8 sin BOM). Sin confirmar todavía
+  con un terminal; la prueba de navegador comprueba la codificación del archivo descargado.
+- **Refinamiento con el paso a la mitad en una rejilla completa** (`core/engine.js#finerRefinement`):
+  repetir los mismos pasos no aportaba nada. Alrededor de la recomendada, sin salir de lo
+  probado, el paso va a la mitad (en los enteros, nunca por debajo de 1); si no cabe en
+  20.000 combinaciones se fijan los menos influyentes, y si sobra se amplía el tramo de los
+  más influyentes. El .set y la pantalla lo explican. Prueba de respuesta conocida
+  (`tests/refinement.test.js`). Con búsqueda parcial o genética, como antes.
+- **Resumen .txt:** escribía «undefined» cuando una meseta alternativa no tenía forward;
+  ahora lo dice. Añade archivos, pasadas y mínimos usados, y de cada configuración el factor
+  de beneficio, el drawdown y las operaciones de cada periodo. Sin dobles dos puntos.
+- **«A favor»** (pantalla, resumen e impresión) ya no incluye notas informativas que no son un
+  punto a favor.
+- **Impresión:** el nivel activo del medidor salía en lima claro sobre blanco; ahora con los
+  colores del tema claro. El papel lleva «Orometra · orometra.com». La línea de datos incluye
+  el mínimo de operaciones del forward.
+- **CSV y JSON:** columnas `vecinas`; en el JSON, `neighborFloorQ25` y los textos de los
+  hallazgos sin etiquetas HTML. Las cifras del aviso de preselección del forward llevan
+  separador de miles.
+
 ## 2026-10-09 — Pestañas del informe (3/3): términos y estilo
 
 - **«%» que se separaba de su cifra al saltar de línea** («19» en una línea y «% de» en la
