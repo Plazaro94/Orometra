@@ -45,6 +45,8 @@ export const state = {
   // Archivos del análisis en pantalla (ui-audit.js) y lo soltado mientras se analizaba.
   analyzedFrom: null,
   pendingDrop: null,
+  // Archivos que el motor rechazó por sus datos (no encajan, muy pocas filas…).
+  analysisRejected: null,
 };
 
 /** Cableado tardío entre módulos UI para evitar imports circulares. */

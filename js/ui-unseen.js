@@ -55,6 +55,8 @@ export async function setReport(file) {
       ? auditUnseenTrades(report.deals)
       : null;
     api.clearError();
+    // Antes de analizar no se pintaba nada: el informe se leía sin ninguna señal.
+    if (api.updateDropStatus) api.updateDropStatus();
     if (state.analysis) {
       api.setTab('unseen');
       runUnseenCheck();
@@ -631,11 +633,14 @@ export function readUnseenForm() {
   return out;
 }
 
-export function runUnseenCheck() {
-  track('periodo-no-visto');
+export function runUnseenCheck({ fromState = false } = {}) {
   const a = state.analysis;
   if (!a || !a.plateaus.length) return;
-  state.unseen.values = readUnseenForm();
+  // fromState: tras analizar con un informe ya cargado; el formulario aún no está pintado.
+  if (!fromState) {
+    track('periodo-no-visto');
+    state.unseen.values = readUnseenForm();
+  }
   state.unseen.error = null;
   state.unseen.result = null;
   const idx = Math.min(state.unseen.plateauIndex, a.plateaus.length - 1);

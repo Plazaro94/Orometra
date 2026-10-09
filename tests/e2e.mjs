@@ -51,6 +51,21 @@ const junk = path.join(tmp, 'notas.xml');
 fs.writeFileSync(isXml, toMt5Xml(demo.isTable));
 fs.writeFileSync(oosXml, toMt5Xml(demo.oosTable));
 fs.writeFileSync(junk, 'esto no es una exportación de MT5');
+const optFile = path.join(tmp, 'cache.opt');
+fs.writeFileSync(optFile, Buffer.from([1, 2, 3, 4, 0, 0, 9, 9]));
+const fewXml = path.join(tmp, 'Pocas.xml');
+fs.writeFileSync(fewXml, toMt5Xml({ ...demo.isTable, rows: demo.isTable.rows.slice(0, 6) }));
+// El forward de otra optimización: el Back Result no coincide con el Result.
+const backCol = demo.oosTable.headers.findIndex((h) => /back\s*result/i.test(h));
+const otherOosXml = path.join(tmp, 'Otra.forward.xml');
+fs.writeFileSync(otherOosXml, toMt5Xml({ ...demo.oosTable, rows: demo.oosTable.rows.map((r) => r.map((v, k) => (k === backCol ? v * 1.37 + 3 : v))) }));
+const reportHtml = path.join(tmp, 'Backtest.html');
+fs.writeFileSync(reportHtml, `<!DOCTYPE html><html><body><div>Strategy Tester Report</div><table>
+<tr><td>Expert:</td><td><b>Demo EA</b></td></tr><tr><td>Symbol:</td><td><b>EURUSD</b></td></tr>
+<tr><td>Period:</td><td><b>H1 (2025.01.01 - 2025.07.01)</b></td></tr>
+<tr><td>Inputs:</td><td><b>InpFastMA=16</b></td></tr>
+<tr><td>Results</td></tr><tr><td>Total Net Profit:</td><td>1200.00</td></tr><tr><td>Total Trades:</td><td>120</td></tr><tr><td>Profit Factor:</td><td>1.30</td></tr>
+</table></body></html>`);
 const setFile = path.join(tmp, 'DemoEA.set');
 fs.writeFileSync(setFile, 'InpFastMA=16||4||2||30||Y\nInpSlowMA=70||20||10||120||Y\n');
 // Lo mismo como libros de Excel (.xlsx), por si el usuario los guardó desde Excel.
@@ -204,6 +219,63 @@ try {
       JSON.stringify(s2 && s2.entries.map((e) => e.files)));
     check('y al terminar el forward queda cargado para el siguiente análisis', (await page.textContent('#mainDropStatus')).includes('ReportOptimizer.forward.xml'));
     await ctx.close();
+  }
+
+  section('2c. La ficha y el botón dicen lo que hay');
+  {
+    const page = await appPage('es');
+    const title = () => page.textContent('#preflightTitle');
+    const disabled = () => page.$eval('#analyzeBtn', (b) => b.disabled);
+    await page.goto(`${BASE}/app/`);
+    // «Analizar» no puede estar activo mientras la ficha dice «Leyendo…».
+    await page.evaluate(() => {
+      window.__readingEnabled = false;
+      new MutationObserver(() => {
+        const reading = document.querySelector('.preflight-reading');
+        if (reading && !document.querySelector('#analyzeBtn').disabled) window.__readingEnabled = true;
+      }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
+    });
+    await page.setInputFiles('#mainFile', [oosXml]);
+    await page.waitForFunction(() => !document.querySelector('.preflight-reading'), null, { timeout: 60000 });
+    check('solo el forward: la ficha dice que falta la optimización', /Falta la optimización/.test(await title()), await title());
+    check('y no se puede analizar', await disabled());
+    // Un .opt junto a los dos XML no se queda con la ranura de la optimización.
+    await page.setInputFiles('#mainFile', [optFile, isXml, oosXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    const drop = await page.textContent('#mainDropStatus');
+    check('con un .opt en la tanda, se cargan los dos XML', drop.includes('ReportOptimizer.xml') && drop.includes('ReportOptimizer.forward.xml'), drop);
+    check('y se dice que el .opt se ha ignorado', /cache\.opt: no es una exportación/.test(drop), drop);
+    check('«Analizar» nunca se activa mientras se lee', !(await page.evaluate(() => window.__readingEnabled)));
+    // El forward de otra optimización: tras el error, la ficha ya no dice «Listo».
+    await page.setInputFiles('#mainFile', [isXml, otherOosXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForFunction(() => !document.querySelector('#errorBox').hidden, null, { timeout: 120000 });
+    check('forward de otra optimización: la ficha dice que no se pueden analizar así', /No se pueden analizar/.test(await title()), await title());
+    check('y el botón no invita a repetir', await disabled());
+    // Menos de 10 configuraciones: se dice en la ficha, sin tener que pulsar.
+    await page.setInputFiles('#mainFile', [fewXml]);
+    await page.waitForFunction(() => document.querySelector('.preflight-bad'), null, { timeout: 60000 });
+    check('menos de 10 configuraciones: se avisa antes de analizar', /al menos 10/.test(await page.textContent('.preflight-bad')) && await disabled());
+    await page.context().close();
+  }
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [reportHtml]);
+    await page.waitForFunction(() => /Backtest\.html/.test(document.querySelector('#mainDropStatus').textContent), null, { timeout: 15000 }).catch(() => {});
+    check('el informe soltado antes de analizar se confirma', /Backtest\.html/.test(await page.textContent('#mainDropStatus')), await page.textContent('#mainDropStatus'));
+    await page.setInputFiles('#mainFile', [isXml, oosXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    const stamp = await page.textContent('#view');
+    check('y al analizar se compara: el veredicto no dice «no aportado»', !/Periodo no visto: no aportado/.test(stamp));
+    // Tras un análisis (carga plegada), un archivo que no sirve también se ve.
+    await page.setInputFiles('#mainFile', [optFile]);
+    await page.waitForFunction(() => document.querySelector('#mainDrop').classList.contains('error'), null, { timeout: 15000 }).catch(() => {});
+    check('tras analizar, un .opt rechazado se ve', await page.$eval('#mainDropStatus', (e) => e.offsetParent !== null && /\.opt/.test(e.textContent)));
+    await page.context().close();
   }
 
   section('3. Tus archivos de MT5, de principio a fin');

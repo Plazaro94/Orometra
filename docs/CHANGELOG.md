@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-09 — Carga de archivos (2/3): la ficha y el botón dicen lo que hay
+
+- **Solo el forward:** la ficha decía «Listo para analizar · Los archivos se leen bien» con el
+  botón desactivado. Ahora dice «Falta la optimización» y cómo exportarla.
+- **Archivos que el motor rechaza** (forward de otra optimización, sin parámetros comunes…):
+  tras el error, la ficha seguía en «Listo» y el botón en verde. Ahora dice «No se pueden
+  analizar así» y el botón pide cambiar los archivos, hasta que cambien.
+- **«Analizar» activo mientras se leía el archivo:** se podía pulsar con la ficha en «Leyendo…».
+- **Menos de 10 configuraciones:** se avisa en la ficha al cargar, no al pulsar Analizar.
+- **Tres archivos con uno que no sirve** (un `.opt` junto a los dos XML): el `.opt` ocupaba la
+  ranura de la optimización, se rechazaba y el XML bueno se perdía sin aviso. Ahora lo que no
+  es una tabla se aparta antes de repartir y se dice; si sobra un archivo, también.
+- **Informe del backtest soltado antes de analizar:** se leía sin ninguna señal y, tras
+  analizar, el veredicto decía «Periodo no visto: no aportado». Ahora la caja lo confirma y al
+  analizar se compara solo, como cuando se suelta después.
+- **Tras un análisis, un archivo rechazado no mostraba nada** (el aviso iba a la caja plegada).
+- Si cancelar o un fallo del motor corta la lectura de un archivo, se vuelve a leer una vez en
+  vez de marcarlo como ilegible.
+- Pruebas de navegador de cada caso.
+
 ## 2026-10-09 — Carga de archivos (1/3): lo que se analiza es lo que se ve
 
 - **Del ejemplo a tus archivos:** soltar un solo archivo propio tras ver el ejemplo lo

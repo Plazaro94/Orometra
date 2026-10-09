@@ -358,6 +358,7 @@ export async function runAudit() {
     }
     state.analysis = analysis;
     state.analyzedFrom = { isFile: run.isFile, oosFile: run.oosFile, isDemo: run.isDemo };
+    state.analysisRejected = null;
     state.source = {
       is: run.isDemo ? L('Ejemplo sintético', 'Synthetic example') : (run.isFile && run.isFile.name) || '—',
       oos: run.isDemo ? null : (run.oosFile && run.oosFile.name) || null,
@@ -396,6 +397,9 @@ export async function runAudit() {
         trades: m.trades, profit: m.profit, profitFactor: m.profitFactor,
         drawdown: m.drawdown, recoveryFactor: m.recoveryFactor, sharpe: m.sharpe,
       };
+      // Y se comparan ya, como cuando el informe se suelta después de analizar: el veredicto
+      // decía «Periodo no visto: no aportado» con el informe cargado.
+      if (api.runUnseenCheck) api.runUnseenCheck({ fromState: true });
     }
     // Un informe nuevo se lee desde arriba: el título es el veredicto. Bajar hasta la
     // vista dejaba el título fuera y, en el móvil, el inicio de la tarjeta bajo las
@@ -410,6 +414,12 @@ export async function runAudit() {
       return;
     }
     const code = showError(error);
+    // Fallos de los datos de estos archivos: repetir con los mismos daría lo mismo. La ficha
+    // y el botón lo dicen hasta que cambien (ui-files.js, rejectedNow).
+    if (!run.isDemo && [CODE.FILE_ERROR, CODE.SCHEMA_ERROR, CODE.DATA_ERROR].includes(code)) {
+      state.analysisRejected = { isFile: run.isFile, oosFile: run.oosFile };
+      if (api.renderPreflight) api.renderPreflight();
+    }
     // Los fallos nuestros se cuentan aparte: son los que hay que arreglar.
     if (!run.isDemo) track(code === CODE.INTERNAL_ERROR ? 'analisis-error-interno' : 'analisis-error');
   } finally {
