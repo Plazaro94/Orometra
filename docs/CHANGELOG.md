@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-09 — Quiénes somos, Privacidad y aviso legal: lo que dicen, exacto
+
+- **Aviso legal de la app:** se mostraba al visitante una nota interna («estos textos son
+  borradores…»). Pasa a `docs/LEGAL-NOTAS.md`. «No hay servidor porque no hay servidor» pasa a
+  «ningún servidor recibe tus archivos: no hay servidor de análisis» (sí hay alojamiento y
+  analítica).
+- **Privacidad, qué se envía a la analítica:** también el título de la página, y los eventos
+  salen también de algunos botones de la web, no solo de la app.
+- **Privacidad, qué guarda el historial:** la lista completa (pasada, robustez, calidad, número
+  de pasadas, resultado del periodo no visto y etiquetas), no solo una parte.
+- **Quiénes somos:** dos principios más, los que distinguen a Orometra: «evidencia, no permiso»
+  y «puede decir aquí no hay nada», con enlace a cómo se prueba el método.
+
 ## 2026-10-09 — Carga de archivos (3/3): textos de los avisos y los mínimos
 
 - **Errores con título de trader:** «Error de datos / esquema» pasa a «Los archivos no encajan»,

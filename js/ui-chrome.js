@@ -707,9 +707,9 @@ export function renderLegal() {
       <p class="panel-intro">
         ${L(
           `No es una promesa de intenciones: es cómo está construida. Todo el análisis se ejecuta en el
-        JavaScript de tu navegador. <strong>No hay servidor que reciba tus datos porque no hay servidor.</strong>`,
+        JavaScript de tu navegador. <strong>Ningún servidor recibe tus archivos: no hay servidor de análisis.</strong>`,
           `This is not a promise of intent: it is how it is built. The entire analysis runs in your
-        browser's JavaScript. <strong>There is no server that receives your data because there is no server.</strong>`,
+        browser's JavaScript. <strong>No server receives your files: there is no analysis server.</strong>`,
         )}
       </p>
       <ul class="limits">
@@ -783,18 +783,6 @@ export function renderLegal() {
         tool like this can cost someone money, and that matters more than any other consideration.`,
         )}</li>
       </ul>
-      <p class="chart-note">
-        ${L(
-          `Estos textos son borradores cuidados, no asesoramiento jurídico. Si algún día esta herramienta pasa a
-        tener dimensión económica —cobro, publicidad o recogida de datos de contacto— la normativa española
-        exigirá además identificar al titular con nombre, NIF y domicilio, y estos textos tendrán que
-        revisarse con un profesional.`,
-          `These texts are careful drafts, not legal advice. If someday this tool acquires an
-        economic dimension — charging, advertising or collecting contact data — Spanish regulations
-        will also require identifying the owner with name, tax ID and address, and these texts will need
-        review by a professional.`,
-        )}
-      </p>
     </section>`;
 }
 
