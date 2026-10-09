@@ -175,3 +175,17 @@ M1. Si no propone meseta, se registra como «se abstiene».
   sólida. Los anteriores no cambian («moderada o sólida» pasa a leerse «moderada o más»).
   **Tercer examen:** semillas 3001-3100, nunca generadas ni vistas antes; se ejecuta una
   sola vez con el motor congelado y se publica tal como salga.
+- **2026-10-09, tras el tercer examen y antes del cuarto.** El tercer examen (semillas
+  3001-3100, `REPORT-exam3.md`) se publica tal como salió. Aprueba «sólida» ≤ 1 % en cada
+  escenario sin ventaja (0 %), la potencia (97,2 % de 36), la elección frente a los cinco
+  métodos de referencia y la coherencia (moderada 0,181 < buena 0,218 < sólida 0,234).
+  **Suspende dos criterios**, los dos en S5: «buena o sólida» ≤ 2 % (3 %) y «moderada o
+  más» ≤ 5 % (7 %). El segundo no viene de este cambio: el motor anterior (`1be66b1`) da
+  el mismo 7 % con esas semillas (`REPORT-exam3-motor-1be66b1.md`). De los tres «buena»
+  falsos, dos tenían como único aviso que la recomendación solo aguanta el 50 % de las
+  variaciones de umbral. **Cambio, elegido mirando el tercer examen** (que deja de ser
+  ciego): «buena» exige además que la recomendación aguante al menos el 80 % de esas
+  variaciones, como ya exigía «sólida». En calibración, «buena» pasa de 90 a 62 casos con
+  ventaja y sigue en 0 sin ventaja (`calib-v3b`). Nada más cambia. **Cuarto examen:**
+  semillas 4001-4100, nunca generadas; una sola vez, motor congelado, se publica tal como
+  salga.

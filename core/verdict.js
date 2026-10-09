@@ -594,7 +594,9 @@ export function buildVerdict(ctx) {
   // aviso: la meseta recomendada tiene configuraciones probadas en el forward y no cae por
   // debajo de lo crítico allí, y la recomendación se ha repetido moviendo los umbrales.
   // Los avisos que quedan (los que no son solo de la tabla) dicen cuánto falta: ninguno,
-  // «sólida»; uno, «buena». Lo calibra bench/ (enmienda del 2026-10-09 en PREREGISTRO.md).
+  // «sólida»; uno, «buena», siempre que no sea el de la estabilidad frente a los umbrales
+  // (el tercer examen del banco dio «buena» sin ventaja real justo con ese aviso). Lo
+  // calibra bench/ (enmiendas del 2026-10-09 en PREREGISTRO.md).
   const bpv = bestPlateau && bestPlateau.oosValidation;
   const validated = Boolean(hasForward && selectionMode === 'isThenOos' && bpv && bpv.withForward > 0
     && stabilityCheck && stabilityCheck.draws);
@@ -625,7 +627,7 @@ export function buildVerdict(ctx) {
     headline = L('Evidencia sólida', 'Solid evidence');
     summary = L(`${regiones === 1 ? 'La meseta propuesta' : 'Las mesetas propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinas que también cumplen tus mínimos, ${regiones === 1 ? 'aguanta' : 'aguantan'} en el forward y la recomendación se mantiene al mover los umbrales. Es lo máximo que el periodo optimizado y el forward pueden respaldar; un periodo no visto puede mantenerla o bajarla.`,
       `${regiones === 1 ? 'The proposed plateau rests' : 'The proposed plateaus rest'} on neighbors that also clear your minimums, ${regiones === 1 ? 'holds' : 'hold'} on the forward, and the recommendation holds when thresholds are moved. That is the most the optimized period and the forward can support; an unseen period can keep it there or lower it.`);
-  } else if (validated && blocking.length === 1) {
+  } else if (validated && blocking.length === 1 && stabilityCheck.regionRate >= 0.8) {
     level = LEVELS.GOOD;
     headline = L('Evidencia buena', 'Good evidence');
     summary = L(`${regiones === 1 ? 'La meseta propuesta' : 'Las mesetas propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinas que también cumplen tus mínimos, ${regiones === 1 ? 'aguanta' : 'aguantan'} en el forward y la recomendación se mantiene al mover los umbrales. Se queda a un paso de sólida: hay un aviso que conviene leer antes de decidir.`,
