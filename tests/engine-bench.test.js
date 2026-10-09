@@ -32,7 +32,7 @@ const run = (scenario, seed) => {
   return { c, a: runAnalysis({ isTable: c.isTable, oosTable: c.oosTable }) };
 };
 const crit = (a) => a.verdict.findings.filter((f) => f.severity === 'critical').map((f) => f.title);
-const isPos = (l) => l === 'moderate' || l === 'strong';
+const isPos = (l) => l === 'moderate' || l === 'good' || l === 'strong';
 
 section('Valores por defecto');
 check('repMethod por defecto es joint', ENGINE_DEFAULTS.repMethod === 'joint');

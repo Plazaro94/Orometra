@@ -96,9 +96,10 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   falso sobre cómo MT5 calcula esa cifra (SR-1 en `docs/MT5_ASSUMPTIONS.md`). No es el
   Deflated Sharpe Ratio publicado.
 - **Calificación de la FUERZA DE LA EVIDENCIA** («Fiabilidad»), no de la estrategia, en cinco
-  niveles: insuficiente, débil, moderada, buena y sólida. «Buena» es el tope mientras falte
-  el periodo no visto, porque el forward ya se usó para elegir; solo un periodo no visto
-  que no lo contradiga lleva a «sólida». La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
+  niveles: insuficiente, débil, moderada, buena y sólida. «Sólida» es una meseta validada en
+  el forward, estable al mover los umbrales y sin avisos sobre ella; «buena», lo mismo con
+  un aviso. Como el forward ya se usó para elegir, un periodo no visto puede mantener el
+  nivel o bajarlo a «moderada», nunca subirlo (criterios medidos en `bench/`). La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
   contienen unos datos, no si un EA va a funcionar. Distingue «no hay región conexa»
   de «no hay datos suficientes para saberlo», que son hechos, y deja la decisión al usuario.
 - **Lectura del informe de backtest de MT5** (`Informe → HTML`): se suelta en la app y

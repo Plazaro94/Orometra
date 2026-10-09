@@ -153,7 +153,7 @@
                 <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Good</span></div>
                 <div class="vx-seg"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Strong</span></div>
               </div>
-              <p class="vx-trust-line" data-i18n="home.take.trust.line">A validated plateau. To reach strong it still needs a test on a period you have not used.</p>
+              <p class="vx-trust-line" data-i18n="home.take.trust.line">Validated on the forward and stable when thresholds are moved, with one warning worth reading.</p>
               <div class="vx-stats">
                 <div class="vx-stat"><strong>88<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustness</span></div>
                 <div class="vx-stat"><strong>12<small data-i18n="home.take.stat.of"> of 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Neighbors that pass</span></div>
@@ -175,17 +175,17 @@
     </div>
   </section>
 
-  <!-- 2b. Banco de pruebas: cifras medidas en bench/ (segundo examen, ciego). Las comprueba tests/home-bench.test.js. -->
+  <!-- 2b. Banco de pruebas: cifras medidas en bench/ (cuarto examen, ciego). Las comprueba tests/home-bench.test.js. -->
   <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
     <h2 id="hm-bench-title" data-i18n="home.bench.title">Tested where the right answer is known</h2>
     <p class="hm-sub" data-i18n="home.bench.sub">Before publishing it, we ran the engine on 800 simulated optimizations in which we know whether there is a real edge or not. The pass marks were written down before seeing any result, and the exam was blind.</p>
     <ul class="hm-bench-grid">
-      <li><h3 class="hm-bench-k" data-i18n="home.bench.1.k">False alarms</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">1.7%</p><p data-i18n="home.bench.1.body">Out of 300 optimizations with no real edge at all, only 5 got “moderate” or higher.</p></li>
-      <li><h3 class="hm-bench-k" data-i18n="home.bench.2.k">Edges detected</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">85%</p><p data-i18n="home.bench.2.body">When the real edge was clear, it rated it “moderate” or higher in 35 of 41 cases.</p></li>
-      <li><h3 class="hm-bench-k" data-i18n="home.bench.3.k">Closer to the best</h3><p class="hm-bench-n"><span data-i18n="home.bench.3.n">0.22</span> <small data-i18n="home.bench.3.vs">vs 0.30 for MT5’s #1</small></p><p data-i18n="home.bench.3.body">Median distance to the best possible configuration on the unseen period, across 500 optimizations with a real edge. 0 is picking the best; 1, picking an average one.</p></li>
+      <li><h3 class="hm-bench-k" data-i18n="home.bench.1.k">False alarms</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">2.7%</p><p data-i18n="home.bench.1.body">Out of 300 optimizations with no real edge at all, 8 got “moderate” or higher, and none “strong”.</p></li>
+      <li><h3 class="hm-bench-k" data-i18n="home.bench.2.k">Edges detected</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">90%</p><p data-i18n="home.bench.2.body">When the real edge was clear, it rated it “moderate” or higher in 36 of 40 cases.</p></li>
+      <li><h3 class="hm-bench-k" data-i18n="home.bench.3.k">Closer to the best</h3><p class="hm-bench-n"><span data-i18n="home.bench.3.n">0.23</span> <small data-i18n="home.bench.3.vs">vs 0.29 for MT5’s #1</small></p><p data-i18n="home.bench.3.body">Median distance to the best possible configuration on the unseen period, across 500 optimizations with a real edge. 0 is picking the best; 1, picking an average one.</p></li>
     </ul>
-    <p class="hm-bench-note" data-i18n-html="home.bench.note"><strong>Where it does not win.</strong> When it sees no plateau, Orometra does not propose one (at most, a tentative suggestion), and the exam counts each of those cases as a miss. That is why a simple rule, averaging each configuration with its neighbors, comes out slightly ahead overall (0.19), and MT5’s #1 beats it in genetic searches and on a grid taken from a real export. It passed 9 of the 11 criteria set in advance. These are simulated data: the test on real optimizations is still pending.</p>
-    <p class="hm-more hm-bench-links"><a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener" data-track="portada-banco-prerregistro" data-i18n="home.bench.prereg">The rules, written in advance (in Spanish) →</a><a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam2.md" target="_blank" rel="noopener" data-track="portada-banco-resultados" data-i18n="home.bench.results">Full results (in Spanish) →</a></p>
+    <p class="hm-bench-note" data-i18n-html="home.bench.note"><strong>Where it does not win.</strong> When it sees no plateau, Orometra does not propose one (at most, a tentative suggestion), and the exam counts each of those cases as a miss. That is why a simple rule, averaging each configuration with its neighbors, comes out slightly ahead overall (0.19), and MT5’s #1 beats it in genetic searches and on a grid taken from a real export. And when the edge exists only in the optimized period, it gives “moderate” or higher in 7 of 100 cases, above the 5% set in advance. It passed 11 of the 13 criteria set in advance. These are simulated data: the test on real optimizations is still pending.</p>
+    <p class="hm-more hm-bench-links"><a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener" data-track="portada-banco-prerregistro" data-i18n="home.bench.prereg">The rules, written in advance (in Spanish) →</a><a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam4.md" target="_blank" rel="noopener" data-track="portada-banco-resultados" data-i18n="home.bench.results">Full results (in Spanish) →</a></p>
   </section>
 
   <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->

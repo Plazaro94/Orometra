@@ -69,8 +69,8 @@ export function holdoutFact(a) {
    * Un resultado "normal" solo confirma la recomendación si el backtest es de ESA
    * configuración: la meseta recomendada (M1) y, si hay informe, con sus mismos
    * parámetros y al menos uno leído. Si no, el contraste es aritméticamente correcto
-   * pero no valida nada, y no puede subir el nivel de evidencia. "En la cola" tampoco:
-   * es un resultado raro para esa configuración, no una confirmación.
+   * pero no valida nada: ni mantiene el nivel con la mención del periodo no visto ni lo
+   * baja. "En la cola" o "fuera de rango" sobre la configuración propuesta sí lo bajan.
    */
   const plateaus = (a && a.plateaus) || [];
   const idx = plateaus.length ? Math.min(state.unseen.plateauIndex || 0, plateaus.length - 1) : -1;
@@ -104,43 +104,44 @@ export function holdoutFact(a) {
 }
 
 /**
- * El motor solo ve el forward, que ya se usó para validar y ordenar las mesetas. Su
- * "sólida" se muestra como "buena" hasta que un periodo no visto no la contradice, y baja a
- * "moderada" si ese periodo va en contra.
+ * El motor califica con el periodo optimizado y el forward, y desde la enmienda del
+ * 2026-10-09 (bench/PREREGISTRO.md) puede dar «buena» y «sólida» sin periodo no visto.
+ * Ese periodo, si se aporta, solo puede mantener el nivel o bajarlo: si va en contra de la
+ * configuración propuesta, «buena» y «sólida» bajan a «moderada»; si no la contradice, el
+ * nivel se queda como está (su contraste detecta poco, core/unseen.js: no sube a nadie).
  */
 export function displayVerdictLevel(a) {
-  let level = a.verdict.level;
-  if (level === 'strong' && a.meta.hasForward) {
-    const h = holdoutFact(a);
-    if (h.against) level = 'moderate';
-    else if (!h.ok) level = 'good';
-  }
+  const level = a.verdict.level;
+  if ((level === 'strong' || level === 'good') && a.meta.hasForward && holdoutFact(a).against) return 'moderate';
   return level;
 }
 
 /**
- * Titular y resumen coherentes con el nivel MOSTRADO, no con el que calculó el
- * motor. displayVerdictLevel() deja la "sólida" del motor en "buena" (o "moderada"),
- * pero a.verdict.headline/summary siguen siendo el texto que el motor generó para
- * "sólida" -- usarlos tal cual contradice al medidor.
+ * Titular y resumen coherentes con el nivel MOSTRADO y con el periodo no visto. Si el
+ * periodo no visto baja el nivel, a.verdict.headline/summary siguen siendo el texto que
+ * el motor generó para «buena» o «sólida»: usarlos tal cual contradice al medidor.
  */
 export function displayVerdictCopy(a) {
   const level = displayVerdictLevel(a);
   const v = a.verdict;
-  if (level === v.level) return { level, headline: v.headline, summary: v.summary };
-  // El titular empieza siempre por el nivel MOSTRADO: la frase más leída no puede
-  // admitir dos lecturas.
-  if (level === 'good') {
-    return {
-      level,
-      headline: L('Evidencia buena: meseta validada en el forward, falta el periodo no visto', 'Good evidence: plateau validated on the forward, unseen period still missing'),
-      summary: L(
-        'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y aguanta al mover los umbrales. Se queda en buena porque el forward ya se usó para validar y ordenar las mesetas: para llegar a sólida falta probarla en un periodo que no hayas tocado.',
-        'The proposed plateau rests on neighbors that also clear your minimums and holds when thresholds are moved. It stays at good because the forward was already used to validate and rank the plateaus: to reach strong it still needs testing on a period you have not touched.',
-      ),
-    };
+  const hold = holdoutFact(a);
+  if (level === v.level) {
+    if ((level === 'strong' || level === 'good') && hold.done && hold.ok) {
+      return {
+        level,
+        headline: level === 'strong'
+          ? L('Evidencia sólida, y el periodo no visto no la contradice', 'Solid evidence, and the unseen period does not contradict it')
+          : L('Evidencia buena, y el periodo no visto no la contradice', 'Good evidence, and the unseen period does not contradict it'),
+        summary: level === 'strong'
+          ? L('La meseta propuesta se apoya en vecinas que también cumplen tus mínimos, aguanta en el forward y la recomendación se mantiene al mover los umbrales. Además, en un periodo que no se usó ni para optimizar ni para validar, su resultado entra en lo habitual de la meseta.',
+            'The proposed plateau rests on neighbors that also clear your minimums, holds on the forward, and the recommendation holds when thresholds are moved. On top of that, on a period used neither to optimize nor to validate, its result falls within the plateau\'s usual range.')
+          : L('La meseta propuesta aguanta en el forward y al mover los umbrales, con un aviso que conviene leer. En un periodo que no se usó ni para optimizar ni para validar, su resultado entra en lo habitual de la meseta; eso no la sube de nivel, porque esa prueba detecta poco.',
+            'The proposed plateau holds on the forward and when thresholds are moved, with one warning worth reading. On a period used neither to optimize nor to validate, its result falls within the plateau\'s usual range; that does not raise its level, because that check detects little.'),
+      };
+    }
+    return { level, headline: v.headline, summary: v.summary };
   }
-  // sólida -> moderada: el periodo no visto va en contra de la configuración propuesta.
+  // buena o sólida -> moderada: el periodo no visto va en contra de la configuración propuesta.
   return {
     level,
     headline: L('Evidencia moderada: el periodo no visto no la confirma', 'Moderate evidence: the unseen period does not confirm it'),
@@ -228,12 +229,17 @@ export function trustLine(a, level) {
       : L(`Hay una meseta, pero con ${critical} limitaciones serias que conviene leer antes de usarla.`,
         `There is a plateau, but with ${critical} serious limitations worth reading before using it.`);
   }
+  const hold = holdoutFact(a);
+  const unseenOk = hold.done && hold.ok;
   if (level === 'good') {
-    return L('Meseta validada en el forward. Para llegar a sólida, falta probarla en un periodo no visto.',
-      'A plateau validated on the forward. To reach strong, it still needs testing on an unseen period.');
+    return unseenOk
+      ? L('Meseta validada en el forward, con un aviso que conviene leer. El periodo no visto no la contradice.',
+        'A plateau validated on the forward, with one warning worth reading. The unseen period does not contradict it.')
+      : L('Meseta validada en el forward y estable al mover los umbrales, con un aviso que conviene leer.',
+        'A plateau validated on the forward and stable when thresholds are moved, with one warning worth reading.');
   }
   if (level === 'moderate') {
-    if (a.verdict.level === 'strong') {
+    if (a.verdict.level === 'strong' || a.verdict.level === 'good') {
       return L('Meseta validada en el forward, pero el periodo no visto no la confirma.',
         'A plateau validated on the forward, but the unseen period does not confirm it.');
     }
@@ -243,8 +249,11 @@ export function trustLine(a, level) {
   }
   // «Sin contradicción», no «confirmada»: la prueba del periodo no visto detecta poco
   // (core/unseen.js) y el siguiente paso lo dice; aquí no se puede decir lo contrario.
-  return L('Lo máximo que estos datos pueden respaldar: una meseta validada en el forward a la que el periodo no visto no contradice.',
-    'The most these data can support: a plateau validated on the forward and not contradicted by the unseen period.');
+  return unseenOk
+    ? L('Lo máximo que estos datos pueden respaldar: una meseta validada en el forward, sin avisos sobre ella, a la que el periodo no visto no contradice.',
+      'The most these data can support: a plateau validated on the forward, with no warnings about it, and not contradicted by the unseen period.')
+    : L('Lo máximo que el periodo optimizado y el forward pueden respaldar: una meseta validada, estable y sin avisos sobre ella. Un periodo no visto puede mantenerla o bajarla.',
+      'The most the optimized period and the forward can support: a validated, stable plateau with no warnings about it. An unseen period can keep it there or lower it.');
 }
 
 /**
@@ -670,7 +679,12 @@ export function renderEvidenceSheet(a, best) {
 export function whyGradeHighlights(a) {
   const findings = a.verdict.findings || [];
   const pros = findings.filter((f) => f.severity === 'ok' || f.severity === 'info').slice(0, 4);
-  const cons = findings.filter((f) => f.severity === 'warn' || f.severity === 'critical').slice(0, 4);
+  // Primero lo que pesa en el nivel (críticos y avisos sobre la meseta) y después los
+  // avisos sobre el orden de la tabla, que no lo bajan: con una «sólida» no puede parecer
+  // que lo de arriba de «En contra» la contradice.
+  const weight = (f) => (f.severity === 'critical' ? 0 : f.scope === 'table' ? 2 : 1);
+  const cons = findings.filter((f) => f.severity === 'warn' || f.severity === 'critical')
+    .map((f, i) => ({ f, i })).sort((x, y) => weight(x.f) - weight(y.f) || x.i - y.i).map((x) => x.f).slice(0, 4);
   return { pros, cons };
 }
 

@@ -12,3 +12,6 @@ Cada `.jsonl` tiene una línea por caso; cada `REPORT-*.md` es su informe (`node
 | `calib-final2` | esta versión | 1-100 | Calibración tras la segunda auditoría |
 | `exam2`, `exam2-40f79b7`, `exam2-c948971` | esta versión / anteriores | 2001-2100 | **Segundo examen, ciego**, con los tres motores |
 | `calib-warn.jsonl` | `2cb1fe5` | 1-100 | Calibración con los avisos de cada caso (`diag.warn`), para estudiar cuándo podría salir «sólida» (2026-10-09) |
+| `calib-v3`, `calib-v3b` | `f799e7d` / `22b4b3d` | 1-100 | Calibración de «buena» y «sólida» por criterios (enmiendas del 2026-10-09) |
+| `exam3`, `exam3-motor-1be66b1` | `f799e7d` / anterior | 3001-3100 | **Tercer examen, ciego**: suspende «buena o sólida» ≤ 2 % en S5 (3 %); el motor anterior, para comparar |
+| `exam4`, `exam4-motor-1be66b1` | `22b4b3d` / anterior | 4001-4100 | **Cuarto examen, ciego**, motor publicado; el anterior, para comparar. Cifras que cita la portada |

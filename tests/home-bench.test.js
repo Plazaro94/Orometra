@@ -1,5 +1,5 @@
 // Las cifras del banco de pruebas que cita la portada (home.bench.*) salen del segundo
-// examen, ciego (bench/results/REPORT-exam2.md). Si el banco cambia, esta prueba falla
+// examen, ciego (bench/results/REPORT-exam4.md). Si el banco cambia, esta prueba falla
 // hasta que se actualice el texto en los dos idiomas.
 //
 //   node tests/home-bench.test.js
@@ -15,8 +15,8 @@ function check(name, cond, detail = '') {
   else { failures++; console.log(`  FAIL ${name}${detail ? ' -> ' + detail : ''}`); }
 }
 
-const md = fs.readFileSync(new URL('../bench/results/REPORT-exam2.md', import.meta.url), 'utf8');
-const num = (re) => { const m = md.match(re); if (!m) throw new Error(`No encuentro ${re} en REPORT-exam2.md`); return Number(m[1]); };
+const md = fs.readFileSync(new URL('../bench/results/REPORT-exam4.md', import.meta.url), 'utf8');
+const num = (re) => { const m = md.match(re); if (!m) throw new Error(`No encuentro ${re} en REPORT-exam4.md`); return Number(m[1]); };
 const row = (name) => {
   const line = md.split('\n').find((l) => l.startsWith(`| ${name} |`));
   if (!line) throw new Error(`No encuentro la fila ${name}`);
@@ -27,7 +27,10 @@ const cases = num(/Casos: (\d+) ·/);
 const noEdgeCases = num(/\| \*\*Total\*\* \| (\d+) \|/);
 const fpPct = num(/\| \*\*Total\*\* \| \d+ \| \*\*([\d.]+) %\*\*/);
 const powerCases = num(/Potencia[^\n]*\n\nCasos: (\d+)/);
-const powerPct = num(/detectados como moderada o sólida: \*\*([\d.]+) %\*\*/);
+const powerPct = num(/detectados como moderada o más: \*\*([\d.]+) %\*\*/);
+const strongPct = num(/\| \*\*Total\*\* \| \d+ \| \*\*[\d.]+ %\*\* \| \*\*[\d.]+ %\*\* \| \*\*([\d.]+) %\*\*/);
+const s5Line = md.split('\n').find((l) => l.startsWith('| S5 | 100 |'));
+const s5Pos = s5Line ? Number(s5Line.split('|')[3].replace('%', '').trim()) : NaN;
 const [oS3, oS4, oS6, oS7, oS8, oAll] = row('Orometra');
 const [b1S3, b1S4, b1S6, b1S7, b1S8, b1All] = row('B1 primera fila MT5');
 const b4All = row('B4 media con vecinas')[5];
@@ -56,6 +59,9 @@ for (const lang of ['en', 'es']) {
   check('dónde no gana: media con vecinas', t('home.bench.note').includes(`(${dec(lang, b4All)})`), t('home.bench.note'));
   const crit = lang === 'es' ? `${passed} de los ${passed + failed}` : `${passed} of the ${passed + failed}`;
   check('criterios aprobados', t('home.bench.note').includes(crit), crit);
+  check('ninguna «sólida» sin ventaja', strongPct === 0 && /(none|ninguna) [«“](strong|sólida)[»”]/.test(t('home.bench.1.body')), `${strongPct}`);
+  const s5 = lang === 'es' ? `${Math.round(s5Pos)} de 100` : `${Math.round(s5Pos)} of 100`;
+  check('S5: moderada o más', s5Pos > 5 && t('home.bench.note').includes(s5), `${s5Pos}`);
 }
 setLocale('en');
 

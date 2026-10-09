@@ -40,7 +40,7 @@ console.log('\n1. Muchas configuraciones');
   let err = null;
   try { a = runAnalysis({ isTable: bigTable(20) }); } catch (e) { err = e; }
   check('160.000 configuraciones se analizan sin caerse', a && !err, err && `${err.name}: ${err.message}`);
-  check('y dan un veredicto', a && ['strong', 'moderate', 'weak', 'insufficient'].includes(a.verdict.level), a && a.verdict.level);
+  check('y dan un veredicto', a && ['strong', 'good', 'moderate', 'weak', 'insufficient'].includes(a.verdict.level), a && a.verdict.level);
   console.log(`       (${Date.now() - t0} ms)`);
 }
 {

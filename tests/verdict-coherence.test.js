@@ -59,11 +59,21 @@ section('AUD-05: un solo nivel de evidencia en pantalla y en el export');
   const { buildReport } = await import('../js/export.js');
   const a = runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable });
   const shown = displayVerdictCopy(a);
-  check('sin periodo no visto se muestra buena', shown.level === 'good', shown.level);
-  check('el titular empieza por el nivel mostrado', /^Evidencia buena/.test(shown.headline), shown.headline);
-  check('el titular no dice "sólida" antes que el nivel', !/^Evidencia sólida/.test(shown.headline));
-  const report = buildReport(a, { shownVerdict: shown });
-  check('el JSON exporta el nivel mostrado', report.verdict.level === 'good', report.verdict.level);
+  // Desde la enmienda del 2026-10-09 el motor da «sólida» sin periodo no visto: lo mostrado
+  // es lo del motor mientras ese periodo no vaya en contra.
+  check('sin periodo no visto se muestra el nivel del motor', shown.level === a.verdict.level && a.verdict.level === 'strong', shown.level);
+  check('el titular empieza por el nivel mostrado', /^Evidencia sólida/.test(shown.headline), shown.headline);
+  const { state } = await import('../js/ui-state.js');
+  state.unseen = { result: { level: 'tail' } };
+  const against = displayVerdictCopy(a);
+  check('si el periodo no visto va en contra, baja a moderada', against.level === 'moderate', against.level);
+  check('y el titular lo dice', /^Evidencia moderada: el periodo no visto no la confirma/.test(against.headline), against.headline);
+  state.unseen = { result: { level: 'normal' } };
+  const ok = displayVerdictCopy(a);
+  check('si no la contradice, se queda en sólida (no sube ni baja)', ok.level === 'strong' && /no la contradice/.test(ok.headline), ok.headline);
+  state.unseen = null;
+  const report = buildReport(a, { shownVerdict: against });
+  check('el JSON exporta el nivel mostrado', report.verdict.level === 'moderate', report.verdict.level);
   check('el JSON conserva el nivel del motor aparte', report.verdict.engineLevel === a.verdict.level);
 }
 

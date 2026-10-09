@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-10-09 — «Sólida» sin periodo no visto, medida en el banco
+
+- **El problema:** con exports reales de MT5 el nivel no podía pasar de «moderada».
+  «Sólida» exigía cero avisos, y el aviso de que MT5 solo reexporta al forward las mejores
+  pasadas sale en todo export real. «Buena» solo se veía en el ejemplo, cuyo forward trae
+  todas las filas. En el banco, 0 «sólidas» en el segundo examen.
+- **Motor** (`core/verdict.js`): los avisos que miden el orden de la tabla y no la meseta
+  (ranking de MT5, orden de la nota de Orometra entre periodos, transferencia del ranking,
+  asimetría entre periodos, valores que se invierten por parámetro, preselección del
+  forward) se siguen mostrando, pero no cuentan para los niveles altos. «Sólida»: sin
+  críticos, meseta con configuraciones probadas en el forward, búsqueda repetida moviendo
+  los umbrales y ningún aviso sobre la meseta. «Buena»: lo mismo con un aviso, si la
+  recomendación aguanta al menos el 80 % de las variaciones de umbral. La elección de la
+  configuración no cambia. Dos textos de avisos ajustados a lo que miden.
+- **Periodo no visto** (`js/ui-verdict.js`): mantiene el nivel («Evidencia sólida, y el
+  periodo no visto no la contradice») o lo baja a «moderada» si va en contra; nunca lo
+  sube. Un informe de otra configuración no cambia nada.
+- **Banco** (`bench/PREREGISTRO.md`, dos enmiendas): criterios nuevos «sólida» ≤ 1 % y
+  «buena o sólida» ≤ 2 % en cada escenario sin ventaja. El tercer examen (3001-3100)
+  suspendió el segundo en S5 (3 %) y se publica tal cual; «buena» se endureció y el cuarto
+  examen (4001-4100, ciego) aprueba los criterios nuevos: «sólida» 0 % y «buena o sólida»
+  1 % como máximo sin ventaja; con ventaja, 52 «buena» y 24 «sólida» de 500; ventaja real
+  media de la elegida 0,178 (moderada) < 0,219 (buena) < 0,239 (sólida). Suspende dos
+  criterios que ya suspendía el motor anterior con esas semillas: «moderada o más» en S5
+  (7 %) y la elección frente a la media con vecinas (0,227 frente a 0,192).
+- **Portada:** la sección del banco cita ahora el cuarto examen (falsas alarmas 2,7 % y
+  ninguna «sólida», ventajas detectadas 90 %, 0,23 frente a 0,29 de la n.º 1 de MT5) y
+  añade el punto débil de S5. El ejemplo de la tarjeta, la metodología, la guía del
+  forward y el README describen los niveles nuevos. Pruebas: `tests/levels.test.js` y
+  las de coherencia del veredicto.
+
 ## 2026-10-09 — Portada: cifras del banco de pruebas y foto del cierre más ligera
 
 - **Sección nueva en la portada, «Puesto a prueba donde se sabe la respuesta»**, entre la
