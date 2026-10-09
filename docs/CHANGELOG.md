@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-10-09 — Metodología al día con el motor, y un fallo de la estabilidad corregido
+
+- **Fallo corregido** (`core/analysis.js`): al repetir la búsqueda moviendo nuestros umbrales
+  un ±20 %, la fracción mínima de vecinas que cumplen (0,9) se multiplicaba por el factor y
+  por encima de ×1,111 pedía más del 100 %. Esas 9 de 50 repeticiones nunca encontraban
+  meseta, así que la estabilidad no pasaba de 0,82 (y el dibujo de Metodología, «48 / 50»,
+  era imposible). Ahora se mueve lo que le falta para 1 (entre 0,88 y 0,92). Salió al
+  documentar el motor, no al mirar resultados.
+- **Banco:** enmienda en `bench/PREREGISTRO.md` y quinto examen ciego (5001-5100). Aprueba
+  los criterios de «buena» y «sólida» (ninguna «sólida» sin ventaja; «buena» 2 % en S5, en
+  el límite) y suspende tres que el motor anterior suspende igual con esas semillas
+  («moderada o más» en S5, 8 %; media con vecinas, 0,198 frente a 0,228; S8 más de 0,10
+  peor que la n.º 1 de MT5). La portada cita ahora este examen.
+- **Metodología reescrita** contra el código, en lenguaje de trader (ES y EN): cómo se
+  puntúa la calidad (escala desde tus mínimos, media geométrica, qué pesa más); qué es
+  vecina y qué hace falta para una meseta; el forward con sus cifras (80 % y 65 %, las
+  configuraciones sin forward no cuentan como validadas); el contraste del azar como
+  adaptación y el resto de comprobaciones que el informe enseña; los umbrales de la
+  estabilidad; los avisos de la tabla que no bajan el nivel; el periodo no visto comparado
+  con la meseta, que solo mantiene o baja el nivel y cuánto detecta. Sección nueva «Cómo
+  sabemos que funciona» con las cifras del último examen y dónde falla, y tres límites más
+  en «Lo que no hace». `tests/home-bench.test.js` vigila también esas cifras.
+
 ## 2026-10-09 — «Sólida» sin periodo no visto, medida en el banco
 
 - **El problema:** con exports reales de MT5 el nivel no podía pasar de «moderada».

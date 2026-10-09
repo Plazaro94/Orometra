@@ -1,5 +1,5 @@
 // Las cifras del banco de pruebas que cita la portada (home.bench.*) salen del segundo
-// examen, ciego (bench/results/REPORT-exam4.md). Si el banco cambia, esta prueba falla
+// examen, ciego (bench/results/REPORT-exam5.md). Si el banco cambia, esta prueba falla
 // hasta que se actualice el texto en los dos idiomas.
 //
 //   node tests/home-bench.test.js
@@ -15,8 +15,8 @@ function check(name, cond, detail = '') {
   else { failures++; console.log(`  FAIL ${name}${detail ? ' -> ' + detail : ''}`); }
 }
 
-const md = fs.readFileSync(new URL('../bench/results/REPORT-exam4.md', import.meta.url), 'utf8');
-const num = (re) => { const m = md.match(re); if (!m) throw new Error(`No encuentro ${re} en REPORT-exam4.md`); return Number(m[1]); };
+const md = fs.readFileSync(new URL('../bench/results/REPORT-exam5.md', import.meta.url), 'utf8');
+const num = (re) => { const m = md.match(re); if (!m) throw new Error(`No encuentro ${re} en REPORT-exam5.md`); return Number(m[1]); };
 const row = (name) => {
   const line = md.split('\n').find((l) => l.startsWith(`| ${name} |`));
   if (!line) throw new Error(`No encuentro la fila ${name}`);
@@ -62,6 +62,14 @@ for (const lang of ['en', 'es']) {
   check('ninguna «sólida» sin ventaja', strongPct === 0 && /(none|ninguna) [«“](strong|sólida)[»”]/.test(t('home.bench.1.body')), `${strongPct}`);
   const s5 = lang === 'es' ? `${Math.round(s5Pos)} de 100` : `${Math.round(s5Pos)} of 100`;
   check('S5: moderada o más', s5Pos > 5 && t('home.bench.note').includes(s5), `${s5Pos}`);
+  // Metodología cita las mismas cifras («Cómo sabemos que funciona»).
+  const m1 = t('doc.method.bench.1');
+  check('metodología: falsas alarmas', m1.includes(` ${falseAlarms} `) && m1.includes(String(noEdgeCases)), m1);
+  check('metodología: ventajas detectadas', t('doc.method.bench.2').includes(of), t('doc.method.bench.2'));
+  check('metodología: elección', t('doc.method.bench.3').includes(dec(lang, oAll)) && t('doc.method.bench.3').includes(dec(lang, b1All)));
+  const m2 = t('doc.method.bench.p2');
+  check('metodología: criterios, S5 y media con vecinas', m2.includes(crit) && m2.includes(s5) && m2.includes(dec(lang, b4All)), m2);
+  check('metodología: enlaza al mismo examen', m2.includes('REPORT-exam5.md'));
 }
 setLocale('en');
 
@@ -70,6 +78,7 @@ check('Orometra gana a la n.º 1 de MT5 en el total', oAll < b1All);
 check('la media con vecinas queda por delante en el total', b4All < oAll);
 check('la n.º 1 de MT5 gana en genética (S7) y en la rejilla real (S8)', b1S7 < oS7 && b1S8 < oS8);
 check('y en el resto, no', oS3 <= b1S3 && oS4 <= b1S4 && oS6 <= b1S6);
+check('metodología: en la rejilla real (S8) la n.º 1 de MT5 le gana por más de 0,10', oS8 - b1S8 > 0.10, `${oS8} frente a ${b1S8}`);
 check('«por eso»: con la sugerencia orientativa, gana en S7, S8 y a la media con vecinas',
   fb && Number(fb[1]) < b1S7 && Number(fb[2]) < b1S8 && Number(fb[3]) < b4All, fb ? fb.slice(1).join(' ') : 'sin línea');
 

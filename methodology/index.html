@@ -31,7 +31,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261009a">
+<link rel="stylesheet" href="../styles.css?v=20261009c">
 <script src="../js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -133,14 +133,16 @@
       <span class="lp-method-num">03</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s3.title">Quality without the Result column</h2>
-        <p data-i18n="doc.method.s3.body">Result is whatever you asked MT5 to optimize, so it is biased in its own favor. The engine measures quality with several objective metrics at once (profit factor, recovery, Sharpe, drawdown, trades), so a configuration does not win just by standing out in one of them.</p>
+        <p data-i18n="doc.method.s3.body">Result is whatever you asked MT5 to optimize, so it is biased in its own favor. The engine scores each configuration from 0 to 1 with several metrics at once: profit factor, drawdown, recovery factor, Sharpe ratio and number of trades. Each metric is measured on a scale that starts from your minimums (a profit factor of 1 scores zero; 0.3 above your minimum or more scores the maximum), and then they are combined with a geometric mean: one bad metric cannot be offset by a good one. Risk (drawdown) weighs the most, then return and efficiency, and last the number of trades. A configuration that loses money scores zero.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="mesetas">
       <span class="lp-method-num">04</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s4.title">Plateaus, not peaks</h2>
-        <p data-i18n="doc.method.s4.body">For each configuration it checks its neighbors, measured in steps of your grid (from 30 to 50, or from 0.1 to 0.2, is one step). A plateau is a connected zone where the neighbors also clear your minimums. Isolated peaks are rejected. Inside the plateau it picks the configuration with the best combined rank in-sample and forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau and there is a forward, it gives a tentative suggestion by the same rule and says so. In our blind benchmark it beats picking the pass MT5 lists first (highest in-sample profit), the best forward row, the rank sum and random choice; it narrowly loses to “average with neighbors” when every case without a plateau counts as a miss (with the tentative suggestion, it wins).</p>
+        <p data-i18n="doc.method.s4.body">For each configuration it looks at its neighbors: those one, two or three steps away on your grid, adding up the steps across parameters (from 30 to 35, or from 0.1 to 0.2, is one step). The radius only grows until the typical configuration has about eight neighbors. Only the parameters that really change the result count; yes/no and text parameters must match, and those that barely matter are ignored. And only the neighbors you actually tested count: missing ones are never made up.</p>
+        <p data-i18n="doc.method.s4.body2">A plateau is a connected zone of at least three configurations that clear your minimums and whose neighbors respond too: each has at least four tested neighbors, at least 90% of them clear your minimums, three out of four have at least acceptable quality, and the point does not stick out sharply above them. Isolated peaks are rejected, and the report tells you why (too few neighbors, a sharp drop next to it, a peak that sticks out too much…).</p>
+        <p data-i18n="doc.method.s4.body3">Inside the plateau it picks the configuration with the best combined rank in-sample and forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau and there is a forward, it gives a tentative suggestion by the same rule and says so. In our blind benchmark this choice lands closer to the best possible configuration than the pass MT5 lists first, the best forward row, the rank sum and random choice. It narrowly loses to “average with neighbors” when every case without a plateau counts as a miss (with the tentative suggestion, it wins), and in genetic searches and on a grid taken from a real export, MT5’s #1 comes out ahead.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -168,21 +170,23 @@
       <span class="lp-method-num">05</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s5.title">The forward confirms or demotes</h2>
-        <p data-i18n="doc.method.s5.body">Plateaus are found with the in-sample only. Then the forward puts them to the test: the plateau’s configurations must clear your minimums again, and their quality is compared. If many fail, the plateau drops in rank and you are warned. Your minimums are required in each period separately, so a good forward cannot hide a weak in-sample, or the other way around. The two periods’ ranks are added together only to choose within an already validated plateau.</p>
+        <p data-i18n="doc.method.s5.body">Plateaus are found with the in-sample only. Then the forward puts them to the test: the plateau’s configurations must clear your minimums again. MT5 only sends the best passes to the forward (the top 10% in a complete search and the top 25% in a genetic one), so many configurations have no forward: they count as not validated, never as passed.</p>
+        <p data-i18n="doc.method.s5.body2">If fewer than 80% of the plateau’s configurations that have a forward clear your minimums there, you get a warning; below 65%, it is a serious limitation and the level drops to weak. A plateau with many unvalidated configurations also drops in rank. Your minimums are required in each period separately, so a good forward cannot hide a weak in-sample, or the other way around, and the forward’s minimum number of trades is scaled to its length (never below 30). The two periods’ ranks are added together only to choose within an already validated plateau.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step" id="suerte">
       <span class="lp-method-num">06</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s6.title">It estimates how much could be chance</h2>
-        <p data-i18n="doc.method.s6.body">Test thousands of configurations and some will look great by pure chance. The engine computes the best Sharpe you would expect from luck alone with that many trials and compares it with yours. If yours does not beat it, the report flags it as critical: the top result may be nothing but noise. Beating it is necessary, not sufficient: it rules out that the result comes only from trying a lot, but it does not validate the strategy.</p>
+        <p data-i18n="doc.method.s6.body">Test thousands of configurations and some will look great by pure chance. The engine computes the best Sharpe ratio you would expect from luck alone, given how much the Sharpe ratios of your passes vary and how many distinct trials you ran, and compares it with your best one (the forward’s, if there is one). Near-identical configurations do not count as independent trials: those a few steps apart are grouped together. If your best result does not clear that bar, it is a serious limitation: the top result may be nothing but noise. Clearing it is necessary, not sufficient. It is an adaptation of the Bailey and López de Prado test, not their published Deflated Sharpe Ratio.</p>
+        <p data-i18n="doc.method.s6.body2">It also looks at your table the way MT5 ranks it: how often the best configuration of one period falls below the middle of the table in the other (what the report calls “how often MT5’s ranking fails”), whether what does well in-sample tends to do well in the forward, whether a parameter wins in one period with a value that loses in the other, whether the proposed configuration sits on the edge of the tested range, and how many trades there are per optimized parameter: below 50, everything is provisional; below 15, the surface is mostly noise.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="umbrales">
       <span class="lp-method-num">07</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s7.title">It tests itself</h2>
-        <p data-i18n="doc.method.s7.body">What the engine requires to call something a plateau (minimum quality, robustness, support, size…) are our decisions, not laws. To check that the recommendation does not depend on them, the search is repeated 50 times moving them by up to ±20%, and it counts how often the same plateau still wins. The same is done, with fewer repetitions, moving your minimums (with very large files this second test is skipped, and you are told). If a recommendation only appears with the exact numbers, it is not a recommendation.</p>
+        <p data-i18n="doc.method.s7.body">What the engine requires to call something a plateau (minimum quality, robustness, number of neighbors, size…) are our decisions, not laws. To check that the recommendation does not depend on them, the search is repeated 50 times moving them by up to ±20%, first one at a time and then all together, and it counts how often the winning configuration still falls inside the same plateau. Above 80% is fine; between 50% and 80%, you get a warning; below 50%, it is a serious limitation. The same is done, with fewer repetitions, moving your minimums (with very large files this second test is skipped, and you are told). If a recommendation only appears with the exact numbers, it is not a recommendation.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -210,7 +214,7 @@
       <span class="lp-method-num">08</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s8.title">What each evidence level means</h2>
-        <p data-i18n="doc.method.s8.body">The verdict grades how much your data back the recommendation, not your EA. None of the levels means “go trade”.</p>
+        <p data-i18n="doc.method.s8.body">The verdict grades how much your data back the recommendation, not your EA. None of the levels means “go trade”. Warnings about the order of your MT5 table (the top pass of one period does not hold in the other, MT5 only sent the best passes to the forward…) are always shown, but they do not lower the level: they judge the ranking, not the plateau.</p>
         <dl class="doc-levels" data-i18n="doc.method.levels.aria" data-i18n-attr="aria-label" aria-label="Evidence levels">
           <div class="doc-level doc-level-strong"><dt data-i18n="doc.method.level.strong.name">Strong</dt><dd data-i18n="doc.method.level.strong.body">A plateau validated on the forward that keeps winning when the engine’s thresholds are moved, with no warnings about it. The most the optimized period and the forward can back. If you add an unseen period, it stays strong unless that period goes against it.</dd></div>
           <div class="doc-level doc-level-good"><dt data-i18n="doc.method.level.good.name">Good</dt><dd data-i18n="doc.method.level.good.body">The same, but with one warning about the plateau worth reading (for example, it sits on the edge of the tested range).</dd></div>
@@ -224,7 +228,8 @@
       <span class="lp-method-num">09</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s9.title">The acid test: your backtest on unseen data</h2>
-        <p data-i18n="doc.method.s9.body">The cleanest check is to test the configuration on a period you used neither to optimize nor to validate. Drop that backtest report into the app and it tells you whether the result is normal for your EA, with a Monte Carlo over your own trades; it warns you if there are too few trades to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
+        <p data-i18n="doc.method.s9.body">The cleanest check is to test the configuration on a period you used neither to optimize nor to validate. Drop that backtest report into the app: it checks that the parameters are those of the proposed configuration and compares each metric with what is usual for its plateau, adjusted to the length of the period. The result is within the usual range, in the tail or out of range.</p>
+        <p data-i18n="doc.method.s9.body2">That check can only keep the level or lower it, never raise it, because it detects little: in our benchmark, when the edge is gone it warns in 35–45% of cases depending on the length of the period, and with the edge intact it raises a false alarm in 24–30%. On the trades of that report it also runs a Monte Carlo that respects streaks (it resamples your trading days in blocks), warns you if there are too few trades to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -260,6 +265,19 @@
     </section>
   </div>
 
+  <section class="lp-doc-block doc-bench" id="banco" aria-labelledby="doc-bench-title">
+    <h2 id="doc-bench-title" data-i18n="doc.method.bench.title">How we know it works</h2>
+    <p data-i18n="doc.method.bench.p1">Before every change to the engine is published, it goes through a benchmark: simulated optimizations shaped like an MT5 export in which we know the truth, because we put it there. There are cases with no real edge at all, pure overfitting (the edge exists only in the in-sample), a regime change, genetic searches and a grid taken from a real export. The pass marks were written down before seeing any result, and each exam is blind, on new cases.</p>
+    <p data-i18n="doc.method.bench.intro">In the latest exam, 800 optimizations:</p>
+    <ul class="lp-list">
+      <li data-i18n-html="doc.method.bench.1"><strong>False alarms.</strong> Out of 300 optimizations with no real edge, 10 got “moderate” or higher, and none “strong”.</li>
+      <li data-i18n-html="doc.method.bench.2"><strong>Edges detected.</strong> When the real edge was clear, “moderate” or higher in 34 of 40 cases.</li>
+      <li data-i18n-html="doc.method.bench.3"><strong>The choice.</strong> On the unseen period, the chosen configuration lands a median 0.23 away from the best possible one, versus 0.29 for MT5’s #1 (0 is picking the best; 1, picking an average one).</li>
+      <li data-i18n-html="doc.method.bench.4"><strong>Consistent levels.</strong> The higher the level, the better the chosen configuration really is.</li>
+    </ul>
+    <p data-i18n-html="doc.method.bench.p2">And where it fails: it passed 10 of the 13 criteria. When the edge exists only in the in-sample, it gives “moderate” or higher in 8 of 100 cases, above the 5% set in advance; averaging each configuration with its neighbors comes out slightly ahead overall (0.20 versus 0.23); and on the grid taken from a real export, MT5’s #1 beats it by more than allowed. These are simulated data: the test on real MT5 optimizations is still pending. <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener">The rules, written in advance</a> and <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam5.md" target="_blank" rel="noopener">the full results</a> are public (in Spanish).</p>
+  </section>
+
   <section class="lp-doc-block doc-limits" id="limites" aria-labelledby="doc-lim-title">
     <h2 id="doc-lim-title" data-i18n="doc.method.lim.title">What it does not do</h2>
     <ul class="lp-list">
@@ -267,8 +285,10 @@
       <li data-i18n="doc.method.lim.2">It does not tell you to buy, sell or fund an EA: evidence is not permission to trade.</li>
       <li data-i18n="doc.method.lim.3">It does not judge the EA’s logic, the quality of the price history or the spread and commission of your backtest: if the source backtest is optimistic, it stays optimistic here.</li>
       <li data-i18n="doc.method.lim.4">The forward is already used to validate and rank plateaus, so it is not a blind period: the cleanest check is an unseen period.</li>
-      <li data-i18n="doc.method.lim.5">It does not compute classic PBO, Reality Check or SPA: MT5 exports do not include the equity curves those tests need.</li>
+      <li data-i18n="doc.method.lim.5">It does not compute classic PBO, Reality Check or SPA, nor the Deflated Sharpe Ratio as published: MT5 exports do not include the equity curves they need. The test in step 6 is an adaptation and is called one.</li>
       <li data-i18n="doc.method.lim.6">With many parameters or a genetic search (not a full grid), neighborhood and plateau size are capped conservatively: it may fall short, never invent support, and you are told.</li>
+      <li data-i18n="doc.method.lim.7">Distances are measured in steps of your grid, not in values: if the steps are very uneven (for example 5, 10, 50), you are warned.</li>
+      <li data-i18n="doc.method.lim.8">It has been validated on simulated optimizations; the test on real MT5 optimizations with an unused period is still pending.</li>
     </ul>
   </section>
 

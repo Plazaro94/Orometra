@@ -1515,8 +1515,13 @@ tr.sel td{color:var(--text-2)}
 .doc-level-moderate{border-left-color:var(--lv-3)}
 .doc-level-weak{border-left-color:var(--lv-2)}
 .doc-level-insufficient{border-left-color:var(--lv-1)}
-.doc-limits{margin-top:40px;max-width:760px;scroll-margin-top:16px}
-.doc-limits h2{font-size:clamp(22px,2.4vw,28px);margin:0 0 14px;color:var(--text-hi);letter-spacing:-.02em}
+.doc-limits,.doc-bench{margin-top:40px;max-width:760px;scroll-margin-top:16px}
+.doc-limits h2,.doc-bench h2{font-size:clamp(22px,2.4vw,28px);margin:0 0 14px;color:var(--text-hi);letter-spacing:-.02em}
+/* Cómo sabemos que funciona: las cifras del banco y, debajo, dónde falla. */
+.doc-bench p{color:var(--text-2);line-height:1.65}
+.doc-bench a{color:var(--ok-text);font-weight:600;text-underline-offset:3px}
+.doc-bench a:hover{color:var(--ok-hi)}
+.doc-bench li strong{color:var(--text-hi)}
 
 .lp-claims{
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
@@ -1577,6 +1582,8 @@ tr.sel td{color:var(--text-2)}
 }
 .lp-method-step-text{min-width:0;order:2}
 .lp-method-step-text p{margin-bottom:0}
+/* Pasos con varios párrafos (y la sección del banco): aire entre ellos. */
+.lp-method-step-text p + p,.doc-bench p + p,.doc-bench .lp-list + p,.doc-bench p + .lp-list{margin-top:14px}
 /* La imagen va siempre al lado exterior, opuesto al borde donde se ancla el bloque:
    despues del texto en los pasos anclados a la izquierda (impares), antes del
    numero+texto en los anclados a la derecha (pares) -- asi el numero nunca deja de
