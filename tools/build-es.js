@@ -172,6 +172,7 @@ function build(file, enPath, esPath, page) {
   html = setMeta(html, /<meta name="twitter:title"[^>]*>/, title);
   html = setMeta(html, /<meta name="twitter:description"[^>]*>/, desc);
   html = setMeta(html, /<meta property="og:locale"[^>]*>/, 'es_ES');
+  html = setMeta(html, /<meta property="og:url"[^>]*>/, `${ORIGIN}${esPath}`);
   html = setMeta(html, /<meta property="og:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg?v=13`);
   html = setMeta(html, /<meta name="twitter:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg?v=13`);
   html = html.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}${esPath}">`);

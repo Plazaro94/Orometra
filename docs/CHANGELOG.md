@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-09 — Buscadores y redes: fechas del sitemap y etiquetas que faltaban
+
+- **Sitemap:** 18 direcciones seguían con fecha del 29 de septiembre aunque la portada,
+  Metodología, Privacidad, Quiénes somos y las guías han cambiado esta semana (las guías decían
+  «modificado el 8 de octubre» en sus datos estructurados). Ahora cada fecha es la del último
+  cambio real de contenido.
+- **og:url** en todas las páginas indexables (y su versión española la suya, desde
+  `tools/build-es.js`), y **og:type** en Quiénes somos, Metodología y Privacidad.
+- Prueba nueva (`tests/seo.test.js`): cada página indexable en el sitemap y al revés, canonical
+  y og:url propios, versiones de idioma enlazadas en los dos sentidos y la fecha del sitemap
+  nunca anterior a la que declara la guía. Con el sitemap anterior falla en 12 comprobaciones.
+- Sin cambiar: títulos y descripciones algo largos (Google los recorta); tocarlos afecta al
+  posicionamiento y el beneficio es pequeño.
+
 ## 2026-10-09 — Quiénes somos, Privacidad y aviso legal: lo que dicen, exacto
 
 - **Aviso legal de la app:** se mostraba al visitante una nota interna («estos textos son
