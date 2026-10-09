@@ -529,7 +529,7 @@ export function renderVerdict(a) {
           <h3>${L('Qué les pasa a tus mejores', 'What happens to your best ones')}</h3>
           <div data-chart="degradation">${degradationChart(a)}</div>
           <p class="chart-note">${L(
-            'Las configuraciones, en diez grupos según su puesto en la optimización (D10 = tu 10 % mejor). Si D10 no destaca en la validación, el orden de MT5 no predice nada.',
+            'Las configuraciones, en diez grupos según su puesto en la optimización (D10 = tu 10\u00A0% mejor). Si D10 no destaca en la validación, el orden de MT5 no predice nada.',
             'Configurations in ten groups by their optimization rank (D10 = your best 10%). If D10 does not stand out on validation, the MT5 order predicts nothing.',
           )}</p>
         </div>
@@ -588,7 +588,7 @@ export function renderEvidenceSheet(a, best) {
     : '—';
   if (sc && sc.usable && Number.isFinite(sc.coverageSearch)) {
     covTxt += L(
-      ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)} %`,
+      ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)}\u00A0%`,
       ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)}%`,
     );
   }

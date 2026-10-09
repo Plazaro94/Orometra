@@ -22,7 +22,7 @@ const DEFS = {
     en: 'Selection rule inside the plateau: each configuration\'s rank on the optimized period plus its forward rank, both averaged with its neighbors. It uses both periods without letting one decide alone, and averaging with neighbors removes single-point luck. A configuration MT5 did not pass to the forward counts as last on the forward: there is no evidence outside the optimized period in its favor.',
   },
   q10: {
-    es: 'La calidad de las configuraciones más flojas de la meseta: solo un 10 % de ellas queda por debajo. Es una medida prudente de lo peor que puede pasar dentro de la zona.',
+    es: 'La calidad de las configuraciones más flojas de la meseta: solo un 10\u00A0% de ellas queda por debajo. Es una medida prudente de lo peor que puede pasar dentro de la zona.',
     en: 'The quality of the plateau\'s weakest configurations: only 10% of them fall below it. A cautious measure of the worst that can happen inside the zone.',
   },
   q25: {
@@ -34,12 +34,16 @@ const DEFS = {
     en: 'How often the best row of one period falls to the bottom half in the other. If it is high, the MT5 table order depends on which period you look at and is no use for choosing.',
   },
   effectiveTrials: {
-    es: 'Número de partes distintas del espacio de parámetros probadas, contando vecinos cercanos como una sola prueba en vez de varias independientes.',
+    es: 'Número de partes distintas del espacio de parámetros probadas, contando las configuraciones vecinas como una sola prueba en vez de varias independientes.',
     en: 'Number of distinct areas of the parameter space tested, counting nearby neighbors as a single trial instead of several independent ones.',
   },
   sampling: {
     es: 'Cómo cubrió la optimización el espacio de parámetros: rejilla completa (prueba todas las combinaciones), parcial, o dispersa (algoritmo genético, que concentra las pruebas donde ya iba bien).',
     en: 'How the optimization covered the parameter space: full grid (every combination tested), partial, or sparse (genetic algorithm, which concentrates trials where things already looked good).',
+  },
+  core: {
+    es: 'Las configuraciones de la meseta que la cumplen con más margen: sus vecinas tienen buena calidad (0,58 o más en tres de cada cuatro) y su robustez llega a 65. La recomendada se elige entre ellas si hay al menos tres.',
+    en: 'The plateau configurations that meet it with the most margin: their neighbors have good quality (0.58 or more in three out of four) and their robustness reaches 65. The recommended one is chosen among them if there are at least three.',
   },
   coherence: {
     es: 'Cuánto varía la calidad entre las configuraciones que forman la meseta. Poca variación = zona pareja.',
@@ -50,7 +54,7 @@ const DEFS = {
     en: 'A 0-to-1 score Orometra gives each configuration from several metrics at once (profit factor, drawdown, recovery factor, Sharpe and trades), not from the Result column you optimized.',
   },
   retention: {
-    es: 'Calidad en el periodo de validación (forward) dividida entre la calidad en el periodo optimizado, en la mediana de la meseta. 100 % es que no pierde nada al salir de los datos con los que se optimizó.',
+    es: 'Calidad en el periodo de validación (forward) dividida entre la calidad en el periodo optimizado, en la mediana de la meseta. 100\u00A0% es que no pierde nada al salir de los datos con los que se optimizó.',
     en: 'Quality on the validation period (forward) divided by quality on the optimized period, at the plateau median. 100% means it loses nothing once outside the data it was optimized on.',
   },
   robustness: {

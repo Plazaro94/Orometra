@@ -38,7 +38,7 @@ const fb = md.match(/Con sugerencia orientativa[^\n]*S7 ([\d.]+) · S8 ([\d.]+) 
 const passed = (md.match(/\| APROBADO \|/g) || []).length;
 const failed = (md.match(/\| \*\*SUSPENDIDO\*\* \|/g) || []).length;
 
-const fp = (lang, x, d) => (lang === 'es' ? `${x.toFixed(d).replace('.', ',')} %` : `${x.toFixed(d)}%`);
+const fp = (lang, x, d) => (lang === 'es' ? `${x.toFixed(d).replace('.', ',')}\u00A0%` : `${x.toFixed(d)}%`);
 const dec = (lang, x) => (lang === 'es' ? x.toFixed(2).replace('.', ',') : x.toFixed(2));
 const falseAlarms = Math.round((fpPct / 100) * noEdgeCases);
 const detected = Math.round((powerPct / 100) * powerCases);

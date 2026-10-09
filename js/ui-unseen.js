@@ -289,8 +289,8 @@ export function renderTradesAudit() {
   const losing = sufficient && Number.isFinite(sa.sharpe) && sa.sharpe < 0;
   const sampleRow = `<div class="evidence-list">
       <div><span>${L('Días de datos', 'Days of data')}</span><strong>${int(sa.n)}</strong></div>
-      <div><span>${L('Potencia (¿se distingue de cero?)', 'Power (distinguishable from zero?)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable && sa.reason !== 'few_days' ? pct(sa.power.power) : '—'}</strong></div>
-      <div><span>${L('Intervalo de confianza del resultado diario medio', 'Confidence interval of the average daily result')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 2)} &ndash; ${num(sa.meanCi.ci.p95, 2)}` : '—'}</strong></div>
+      <div><span>${L('¿Se distingue de cero? (potencia)', 'Distinguishable from zero? (power)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable && sa.reason !== 'few_days' ? pct(sa.power.power) : '—'}</strong></div>
+      <div><span>${L('Resultado diario medio (intervalo del 90&nbsp;%)', 'Average daily result (90% interval)')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 2)} &ndash; ${num(sa.meanCi.ci.p95, 2)}` : '—'}</strong></div>
     </div>
     <p class="chart-note">${sa.reason === 'few_days'
       ? L(
@@ -362,7 +362,7 @@ export function renderTradesAudit() {
     </table></div>
     <p class="chart-note">${L(
       `Resta a cada operación un coste extra (spread, slippage y comisión juntos) proporcional a su tamaño:
-      1 pb (punto básico, 0,01 % del precio) es ~1 pip en EURUSD o ~0,20 en el oro a 2.000. El valor de cada
+      1 pb (punto básico, 0,01\u00A0% del precio) es ~1 pip en EURUSD o ~0,20 en el oro a 2.000. El valor de cada
       movimiento de precio se deduce de tus propias operaciones, así que el coste crece con el lote como el
       real. Son escenarios orientativos, no los costes exactos de tu bróker: preguntan qué pasa si tus costes
       en vivo son peores que los que usaste al probar.${beText}`,
@@ -594,7 +594,7 @@ export function renderUnseen(a) {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>
       <div class="table-wrap"><table class="u-table stack-table">
-        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango de su meseta, ajustado a tu tramo', 'Range of its plateau, adjusted to your segment')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
+        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango de su meseta, ajustado a tu tramo', 'Range of its plateau, adjusted to your segment')}</th><th>${L('Habitual (80&nbsp;% central)', 'Typical (middle 80%)')}</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
       <p class="chart-note">

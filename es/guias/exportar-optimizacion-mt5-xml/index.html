@@ -33,14 +33,14 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261009e">
+<link rel="stylesheet" href="/styles.css?v=20261009g">
 <script type="application/ld+json" data-ld="guide-export">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Cómo exportar los resultados de la optimización de MT5 a XML","description":"Paso a paso: cómo exportar a XML los resultados de la optimización y del forward del probador de estrategias de MetaTrader 5, y los errores que estropean el análisis.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/","url":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Cómo exportar los resultados de la optimización de MT5 a XML","item":"https://orometra.com/es/guias/exportar-optimizacion-mt5-xml/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
 
-<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
+<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
 <header class="lp-top">
   <div class="lp-shell">
   <a class="lp-brand" href="/es/">
@@ -101,7 +101,7 @@
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.export.s3.title">Exporta los resultados del forward</h2>
-    <p data-i18n-html="guide.export.s3.p1">Si activaste el Forward, hay otra pestaña con una segunda tabla: los resultados del forward. Expórtala igual, por ejemplo como <code>EURUSD-H1-2020-2024-forward.xml</code>. Tiene menos filas que la primera, porque MT5 solo vuelve a probar en el forward las mejores pasadas de la optimización, ordenadas por tu criterio: el 10 % mejor con el algoritmo completo y el 25 % con el genético, según la ayuda de MT5, que además fija un número mínimo de pasadas.</p>
+    <p data-i18n-html="guide.export.s3.p1">Si activaste el Forward, hay otra pestaña con una segunda tabla: los resultados del forward. Expórtala igual, por ejemplo como <code>EURUSD-H1-2020-2024-forward.xml</code>. Tiene menos filas que la primera, porque MT5 solo vuelve a probar en el forward las mejores pasadas de la optimización, ordenadas por tu criterio: el 10 % mejor con el algoritmo completo y el 25 % con el genético, según la ayuda de MT5, que además fija un número mínimo de pasadas.</p>
     <p data-i18n-html="guide.export.s3.p2">Sus columnas son casi las mismas, con dos que importan: <strong>Forward Result</strong>, el criterio medido en el periodo forward, y <strong>Back Result</strong>, el criterio de esa misma pasada en el periodo de optimización. El resto de métricas (beneficio, drawdown, operaciones…) son las del forward. Así distingue Orometra los dos archivos, los sueltes en el orden que los sueltes, y así comprueba que son de la misma optimización: el Back Result de cada pasada tiene que coincidir con su Result en el otro archivo.</p>
   </section>
   <section class="lp-doc-block guide-step">

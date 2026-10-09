@@ -4,8 +4,8 @@ import { L, localeTag, pctSign } from './i18n.js';
 
 export const roleBadge = (role) => {
   const ROLE_COPY = {
-    distancia: ['ok', L('cuenta para buscar vecinos', 'counts when finding neighbors')],
-    particion: ['', L('solo vecinos si coincide', 'neighbors only if equal')],
+    distancia: ['ok', L('cuenta para buscar vecinas', 'counts when finding neighbors')],
+    particion: ['', L('solo vecinas si coincide', 'neighbors only if equal')],
     liberado: ['', L('bloqueo liberado', 'block released')],
     plano: ['', L('plano: se ignora', 'flat: ignored')],
     'no optimizado': ['', L('no optimizado', 'not optimized')],

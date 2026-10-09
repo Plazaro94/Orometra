@@ -53,7 +53,7 @@ export function renderRepCard(a, p) {
     <div class="rep-head">
       <div>
         <div class="rep-pass">${L('Pasada', 'Pass')} ${esc(r.id)}</div>
-        <div class="rep-sub">${L('Meseta', 'Plateau')} ${p.rank} · ${int(p.size)} ${L('configuraciones', 'configurations')}${p.coreSize ? ` · ${int(p.coreSize)} ${L('en el centro', 'in the center')}` : ''}</div>
+        <div class="rep-sub">${L('Meseta', 'Plateau')} ${p.rank} · ${int(p.size)} ${L('configuraciones', 'configurations')}${p.coreSize ? ` · ${int(p.coreSize)} ${L('en el núcleo', 'in the core')}` : ''}</div>
       </div>
       <div class="rep-score">${num(p.robust, 0)}<small>${gloss('robustness', L('robustez', 'robustness'), { align: 'right' })}</small></div>
     </div>
@@ -64,14 +64,14 @@ export function renderRepCard(a, p) {
       <div><span>${L('Calidad en el periodo optimizado', 'Quality on the optimized period')}</span><strong>${num(r.qualityIs, 2)} <em>${esc(qualityLabel(r.qualityIs))}</em></strong></div>
       ${hasF && Number.isFinite(r.qualityOos) ? `<div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${num(r.qualityOos, 2)} <em>${esc(qualityLabel(r.qualityOos))}</em></strong></div>` : ''}
       ${hasF && !Number.isFinite(r.qualityOos) ? `<div><span>${L('Forward', 'Forward')}</span><strong><em>${L('MT5 no pasó esta configuración al forward', 'MT5 did not send this configuration to the forward')}</em></strong></div>` : ''}
-      <div><span>${L('Vecinos observados', 'Observed neighbors')}</span><strong>${p.neighborhood ? int(p.neighborhood.observed) : int(p.stability.support)}</strong></div>
+      <div><span>${L('Vecinas observadas', 'Observed neighbors')}</span><strong>${p.neighborhood ? int(p.neighborhood.observed) : int(p.stability.support)}</strong></div>
       <div><span>${L('Pasan mínimos / fallan', 'Pass minimums / fail')}</span><strong>${p.neighborhood
         ? `${int(p.neighborhood.passing)} / ${int(p.neighborhood.failing)}`
         : pct(p.stability.fracPass, 0)}</strong></div>
       ${p.neighborhood && p.neighborhood.slotsComplete
         ? `<div><span>${L('Huecos no observados', 'Unobserved gaps')}</span><strong>${int(p.neighborhood.gaps)} <em>${L('de', 'of')} ${int(p.neighborhood.slots)}</em></strong></div>`
         : ''}
-      <div><span>${gloss('q25', L('Sus vecinos más flojos', 'Its weakest neighbors'))}</span><strong>${num(p.stability.q25, 2)}</strong></div>
+      <div><span>${gloss('q25', L('Sus vecinas más flojas', 'Its weakest neighbors'))}</span><strong>${num(p.stability.q25, 2)}</strong></div>
       ${hasF && Number.isFinite(r.qualityOos) ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}${pctSign()} / ${int(r.oos.trades)}</strong></div>` : ''}
       <div><span>${L('Periodo optimizado · PF / DD / ops', 'Optimized period · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}${pctSign()} / ${int(r.is.trades)}</strong></div>
     </div>
@@ -143,7 +143,7 @@ export function renderPlateaus(a) {
     )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— es un rango acotado y así confirmas si la meseta aguanta entera.', '— it is a bounded range and confirms whether the whole plateau holds.')}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>${L('Pasada elegida', 'Chosen pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Centro', 'Center')}</th><th>${L('Las más flojas', 'Weakest')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Variación', 'Spread')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
+        <thead><tr><th>#</th><th>${L('Pasada elegida', 'Chosen pass')}</th><th>${gloss('robustness', L('Robustez', 'Robustness'))}</th><th>${L('Tamaño', 'Size')}</th><th>${gloss('core', L('Núcleo', 'Core'))}</th><th>${gloss('q10', L('Las más flojas', 'Weakest'))}</th><th>${L('Mediana', 'Median')}</th><th>${gloss('coherence', L('Variación', 'Variation'))}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
     </section>
@@ -233,7 +233,7 @@ function renderPlateauSurfacePanel(a, plateau) {
   const grid = buildAxisPairGrid(a, plateau, dimA, dimB);
   const gapNote = grid.coverage < 0.999
     ? L(
-      `Cobertura de esta rejilla 2D: ${Math.round(grid.coverage * 100)} %. Las celdas vacías no son cero: son configuraciones que la optimización (probablemente genética) no probó con el resto de parámetros en el valor de tu meseta — no se inventa un dato ahí.`,
+      `Cobertura de esta rejilla 2D: ${Math.round(grid.coverage * 100)}\u00A0%. Las celdas vacías no son cero: son configuraciones que la optimización (probablemente genética) no probó con el resto de parámetros en el valor de tu meseta — no se inventa un dato ahí.`,
       `Coverage of this 2D grid: ${Math.round(grid.coverage * 100)}%. Empty cells are not zero: they are configurations the optimization (likely genetic) never tested with the other parameters at your plateau's value — nothing is invented there.`,
     )
     : L(
@@ -385,14 +385,14 @@ export function renderRejected(a) {
     <section class="panel">
       ${rejectedMinimums(a)}
       <div class="table-wrap"><table class="stack-table rej-table">
-        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${esc(critName)}</th><th>${L('Calidad', 'Quality')}</th><th>${L('Vecinos', 'Neighbors')}</th><th>${L('Vecinos flojos', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
+        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${esc(critName)}</th><th>${L('Calidad (periodo optimizado)', 'Quality (optimized period)')}</th><th>${L('Vecinas', 'Neighbors')}</th><th>${L('Vecinas flojos', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
         <tbody>${a.peaks.map((p) => `<tr class="stack-row">
           <td data-label="${L('Puesto', 'Rank')}"><span class="rank-mini">#${int(p.criterionRank)}</span></td>
           <td class="mono" data-label="${L('Pasada', 'Pass')}">${esc(p.record.id)}</td>
           <td class="strong" data-label="${esc(critName)}">${num(p.key, 2)}</td>
           <td data-label="${L('Calidad', 'Quality')}">${num(p.score, 2)}</td>
-          <td data-label="${L('Vecinos', 'Neighbors')}">${int(p.st.support)}</td>
-          <td data-label="${L('Vecinos flojos', 'Weak neighbors')}">${num(p.st.q25, 2)}</td>
+          <td data-label="${L('Vecinas', 'Neighbors')}">${int(p.st.support)}</td>
+          <td data-label="${L('Vecinas flojas', 'Weak neighbors')}">${num(p.st.q25, 2)}</td>
           <td class="reasons-cell" data-label="${L('Motivo del descarte', 'Rejection reason')}"><div class="reasons">${(p.tags || p.reasons.map((r) => ({ tag: r, detail: r }))).map((t) => `<span class="reason" title="${esc(t.detail)}"><span class="reason-tag">${esc(t.tag)}</span>${t.tag === t.detail ? '' : `<span class="reason-detail">${esc(t.detail)}</span>`}</span>`).join('')}</div></td>
         </tr>`).join('')}</tbody>
       </table></div>
@@ -406,11 +406,11 @@ export function renderParams(a) {
       
       <h2>${L('Qué parámetros mandan de verdad', 'Which parameters really matter')}</h2>
       <p>${L(
-        'La sensibilidad mide cuánto se mueve la calidad al recorrer los valores de un parámetro. Los numéricos que influyen <strong>cuentan para buscar vecinos</strong>. Los de sí/no o de lista (por ejemplo, el tipo de media) <strong>no se miden en distancia</strong>: dos configuraciones solo son vecinas si coinciden en ellos, porque activar o no un filtro no es un paso pequeño sino otra estrategia. Solo se ignora lo demostrablemente plano.',
+        'La sensibilidad mide cuánto se mueve la calidad al recorrer los valores de un parámetro. Los numéricos que influyen <strong>cuentan para buscar vecinas</strong>. Los de sí/no o de lista (por ejemplo, el tipo de media) <strong>no se miden en distancia</strong>: dos configuraciones solo son vecinas si coinciden en ellos, porque activar o no un filtro no es un paso pequeño sino otra estrategia. Solo se ignora lo demostrablemente plano.',
         'Sensitivity measures how much quality moves as you walk a parameter\'s values. Influential numerics <strong>count when finding neighbors</strong>. Yes/no and list parameters (for example, the moving-average type) <strong>are not measured in distance</strong>: two configurations are neighbors only if they match on them, because enabling a filter is not a small step — it is another strategy. Only demonstrably flat axes are ignored.',
       )}</p>
       ${a.meta.releasedBlockNames && a.meta.releasedBlockNames.length ? `<div class="inline-warn">${L(
-        `Para conseguir vecinos suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, ${a.meta.releasedBlockNames.length > 1 ? 'los menos influyentes' : 'el menos influyente'}. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
+        `Para conseguir vecinas suficientes se ha dejado de particionar por ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, ${a.meta.releasedBlockNames.length > 1 ? 'los menos influyentes' : 'el menos influyente'}. Las configuraciones que solo difieran en ${a.meta.releasedBlockNames.length > 1 ? 'esos parámetros' : 'ese parámetro'} se consideran vecinas.`,
         `To get enough neighbors, partitioning was released on ${a.meta.releasedBlockNames.map((n) => `<code>${esc(n)}</code>`).join(', ')}, the least influential. Configurations that differ only on ${a.meta.releasedBlockNames.length > 1 ? 'those parameters' : 'that parameter'} are treated as neighbors.`,
       )}</div>` : ''}
     </div>
@@ -424,7 +424,7 @@ export function renderParams(a) {
     </section>
     ${a.inversions && a.inversions.length ? `<section class="panel warn-panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Aviso', 'Warning')}</div><h2>${L('Parámetros cuyo mejor valor cambia entre periodos', 'Parameters whose best value changes across periods')}</h2></div>
-        <span class="status-pill warn-pill">${int(a.inversions.length)} ${L('detectados', 'detected')}</span></div>
+        <span class="status-pill warn-pill">${int(a.inversions.length)} ${a.inversions.length === 1 ? L('detectado', 'detected') : L('detectados', 'detected')}</span></div>
       <p class="panel-intro">${L(
         'En estos parámetros, el valor que gana en el periodo optimizado <strong>no es el que gana en el forward</strong>, y quedarte con él te cuesta parte del margen. Es una de las razones por las que el orden de la tabla no se mantiene entre periodos. Afinarlos sobre el periodo optimizado aporta poco: déjalos en un valor central y decide con los que sí son coherentes entre periodos.',
         'On these parameters, the value that wins on the optimized period <strong>is not the one that wins on the forward</strong>, and keeping it costs you part of the margin. It is one of the reasons the table order does not hold across periods. Fine-tuning them on the optimized period adds little: leave them at a central value and decide with the ones that are coherent across periods.',
@@ -543,8 +543,8 @@ export function renderDiagnostics(a) {
           <div><span>${L('Configuraciones analizadas', 'Configurations analyzed')}</span><strong>${int(a.meta.total)}${a.integrity && a.integrity.collapsedTopology > 0 ? ` <em>${L('tras agrupar', 'after grouping')} ${esc((a.meta.flatDims || []).join(', '))}</em>` : ''}</strong></div>
           <div><span>${L('Parte probada', 'Share tested')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(1).format(a.meta.coverage * 100) + pctSign() : '—'}</strong></div>
           <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(1).format(a.meta.searchCoverage.coverageSearch * 100) + pctSign() : L('sin .set', 'no .set')}</strong></div>
-          <div><span>${L('Distancia entre vecinos', 'Neighbor distance')}</span><strong>${int(a.meta.radius)} ${L('paso(s)', 'step(s)')}</strong></div>
-          <div><span>${L('Vecinos por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
+          <div><span>${L('Distancia entre vecinas', 'Neighbor distance')}</span><strong>${int(a.meta.radius)} ${a.meta.radius === 1 ? L('paso', 'step') : L('pasos', 'steps')}</strong></div>
+          <div><span>${L('Vecinas por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del periodo optimizado', ' of the optimized period') : '—'}</strong></div>
         </div>
         <p class="chart-note">${esc(samplingCopy)}</p>
@@ -699,7 +699,7 @@ export function renderStabilityPanel(a) {
       ${L(
         `Los umbrales de meseta (suelo de calidad, robustez mínima, soporte mínimo, tamaño mínimo…) son
       juicios calibrados, no cantidades derivadas de ninguna teoría. Así que la búsqueda se repite
-      <strong>${int(st.draws)} veces</strong> moviéndolos al azar un <strong>±${(100 * st.perturbation).toFixed(0)} %</strong>,
+      <strong>${int(st.draws)} veces</strong> moviéndolos al azar un <strong>±${(100 * st.perturbation).toFixed(0)}\u00A0%</strong>,
       para ver cuánto de lo que te recomendamos depende de dónde pusimos nosotros los cortes.`,
         `Plateau thresholds (quality floor, minimum robustness, minimum support, minimum size…) are
       calibrated judgments, not quantities derived from any theory. So the search is repeated
@@ -710,7 +710,7 @@ export function renderStabilityPanel(a) {
     <div class="stability-cols">
       <div>
         <h3>${L('Nuestros criterios', 'Our criteria')}</h3>
-        <p class="stability-sub">${L('Calidad mínima de una meseta, tamaño mínimo, vecinos mínimos…', 'Minimum plateau quality, minimum size, minimum neighbors…')}</p>
+        <p class="stability-sub">${L('Calidad mínima de una meseta, tamaño mínimo, vecinas mínimas…', 'Minimum plateau quality, minimum size, minimum neighbors…')}</p>
         <div class="evidence-list">
           <div><span>${L('Variaciones probadas', 'Variations tried')}</span><strong>${int(internal.draws)}</strong></div>
           <div><span>${L('Sigue existiendo alguna meseta', 'Some plateau still exists')}</span><strong>${pct(internal.plateauRate, 0)}</strong></div>
@@ -773,8 +773,8 @@ export function renderSensitivityPanel(a) {
   const floor = 0.12;
   const sorted = [...rows].sort((x, y) => (y.effective || 0) - (x.effective || 0));
   // Mismas palabras que la tabla de parámetros (roleBadge): un concepto, un nombre.
-  const role = (j) => (a.meta.activeDims.includes(j) ? `<span class="role dist">${L('cuenta para buscar vecinos', 'counts when finding neighbors')}</span>`
-    : a.meta.blockDims.includes(j) ? `<span class="role block">${L('solo vecinos si coincide', 'neighbors only if equal')}</span>`
+  const role = (j) => (a.meta.activeDims.includes(j) ? `<span class="role dist">${L('cuenta para buscar vecinas', 'counts when finding neighbors')}</span>`
+    : a.meta.blockDims.includes(j) ? `<span class="role block">${L('solo vecinas si coincide', 'neighbors only if equal')}</span>`
       : `<span class="role flat">${L('se ignora', 'ignored')}</span>`);
   return `<section class="panel">
     <div class="panel-head compact">
@@ -786,7 +786,7 @@ export function renderSensitivityPanel(a) {
       <strong>Con el resto fijo</strong> deja fijos todos los demás parámetros y mide el recorrido a lo largo de este.
       Un parámetro cuyo efecto se invierte según otro sale plano en la primera medida y no en la segunda;
       por eso manda <strong>la mayor de las dos</strong>. Descartar un eje que sí influye haría pasar por
-      vecinos a configuraciones que no lo son, e inflaría las mesetas hasta fabricar una donde no hay ninguna.`,
+      vecinas a configuraciones que no lo son, e inflaría las mesetas hasta fabricar una donde no hay ninguna.`,
         `<strong>On its own</strong> groups by the parameter value and averages over everything else.
       <strong>With the rest fixed</strong> holds all other parameters fixed and measures the range along this one.
       A parameter whose effect reverses depending on another looks flat on the first measure and not on the second;

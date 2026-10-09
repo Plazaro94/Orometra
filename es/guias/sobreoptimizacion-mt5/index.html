@@ -33,14 +33,14 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261009e">
+<link rel="stylesheet" href="/styles.css?v=20261009g">
 <script type="application/ld+json" data-ld="guide-overfit">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Sobreoptimización en MT5: qué es, por qué ocurre y cómo evitarla","description":"Guía completa de la sobreoptimización (curve fitting) al optimizar un EA en MetaTrader 5: por qué la mejor pasada suele estar inflada, las señales que la delatan y un método paso a paso para tenerla bajo control.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/sobreoptimizacion-mt5/","url":"https://orometra.com/es/guias/sobreoptimizacion-mt5/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Sobreoptimización en MT5: qué es, por qué ocurre y cómo evitarla","item":"https://orometra.com/es/guias/sobreoptimizacion-mt5/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
 
-<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
+<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
 <header class="lp-top">
   <div class="lp-shell">
   <a class="lp-brand" href="/es/">
@@ -136,7 +136,7 @@
     </figure>
     <p data-i18n="guide.overfit.s4.p1b">Una meseta es una condición necesaria, no una garantía: demuestra que el resultado no depende de un valor exacto, no que la estrategia vaya a ganar dinero.</p>
     <h3 data-i18n="guide.overfit.s4.h2">2. El forward no guarda relación con el in-sample</h3>
-    <p data-i18n="guide.overfit.s4.p2">Con el Forward activado, MT5 divide el periodo: optimiza con la primera parte y después vuelve a probar las mejores pasadas, el 10 % mejor en una búsqueda completa o el 25 % con el algoritmo genético (con un número mínimo de pasadas), en el tramo restante. Que empeoren algo es normal y esperable: es la maldición del ganador en acción. Lo que delata la sobreoptimización es el desplome: que las mejores del in-sample se hundan en el forward, o que no haya relación alguna entre el orden de las dos listas.</p>
+    <p data-i18n="guide.overfit.s4.p2">Con el Forward activado, MT5 divide el periodo: optimiza con la primera parte y después vuelve a probar las mejores pasadas, el 10 % mejor en una búsqueda completa o el 25 % con el algoritmo genético (con un número mínimo de pasadas), en el tramo restante. Que empeoren algo es normal y esperable: es la maldición del ganador en acción. Lo que delata la sobreoptimización es el desplome: que las mejores del in-sample se hundan en el forward, o que no haya relación alguna entre el orden de las dos listas.</p>
     <p data-i18n="guide.overfit.s4.p2b">Una trampa: no elijas sin más la pasada con mejor forward. En cuanto eliges por él, el forward deja de ser una prueba y pasa a formar parte de la optimización, y sus cifras heredan la misma inflación.</p>
     <h3 data-i18n="guide.overfit.s4.h3">3. El mejor resultado no supera al azar</h3>
     <p data-i18n="guide.overfit.s4.p3">Como hemos visto, probar muchas combinaciones eleva por sí solo el mejor resultado. El Deflated Sharpe Ratio de Bailey y López de Prado (2014) parte de esa idea: estima el Sharpe más alto que cabría esperar solo por suerte, dado cuántas pruebas hiciste y cuánto varían sus resultados, y mide si el tuyo lo supera con suficiente margen. Si no lo supera, la mejor pasada puede no ser más que ruido. Si lo supera, has descartado una explicación, el simple número de pruebas, pero eso no valida la estrategia.</p>
@@ -179,7 +179,7 @@
       <li data-i18n-html="guide.overfit.s7.3"><strong>Mesetas, no picos.</strong> Mira las vecinas de cada configuración en tu rejilla, descarta los picos aislados y recomienda una configuración dentro de la meseta, elegida por su puesto conjunto en in-sample y forward promediado con el de sus vecinas.</li>
       <li data-i18n-html="guide.overfit.s7.4"><strong>El forward como prueba.</strong> Usa el forward para confirmar o rebajar las mesetas, no para quedarse con la mejor fila.</li>
       <li data-i18n-html="guide.overfit.s7.5"><strong>Cuánto pudo ser suerte.</strong> Compara tu mejor Sharpe con lo que daría el azar por sí solo con ese número de pruebas, y mide cuántas veces falla la regla «quédate con lo primero de la tabla» al remuestrear las configuraciones.</li>
-      <li data-i18n-html="guide.overfit.s7.6"><strong>Se examina a sí mismo.</strong> Repite la búsqueda 50 veces moviendo sus propios umbrales hasta un ±20 %, para comprobar que la recomendación no depende de ellos, y hace lo mismo, con menos repeticiones, moviendo tus mínimos.</li>
+      <li data-i18n-html="guide.overfit.s7.6"><strong>Se examina a sí mismo.</strong> Repite la búsqueda 50 veces moviendo sus propios umbrales hasta un ±20 %, para comprobar que la recomendación no depende de ellos, y hace lo mismo, con menos repeticiones, moviendo tus mínimos.</li>
       <li data-i18n-html="guide.overfit.s7.7"><strong>Tu búsqueda, medida.</strong> Detecta si la búsqueda fue completa o genética, cuánto del espacio cubrió y si la rejilla tiene saltos desiguales, y te avisa cuando eso limita las conclusiones.</li>
       <li data-i18n-html="guide.overfit.s7.8"><strong>La prueba final.</strong> Suelta el informe HTML de tu backtest en el periodo no visto: comprueba que los parámetros coinciden con la configuración recomendada, te dice si el resultado es normal para esa meseta, hace un Monte Carlo sobre tus propias operaciones, te dice si hay operaciones suficientes para concluir algo y muestra qué pasa si los costes empeoran.</li>
     </ul>

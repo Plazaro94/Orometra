@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-09 — Pestañas del informe (3/3): términos y estilo
+
+- **«%» que se separaba de su cifra al saltar de línea** («19» en una línea y «% de» en la
+  siguiente): `pctSign()` y las cifras con % de los textos en español llevan ahora espacio
+  irrompible, en toda la web.
+- **«Vecinas», no «vecinos»:** las pestañas decían «vecinos» y el veredicto y Metodología
+  «vecinas» (configuraciones vecinas). Unificado, con la concordancia.
+- **Plurales:** fuera «parámetro(s)», «paso(s)» y «periodo(s)»; «1 configuración»,
+  «1 detectado».
+- **Jerga:** «Centro» (el núcleo de la meseta) pasa a «Núcleo», con su explicación; las
+  columnas Robustez, Las más flojas y Variación tienen explicación al pasar el ratón; en
+  inglés, «Spread» (la variación de la calidad) pasa a «Variation» para no confundirlo con el
+  spread del bróker; «Q10–Q90» pasa a «80 % central»; la potencia y el intervalo de confianza
+  dicen qué miden; «Calidad» en Descartes dice que es la del periodo optimizado.
+- **Contraste:** el texto ámbar de una métrica «en la cola», en tema claro, se quedaba en
+  4,48:1 (mínimo 4,5:1). axe sin errores en las ocho pestañas del informe, en español e
+  inglés, temas claro y oscuro, escritorio y móvil.
+
 ## 2026-10-09 — Pestañas del informe (2/3): el móvil
 
 - **Periodo no visto:** el resultado va justo después del informe cargado (antes, detrás del

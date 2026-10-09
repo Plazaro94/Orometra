@@ -33,14 +33,14 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261009e">
+<link rel="stylesheet" href="/styles.css?v=20261009g">
 <script type="application/ld+json" data-ld="guide-report">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Cómo leer el informe del probador de estrategias de MT5","description":"Qué significan el factor de beneficio, el drawdown, el factor de recuperación, el número de operaciones, el pago esperado y el ratio de Sharpe en el informe de backtest de MetaTrader 5, y qué valores deberían hacerte desconfiar.","inLanguage":"es","mainEntityOfPage":"https://orometra.com/es/guias/informe-probador-estrategias-mt5/","url":"https://orometra.com/es/guias/informe-probador-estrategias-mt5/","datePublished":"2026-09-28","dateModified":"2026-10-08","image":"https://orometra.com/og-image-es.jpg?v=13","author":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},"publisher":{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Orometra","item":"https://orometra.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://orometra.com/es/guias/"},{"@type":"ListItem","position":3,"name":"Cómo leer el informe del probador de estrategias de MT5","item":"https://orometra.com/es/guias/informe-probador-estrategias-mt5/"}]}]}</script>
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
 
-<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
+<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
 <header class="lp-top">
   <div class="lp-shell">
   <a class="lp-brand" href="/es/">
@@ -102,7 +102,7 @@
       <li data-i18n-html="guide.report.s2.l1.3"><strong>Relativo</strong> (Relative): la mayor caída en porcentaje de su pico, con esa caída en dinero entre paréntesis.</li>
     </ul>
     <p data-i18n-html="guide.report.s2.p2">El máximo y el relativo son dos máximos distintos y pueden salir de episodios diferentes: la mayor caída en dinero no tiene por qué ser la mayor en porcentaje.</p>
-    <p class="guide-note" data-i18n-html="guide.report.s2.n1"><strong>Ejemplo.</strong> El balance baja de 10.000 a 7.000, sube después a 20.000 y vuelve a bajar a 16.000. La primera caída es de 3.000 (el 30 % de su pico); la segunda, de 4.000 (el 20 %). El informe da un drawdown máximo de 4.000 (20 %) y un drawdown relativo del 30 % (3.000).</p>
+    <p class="guide-note" data-i18n-html="guide.report.s2.n1"><strong>Ejemplo.</strong> El balance baja de 10.000 a 7.000, sube después a 20.000 y vuelve a bajar a 16.000. La primera caída es de 3.000 (el 30 % de su pico); la segunda, de 4.000 (el 20 %). El informe da un drawdown máximo de 4.000 (20 %) y un drawdown relativo del 30 % (3.000).</p>
     <p data-i18n-html="guide.report.s2.p3">Mira las cifras del equity: el balance solo se mueve cuando se cierra una operación, así que puede esconder operaciones que fueron muy en contra antes de cerrarse. Y pregúntate si aguantarías esa caída con dinero real, porque la siguiente puede ser mayor.</p>
   </section>
   <section class="lp-doc-block guide-step">
@@ -127,7 +127,7 @@
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.report.s7.title">Las condiciones de la prueba</h2>
-    <p data-i18n-html="guide.report.s7.p1">Antes de creerte ninguna cifra, comprueba cómo se hizo la prueba. La parte de arriba del informe muestra los ajustes y la <strong>calidad del histórico</strong> (History Quality): según la ayuda de MT5, la proporción de datos de un minuto correctos en el histórico usado, donde los huecos y las barras mal formadas cuentan como incorrectos. Una cifra muy por debajo del 100 % significa que faltaba parte del histórico o tenía errores.</p>
+    <p data-i18n-html="guide.report.s7.p1">Antes de creerte ninguna cifra, comprueba cómo se hizo la prueba. La parte de arriba del informe muestra los ajustes y la <strong>calidad del histórico</strong> (History Quality): según la ayuda de MT5, la proporción de datos de un minuto correctos en el histórico usado, donde los huecos y las barras mal formadas cuentan como incorrectos. Una cifra muy por debajo del 100 % significa que faltaba parte del histórico o tenía errores.</p>
     <ul class="lp-list">
       <li data-i18n-html="guide.report.s7.l1.1"><strong>Cada tick basado en ticks reales</strong> (Every tick based on real ticks): usa el histórico real de ticks de tu bróker, con su spread real. Es el modo más fiel y el más lento.</li>
       <li data-i18n-html="guide.report.s7.l1.2"><strong>Cada tick</strong> (Every tick): genera los ticks a partir de las barras de un minuto. Más rápido, pero los movimientos dentro de cada minuto son simulados.</li>

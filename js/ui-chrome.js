@@ -237,7 +237,7 @@ export function policyInputProblem() {
   const dd = parseFloat($('#gDd').value);
   const tr = parseFloat($('#gTrades').value);
   if (!Number.isFinite(pf) || pf < 0) return L('El factor de beneficio mínimo tiene que ser un número mayor o igual que 0.', 'The minimum profit factor must be a number greater than or equal to 0.');
-  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return L('El drawdown máximo tiene que estar entre 1 y 100 %.', 'The maximum drawdown must be between 1 and 100%.');
+  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return L('El drawdown máximo tiene que estar entre 1 y 100\u00A0%.', 'The maximum drawdown must be between 1 and 100%.');
   if (!Number.isFinite(tr) || tr < 0) return L('Las operaciones mínimas tienen que ser un número mayor o igual que 0.', 'The minimum trades must be a number greater than or equal to 0.');
   return null;
 }

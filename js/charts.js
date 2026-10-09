@@ -101,7 +101,7 @@ export function scatterIsOos(analysis, compact = isCompact()) {
   const both = analysis.records.filter((r) => Number.isFinite(r.qualityIs) && Number.isFinite(r.qualityOos));
   const worse = both.length ? Math.round((100 * both.filter((r) => r.qualityOos < r.qualityIs).length) / both.length) : 0;
   const svg = frame(W, H, pad, diagonal + pts.join('') + reps, {
-    label: L(`Calidad en el periodo optimizado frente al forward: el ${worse} % de las configuraciones pierde calidad en el forward.`,
+    label: L(`Calidad en el periodo optimizado frente al forward: el ${worse}\u00A0% de las configuraciones pierde calidad en el forward.`,
       `Optimized-period versus forward quality: ${worse}% of configurations lose quality on the forward.`),
     xLabel: compact ? L('Calidad optimizando', 'Quality when optimizing') : L('Calidad en el periodo optimizado', 'Quality on the optimized period'),
     yLabel: L('Calidad en el forward', 'Quality on the forward'),
@@ -189,12 +189,12 @@ export function degradationChart(analysis, compact = isCompact()) {
     ${gy}${bars}<path class="ch-line-q25" d="${q25line}"/>${labels}
     <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(compact ? L('Forward (mediana)', 'Forward (median)') : L('Resultado en el forward (mediana)', 'Result on the forward (median)'))}</text>
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
-    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(compact ? L('Decil de puesto (10 = tu 10 % mejor)', 'Rank decile (10 = your best 10%)') : L('Grupos según su puesto en la optimización (D10 = tu 10 % mejor)', 'Groups by optimization rank (D10 = your best 10%)'))}</text>
+    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(compact ? L('Decil de puesto (10 = tu 10\u00A0% mejor)', 'Rank decile (10 = your best 10%)') : L('Grupos según su puesto en la optimización (D10 = tu 10\u00A0% mejor)', 'Groups by optimization rank (D10 = your best 10%)'))}</text>
   </svg></div>`;
   return wrapChart(svg, legend([
     { cls: 'chart-swatch-bar', label: L('Mediana en el forward', 'Forward median') },
     { cls: 'chart-swatch-bar-top', label: L('D10: tus mejores', 'D10: your best') },
-    { cls: 'chart-swatch-q25', label: L('El 25 % peor en el forward', 'Worst 25% on the forward') },
+    { cls: 'chart-swatch-q25', label: L('El 25\u00A0% peor en el forward', 'Worst 25% on the forward') },
   ]));
 }
 

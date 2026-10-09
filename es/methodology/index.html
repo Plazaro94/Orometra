@@ -32,13 +32,13 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261009e">
+<link rel="stylesheet" href="/styles.css?v=20261009g">
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
 
-<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
+<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
 <header class="lp-top">
   <div class="lp-shell">
   <a class="lp-brand" href="/es/">
@@ -123,10 +123,10 @@
           <circle cx="279" cy="248" r="3.5" fill="var(--muted-3)" opacity=".5"/>
           <circle cx="431" cy="80" r="8" fill="var(--danger)"/>
           <text x="431" y="64" text-anchor="end" font-size="11.5" font-weight="700" fill="var(--danger-text)" data-i18n="doc.method.min.mt5">N.º 1 de MT5</text>
-          <text x="431" y="104" text-anchor="end" font-size="10.5" fill="var(--muted-2)" data-i18n="doc.method.min.mt5cap">PF 1,95 · DD 38 %</text>
+          <text x="431" y="104" text-anchor="end" font-size="10.5" fill="var(--muted-2)" data-i18n="doc.method.min.mt5cap">PF 1,95 · DD 38 %</text>
           <circle cx="203" cy="136" r="8" fill="var(--ok)"/>
           <text x="217" y="130" font-size="11.5" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.min.pick">Elegida</text>
-          <text x="217" y="153" font-size="10.5" fill="var(--muted-2)" data-i18n="doc.method.min.pickcap">PF 1,6 · DD 14 %</text>
+          <text x="217" y="153" font-size="10.5" fill="var(--muted-2)" data-i18n="doc.method.min.pickcap">PF 1,6 · DD 14 %</text>
         </svg>
       </div>
     </section>
@@ -142,7 +142,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s4.title">Mesetas, no picos</h2>
         <p data-i18n="doc.method.s4.body">Para cada configuración mira sus vecinas: las que están a uno, dos o tres pasos en tu rejilla, sumando los pasos de todos los parámetros (de 30 a 35, o de 0,1 a 0,2, es un paso). El radio solo crece hasta que la configuración típica tiene unas ocho vecinas. Solo cuentan los parámetros que de verdad cambian el resultado; los de sí/no y los de texto tienen que coincidir, y los que apenas influyen se ignoran. Y solo cuentan las vecinas que probaste: las que faltan no se inventan.</p>
-        <p data-i18n="doc.method.s4.body2">Una meseta es una zona conectada de al menos tres configuraciones que cumplen tus mínimos y cuyas vecinas también responden: cada una tiene al menos cuatro vecinas probadas, el 90 % o más cumple tus mínimos, tres de cada cuatro tienen una calidad al menos aceptable y el punto no sobresale de golpe sobre ellas. Los picos aislados se descartan, y el informe te dice por qué (pocas vecinas, una caída brusca al lado, un pico que sobresale demasiado…).</p>
+        <p data-i18n="doc.method.s4.body2">Una meseta es una zona conectada de al menos tres configuraciones que cumplen tus mínimos y cuyas vecinas también responden: cada una tiene al menos cuatro vecinas probadas, el 90 % o más cumple tus mínimos, tres de cada cuatro tienen una calidad al menos aceptable y el punto no sobresale de golpe sobre ellas. Los picos aislados se descartan, y el informe te dice por qué (pocas vecinas, una caída brusca al lado, un pico que sobresale demasiado…).</p>
         <p data-i18n="doc.method.s4.body3">Dentro de la meseta elige la configuración con mejor puesto conjunto en in-sample y forward, promediado con sus vecinas: ni el punto más alto ni la suerte de un punto concreto. Si no hay meseta y hay forward, da una sugerencia orientativa con la misma regla y lo dice. En nuestro banco de pruebas ciego esta elección queda más cerca de la mejor configuración posible que la pasada que MT5 pone primera, la mejor del forward, la suma de puestos y el azar. Pierde por poco contra «media con vecinas» cuando cada caso sin meseta cuenta como fallo (con la sugerencia orientativa, gana), y en búsquedas genéticas y en una rejilla tomada de un export real la n.º 1 de MT5 queda por delante.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
@@ -171,8 +171,8 @@
       <span class="lp-method-num">05</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s5.title">El forward confirma o rebaja</h2>
-        <p data-i18n="doc.method.s5.body">Las mesetas se buscan solo con el in-sample. Después, el forward las pone a prueba: se vuelven a exigir tus mínimos a las configuraciones de la meseta. MT5 solo pasa al forward las mejores pasadas (el 10 % en una búsqueda completa y el 25 % en una genética), así que muchas configuraciones no tienen forward: cuentan como no validadas, nunca como aprobadas.</p>
-        <p data-i18n="doc.method.s5.body2">Si menos del 80 % de las configuraciones de la meseta que tienen forward cumple tus mínimos allí, se avisa; por debajo del 65 %, es una limitación seria y el nivel baja a débil. Una meseta con muchas configuraciones sin validar también baja de puesto. Tus mínimos se exigen en cada periodo por separado, para que un buen forward no tape un in-sample flojo, ni al revés, y el mínimo de operaciones del forward se ajusta a su duración (nunca menos de 30). Solo para elegir dentro de una meseta ya validada se suman los puestos de los dos periodos.</p>
+        <p data-i18n="doc.method.s5.body">Las mesetas se buscan solo con el in-sample. Después, el forward las pone a prueba: se vuelven a exigir tus mínimos a las configuraciones de la meseta. MT5 solo pasa al forward las mejores pasadas (el 10 % en una búsqueda completa y el 25 % en una genética), así que muchas configuraciones no tienen forward: cuentan como no validadas, nunca como aprobadas.</p>
+        <p data-i18n="doc.method.s5.body2">Si menos del 80 % de las configuraciones de la meseta que tienen forward cumple tus mínimos allí, se avisa; por debajo del 65 %, es una limitación seria y el nivel baja a débil. Una meseta con muchas configuraciones sin validar también baja de puesto. Tus mínimos se exigen en cada periodo por separado, para que un buen forward no tape un in-sample flojo, ni al revés, y el mínimo de operaciones del forward se ajusta a su duración (nunca menos de 30). Solo para elegir dentro de una meseta ya validada se suman los puestos de los dos periodos.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step" id="suerte">
@@ -187,7 +187,7 @@
       <span class="lp-method-num">07</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s7.title">Se examina a sí mismo</h2>
-        <p data-i18n="doc.method.s7.body">Lo que el motor exige para llamar a algo meseta (calidad mínima, robustez, número de vecinas, tamaño…) son decisiones nuestras, no leyes. Para comprobar que la recomendación no depende de ellas, la búsqueda se repite 50 veces moviéndolas hasta un ±20 %, primero de una en una y después todas a la vez, y se cuenta cuántas veces la configuración ganadora sigue cayendo en la misma meseta. Por encima del 80 % está bien; entre el 50 y el 80 %, se avisa; por debajo del 50 %, es una limitación seria. Lo mismo se hace, con menos repeticiones, moviendo tus mínimos (con archivos muy grandes esta segunda prueba se omite, y se avisa). Si una recomendación solo sale con los números exactos, no es una recomendación.</p>
+        <p data-i18n="doc.method.s7.body">Lo que el motor exige para llamar a algo meseta (calidad mínima, robustez, número de vecinas, tamaño…) son decisiones nuestras, no leyes. Para comprobar que la recomendación no depende de ellas, la búsqueda se repite 50 veces moviéndolas hasta un ±20 %, primero de una en una y después todas a la vez, y se cuenta cuántas veces la configuración ganadora sigue cayendo en la misma meseta. Por encima del 80 % está bien; entre el 50 y el 80 %, se avisa; por debajo del 50 %, es una limitación seria. Lo mismo se hace, con menos repeticiones, moviendo tus mínimos (con archivos muy grandes esta segunda prueba se omite, y se avisa). Si una recomendación solo sale con los números exactos, no es una recomendación.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -196,7 +196,7 @@
           <line x1="140" y1="185" x2="340" y2="185" stroke="var(--muted-3)" stroke-width="1.3" stroke-dasharray="3 4"/>
           <line x1="140" y1="178" x2="140" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
           <line x1="340" y1="178" x2="340" y2="192" stroke="var(--muted-3)" stroke-width="1.3"/>
-          <text x="240" y="172" text-anchor="middle" font-size="10.5" fill="var(--muted-3)" data-i18n="doc.method.thr.range">±20 % · 50 repeticiones</text>
+          <text x="240" y="172" text-anchor="middle" font-size="10.5" fill="var(--muted-3)" data-i18n="doc.method.thr.range">±20 % · 50 repeticiones</text>
           <line x1="40" y1="220" x2="440" y2="220" stroke="var(--line)" stroke-width="1.5"/>
           <line x1="240" y1="205" x2="240" y2="235" stroke="var(--line-strong)" stroke-width="2"/>
           <text x="240" y="255" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="1" fill="var(--muted-2)" data-i18n="doc.method.thr.axis">UMBRAL DEL MOTOR</text>
@@ -230,7 +230,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s9.title">La prueba de fuego: tu backtest en un periodo no visto</h2>
         <p data-i18n="doc.method.s9.body">Lo más limpio es probar la configuración en un periodo que no hayas usado ni para optimizar ni para validar. Suelta el informe de ese backtest en la aplicación: comprueba que los parámetros son los de la configuración propuesta y compara cada métrica con lo habitual en su meseta, ajustado a la duración del periodo. El resultado entra en lo habitual, cae en la cola o se sale de rango.</p>
-        <p data-i18n="doc.method.s9.body2">Esa prueba solo puede mantener el nivel o bajarlo, nunca subirlo, porque detecta poco: en nuestro banco, cuando la ventaja ya no existe avisa en un 35-45 % de los casos según la duración del periodo, y con la ventaja intacta da una falsa alarma en un 24-30 %. Además, sobre las operaciones de ese informe hace un Monte Carlo que respeta las rachas (remuestrea tus días de operativa por bloques), te avisa si hay pocos días de operativa para concluir nada y muestra qué pasa si el spread o el slippage empeoran respecto a la optimización.</p>
+        <p data-i18n="doc.method.s9.body2">Esa prueba solo puede mantener el nivel o bajarlo, nunca subirlo, porque detecta poco: en nuestro banco, cuando la ventaja ya no existe avisa en un 35-45 % de los casos según la duración del periodo, y con la ventaja intacta da una falsa alarma en un 24-30 %. Además, sobre las operaciones de ese informe hace un Monte Carlo que respeta las rachas (remuestrea tus días de operativa por bloques), te avisa si hay pocos días de operativa para concluir nada y muestra qué pasa si el spread o el slippage empeoran respecto a la optimización.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -276,7 +276,7 @@
       <li data-i18n-html="doc.method.bench.3"><strong>La elección.</strong> En el periodo no visto, la configuración elegida queda a una distancia mediana de 0,23 de la mejor posible, frente a 0,29 de la n.º 1 de MT5 (0 es acertar con la mejor; 1, elegir una del montón).</li>
       <li data-i18n-html="doc.method.bench.4"><strong>Niveles coherentes.</strong> Cuanto más alto el nivel, mejor es de verdad la configuración elegida.</li>
     </ul>
-    <p data-i18n-html="doc.method.bench.p2">Y dónde falla: superó 10 de los 13 criterios. Cuando la ventaja solo existe en el in-sample, da «moderada» o más en 8 de 100 casos, por encima del 5 % fijado; promediar cada configuración con sus vecinas queda algo por delante en el total (0,20 frente a 0,23), y en la rejilla tomada de un export real la n.º 1 de MT5 le gana por más de lo permitido. Son datos simulados: la prueba con optimizaciones reales de MT5 está pendiente. <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener">Las reglas, escritas antes</a>, y <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam5.md" target="_blank" rel="noopener">los resultados completos</a> son públicos.</p>
+    <p data-i18n-html="doc.method.bench.p2">Y dónde falla: superó 10 de los 13 criterios. Cuando la ventaja solo existe en el in-sample, da «moderada» o más en 8 de 100 casos, por encima del 5 % fijado; promediar cada configuración con sus vecinas queda algo por delante en el total (0,20 frente a 0,23), y en la rejilla tomada de un export real la n.º 1 de MT5 le gana por más de lo permitido. Son datos simulados: la prueba con optimizaciones reales de MT5 está pendiente. <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener">Las reglas, escritas antes</a>, y <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam5.md" target="_blank" rel="noopener">los resultados completos</a> son públicos.</p>
   </section>
 
   <section class="lp-doc-block doc-limits" id="limites" aria-labelledby="doc-lim-title">

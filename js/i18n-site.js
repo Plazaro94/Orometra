@@ -45,7 +45,7 @@ addStrings({
     "lp.cta": "Analizar mis resultados",
     "lp.cta.footer": "App",
     "lp.foot.tagline": "Separa lo frágil de lo estable",
-    "lp.strip": "<b>100 % en tu navegador</b> <span class=\"lp-strip-long\">Tus archivos no salen de tu ordenador · </span><span class=\"lp-strip-short\">· </span>Gratis y sin registro",
+    "lp.strip": "<b>100 % en tu navegador</b> <span class=\"lp-strip-long\">Tus archivos no salen de tu ordenador · </span><span class=\"lp-strip-short\">· </span>Gratis y sin registro",
     "meta.description.notfound": "Esta página no existe.",
     "meta.title.notfound": "Página no encontrada — Orometra",
     "nav.footer": "Pie de página",
