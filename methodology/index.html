@@ -31,7 +31,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261009c">
+<link rel="stylesheet" href="../styles.css?v=20261009d">
 <script src="../js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -179,7 +179,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s6.title">It estimates how much could be chance</h2>
         <p data-i18n="doc.method.s6.body">Test thousands of configurations and some will look great by pure chance. The engine computes the best Sharpe ratio you would expect from luck alone, given how much the Sharpe ratios of your passes vary and how many distinct trials you ran, and compares it with your best one (the forward’s, if there is one). Near-identical configurations do not count as independent trials: those a few steps apart are grouped together. If your best result does not clear that bar, it is a serious limitation: the top result may be nothing but noise. Clearing it is necessary, not sufficient. It is an adaptation of the Bailey and López de Prado test, not their published Deflated Sharpe Ratio.</p>
-        <p data-i18n="doc.method.s6.body2">It also looks at your table the way MT5 ranks it: how often the best configuration of one period falls below the middle of the table in the other (what the report calls “how often MT5’s ranking fails”), whether what does well in-sample tends to do well in the forward, whether a parameter wins in one period with a value that loses in the other, whether the proposed configuration sits on the edge of the tested range, and how many trades there are per optimized parameter: below 50, everything is provisional; below 15, the surface is mostly noise.</p>
+        <p data-i18n="doc.method.s6.body2">It also looks at your table the way MT5 ranks it: how often the best configuration of one period falls below the middle of the table in the other (what the report calls “how often MT5’s ranking fails”), whether what does well in-sample tends to do well in the forward, whether a parameter’s best value changes from one period to the other, whether the proposed configuration sits on the edge of the tested range, and how many trades there are per optimized parameter: below 50, everything is provisional; below 15, the surface is mostly noise.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="umbrales">
@@ -229,7 +229,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s9.title">The acid test: your backtest on unseen data</h2>
         <p data-i18n="doc.method.s9.body">The cleanest check is to test the configuration on a period you used neither to optimize nor to validate. Drop that backtest report into the app: it checks that the parameters are those of the proposed configuration and compares each metric with what is usual for its plateau, adjusted to the length of the period. The result is within the usual range, in the tail or out of range.</p>
-        <p data-i18n="doc.method.s9.body2">That check can only keep the level or lower it, never raise it, because it detects little: in our benchmark, when the edge is gone it warns in 35–45% of cases depending on the length of the period, and with the edge intact it raises a false alarm in 24–30%. On the trades of that report it also runs a Monte Carlo that respects streaks (it resamples your trading days in blocks), warns you if there are too few trades to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
+        <p data-i18n="doc.method.s9.body2">That check can only keep the level or lower it, never raise it, because it detects little: in our benchmark, when the edge is gone it warns in 35–45% of cases depending on the length of the period, and with the edge intact it raises a false alarm in 24–30%. On the trades of that report it also runs a Monte Carlo that respects streaks (it resamples your trading days in blocks), warns you if there are too few trading days to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">

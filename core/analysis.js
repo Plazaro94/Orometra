@@ -230,8 +230,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // Mínimo de operaciones del forward: el del usuario escalado por la duración del forward,
   // con un suelo de 30 (por debajo, PF y drawdown de un periodo son casi puro ruido).
   // Decisión de diseño documentada en docs/MT5_ASSUMPTIONS.md (FWD-2).
+  // Redondeado hacia arriba: las operaciones son enteras, así que exigir 50,1 es exigir 51,
+  // y mostrar «50» hacía que una pasada con 50 suspendiera sin explicación.
   const minTradesOos = hasForward && Number.isFinite(periodRatio)
-    ? Math.max(30, policy.gates.minTrades * periodRatio)
+    ? Math.ceil(Math.max(30, policy.gates.minTrades * periodRatio))
     : policy.gates.minTrades;
 
   // El beneficio por operacion necesita una referencia: se toma del propio conjunto.
@@ -670,9 +672,14 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // Se ordena por el criterio del USUARIO (lo que MT5 le pone arriba del todo), no por
   // la calidad interna. La pregunta que hay que responder es exactamente esa: "¿por que
   // no me recomiendas la que aparece primera en mi tabla?".
-  const rankingKey = (r) => (hasForward
+  // Si el forward no trae una columna Forward Result reconocible (otro idioma, otra versión
+  // de MT5), ordenar por ella dejaba la tabla vacía y la pantalla decía que eso era «buena
+  // señal». Se cae al orden del periodo optimizado (Result) y, sin él, a la calidad.
+  const rankingBy = hasForward && records.some((r) => hasOos(r) && Number.isFinite(r.criterionOos)) ? 'oos'
+    : records.some((r) => Number.isFinite(r.criterionIs)) ? 'is' : 'quality';
+  const rankingKey = (r) => (rankingBy === 'oos'
     ? (hasOos(r) && Number.isFinite(r.criterionOos) ? r.criterionOos : NaN)
-    : Number.isFinite(r.criterionIs) ? r.criterionIs : r.score);
+    : rankingBy === 'is' ? (Number.isFinite(r.criterionIs) ? r.criterionIs : NaN) : r.score);
   const byCriterion = records
     .map((r, i) => ({ record: r, index: i, score: scores[i], st: stability[i], robust: robust[i], key: rankingKey(r) }))
     .filter((p) => Number.isFinite(p.key))
@@ -1088,6 +1095,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       minTradesOos,
       criterionIsName: isRoles.result ? isRoles.result.name : null,
       criterionOosName: oosRoles.forwardResult ? oosRoles.forwardResult.name : null,
+      rankingBy,
       availableMetrics: METRIC_KEYS.filter((k) => isRoles[k]),
       payoffAnchor,
       sheets: { is: isTable.sheet, oos: oosTable ? oosTable.sheet : null },

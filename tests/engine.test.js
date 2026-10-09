@@ -300,7 +300,7 @@ section('5b. Rentable en todo el espacio pero con el ranking invertido');
   const jInv = an.meta.paramNames.indexOf('InpInvertido');
   const repVal = an.plateaus.length ? an.plateaus[0].record.params[jInv] : null;
   check('o el representante evita el valor castigado, o se avisa de ello',
-    repVal !== inv.bestIs || titles.some((t) => /se apoya en un valor que el forward castiga/i.test(t)),
+    repVal !== inv.bestIs || titles.some((t) => /usa un valor que gana en el periodo optimizado, pero no en el forward/i.test(t)),
     `valor del representante=${repVal}, gana en IS=${inv.bestIs}`);
 }
 

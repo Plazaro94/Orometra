@@ -32,7 +32,7 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261009c">
+<link rel="stylesheet" href="/styles.css?v=20261009d">
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -180,7 +180,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s6.title">Calcula cuánto pudo ser azar</h2>
         <p data-i18n="doc.method.s6.body">Si pruebas miles de configuraciones, alguna saldrá muy bien por puro azar. El motor calcula el mejor Sharpe que cabría esperar solo por suerte, según lo mucho que varían los Sharpe de tus pasadas y cuántas pruebas distintas hiciste, y lo compara con tu mejor Sharpe (el del forward, si lo hay). Las configuraciones casi iguales no cuentan como pruebas independientes: se agrupan las que están a pocos pasos. Si tu mejor resultado no supera ese listón, es una limitación seria: el primer puesto puede no ser más que ruido. Superarlo es necesario, no suficiente. Es una adaptación del contraste de Bailey y López de Prado, no su Deflated Sharpe Ratio publicado.</p>
-        <p data-i18n="doc.method.s6.body2">Además mira tu tabla como la ordena MT5: con qué frecuencia la mejor configuración de un periodo cae por debajo de la mitad de la tabla en el otro (lo que el informe llama «cuánto falla el orden de MT5»), si lo que rinde en el in-sample tiende a rendir en el forward, si algún parámetro gana en un periodo con un valor que pierde en el otro, si la configuración propuesta está pegada al borde del rango probado y cuántas operaciones hay por parámetro optimizado: con menos de 50, todo es provisional; con menos de 15, la superficie es casi solo ruido.</p>
+        <p data-i18n="doc.method.s6.body2">Además mira tu tabla como la ordena MT5: con qué frecuencia la mejor configuración de un periodo cae por debajo de la mitad de la tabla en el otro (lo que el informe llama «cuánto falla el orden de MT5»), si lo que rinde en el in-sample tiende a rendir en el forward, si el mejor valor de algún parámetro cambia de un periodo a otro, si la configuración propuesta está pegada al borde del rango probado y cuántas operaciones hay por parámetro optimizado: con menos de 50, todo es provisional; con menos de 15, la superficie es casi solo ruido.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="umbrales">
@@ -230,7 +230,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s9.title">La prueba de fuego: tu backtest en un periodo no visto</h2>
         <p data-i18n="doc.method.s9.body">Lo más limpio es probar la configuración en un periodo que no hayas usado ni para optimizar ni para validar. Suelta el informe de ese backtest en la aplicación: comprueba que los parámetros son los de la configuración propuesta y compara cada métrica con lo habitual en su meseta, ajustado a la duración del periodo. El resultado entra en lo habitual, cae en la cola o se sale de rango.</p>
-        <p data-i18n="doc.method.s9.body2">Esa prueba solo puede mantener el nivel o bajarlo, nunca subirlo, porque detecta poco: en nuestro banco, cuando la ventaja ya no existe avisa en un 35-45 % de los casos según la duración del periodo, y con la ventaja intacta da una falsa alarma en un 24-30 %. Además, sobre las operaciones de ese informe hace un Monte Carlo que respeta las rachas (remuestrea tus días de operativa por bloques), te avisa si hay pocas operaciones para concluir nada y muestra qué pasa si el spread o el slippage empeoran respecto a la optimización.</p>
+        <p data-i18n="doc.method.s9.body2">Esa prueba solo puede mantener el nivel o bajarlo, nunca subirlo, porque detecta poco: en nuestro banco, cuando la ventaja ya no existe avisa en un 35-45 % de los casos según la duración del periodo, y con la ventaja intacta da una falsa alarma en un 24-30 %. Además, sobre las operaciones de ese informe hace un Monte Carlo que respeta las rachas (remuestrea tus días de operativa por bloques), te avisa si hay pocos días de operativa para concluir nada y muestra qué pasa si el spread o el slippage empeoran respecto a la optimización.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">

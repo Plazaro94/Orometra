@@ -805,7 +805,7 @@ export function renderTop3(a) {
   const flagBadges = (p) => {
     const flags = [];
     if (p.invertedRisk && p.invertedRisk.length) {
-      flags.push(`<span class="badge warn" title="${esc(L('Se apoya en un valor que el forward castiga', 'It relies on a value the forward punishes'))}">${L('valor castigado', 'punished value')}</span>`);
+      flags.push(`<span class="badge warn" title="${esc(L('Usa un valor que gana en el periodo optimizado, pero no en el forward', 'It uses a value that wins on the optimized period, but not on the forward'))}">${L('valor que cambia', 'value that shifts')}</span>`);
     }
     if (p.boundary.length) {
       flags.push(`<span class="badge warn" title="${esc(L('Pegada al borde del rango probado', 'Stuck to the edge of the tested range'))}">${L('borde', 'edge')}</span>`);

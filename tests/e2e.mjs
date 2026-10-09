@@ -184,6 +184,14 @@ try {
 
     await page.click('.tab-next-btn');
     check('«Siguiente» lleva a las mesetas', await page.$eval('.nav-item[data-tab="plateaus"]', (b) => b.classList.contains('active')));
+
+    // La pestaña «Método» enseña los mismos límites que la página pública.
+    await page.click('.nav-item[data-tab="method"]');
+    const appLimits = await page.$$eval('.limits li', (l) => l.length);
+    const pub = await page.context().newPage();
+    await pub.goto(`${BASE}/es/methodology/`);
+    const pubLimits = await pub.$$eval('#limites li', (l) => l.length);
+    check('«Método» enseña todos los límites de la página pública', appLimits === pubLimits && appLimits >= 8, `${appLimits} frente a ${pubLimits}`);
     await page.context().close();
   }
 

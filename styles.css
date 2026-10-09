@@ -688,6 +688,8 @@ details.panel > .panel-body{padding:0 20px 20px}
 .u-result.v-no .u-result-tag{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-line)}
 .u-result-title{margin:12px 0 0;font-size:24px;line-height:1.2;letter-spacing:-.02em;color:var(--text-hi);max-width:var(--measure)}
 .u-result .vx-pass-note{margin-bottom:0;max-width:var(--measure)}
+/* Qué hace este resultado con el nivel del veredicto: es la frase que más importa de la tarjeta. */
+.u-result .u-level-line{margin-top:8px;color:var(--text-hi);font-weight:600}
 .vx-trust-line{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--text-2)}
 .vx-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .vx-stat{border:1px solid var(--line-soft);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px 12px 11px;min-width:0}

@@ -38,9 +38,12 @@ export function mostSensitiveIndex(a) {
   return best;
 }
 
+/** Los dos parámetros más influyentes, con la misma medida que las barras y la superficie
+ * (la influencia efectiva): antes se ordenaba por la influencia «por sí solo» y el mapa
+ * enseñaba otra pareja. Con menos de dos parámetros variables, null. */
 export function topTwoSensitive(a) {
-  const ranked = a.sensitivity.filter((s) => !s.constant).sort((x, y) => y.sensitivity - x.sensitivity);
-  return [ranked[0] ? ranked[0].index : 0, ranked[1] ? ranked[1].index : (ranked[0] ? ranked[0].index : 0)];
+  if (a.sensitivity.filter((s) => !s.constant).length < 2) return null;
+  return topInfluentialPair(a.sensitivity);
 }
 
 export function renderRepCard(a, p) {
@@ -59,7 +62,8 @@ export function renderRepCard(a, p) {
     </div>
     <div class="evidence-list">
       <div><span>${L('Calidad en el periodo optimizado', 'Quality on the optimized period')}</span><strong>${num(r.qualityIs, 2)} <em>${esc(qualityLabel(r.qualityIs))}</em></strong></div>
-      ${hasF ? `<div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${num(r.qualityOos, 2)} <em>${esc(qualityLabel(r.qualityOos))}</em></strong></div>` : ''}
+      ${hasF && Number.isFinite(r.qualityOos) ? `<div><span>${L('Calidad forward', 'Forward quality')}</span><strong>${num(r.qualityOos, 2)} <em>${esc(qualityLabel(r.qualityOos))}</em></strong></div>` : ''}
+      ${hasF && !Number.isFinite(r.qualityOos) ? `<div><span>${L('Forward', 'Forward')}</span><strong><em>${L('MT5 no pasó esta configuración al forward', 'MT5 did not send this configuration to the forward')}</em></strong></div>` : ''}
       <div><span>${L('Vecinos observados', 'Observed neighbors')}</span><strong>${p.neighborhood ? int(p.neighborhood.observed) : int(p.stability.support)}</strong></div>
       <div><span>${L('Pasan mínimos / fallan', 'Pass minimums / fail')}</span><strong>${p.neighborhood
         ? `${int(p.neighborhood.passing)} / ${int(p.neighborhood.failing)}`
@@ -68,12 +72,12 @@ export function renderRepCard(a, p) {
         ? `<div><span>${L('Huecos no observados', 'Unobserved gaps')}</span><strong>${int(p.neighborhood.gaps)} <em>${L('de', 'of')} ${int(p.neighborhood.slots)}</em></strong></div>`
         : ''}
       <div><span>${gloss('q25', L('Sus vecinos más flojos', 'Its weakest neighbors'))}</span><strong>${num(p.stability.q25, 2)}</strong></div>
-      ${hasF ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}${pctSign()} / ${int(r.oos.trades)}</strong></div>` : ''}
+      ${hasF && Number.isFinite(r.qualityOos) ? `<div><span>${L('Forward · PF / DD / ops', 'Forward · PF / DD / trades')}</span><strong>${num(r.oos.profitFactor, 3)} / ${num(r.oos.drawdown, 1)}${pctSign()} / ${int(r.oos.trades)}</strong></div>` : ''}
       <div><span>${L('Periodo optimizado · PF / DD / ops', 'Optimized period · PF / DD / trades')}</span><strong>${num(r.is.profitFactor, 3)} / ${num(r.is.drawdown, 1)}${pctSign()} / ${int(r.is.trades)}</strong></div>
     </div>
     ${p.invertedRisk && p.invertedRisk.length ? `<div class="inline-warn">${L(
-      `Se apoya en ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, el valor que gana en el periodo optimizado pero que el forward castiga. Puede ser mérito suyo o suerte.`,
-      `It relies on ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, the value that wins on the optimized period but that the forward punishes. It may be merit or luck.`,
+      `Se apoya en ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, el valor que gana en el periodo optimizado, pero no en el forward. Que aguante puede ser mérito suyo o suerte.`,
+      `It relies on ${p.invertedRisk.map((x) => `<code>${esc(x.name)} = ${paramHtml(x.bestIs)}</code>`).join(', ')}, the value that wins on the optimized period, but not on the forward. That it holds may be merit or luck.`,
     )}</div>` : ''}
     ${p.boundary.length ? `<div class="inline-warn">${L(
       `Pegada al borde del rango en: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
@@ -136,7 +140,7 @@ export function renderPlateaus(a) {
     ${sparseSampling ? `<div class="inline-warn">${L(
       `Esta optimización usó ${a.meta.sampling === 'sparse' ? 'muestreo disperso (genético)' : 'una rejilla parcial'}, así que la meseta de abajo puede tener huecos sin probar. Antes de decidir con esto,`,
       `This optimization used ${a.meta.sampling === 'sparse' ? 'sparse (genetic) sampling' : 'a partial grid'}, so the plateau below can have untested gaps. Before deciding on this,`,
-    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— son pocas configuraciones y así confirmas si la meseta aguanta entera.', "— it's a small number of configurations and confirms whether the whole plateau holds.")}</div>` : ''}
+    )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— es un rango acotado y así confirmas si la meseta aguanta entera.', '— it is a bounded range and confirms whether the whole plateau holds.')}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
         <thead><tr><th>#</th><th>${L('Pasada elegida', 'Chosen pass')}</th><th>${L('Robustez', 'Robustness')}</th><th>${L('Tamaño', 'Size')}</th><th>${L('Centro', 'Center')}</th><th>${L('Las más flojas', 'Weakest')}</th><th>${L('Mediana', 'Median')}</th><th>${L('Variación', 'Spread')}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
@@ -146,7 +150,7 @@ export function renderPlateaus(a) {
 
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Meseta', 'Plateau')} ${sel.rank}</div><h2>${L('Configuración representativa', 'Representative configuration')}</h2></div>
-        <span class="status-pill">${gloss('jointpick', L('elegida por buen puesto en los dos periodos', 'chosen for ranking well in both periods'), { align: 'right' })}</span></div>
+        <span class="status-pill">${a.meta.hasForward ? gloss('jointpick', L('elegida por buen puesto en los dos periodos', 'chosen for ranking well in both periods'), { align: 'right' }) : L('elegida por buen puesto junto a sus vecinas', 'chosen for ranking well together with its neighbors')}</span></div>
       ${renderRepCard(a, sel)}
     </section>
 
@@ -155,10 +159,22 @@ export function renderPlateaus(a) {
     <section class="panel" id="refinementPanel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Siguiente paso', 'Next step')}</div><h2>${L('Rango para reoptimizar en rejilla', 'Range for grid re-optimization')}</h2></div>
         ${sparseSampling ? `<span class="status-pill warn-pill">${L('Recomendado', 'Recommended')}</span>` : ''}</div>
-      <p class="panel-intro">${L(
-        `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Descarga el .set de refinamiento y cárgalo en la pestaña de parámetros de entrada del probador («Inputs»: clic derecho → «Cargar»): ya trae marcados los parámetros que hay que barrer, con su inicio, paso y fin. Con la búsqueda completa no quedan huecos sin probar y la forma de la meseta se mide mejor. Son <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configuraciones</strong>, un tamaño que se puede ejecutar de verdad.`,
-        `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. Download the refinement .set and load it in the tester's “Inputs” tab (right-click → “Load”): it already marks the parameters to sweep, with their start, step and stop. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${int(sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1))} configurations</strong> — a size you can actually run.`,
-      )}</p>
+      <p class="panel-intro">${(() => {
+        const n = sel.refinement.reduce((acc, x) => acc * (x.constant ? 1 : x.levels), 1);
+        const cfgEs = `${int(n)} ${n === 1 ? 'configuración' : 'configuraciones'}`;
+        const cfgEn = `${int(n)} ${n === 1 ? 'configuration' : 'configurations'}`;
+        // En una rejilla completa ese rango ya está probado entero: proponer repetirlo tal cual
+        // («no quedan huecos sin probar») no aporta nada. Lo que queda es afinar entre medias.
+        return a.meta.sampling === 'grid'
+          ? L(
+            `Tu optimización ya probó toda la rejilla, así que este rango, centrado en la configuración recomendada, ya está probado entero (${cfgEs}). Si quieres afinar, repítelo en MT5 con el <em>algoritmo lento (búsqueda completa)</em> y pasos más finos dentro de estos límites: los valores intermedios son lo único que queda por ver. El .set de refinamiento trae los parámetros marcados con su inicio, paso y fin; cámbiales el paso antes de lanzar.`,
+            `Your optimization already tested the whole grid, so this range, centered on the recommended configuration, has already been tested in full (${cfgEn}). If you want to fine-tune, re-run it in MT5 with the <em>Slow complete algorithm</em> and finer steps within these limits: the in-between values are the only thing left to see. The refinement .set comes with the parameters marked with their start, step and stop; change the step before running.`,
+          )
+          : L(
+            `Vuelve a MT5 y lanza una optimización con el <em>algoritmo lento (búsqueda completa)</em> acotada a este rango, centrado en la configuración recomendada. Descarga el .set de refinamiento y cárgalo en la pestaña de parámetros de entrada del probador («Inputs»: clic derecho → «Cargar»): ya trae marcados los parámetros que hay que barrer, con su inicio, paso y fin. Con la búsqueda completa no quedan huecos sin probar y la forma de la meseta se mide mejor. Son <strong>${cfgEs}</strong>, un tamaño que se puede ejecutar de verdad.`,
+            `Go back to MT5 and run an optimization with the <em>Slow complete algorithm</em> bounded to this range, centered on the recommended configuration. Download the refinement .set and load it in the tester's “Inputs” tab (right-click → “Load”): it already marks the parameters to sweep, with their start, step and stop. With the complete search no gaps are left untested, and the plateau's shape is measured better. That is <strong>${cfgEn}</strong> — a size you can actually run.`,
+          );
+      })()}</p>
       <div class="table-wrap"><table>
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Centro', 'Center')}</th><th>${L('Inicio', 'Start')}</th><th>${L('Paso', 'Step')}</th><th>${L('Fin', 'Stop')}</th><th>${L('Niveles', 'Levels')}</th></tr></thead>
         <tbody>${sel.refinement.map((x) => `<tr>
@@ -234,8 +250,8 @@ function renderPlateauSurfacePanel(a, plateau) {
       </div>
     </div>
     <p class="panel-intro">${L(
-      `La altura es la calidad real de cada pasada en el periodo optimizado. En azul, las configuraciones que pertenecen a esta meseta (se descubre en el periodo optimizado; el forward solo la valida), y en lima, la pasada elegida. El resto de parámetros queda fijo en los valores de la pasada ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
-      `Height is the real quality of each pass on the optimized period. In blue, the configurations that belong to this plateau (found on the optimized period; the forward only validates it), and in lime, the chosen pass. The rest of the parameters stay fixed at pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
+      `La altura es la calidad real de cada pasada en el periodo optimizado. En azul, las configuraciones que pertenecen a esta meseta ${a.meta.hasForward ? '(se descubre en el periodo optimizado; el forward solo la valida)' : '(se descubre en el periodo optimizado)'}, y en lima, la pasada elegida. El resto de parámetros queda fijo en los valores de la pasada ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
+      `Height is the real quality of each pass on the optimized period. In blue, the configurations that belong to this plateau ${a.meta.hasForward ? '(found on the optimized period; the forward only validates it)' : '(found on the optimized period)'}, and in lime, the chosen pass. The rest of the parameters stay fixed at pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
     )}</p>
     <div class="chart-legend" role="list">
       <span class="chart-legend-item" role="listitem"><span class="chart-swatch chart-swatch-plateau" aria-hidden="true"></span>${L('Meseta', 'Plateau')}</span>
@@ -338,15 +354,23 @@ function rejectedMinimums(a) {
 }
 
 export function renderRejected(a) {
-  const critName = a.meta.hasForward
+  const by = a.meta.rankingBy || (a.meta.hasForward ? 'oos' : 'is');
+  const critName = by === 'oos'
     ? (a.meta.criterionOosName || L('criterio forward', 'forward criterion'))
-    : (a.meta.criterionIsName || L('criterio', 'criterion'));
+    : by === 'is' ? (a.meta.criterionIsName || L('criterio', 'criterion')) : L('calidad de Orometra', 'Orometra quality');
+  // Por qué no se ordena por la columna que MT5 usaría (Forward Result con forward, Result sin él).
+  const fallbackNote = a.meta.hasForward && by !== 'oos'
+    ? L(`No se ha reconocido la columna <code>Forward Result</code> del forward, así que se ordena por ${by === 'is' ? 'el resultado del periodo optimizado' : 'la calidad de Orometra'}.`,
+      `The forward's <code>Forward Result</code> column was not recognized, so they are ordered by ${by === 'is' ? 'the optimized-period result' : 'Orometra quality'}.`)
+    : !a.meta.hasForward && by === 'quality'
+      ? L('No se ha reconocido la columna <code>Result</code>, así que se ordena por la calidad de Orometra.', 'The <code>Result</code> column was not recognized, so they are ordered by Orometra quality.')
+      : '';
   if (!a.peaks.length) {
     return `<div class="detail-head"><h2>${L('Ningún descarte entre las mejores por tu criterio', 'No rejections among the best by your criterion')}</h2>
       <p>${L(
         'Las configuraciones que encabezan tu ranking caen dentro de alguna meseta. Es poco habitual y es buena señal.',
         'The configurations that top your ranking fall inside some plateau. That is uncommon and a good sign.',
-      )}</p></div>`;
+      )}</p>${fallbackNote ? `<p class="inline-warn">${fallbackNote}</p>` : ''}</div>`;
   }
   return `<div class="detail-head">
       
@@ -355,6 +379,7 @@ export function renderRejected(a) {
         `Ordenadas por <code>${esc(critName)}</code>, que es la columna por la que MT5 te las presenta. Para cada una se indica por qué el motor no la respalda. Esta es la tabla que evita la mayoría de los errores.`,
         `Ordered by <code>${esc(critName)}</code>, the column MT5 presents them by. For each one the engine explains why it does not back it. This is the table that prevents most mistakes.`,
       )}</p>
+      ${fallbackNote ? `<p class="inline-warn">${fallbackNote}</p>` : ''}
       ${skippedRanksNote(a.peaks)}
     </div>
     <section class="panel">
@@ -375,7 +400,7 @@ export function renderRejected(a) {
 }
 
 export function renderParams(a) {
-  const [dimA, dimB] = topTwoSensitive(a);
+  const pair = topTwoSensitive(a);
   const options = a.sensitivity.map((s) => `<option value="${s.index}"${s.index === state.selectedParam ? ' selected' : ''}${s.constant ? ' disabled' : ''}>${esc(s.name)}${s.constant ? L(' (constante)', ' (constant)') : ''}</option>`).join('');
   return `<div class="detail-head">
       
@@ -393,16 +418,16 @@ export function renderParams(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Sensibilidad', 'Sensitivity')}</div><h2>${L('Influencia relativa', 'Relative influence')}</h2></div></div>
       <div class="split">${sensitivityBars(a)}
       <p class="chart-note">${L(
-        `La barra es la influencia que cuenta: la mayor entre <strong>por sí solo</strong> (agrupando por el valor del parámetro) y <strong>con el resto fijo</strong> (dejando fijo todo lo demás). Donde aparece la marca <span class="ch-sens-marginal-swatch"></span> y un valor entre paréntesis, el parámetro parecía plano mirado solo — con el resto fijo sí influye. El detalle completo está en Diagnóstico.`,
-        `The bar is the influence that counts: the larger of <strong>on its own</strong> (grouped by the parameter's value) and <strong>with the rest fixed</strong> (everything else held fixed). Where the <span class="ch-sens-marginal-swatch"></span> mark and a parenthesized value appear, the parameter looked flat on its own — with the rest fixed it does matter. The full breakdown is in Diagnostics.`,
+        `La barra es la influencia que cuenta: la mayor entre <strong>por sí solo</strong> (agrupando por el valor del parámetro) y <strong>con el resto fijo</strong> (dejando fijo todo lo demás). La marca <span class="ch-sens-marginal-swatch"></span> y el valor entre paréntesis señalan la influencia por sí solo cuando es claramente menor que con el resto fijo: el efecto de ese parámetro depende de los valores de los demás. El detalle completo está en Diagnóstico.`,
+        `The bar is the influence that counts: the larger of <strong>on its own</strong> (grouped by the parameter's value) and <strong>with the rest fixed</strong> (everything else held fixed). The <span class="ch-sens-marginal-swatch"></span> mark and the value in parentheses show the influence on its own when it is clearly smaller than with the rest fixed: that parameter's effect depends on the values of the others. The full breakdown is in Diagnostics.`,
       )}</p></div>
     </section>
     ${a.inversions && a.inversions.length ? `<section class="panel warn-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Aviso', 'Warning')}</div><h2>${L('Parámetros invertidos entre periodos', 'Parameters inverted across periods')}</h2></div>
+      <div class="panel-head compact"><div><div class="panel-kicker">${L('Aviso', 'Warning')}</div><h2>${L('Parámetros cuyo mejor valor cambia entre periodos', 'Parameters whose best value changes across periods')}</h2></div>
         <span class="status-pill warn-pill">${int(a.inversions.length)} ${L('detectados', 'detected')}</span></div>
       <p class="panel-intro">${L(
-        'En estos parámetros, el valor que gana en el periodo optimizado <strong>es de los que pierden en el forward</strong>. Es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al revés. Afinarlos sobre el periodo optimizado es tiempo perdido; déjalos en un valor central y decide con los que sí son coherentes entre periodos.',
-        'On these parameters, the value that wins on the optimized period <strong>is among those that lose on forward</strong>. That is the mechanical reason the ranking fails to transfer: the signal is not missing — it points the wrong way. Fine-tuning them on the optimized period is wasted time; leave them at a central value and decide with the ones that are coherent across periods.',
+        'En estos parámetros, el valor que gana en el periodo optimizado <strong>no es el que gana en el forward</strong>, y quedarte con él te cuesta parte del margen. Es una de las razones por las que el orden de la tabla no se mantiene entre periodos. Afinarlos sobre el periodo optimizado aporta poco: déjalos en un valor central y decide con los que sí son coherentes entre periodos.',
+        'On these parameters, the value that wins on the optimized period <strong>is not the one that wins on the forward</strong>, and keeping it costs you part of the margin. It is one of the reasons the table order does not hold across periods. Fine-tuning them on the optimized period adds little: leave them at a central value and decide with the ones that are coherent across periods.',
       )}</p>
       <div class="table-wrap"><table>
         <thead><tr><th>${L('Parámetro', 'Parameter')}</th><th>${L('Gana en el periodo optimizado', 'Wins on the optimized period')}</th><th>${L('Gana en forward', 'Wins in forward')}</th><th>${L('Margen que tiras', 'Margin you waste')}</th><th>${L('Perfil de calidad (valor: periodo optimizado / forward)', 'Quality profile (value: optimized period / forward)')}</th></tr></thead>
@@ -428,11 +453,11 @@ export function renderParams(a) {
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Mapa', 'Map')}</div><h2>${L('Los dos parámetros más influyentes', 'The two most influential parameters')}</h2></div></div>
-      ${plateauHeatmap(a, dimA, dimB)}
+      ${pair ? `${plateauHeatmap(a, pair[0], pair[1])}
       <p class="chart-note">${L(
         'Calidad mediana de cada par de valores, del tono más suave (peor) al más intenso (mejor). Una zona contigua de valores altos es una meseta; una celda alta rodeada de bajas es un pico.',
         'Median quality of each pair of values, from the softest shade (worst) to the strongest (best). A contiguous zone of high values is a plateau; a high cell surrounded by low ones is a peak.',
-      )}</p>
+      )}</p>` : `<p class="muted">${L('Hacen falta al menos dos parámetros con varios valores para dibujar el mapa.', 'At least two parameters with several values are needed to draw the map.')}</p>`}
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Rangos', 'Ranges')}</div><h2>${L('Valores probados', 'Values tested')}</h2></div></div>
@@ -493,17 +518,20 @@ export function renderDiagnostics(a) {
         <div class="panel-head compact"><div><div class="panel-kicker">${L('Integridad', 'Integrity')}</div><h2>${L('Emparejado de archivos', 'File matching')}</h2></div></div>
         <div class="evidence-list">
           <div><span>${L('Filas de la optimización', 'Optimization rows')}</span><strong>${int(integ.isRows)}</strong></div>
-          <div><span>${L('Filas forward', 'Forward rows')}</span><strong>${integ.oosRows ? int(integ.oosRows) : '—'}</strong></div>
+          ${a.meta.hasForward ? `<div><span>${L('Filas forward', 'Forward rows')}</span><strong>${integ.oosRows ? int(integ.oosRows) : '—'}</strong></div>
           <div><span>${L('Emparejadas por pasada', 'Matched by Pass')}</span><strong>${int(integ.matchedRows)}</strong></div>
-          <div><span>${integ.unmatchedUsedForDiscovery ? L('Sin forward (solo en la optimización)', 'No forward (optimization only)') : L('Sin pareja (descartadas)', 'Unmatched (dropped)')}</span><strong>${int(integ.unmatchedIs)}</strong></div>
+          <div><span>${integ.unmatchedUsedForDiscovery ? L('Sin forward (solo en la optimización)', 'No forward (optimization only)') : L('Sin pareja (descartadas)', 'Unmatched (dropped)')}</span><strong>${int(integ.unmatchedIs)}</strong></div>` : ''}
           <div><span>${L('Identificadores duplicados', 'Duplicate identifiers')}</span><strong>${int(integ.duplicateIds)}</strong></div>
           <div><span>${L('Filas con parámetros ilegibles', 'Rows with unreadable parameters')}</span><strong>${int(a.meta.droppedParams)}</strong></div>
           <div><span>${L('Pasadas con parámetros repetidos', 'Passes with repeated parameters')}</span><strong>${int(integ.duplicateParamVectors || 0)}</strong></div>
-          <div><span>${L('Misma optimización', 'Same optimization')}</span><strong>${sameOpt}</strong></div>
+          ${a.meta.hasForward ? `<div><span>${L('Misma optimización', 'Same optimization')}</span><strong>${sameOpt}</strong></div>` : ''}
         </div>
-        <p class="chart-note">${L(
+        <p class="chart-note">${a.meta.hasForward ? L(
           'Comprobamos que los dos archivos son de la misma optimización: el resultado coincide pasada por pasada.',
           'We check that both files come from the same optimization: the result matches pass by pass.',
+        ) : L(
+          'Solo hay archivo de la optimización: sin forward no hay nada que emparejar.',
+          'There is only the optimization file: without a forward there is nothing to match.',
         )}</p>
         ${findingsNote(integrityFindings)}
       </section>
@@ -526,9 +554,12 @@ export function renderDiagnostics(a) {
 
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Clasificación', 'Classification')}</div><h2>${L('Columnas detectadas', 'Detected columns')}</h2></div></div>
-      <p class="panel-intro">${L(
+      <p class="panel-intro">${a.meta.hasForward ? L(
         'Los parámetros no se reconocen por su nombre sino por su estructura: para una misma pasada, un parámetro vale lo mismo en los dos archivos y una métrica no, porque se midió sobre otro periodo.',
         'Parameters are not recognized by name but by structure: for the same Pass, a parameter has the same value in both files and a metric does not, because it was measured on another period.',
+      ) : L(
+        'Sin forward no se puede comprobar qué columna es un parámetro por su estructura, así que se deduce por sus valores: una columna que no es una métrica conocida y toma pocos valores distintos se trata como parámetro. Revisa que la lista sea la correcta.',
+        'Without a forward, which column is a parameter cannot be checked by structure, so it is inferred from its values: a column that is not a known metric and takes few distinct values is treated as a parameter. Check that the list is right.',
       )}</p>
       <div class="columns-grid">
         <div>
@@ -537,15 +568,17 @@ export function renderDiagnostics(a) {
         </div>
         <div>
           <h3>${L('Métricas usadas para juzgar', 'Metrics used for judgment')}</h3>
-          <div class="chips">${a.meta.availableMetrics.map((n) => `<span class="chip">${esc(METRIC_LABEL()[n] || n)}</span>`).join('')}</div>
+          <div class="chips">${a.meta.availableMetrics.filter((n) => n !== 'expectedPayoff').map((n) => `<span class="chip">${esc(METRIC_LABEL()[n] || n)}</span>`).join('')}</div>
           <p class="chart-note">
             ${L(
               `Tu criterio de optimización${a.meta.criterionIsName ? ` (<code>${esc(a.meta.criterionIsName)}</code>)` : ''}
             se lee pero <strong>no puntúa</strong>: significa algo distinto en cada optimización y está contaminado
-            por la propia selección. Se usa solo para ordenar la tabla de descartes.`,
+            por la propia selección. Sirve para reconstruir el orden en que MT5 te presenta las pasadas (la tabla de
+            descartes) y para medir si ese orden se mantiene entre periodos.${a.meta.availableMetrics.includes('expectedPayoff') ? ' El beneficio esperado tampoco puntúa: depende del tamaño del lote.' : ''}`,
               `Your optimization criterion${a.meta.criterionIsName ? ` (<code>${esc(a.meta.criterionIsName)}</code>)` : ''}
             is read but <strong>does not score</strong>: it means something different in every optimization and is contaminated
-            by the selection itself. It is used only to order the rejection table.`,
+            by the selection itself. It is used to rebuild the order in which MT5 presents the passes (the rejection
+            table) and to measure whether that order holds across periods.${a.meta.availableMetrics.includes('expectedPayoff') ? ' Expected payoff does not score either: it depends on the lot size.' : ''}`,
             )}
           </p>
           ${integ && integ.vetoed && integ.vetoed.length ? `<p class="chart-note">${L(
@@ -563,9 +596,9 @@ export function renderDiagnostics(a) {
         <div><span>${gloss('profitFactor', L('Factor de beneficio mínimo', 'Minimum profit factor'))}</span><strong>${num(g.minProfitFactor, 2)}</strong></div>
         <div><span>${gloss('drawdown', L('Drawdown máximo', 'Maximum drawdown'))}</span><strong>${num(g.maxDrawdownPct, 0)}${pctSign()}</strong></div>
         <div><span>${L('Operaciones mínimas (periodo optimizado)', 'Minimum trades (optimized period)')}</span><strong>${int(a.meta.minTradesIs)}</strong></div>
-        <div><span>${L('Operaciones mínimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>
+        ${a.meta.hasForward ? `<div><span>${L('Operaciones mínimas (forward)', 'Minimum trades (forward)')}</span><strong>${int(a.meta.minTradesOos)}</strong></div>` : ''}
         ${(a.meta.gateInfluence || []).filter((gi) => gi.name !== 'beneficio').map((gi) => `
-        <div><span>· ${gateName(gi.name)}: ${L('descarta por sí solo', 'rejects on its own')}</span><strong>${gi.sole ? int(gi.sole) + L(' configuraciones', ' configurations') : `<em>${L('ninguna (no filtra nada)', 'none (filters nothing)')}</em>`}</strong></div>`).join('')}
+        <div><span>· ${gateName(gi.name)}: ${L('descarta por sí solo', 'rejects on its own')}</span><strong>${gi.sole ? int(gi.sole) + (gi.sole === 1 ? L(' configuración', ' configuration') : L(' configuraciones', ' configurations')) : `<em>${L('ninguna (no filtra nada)', 'none (filters nothing)')}</em>`}</strong></div>`).join('')}
         <div><span>${L('Se exigen en', 'Required in')}</span><strong>${a.meta.hasForward ? (a.meta.selectionMode === 'joint' ? L('los dos periodos', 'both periods') : L('periodo optimizado (buscar) · forward (validar)', 'optimized period (search) · forward (validate)')) : L('el periodo optimizado', 'the optimized period')}</strong></div>
       </div>
       ${findingsNote(gatesFindings)}
@@ -575,18 +608,18 @@ export function renderDiagnostics(a) {
       <summary class="panel-head compact"><div><div class="panel-kicker">${L('Contraste', 'Checks')}</div><h2>${L('Pruebas estadísticas', 'Statistical tests')}</h2></div></summary>
       <div class="panel-body">
       <div class="evidence-list">
-        <div><span>${L('Orden que se mantiene del periodo optimizado al forward', 'Ranking kept from the optimized period to the forward')}</span><strong>${num(a.stats.spearmanCriterion, 3)}</strong></div>
-        <div><span>${gloss('fragility', L('Cuánto falla el orden de MT5', 'How often MT5\'s ranking fails'))}</span><strong>${Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—'}${Number.isFinite(a.stats.fragilityMargin) ? ` <em>±${nf(0).format(a.stats.fragilityMargin * 100)}</em>` : ''}</strong></div>
+        ${a.meta.hasForward ? `<div><span>${L('Orden que se mantiene del periodo optimizado al forward (de −1 a 1)', 'Ranking kept from the optimized period to the forward (−1 to 1)')}</span><strong>${num(a.stats.spearmanCriterion, 2)}</strong></div>` : ''}
+        ${a.meta.hasForward ? `<div><span>${gloss('fragility', L('Cuánto falla el orden de MT5', 'How often MT5\'s ranking fails'))}</span><strong>${Number.isFinite(a.stats.fragility) ? pct(a.stats.fragility, 0) : '—'}${Number.isFinite(a.stats.fragilityMargin) ? ` <em>±${nf(0).format(a.stats.fragilityMargin * 100)}${L(' puntos', ' points')}</em>` : ''}</strong></div>` : `<div><span>${L('Orden de MT5 entre periodos', 'MT5 ranking across periods')}</span><strong><em>${L('sin forward no se puede medir', 'cannot be measured without a forward')}</em></strong></div>`}
         ${a.stats.fragilityFolds ? `
         <div><span>· ${L('eligiendo en el periodo optimizado, validando en el forward', 'choosing on the optimized period, validating on the forward')}</span><strong>${pct(a.stats.fragilityFolds.isToOos.value, 0)}</strong></div>
         <div><span>· ${L('eligiendo en el forward, validando en el periodo optimizado', 'choosing on the forward, validating on the optimized period')}</span><strong>${pct(a.stats.fragilityFolds.oosToIs.value, 0)}</strong></div>
         <div><span>· ${L('asimetría entre sentidos', 'asymmetry across directions')}</span><strong>${pct(a.stats.fragilityAsymmetry, 0)}</strong></div>` : ''}
-        <div><span>${L('Pruebas realizadas', 'Trials run')}</span><strong>${int(a.meta.total)}</strong></div>
+        <div><span>${L('Pasadas analizadas', 'Passes analyzed')}</span><strong>${int(a.meta.total)}</strong></div>
         <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (independientes)', 'Effective trials (independent)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
         ${a.stats.sharpeTest ? `
-        <div><span>${gloss('sharpe', L('Sharpe máximo observado', 'Maximum observed Sharpe'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
-        <div><span>${L('Sharpe medio entre pasadas', 'Mean Sharpe across trials')}</span><strong>${num(a.stats.sharpeTest.mean, 3)}</strong></div>
-        <div><span>${L('Dispersión entre pasadas (σ)', 'Dispersion across trials (σ)')}</span><strong>${num(a.stats.sharpeTest.sigma, 3)}</strong></div>
+        <div><span>${gloss('sharpe', a.stats.sharpeTest.period === 'oos' ? L('Sharpe máximo observado (forward)', 'Maximum observed Sharpe (forward)') : L('Sharpe máximo observado (periodo optimizado)', 'Maximum observed Sharpe (optimized period)'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
+        <div><span>${L('Sharpe medio entre pasadas', 'Mean Sharpe across passes')}</span><strong>${num(a.stats.sharpeTest.mean, 3)}</strong></div>
+        <div><span>${L('Dispersión entre pasadas (σ)', 'Dispersion across passes (σ)')}</span><strong>${num(a.stats.sharpeTest.sigma, 3)}</strong></div>
         <div><span>${L('Umbral por azar (pruebas efectivas)', 'Chance threshold (effective trials)')}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>` : ''}
         <div><span>${L('Tiempo de cálculo', 'Compute time')}</span><strong>${int(a.meta.elapsedMs)} ms</strong></div>
       </div>

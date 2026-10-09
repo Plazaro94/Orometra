@@ -236,7 +236,7 @@ export function sensitivityBars(analysis) {
     const rescued = Number.isFinite(r.conditional) && value - marginal > 0.05;
     const marker = rescued ? `<span class="sens-mark" style="left:${fx(pct(marginal))}%"></span>` : '';
     const label = rescued
-      ? `(${fmt2(value)} · ${L('aislado', 'isolated')} ${fmt2(marginal)})`
+      ? `(${fmt2(value)} · ${L('por sí solo', 'on its own')} ${fmt2(marginal)})`
       : `${fmt2(value)}${roleNote ? ' · ' + roleNote : ''}`;
     return `<li class="sens-row"><span class="sens-name">${esc(r.name)}</span><span class="sens-val">${esc(label)}</span><span class="sens-track" aria-hidden="true"><span class="sens-fill ${cls}" style="width:${fx(Math.max(1, pct(value)))}%"></span>${marker}</span></li>`;
   }).join('');

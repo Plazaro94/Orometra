@@ -770,7 +770,13 @@ export function renderLegal() {
 // mismas claves de i18n: antes la app tenia su propia lista de 8 pasos y la pagina otra,
 // y dos versiones del metodo acaban contradiciendose.
 const METHOD_STEPS = ['lectura', 'minimos', 'calidad', 'mesetas', 'forward', 'suerte', 'umbrales', 'niveles', 'backtest'];
-const METHOD_LIMITS = 6;
+// Tantos límites como claves doc.method.lim.N haya: con un número fijo, al añadir dos
+// límites a la página pública la app siguió enseñando solo los seis primeros.
+const methodLimits = () => {
+  const out = [];
+  for (let i = 1; t(`doc.method.lim.${i}`) !== `doc.method.lim.${i}`; i++) out.push(t(`doc.method.lim.${i}`));
+  return out;
+};
 // La pagina publica tiene una version por idioma (/methodology/ y /es/methodology/).
 const methodologyHref = () => (getLocale() === 'es' ? '../es/methodology/' : '../methodology/');
 
@@ -793,7 +799,7 @@ export function renderMethod() {
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${esc(t('doc.method.lim.title'))}</h2></div></div>
       <ul class="limits">
-        ${Array.from({ length: METHOD_LIMITS }, (_, i) => `<li>${esc(t(`doc.method.lim.${i + 1}`))}</li>`).join('')}
+        ${methodLimits().map((x) => `<li>${esc(x)}</li>`).join('')}
       </ul>
     </section>`;
 }

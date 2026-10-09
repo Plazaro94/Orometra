@@ -63,14 +63,12 @@ export function minBtl({ srObserved, nTrials = 1, targetPower = 0.8 }) {
   if (!Number.isFinite(srObserved) || Math.abs(srObserved) < 1e-9) {
     return { usable: false, minObservations: Infinity };
   }
-  // Búsqueda grosera de n tal que power(SR) >= target
-  let n = 30;
-  for (; n <= 20000; n += 10) {
-    // bajo H1: noncentrality √n * SR (SR por obs)
-    const zAlpha = Math.abs(normInv(0.95));
-    const power = normCdf(Math.sqrt(n) * Math.abs(srObserved) - zAlpha);
-    if (power >= targetPower) break;
-  }
+  // n mínimo (desde 30) con potencia >= target bajo H1, noncentrality √n·SR (SR por
+  // observación): √n·|SR| - z_α >= z_potencia. En forma cerrada y exacta: la búsqueda de 10
+  // en 10 de antes dejaba hasta 9 días con «potencia 86 %» y «no se distingue de cero».
+  const zAlpha = Math.abs(normInv(0.95));
+  const zPower = normInv(targetPower);
+  const n = Math.min(20000, Math.max(30, Math.ceil(((zPower + zAlpha) / Math.abs(srObserved)) ** 2)));
   // Inflar por selección
   const inflate = 1 + Math.log(Math.max(1, nTrials));
   return {

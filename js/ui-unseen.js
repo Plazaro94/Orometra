@@ -10,7 +10,8 @@ import { auditUnseenTrades } from '../core/trades/from-deals.js';
 import { bpToPoints } from '../core/trades/costs.js';
 import { MIN_SAMPLE_DAYS } from '../core/trades/sample.js';
 import { L, localeTag } from './i18n.js';
-import { state, api, $, num, int, pct, esc, rawValue, paramHtml, decodeHead } from './ui-state.js';
+import { state, api, $, num, int, pct, esc, paramHtml, decodeHead } from './ui-state.js';
+import { holdoutFact, displayVerdictLevel, levelName } from './ui-verdict.js';
 
 /**
  * El informe del backtest se acepta en los dos formatos que ofrece MT5 (Informe → HTML u
@@ -130,11 +131,11 @@ export function renderReportCard(a, plateau) {
         ${L(
           `En el probador, clic derecho sobre los resultados → <em>Informe</em> → <em>HTML</em> u <em>Open XML</em> (vale cualquiera de los dos). Si lo
         sueltas aquí (o en cualquier parte de la página), o lo eliges con el botón, se rellenan solas las seis cifras, se
-        usan las fechas reales del periodo y se comprueba que el backtest se lanzó con la
+        muestran las fechas reales del periodo y se comprueba que el backtest se lanzó con la
         configuración correcta.`,
           `In the tester, right-click the results → <em>Report</em> → <em>HTML</em> or <em>Open XML</em> (either works). If you
         drop it here (or anywhere on the page), or choose it with the button, the six figures fill in automatically,
-        the real period dates are used, and it checks that the backtest was run with the
+        the real period dates are shown, and it checks that the backtest was run with the
         correct configuration.`,
         )}
       </p>
@@ -166,21 +167,21 @@ export function renderReportCard(a, plateau) {
     ? `<div class="inline-warn report-mismatch">
         <strong>${L('El backtest no se ha lanzado con la configuración propuesta.', 'The backtest was not run with the proposed configuration.')}</strong>
         ${cmp.different.slice(0, 6).map((d) => `<code>${esc(d.name)}</code>: ${L(
-          `el informe trae <b>${esc(String(d.report))}</b> y debería ser <b>${esc(rawValue(d.expected))}</b>`,
-          `the report has <b>${esc(String(d.report))}</b> and it should be <b>${esc(rawValue(d.expected))}</b>`,
+          `el informe trae <b>${esc(String(d.report))}</b> y debería ser <b>${paramHtml(d.expected)}</b>`,
+          `the report has <b>${esc(String(d.report))}</b> and it should be <b>${paramHtml(d.expected)}</b>`,
         )}`).join('; ')}${cmp.different.length > 6 ? L(` y ${cmp.different.length - 6} más`, ` and ${cmp.different.length - 6} more`) : ''}.
         ${L('Lo que valides así no dice nada de la configuración que has elegido.', 'What you validate this way says nothing about the configuration you chose.')}
       </div>`
     : !cmp.same.length && a.meta.paramNames.length
       ? `<div class="inline-warn report-mismatch">
         <strong>${L('No se han podido leer los parámetros de este informe.', 'The parameters of this report could not be read.')}</strong>
-        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que el resultado no sube el nivel de evidencia.', 'Without them there is no way to check that the backtest used the proposed configuration, so the result does not raise the evidence level.')}
+        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.', 'Without them there is no way to check that the backtest used the proposed configuration, so this result does not count toward the evidence level: it neither keeps nor lowers it.')}
       </div>`
     : cmp.missing.length
       ? `<div class="inline-warn report-mismatch">
         <strong>${L(`Al informe le ${cmp.missing.length === 1 ? 'falta' : 'faltan'} ${int(cmp.missing.length)} de los ${int(a.meta.paramNames.length)} parámetros optimizados.`, `The report is missing ${int(cmp.missing.length)} of the ${int(a.meta.paramNames.length)} optimized parameters.`)}</strong>
         ${cmp.missing.slice(0, 8).map((n) => `<code>${esc(n)}</code>`).join(', ')}${cmp.missing.length > 8 ? L(` y ${cmp.missing.length - 8} más`, ` and ${cmp.missing.length - 8} more`) : ''}.
-        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que el resultado no sube el nivel de evidencia.', 'Without them there is no way to check that the backtest used the proposed configuration (another EA version, or a different parameter name?), so the result does not raise the evidence level.')}
+        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.', 'Without them there is no way to check that the backtest used the proposed configuration (another EA version, or a different parameter name?), so this result does not count toward the evidence level: it neither keeps nor lowers it.')}
       </div>`
     : cmp.same.length
       ? `<div class="report-ok">${cmp.same.length === 1
@@ -237,10 +238,12 @@ export function renderTradesAudit() {
   if (!aud.usable) {
     const reason = aud.reason === 'pocos_dias'
       ? L(
-        `Solo ${int(aud.days)} días con operaciones: hacen falta al menos 5 para simular algo. No es un fallo, es
-        que el tramo es demasiado corto para esto en concreto (el contraste de arriba sigue siendo válido).`,
-        `Only ${int(aud.days)} days with trades: at least 5 are needed to simulate anything. It's not a
-        failure, this particular check just needs a longer segment (the check above still stands).`,
+        `Solo ${int(aud.days)} días de mercado entre el primer y el último cierre: hacen falta al menos 5 para
+        simular algo. No es un fallo, es que el tramo es demasiado corto para esto en concreto (la comparación
+        métrica a métrica sigue siendo válida).`,
+        `Only ${int(aud.days)} market days between the first and the last close: at least 5 are needed to
+        simulate anything. It's not a failure, this particular check just needs a longer segment (the
+        metric-by-metric comparison still stands).`,
       )
       : L(
         'El informe no trae fechas de cierre reconocibles, así que no se puede agrupar por día sin inventar un reparto.',
@@ -268,14 +271,14 @@ export function renderTradesAudit() {
         <div><span>${L('a 12 meses (~252 días)', 'at 12 months (~252 days)')}</span><strong>${horizon(aud.days, 252, bs.probLoss.m12)}</strong></div>
       </div>
       <p class="chart-note">${L(
-        `Reordena tus propias operaciones al azar 10.000 veces (bootstrap estacionario, Politis &amp;
-        Romano 1994), respetando bloques para no romper la dependencia entre operaciones seguidas. No
-        inventa una distribución: solo baraja lo que ya pasó.
+        `Remuestrea al azar tus días de mercado 10.000 veces, por bloques de días seguidos para no romper
+        las rachas (bootstrap estacionario, Politis &amp; Romano 1994). No inventa una distribución: solo
+        recombina lo que ya pasó.
         ${shortHorizons ? `Con ${int(aud.days)} días de histórico, algún horizonte queda por encima de lo que el
         tramo cubre y se marca con «—» en vez de repetir el mismo número con otra etiqueta.` : ''}`,
-        `Your own trades reshuffled at random 10,000 times (stationary bootstrap, Politis &amp; Romano
-        1994), keeping blocks intact so it doesn't break the dependence between consecutive trades. It
-        doesn't invent a distribution: it only reshuffles what already happened.
+        `Your market days resampled at random 10,000 times, in blocks of consecutive days so streaks are
+        not broken (stationary bootstrap, Politis &amp; Romano 1994). It doesn't invent a distribution: it
+        only recombines what already happened.
         ${shortHorizons ? `With ${int(aud.days)} days of history, some horizon is longer than what the
         segment covers and is marked "—" instead of repeating the same number under another label.` : ''}`,
       )}</p>`
@@ -310,10 +313,10 @@ export function renderTradesAudit() {
       )
       : L(
         `Con estos días <strong>no se puede distinguir con confianza el resultado medio de cero</strong>: podría
-        ser ventaja real, podría ser ruido. No es un veredicto negativo, es una advertencia sobre el tamaño
+        ser un resultado real, a favor o en contra, o podría ser ruido. No es un veredicto negativo, es una advertencia sobre el tamaño
         de la muestra.`,
         `With this many days <strong>the average result cannot be confidently distinguished from zero</strong>:
-        it could be a real edge, it could be noise. It isn't a negative verdict, it's a warning about
+        it could be a real result, for or against, or it could be noise. It isn't a negative verdict, it's a warning about
         sample size.`,
       )}</p>`;
 
@@ -404,10 +407,10 @@ export function renderTradesAudit() {
   return `<section class="panel">
     ${head}
     <p class="panel-intro">${L(
-      `Esto no sale de las seis cifras que rellenaste arriba, sino de las <strong>${int(rep.deals.length)}
+      `Esto no sale de las seis cifras del formulario, sino de las <strong>${int(rep.deals.length)}
       operaciones una a una</strong> que trae el informe: es el único dato de MT5 que permite esto sin
       inventar nada.`,
-      `This doesn't come from the six figures filled in above, but from the
+      `This doesn't come from the six figures in the form, but from the
       <strong>${int(rep.deals.length)} individual trades</strong> in the report: it's the only piece of
       MT5 data that allows this without making anything up.`,
     )}</p>
@@ -427,21 +430,35 @@ export function renderUnseen(a) {
       
       <h2>${L('La prueba de fuego', 'The acid test')}</h2>
       <p>
-        ${L(
+        ${a.meta.hasForward ? L(
           `Ya has elegido configuración mirando el periodo optimizado y el forward, así que ninguno de los dos
-        sigue siendo ciego. Este es el último paso: lanza en MT5 un backtest de la configuración
-        elegida sobre un tramo que <strong>no hayas usado ni para optimizar ni para validar</strong>,
+        sigue siendo ciego. Este es el último paso con datos históricos: lanza en MT5 un backtest de la
+        configuración elegida sobre un tramo que <strong>no hayas usado ni para optimizar ni para validar</strong>,
         y trae aquí sus números. La pregunta no es si son espectaculares, sino si son
-        <strong>normales para este EA</strong>. Es un contraste distinto del grado de evidencia
-        del veredicto — aquí no se mide la fuerza de la meseta, se mide si este tramo nuevo encaja
-        con lo que el EA ya demostró.`,
+        <strong>normales para su meseta</strong>: cada cifra se compara con lo que dieron las configuraciones
+        de la meseta, ajustado a la duración de tu tramo. <strong>Este resultado solo puede mantener o bajar el
+        nivel de evidencia:</strong> si cae en la cola o se sale de rango, una evidencia buena o sólida baja a
+        moderada; si no la contradice, el nivel se queda como está.`,
           `You already chose a configuration looking at the optimized period and the forward, so neither is
-        still blind. This is the last step: run a backtest of the chosen configuration in MT5
-        on a segment you <strong>have not used for optimizing or validating</strong>,
+        still blind. This is the last step with historical data: run a backtest of the chosen configuration in
+        MT5 on a segment you <strong>have not used for optimizing or validating</strong>, and bring its numbers
+        here. The question is not whether they are spectacular, but whether they are <strong>normal for its
+        plateau</strong>: each figure is compared with what the plateau's configurations produced, adjusted to
+        the length of your segment. <strong>This result can only keep or lower the evidence level:</strong> if
+        it falls in the tail or out of range, good or strong evidence drops to moderate; if it does not
+        contradict it, the level stays as it is.`,
+        ) : L(
+          `Ya has elegido configuración mirando el periodo optimizado, así que ya no es ciego. Lanza en MT5 un
+        backtest de la configuración elegida sobre un tramo que <strong>no hayas usado para optimizar</strong>
+        y trae aquí sus números. La pregunta no es si son espectaculares, sino si son <strong>normales para su
+        meseta</strong>: cada cifra se compara con lo que dieron las configuraciones de la meseta, ajustado a la
+        duración de tu tramo. Sin forward el nivel no pasa de débil, y este resultado no lo sube.`,
+          `You already chose a configuration looking at the optimized period, so it is no longer blind. Run a
+        backtest of the chosen configuration in MT5 on a segment you <strong>have not used for optimizing</strong>
         and bring its numbers here. The question is not whether they are spectacular, but whether they are
-        <strong>normal for this EA</strong>. This is a different check from the verdict's evidence
-        grade — it does not measure the plateau's strength, it measures whether this new segment
-        fits what the EA has already shown.`,
+        <strong>normal for its plateau</strong>: each figure is compared with what the plateau's configurations
+        produced, adjusted to the length of your segment. Without a forward the level does not go above weak,
+        and this result does not raise it.`,
         )}
       </p>
     </div>`;
@@ -486,7 +503,7 @@ export function renderUnseen(a) {
     </p>
     <div class="policy-grid">${fields}</div>
     <div class="rep-actions">
-      <button class="primary-btn" id="unseenCheck" type="button">${L('Comprobar contra el historial del EA', 'Check against the EA\'s history')}</button>
+      <button class="primary-btn" id="unseenCheck" type="button">${L('Comparar con su meseta', 'Compare with its plateau')}</button>
       <button class="text-btn" id="unseenClear" type="button">${L('Limpiar', 'Clear')}</button>
     </div>
     ${state.unseen.error ? `<div class="error-box" style="margin-top:12px" role="alert"><strong>${L('No se ha podido comprobar', 'Could not check')}</strong><span>${esc(state.unseen.error)}</span></div>` : ''}
@@ -506,7 +523,7 @@ export function renderUnseen(a) {
   // pero no valida nada: seria enganoso ensenarlo en verde. Se degrada a aviso y se
   // dice por que.
   // Lo mismo si no se puede comprobar: sin parámetros leídos, o faltan algunos de los
-  // optimizados. El nivel de evidencia ya no subía (holdoutFact), pero el sello salía en
+  // optimizados. Ese resultado no cuenta para el nivel (holdoutFact), pero el sello salía en
   // verde, y la pantalla se contradecía.
   const pcmp = state.report ? compareParams(state.report.params, a.meta.paramNames, p.record.params) : null;
   const paramsDiffer = Boolean(pcmp && pcmp.different.length);
@@ -515,14 +532,14 @@ export function renderUnseen(a) {
   const cls = !paramsOk ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
   const stamp = !paramsOk ? L('No valida', 'Does not validate')
     : res.level === 'outside' ? L('Fuera de rango', 'Out of range')
-      : res.level === 'tail' ? L('En el límite', 'At the edge') : L('No contradice lo visto', 'Not contradicted');
+      : res.level === 'tail' ? L('En la cola', 'In the tail') : L('No contradice lo visto', 'Not contradicted');
   const headline = paramsOk ? res.headline
     : paramsDiffer ? L('Estas cifras son de otra configuración', 'These figures are from another configuration')
       : L('No consta que estas cifras sean de la configuración propuesta', 'It is not confirmed that these figures are from the proposed configuration');
   const subline = paramsOk
     ? L(
-      `Contrastado con ${int(res.reference.observations)} observaciones de la meseta: ${int(res.reference.members)} configuraciones equivalentes por ${res.reference.periods.length} periodo(s).`,
-      `Contrasted with ${int(res.reference.observations)} plateau observations: ${int(res.reference.members)} equivalent configurations across ${res.reference.periods.length} period(s).`,
+      `Comparado con ${int(res.reference.observations)} resultados de las ${int(res.reference.members)} configuraciones de su meseta, ${res.reference.periods.length > 1 ? 'en el periodo optimizado y en el forward' : 'en el periodo optimizado'}.`,
+      `Compared with ${int(res.reference.observations)} results from the ${int(res.reference.members)} configurations in its plateau, ${res.reference.periods.length > 1 ? 'on the optimized period and on the forward' : 'on the optimized period'}.`,
     )
     : paramsDiffer
       ? L(
@@ -533,6 +550,25 @@ export function renderUnseen(a) {
         'En el informe no están todos los parámetros optimizados, así que no se puede comprobar que el backtest sea de la configuración propuesta. Las cifras se muestran, pero no validan nada hasta que eso se pueda comprobar.',
         'The report does not contain all the optimized parameters, so there is no way to check that the backtest used the proposed configuration. The figures are shown, but they validate nothing until that can be checked.',
       );
+
+  // Qué hace este resultado con el nivel del veredicto (js/ui-verdict.js#displayVerdictLevel):
+  // solo puede mantenerlo o bajarlo, y aquí se dice cuál de las dos, sin obligar a volver a la
+  // pestaña del veredicto para descubrirlo.
+  const hold = holdoutFact(a);
+  const engineLevel = a.verdict.level;
+  const shownLevel = displayVerdictLevel(a);
+  const levelLine = !a.meta.hasForward ? ''
+    : hold.against && shownLevel !== engineLevel
+      ? L(`Por eso el nivel de evidencia del veredicto baja de ${levelName(engineLevel).toLowerCase()} a moderada.`,
+        `That is why the verdict's evidence level drops from ${levelName(engineLevel).toLowerCase()} to moderate.`)
+      : hold.against
+        ? L('Va en contra de la configuración propuesta, pero el nivel del veredicto ya era moderado o menor, así que se queda igual.',
+          'It goes against the proposed configuration, but the verdict\'s level was already moderate or lower, so it stays the same.')
+        : hold.ok
+          ? L(`No contradice la configuración propuesta: el nivel de evidencia se queda en ${levelName(shownLevel).toLowerCase()}.`,
+            `It does not contradict the proposed configuration: the evidence level stays at ${levelName(shownLevel).toLowerCase()}.`)
+          : L('Este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.',
+            'This result does not count toward the evidence level: it neither keeps nor lowers it.');
 
   const statusMap = unseenStatus();
   const rows = res.results.map((r) => {
@@ -553,21 +589,22 @@ export function renderUnseen(a) {
       <span class="u-result-tag">${stamp}</span>
       <h2 class="u-result-title">${esc(headline)}</h2>
       <p class="vx-pass-note">${esc(subline)}</p>
+      ${levelLine ? `<p class="vx-pass-note u-level-line">${esc(levelLine)}</p>` : ''}
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>
       <div class="table-wrap"><table class="u-table">
-        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango que el EA ya demostró, ajustado a tu tramo', 'Range the EA already showed, adjusted to your segment')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
+        <thead><tr><th>${L('Métrica', 'Metric')}</th><th>${L('Tu tramo', 'Your segment')}</th><th>${L('Rango de su meseta, ajustado a tu tramo', 'Range of its plateau, adjusted to your segment')}</th><th>${L('Habitual (Q10&ndash;Q90)', 'Typical (Q10&ndash;Q90)')}</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
       <p class="chart-note">
         ${L(
-          `La caja marca el recorrido habitual y la línea fina todo lo que el EA ha llegado a mostrar.
+          `La caja marca el recorrido habitual de la meseta y la línea fina todo lo que llegó a dar.
         El punto es tu tramo. Las métricas con <span class="u-scaled">&#8597;</span> se han ajustado a
         las ${int(res.trades)} operaciones de tu periodo: el drawdown máximo y el factor de
         recuperación dependen de cuántas operaciones haya, así que compararlos en crudo contra un
         periodo más largo lleva justo a la conclusión contraria.`,
-          `The box marks the typical range and the thin line everything the EA has ever shown.
+          `The box marks the plateau's typical range and the thin line everything it ever produced.
         The dot is your segment. Metrics with <span class="u-scaled">&#8597;</span> have been adjusted to
         the ${int(res.trades)} trades in your period: maximum drawdown and recovery
         factor depend on how many trades there are, so comparing them raw against a

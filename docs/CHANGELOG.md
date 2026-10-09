@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-10-09 — Pestañas del informe (1/3): textos que decían algo que no era cierto
+
+Revisión de Mesetas, Descartes, Parámetros, Diagnóstico, Periodo no visto y Método contra el
+motor (dos revisiones de código en paralelo y capturas en todos los tamaños).
+
+- **Periodo no visto:** la cabecera dice ya que el resultado solo puede mantener o bajar el
+  nivel, y la tarjeta del resultado dice qué ha hecho con él («Por eso el nivel de evidencia
+  del veredicto baja de sólida a moderada»). Se compara con la **meseta**, no con «el EA».
+  El Monte Carlo remuestrea días por bloques, no «baraja» operaciones. Un drawdown que queda
+  mejor que todo lo visto ya no «supera» todo lo visto. Sin forward, los textos no hablan de
+  él. «Días con operaciones» era días de mercado; «se usan las fechas» era «se muestran»;
+  «arriba» no lo era. El sello «En el límite» pasa a «En la cola», como en la tabla.
+- **Método (app):** enseña todos los límites de la página pública (eran 6 de 8, fijos en el
+  código). Prueba de navegador que compara las dos.
+- **Descartes:** «Poca robustez» salía en configuraciones con robustez 86-94; la causa real
+  era una zona de menos de 3 configuraciones, y ahora lo dice. Si el forward no trae una
+  columna Forward Result reconocible, la tabla se ordena por Result (y lo avisa) en vez de
+  quedarse vacía diciendo que eso era «buena señal».
+- **Parámetros invertidos:** el valor que gana en el periodo optimizado «no es el que gana
+  en el forward» (lo que se mide), no «es de los que pierden». Motor, pestañas, veredicto y
+  Metodología.
+- **Parámetros:** el mapa enseña de verdad los dos parámetros más influyentes (los mismos
+  que las barras y el 3D) y no se pinta con un solo parámetro; la nota del gráfico de
+  sensibilidad dice lo que marca; «aislado» pasa a «por sí solo».
+- **Mesetas:** en una rejilla completa ya no propone «reoptimizar» lo que ya está probado
+  entero (propone afinar con pasos más finos). La ficha avisa si MT5 no pasó esa
+  configuración al forward.
+- **Diagnóstico:** «Métricas usadas para juzgar» ya no incluye el beneficio esperado, que no
+  puntúa; la columna Result también sirve para medir si el orden de MT5 aguanta; el Sharpe
+  máximo dice de qué periodo es; sin forward se ocultan las filas que no aplican y se
+  explica cómo se detectaron los parámetros; el formato interno del .set ya no se enseña.
+- **Glosario:** robustez (es una nota por configuración, no lo que ordena las mesetas) y
+  Sharpe (sobre la curva de equity desde el build 3210).
+- **Motor, sin cambiar resultados:** el mínimo de operaciones del forward se redondea hacia
+  arriba (con operaciones enteras exigir 50,1 es exigir 51; comprobado en 60 casos del banco:
+  ningún cambio). Los días necesarios para distinguir el resultado de cero se calculan en
+  forma cerrada (la búsqueda de 10 en 10 dejaba «potencia 86 %» junto a «no se distingue de
+  cero»), con prueba de respuesta conocida.
+
 ## 2026-10-09 — Metodología al día con el motor, y un fallo de la estabilidad corregido
 
 - **Fallo corregido** (`core/analysis.js`): al repetir la búsqueda moviendo nuestros umbrales

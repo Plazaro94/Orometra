@@ -435,8 +435,8 @@ export function buildVerdict(ctx) {
     }
   } else if (!searchCoverage || !searchCoverage.present) {
     add(SEV.INFO, L('Sin .set de optimización: cobertura solo sobre niveles vistos', 'No optimization .set: coverage is on seen levels only'),
-      L('Suelta el .set con el que lanzaste la optimización (inicio||paso||fin||Y) para medir qué fracción del rango pedido cubren tus archivos.',
-        'Drop the .set you launched the optimization with (start||step||stop||Y) to measure what fraction of the requested range your files cover.'), 'coverage');
+      L('Suelta el .set con el que lanzaste la optimización (el que guarda el inicio, el paso y el fin de cada parámetro) para medir qué parte del rango pedido cubren tus archivos.',
+        'Drop the .set you launched the optimization with (the one that stores each parameter’s start, step and stop) to measure how much of the requested range your files cover.'), 'coverage');
   }
 
   if (Number.isFinite(medianSupport) && medianSupport < 4) {
@@ -485,9 +485,9 @@ export function buildVerdict(ctx) {
     const top = inversions.slice(0, 5);
     const listEs = top.map((x) => `${x.name}: el periodo optimizado prefiere ${x.bestIs}, pero en el forward gana ${x.bestOos} (quedarte con el valor del periodo optimizado tira el ${fmt((100 * x.regretShare), 0)} % del margen disponible)`).join('; ');
     const listEn = top.map((x) => `${x.name}: the optimized period prefers ${x.bestIs}, but on the forward ${x.bestOos} wins (keeping the optimized period value throws away ${fmt((100 * x.regretShare), 0)}% of the available margin)`).join('; ');
-    add(SEV.WARN, L(`En ${inversions.length} parámetro(s), el valor que gana en el periodo optimizado es de los que pierden en el forward`, `In ${inversions.length} parameter(s), the value that wins on the optimized period is among those that lose on the forward`),
-      L(`${listEs}. Esta es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al revés. El óptimo de esos parámetros depende del régimen de mercado y no de la estrategia, así que afinarlos sobre el periodo optimizado es tiempo perdido. Déjalos en un valor central y decide con los que sí son coherentes entre periodos.`,
-        `${listEn}. This is the mechanical cause of the ranking not transferring: signal is not missing, it points the wrong way. The optimum of those parameters depends on market regime, not on the strategy, so tuning them on the optimized period is wasted time. Leave them at a central value and decide with those that are coherent across periods.`), 'parameters');
+    add(SEV.WARN, L(`En ${inversions.length} ${pl(inversions.length, 'parámetro', 'parámetros')}, el valor que gana en el periodo optimizado no es el que gana en el forward`, `In ${inversions.length} ${pl(inversions.length, 'parameter', 'parameters')}, the value that wins on the optimized period is not the one that wins on the forward`),
+      L(`${listEs}. Es una de las razones por las que el orden de la tabla no se mantiene entre periodos: el mejor valor de esos parámetros se movió de un periodo a otro, y puede depender más del momento del mercado que de la estrategia. Afinarlos sobre el periodo optimizado aporta poco: déjalos en un valor central y decide con los que sí son coherentes entre periodos.`,
+        `${listEn}. It is one of the reasons the table order does not hold across periods: the best value of those parameters moved from one period to the other, and it may depend more on the market phase than on the strategy. Fine-tuning them on the optimized period adds little: leave them at a central value and decide with those that are coherent across periods.`), 'parameters');
     tableOnly();
   }
 
@@ -514,9 +514,9 @@ export function buildVerdict(ctx) {
     const altEn = alternativePlateau
       ? ` Plateau ${alternativePlateau.rank} (representative: pass ${alternativePlateau.record.id}) does not have that problem and is the natural alternative.`
       : '';
-    add(SEV.WARN, L('La configuración propuesta se apoya en un valor que el forward castiga', 'The proposed configuration leans on a value the forward punishes'),
-      L(`${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: es el valor que gana en el periodo optimizado, pero su nivel es de los peores en el forward. Que esta configuración concreta aguante ahí puede ser mérito suyo o puede ser suerte, y no hay forma de distinguirlo con estos datos.${altEs}`,
-        `${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: that is the value that wins on the optimized period, but its level is among the worst on the forward. That this specific configuration holds there may be its merit or may be luck, and there is no way to tell with these data.${altEn}`), 'plateau');
+    add(SEV.WARN, L('La configuración propuesta usa un valor que gana en el periodo optimizado, pero no en el forward', 'The proposed configuration uses a value that wins on the optimized period, but not on the forward'),
+      L(`${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: es el valor que gana en el periodo optimizado, pero en el forward gana otro y quedarse con este cuesta margen. Que esta configuración concreta aguante en el forward puede ser mérito suyo o puede ser suerte, y no hay forma de distinguirlo con estos datos.${altEs}`,
+        `${invertedRisk.map((x) => `${x.name} = ${x.bestIs}`).join(', ')}: that is the value that wins on the optimized period, but another one wins on the forward and keeping this one costs margin. That this specific configuration holds on the forward may be its merit or may be luck, and there is no way to tell with these data.${altEn}`), 'plateau');
   }
 
   if (boundaryWorst && boundaryWorst.length) {
@@ -741,9 +741,19 @@ export function peakRejectTags(p, opts = {}) {
         `its weakest neighbors stay at ${fmt(p.st.q25, 2)} quality (a plateau needs ${fmt(plateauFloorQuality, 2)})`));
   }
   if (!out.length) {
-    tagged(L('Poca robustez', 'Low robustness'),
-      L('tiene vecinos suficientes, pero no llega a la robustez que se pide a una meseta',
-        'has enough neighbors but does not reach the robustness required of a plateau'));
+    // Si su robustez sí llega, lo que falla es que su zona conexa tiene menos configuraciones
+    // de las que pide una meseta (engine.js, plateauMinSize): «poca robustez» era falso.
+    const minRobust = opts.plateauMinRobust ?? 50;
+    const minSize = opts.plateauMinSize ?? 3;
+    if (Number.isFinite(p.robust) && p.robust >= minRobust) {
+      tagged(L('Zona demasiado pequeña', 'Zone too small'),
+        L(`cumple lo que se pide a una meseta, pero forma una zona de menos de ${minSize} configuraciones así`,
+          `it meets what a plateau requires, but it forms a zone of fewer than ${minSize} such configurations`));
+    } else {
+      tagged(L('Poca robustez', 'Low robustness'),
+        L('tiene vecinas suficientes, pero no llega a la robustez que se pide a una meseta',
+          'has enough neighbors but does not reach the robustness required of a plateau'));
+    }
   }
   return out;
 }
