@@ -865,14 +865,22 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       'coreFloorQuality', 'coreMinRobust', 'minSupport', 'plateauMinSize'];
     const rng = makeRng(20260920);
     const internalDraws = [];
+    // La fracción de vecinas que deben cumplir es una proporción con techo en 1: multiplicar
+    // 0,9 por más de 1,111 pedía más del 100 % y esa repetición no podía encontrar ninguna
+    // meseta (9 de las 50), así que la estabilidad nunca pasaba de 0,82. Se mueve lo que le
+    // falta para 1, igual que el factor de beneficio de tus mínimos se mueve sobre lo que
+    // pasa de 1: 0,9 queda entre 0,88 y 0,92.
+    const moved = (key, factor) => (key === 'plateauMinFracPass'
+      ? 1 - (1 - opts[key]) * factor
+      : opts[key] * factor);
     // Primero los extremos de cada constante por separado, que es donde mas se nota.
     for (const key of KEYS) {
-      for (const factor of [0.8, 1.2]) internalDraws.push({ ...opts, [key]: opts[key] * factor });
+      for (const factor of [0.8, 1.2]) internalDraws.push({ ...opts, [key]: moved(key, factor) });
     }
     // Y despues combinaciones simultaneas, porque las constantes interactuan.
     for (let d = 0; d < 36; d++) {
       const draw = { ...opts };
-      for (const key of KEYS) draw[key] = opts[key] * (0.8 + 0.4 * rng());
+      for (const key of KEYS) draw[key] = moved(key, 0.8 + 0.4 * rng());
       internalDraws.push(draw);
     }
     const internal = tally(internalDraws.map((draw) => winner(draw, passes, stability, robust)));

@@ -189,3 +189,15 @@ M1. Si no propone meseta, se registra como «se abstiene».
   ventaja y sigue en 0 sin ventaja (`calib-v3b`). Nada más cambia. **Cuarto examen:**
   semillas 4001-4100, nunca generadas; una sola vez, motor congelado, se publica tal como
   salga.
+- **2026-10-09, tras el cuarto examen y antes del quinto.** El cuarto examen (semillas
+  4001-4100, `REPORT-exam4.md`) aprueba los criterios nuevos y suspende dos que el motor
+  anterior también suspende con esas semillas («moderada o más» en S5, 7 %; elección frente
+  a la media con vecinas, 0,227 frente a 0,192). **Fallo encontrado al documentar el motor,
+  no al mirar resultados:** en la repetición con los umbrales internos movidos un ±20 %, la
+  fracción mínima de vecinas que cumplen (0,9) se multiplicaba por el factor y por encima
+  de 1,111 pedía más del 100 %; esas repeticiones (9 de 50) no podían encontrar meseta y la
+  estabilidad nunca pasaba de 0,82 (287 casos del cuarto examen en ese tope). Cambio: esa
+  fracción se mueve sobre lo que le falta para 1 (0,9 queda entre 0,88 y 0,92). Nada más
+  cambia. Calibración (`calib-v4`): sin falsos positivos en «buena» ni «sólida»; con
+  ventaja, 64 «buena» y 22 «sólida» de 500. **Quinto examen:** semillas 5001-5100, nunca
+  generadas; una sola vez, motor congelado, se publica tal como salga.

@@ -4,7 +4,8 @@
 //   node bench/run.js test             semillas 1001-1100 (primer examen, ya visto)
 //   node bench/run.js exam2            semillas 2001-2100 (segundo examen, ya visto)
 //   node bench/run.js exam3            semillas 3001-3100 (tercer examen, ya visto)
-//   node bench/run.js exam4            semillas 4001-4100 (cuarto examen, ciego)
+//   node bench/run.js exam4            semillas 4001-4100 (cuarto examen, ya visto)
+//   node bench/run.js exam5            semillas 5001-5100 (quinto examen, ciego)
 //   node bench/run.js calib S3 5       un escenario y N semillas (pruebas rápidas)
 //
 // Escribe una línea JSON por caso en bench/results/<split>[-BENCH_TAG].jsonl.
@@ -117,7 +118,7 @@ async function evaluateCase(scenario, seed) {
 if (isMainThread) {
   const [split = 'calib', only, nArg] = process.argv.slice(2);
   const { SCENARIOS } = await import('./sim.js');
-  const base = split === 'exam4' ? 4001 : split === 'exam3' ? 3001 : split === 'exam2' ? 2001 : split === 'test' ? 1001 : 1;
+  const base = split === 'exam5' ? 5001 : split === 'exam4' ? 4001 : split === 'exam3' ? 3001 : split === 'exam2' ? 2001 : split === 'test' ? 1001 : 1;
   const n = nArg ? Number(nArg) : 100;
   const scen = only ? only.split(',') : SCENARIOS;
   const tasks = [];

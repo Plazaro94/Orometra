@@ -31,7 +31,7 @@ const isHigh = (l) => l === 'good' || l === 'strong';
 const out = [];
 const verdicts = [];
 const verdict = (name, ok, detail) => { verdicts.push({ name, ok, detail }); };
-out.push(`# Resultados del banco de pruebas: ${split.startsWith('exam4') ? 'cuarto examen (ciego)' : split.startsWith('exam3') ? 'tercer examen (ciego)' : split.startsWith('exam2') ? 'segundo examen (ciego)' : split.startsWith('test') ? 'primer examen' : 'calibración'} (${split})`);
+out.push(`# Resultados del banco de pruebas: ${split.startsWith('exam5') ? 'quinto examen (ciego)' : split.startsWith('exam4') ? 'cuarto examen (ciego)' : split.startsWith('exam3') ? 'tercer examen (ciego)' : split.startsWith('exam2') ? 'segundo examen (ciego)' : split.startsWith('test') ? 'primer examen' : 'calibración'} (${split})`);
 out.push('');
 out.push(`Casos: ${rows.length} · errores del motor: ${errors.length} · fallos del banco: ${fatal.length}`);
 out.push('');
