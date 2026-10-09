@@ -29,7 +29,8 @@ const pl = (n, uno, varios) => (Number(n) === 1 ? uno : varios);
 const gateValue = (name, v) => (name === 'drawdown' ? `${fmt(v, 1)}${pctSign()}` : name === 'trades' ? fmt(v, 0) : fmt(v, 2));
 
 export const LEVELS = {
-  STRONG: 'strong',            // region amplia y bien sostenida
+  STRONG: 'strong',            // meseta validada en el forward, sin avisos sobre ella
+  GOOD: 'good',                // validada, con un aviso sobre ella
   MODERATE: 'moderate',        // hay region, con avisos que leer
   WEAK: 'weak',                // hay algo, pero apenas lo sostiene nada
   INSUFFICIENT: 'insufficient', // no hay masa para pronunciarse en ninguna direccion
@@ -49,6 +50,11 @@ export function buildVerdict(ctx) {
   const add = (severity, title, detail, category = null) => {
     findings.push({ severity, title, detail, category });
   };
+  // Avisos sobre el ORDEN de la tabla de MT5 o sobre cómo MT5 arma el forward, no sobre
+  // la meseta propuesta: se leen igual, pero no impiden «buena» ni «sólida». El de la
+  // preselección del forward sale en todo export real de MT5 (solo reexporta las mejores),
+  // y mientras bloqueaba, con archivos reales nunca se pasaba de «moderada».
+  const tableOnly = () => { findings[findings.length - 1].scope = 'table'; };
 
   const { gatePassCount, total, plateaus, fragility, fragilityQuality, fragilityFolds, fragilityAsymmetry,
     fragilityWorstDirection, sharpeTest, spearman, coverage, searchCoverage, medianSupport,
@@ -155,6 +161,7 @@ export function buildVerdict(ctx) {
       add(SEV.WARN, L(`Tu ranking MT5 (Result) no se sostiene: falla el ${fmt((100 * fragility), 0)} %`, `Your MT5 ranking (Result) does not hold: it fails ${fmt((100 * fragility), 0)}%`),
         L(`Al quedarte con la mejor fila según la columna Result de un periodo, cae por debajo de la mediana del otro el ${fmt((100 * fragility), 0)} % de las veces. Eso condena el orden de tu tabla, no la región de calidad que propone Orometra. Ignora el ranking y quédate con la meseta de abajo.`,
           `When you keep the best row by the Result column of one period, it falls below the median of the other period ${fmt((100 * fragility), 0)}% of the time. That condemns your table order, not the plateau Orometra proposes. Ignore the ranking and keep the plateau below.`), 'stats');
+      tableOnly();
     } else if (fragility >= 0.5) {
       add(SEV.CRITICAL, L(`La regla «primera de Result» falla el ${fmt((100 * fragility), 0)} % de las veces`, `The "top Result row" rule fails ${fmt((100 * fragility), 0)}% of the time`),
         L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)} % al cruzar periodos, y no hay región amplia donde refugiarse. Por encima del 50 % ese ranking vale menos que lanzar una moneda.`,
@@ -163,6 +170,7 @@ export function buildVerdict(ctx) {
       add(SEV.WARN, L(`El orden de MT5 solo se mantiene a medias: falla el ${fmt((100 * fragility), 0)} %`, `The MT5 order only half holds: it fails ${fmt((100 * fragility), 0)}%`),
         L(`La mejor fila según la columna Result de un periodo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)} % de las veces. Ese orden conserva algo de valor, pero no el suficiente para fiarte de la primera fila: elige por meseta.`,
           `The best row by the Result column of one period falls below the middle of the table in the other period ${fmt((100 * fragility), 0)}% of the time. That order keeps some value, but not enough to trust the top row: choose by plateau.`), 'stats');
+      tableOnly();
     } else {
       add(SEV.OK, L(`El orden de MT5 se mantiene entre periodos: solo falla el ${fmt((100 * fragility), 0)} %`, `The MT5 order holds across periods: it only fails ${fmt((100 * fragility), 0)}%`),
         L(`La mejor fila según la columna Result de un periodo solo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)} % de las veces: ese orden sí anticipa algo.`,
@@ -173,8 +181,9 @@ export function buildVerdict(ctx) {
   if (Number.isFinite(fragilityQuality)) {
     if (fragilityQuality >= 0.5) {
       add(SEV.WARN, L(`La nota de Orometra también se tambalea entre periodos: falla el ${fmt((100 * fragilityQuality), 0)} %`, `The Orometra score also wobbles across periods: it fails ${fmt((100 * fragilityQuality), 0)}%`),
-        L('Aunque no se use la columna Result, la nota con varias métricas a la vez (factor de beneficio, drawdown, operaciones…) también pierde orden al pasar de un periodo a otro. La meseta sigue siendo mejor que la cima, pero probarla en un periodo no visto es imprescindible.',
-          'Even without the Result column, the score built from several metrics at once (profit factor, drawdown, trades…) also loses order from one period to the other. The plateau is still better than the peak, but testing it on an unseen period is essential.'), 'stats');
+        L('Aunque no se use la columna Result, la nota con varias métricas a la vez (factor de beneficio, drawdown, operaciones…) también pierde orden al pasar de un periodo a otro. Eso afecta al puesto de cada configuración en la tabla, no a la meseta, que se valida aparte en el forward: elige por meseta, no por puesto.',
+          'Even without the Result column, the score built from several metrics at once (profit factor, drawdown, trades…) also loses order from one period to the other. That affects each configuration\'s rank in the table, not the plateau, which is validated separately on the forward: choose by plateau, not by rank.'), 'stats');
+      tableOnly();
     } else if (fragilityQuality < 0.3) {
       add(SEV.OK, L(`La nota de Orometra se mantiene entre periodos: solo falla el ${fmt((100 * fragilityQuality), 0)} %`, `The Orometra score holds across periods: it only fails ${fmt((100 * fragilityQuality), 0)}%`),
         L('La nota con varias métricas a la vez (factor de beneficio, drawdown, operaciones…) conserva el orden de las configuraciones de un periodo a otro.',
@@ -220,8 +229,9 @@ export function buildVerdict(ctx) {
     const a = fragilityFolds.isToOos.value;
     const b = fragilityFolds.oosToIs.value;
     add(SEV.WARN, L('Los dos periodos no son intercambiables', 'The two periods are not interchangeable'),
-      L(`Elegir en el periodo optimizado y validar en el forward falla el ${fmt((100 * a), 0)} % de las veces; al revés, el ${fmt((100 * b), 0)} %. Una ventaja real daría cifras parecidas: una diferencia de ${fmt((100 * fragilityAsymmetry), 0)} puntos indica que uno de los tramos es más fácil o es otro régimen de mercado. Por eso aquí el periodo no visto es imprescindible.`,
-        `Choosing on the optimized period and validating on the forward fails ${fmt((100 * a), 0)}% of the time; the other way around, ${fmt((100 * b), 0)}%. A real edge would give similar figures: a ${fmt((100 * fragilityAsymmetry), 0)}-point gap means one stretch is easier or a different market regime. That is why the unseen period is essential here.`), 'stats');
+      L(`Elegir en el periodo optimizado y validar en el forward falla el ${fmt((100 * a), 0)} % de las veces; al revés, el ${fmt((100 * b), 0)} %. Una ventaja real daría cifras parecidas: una diferencia de ${fmt((100 * fragilityAsymmetry), 0)} puntos indica que uno de los tramos es más fácil o es otro régimen de mercado. Mide el orden de la tabla, no la meseta, pero conviene tenerlo en cuenta: un periodo no visto es la mejor forma de comprobar que la meseta no depende del tramo fácil.`,
+        `Choosing on the optimized period and validating on the forward fails ${fmt((100 * a), 0)}% of the time; the other way around, ${fmt((100 * b), 0)}%. A real edge would give similar figures: a ${fmt((100 * fragilityAsymmetry), 0)}-point gap means one stretch is easier or a different market regime. It measures the table order, not the plateau, but it is worth keeping in mind: an unseen period is the best way to check that the plateau does not depend on the easy stretch.`), 'stats');
+    tableOnly();
   }
 
   /*
@@ -444,14 +454,16 @@ export function buildVerdict(ctx) {
       add(SEV.WARN, L(`El ranking no transfiere de un periodo al otro (rho = ${fmt(spearman, 2)})`, `The ranking does not transfer from one period to the other (rho = ${fmt(spearman, 2)})`),
         L(`De las ${fwdBase.toLocaleString(localeTag())} configuraciones que MT5 pasó al forward, el ${fmt((100 * gatePassCount / fwdBase), 0)} % cumple los mínimos en los dos periodos: hay configuraciones que aguantan. Lo que no vale es el orden: la primera en el periodo optimizado no predice la primera en el forward. Elige por meseta estable en los dos periodos, no por puesto.`,
           `Of the ${fwdBase.toLocaleString(localeTag())} configurations MT5 passed to the forward, ${fmt((100 * gatePassCount / fwdBase), 0)}% meet the minimums in both periods: some configurations do hold. What has no value is the order: first on the optimized period does not predict first on the forward. Choose by a plateau stable in both periods, not by rank.`), 'stats');
+      tableOnly();
     } else if (spearman < 0.1) {
       add(SEV.CRITICAL, L(`Lo que rinde bien en el periodo optimizado no dice nada del forward (${fmt(spearman, 2)} sobre 1)`, `What does well on the optimized period says nothing about the forward (${fmt(spearman, 2)} out of 1)`),
         L(`Solo el ${fmt((100 * gatePassCount / fwdBase), 0)} % de las configuraciones con forward cumple los mínimos y además lo que rinde en el periodo optimizado no dice nada sobre el forward. Es compatible con un sistema sin ventaja real.`,
           `Only ${fmt((100 * gatePassCount / fwdBase), 0)}% of configurations with forward meet the minimums and what does well on the optimized period says nothing about the forward. That is consistent with a system with no real edge.`), 'stats');
     } else if (spearman < 0.3) {
       add(SEV.WARN, L(`Lo que rinde bien en el periodo optimizado dice poco del forward (${fmt(spearman, 2)} sobre 1)`, `What does well on the optimized period says little about the forward (${fmt(spearman, 2)} out of 1)`),
-        L('Hay algo de señal, pero poca. Conviene ampliar el periodo de datos antes de tomar decisiones.',
-          'There is some signal, but little. It is worth widening the data period before deciding.'), 'stats');
+        L('Hay algo de señal en el orden general, pero poca: el puesto en la tabla anticipa poco del forward. Elige por meseta, no por puesto.',
+          'There is some signal in the overall order, but little: rank in the table anticipates little of the forward. Choose by plateau, not by rank.'), 'stats');
+      tableOnly();
     } else {
       add(SEV.OK, L(`Lo que rinde bien en el periodo optimizado tiende a rendir bien en el forward (${fmt(spearman, 2)} sobre 1)`, `What does well on the optimized period tends to do well on the forward (${fmt(spearman, 2)} out of 1)`),
         L('El orden general de las configuraciones se conserva de un periodo al otro.',
@@ -476,6 +488,7 @@ export function buildVerdict(ctx) {
     add(SEV.WARN, L(`En ${inversions.length} parámetro(s), el valor que gana en el periodo optimizado es de los que pierden en el forward`, `In ${inversions.length} parameter(s), the value that wins on the optimized period is among those that lose on the forward`),
       L(`${listEs}. Esta es la causa mecánica de que el ranking no transfiera: la señal no falta, apunta al revés. El óptimo de esos parámetros depende del régimen de mercado y no de la estrategia, así que afinarlos sobre el periodo optimizado es tiempo perdido. Déjalos en un valor central y decide con los que sí son coherentes entre periodos.`,
         `${listEn}. This is the mechanical cause of the ranking not transferring: signal is not missing, it points the wrong way. The optimum of those parameters depends on market regime, not on the strategy, so tuning them on the optimized period is wasted time. Leave them at a central value and decide with those that are coherent across periods.`), 'parameters');
+    tableOnly();
   }
 
   if (periodComparison) {
@@ -539,6 +552,7 @@ export function buildVerdict(ctx) {
           'MT5 only passed part of the configurations to the forward (the best ones)'),
         L(`El export del forward trae ${integrity.oosRows} filas frente a ${integrity.isRows} del export de la optimización (~${pct} %). MT5 solo prueba en el forward las mejores pasadas según tu criterio de optimización, así que las mesetas y la fragilidad en forward se miden solo entre candidatas ya preseleccionadas: la validación queda sesgada al alza. Interpreta el forward con cautela.`,
           `The forward export has ${integrity.oosRows} rows versus ${integrity.isRows} in the optimization export (~${pct}%). MT5 only tests the best passes by your optimization criterion in the forward, so plateaus and forward fragility are measured only among already pre-selected candidates: validation is biased upward. Treat the forward with caution.`), 'integrity');
+      tableOnly();
     }
     if (integrity.duplicateIds > 0) {
       add(SEV.WARN, L(`${integrity.duplicateIds} identificadores duplicados`, `${integrity.duplicateIds} duplicate identifiers`),
@@ -576,6 +590,15 @@ export function buildVerdict(ctx) {
   const criticas = findings.filter((f) => f.severity === SEV.CRITICAL);
   const warnings = findings.filter((f) => f.severity === SEV.WARN);
   const regiones = plateaus.length;
+  // «Buena» y «sólida» se ganan con criterios que se cumplen, no con la ausencia de todo
+  // aviso: la meseta recomendada tiene configuraciones probadas en el forward y no cae por
+  // debajo de lo crítico allí, y la recomendación se ha repetido moviendo los umbrales.
+  // Los avisos que quedan (los que no son solo de la tabla) dicen cuánto falta: ninguno,
+  // «sólida»; uno, «buena». Lo calibra bench/ (enmienda del 2026-10-09 en PREREGISTRO.md).
+  const bpv = bestPlateau && bestPlateau.oosValidation;
+  const validated = Boolean(hasForward && selectionMode === 'isThenOos' && bpv && bpv.withForward > 0
+    && stabilityCheck && stabilityCheck.draws);
+  const blocking = warnings.filter((f) => f.scope !== 'table');
 
   let level;
   let headline;
@@ -597,16 +620,25 @@ export function buildVerdict(ctx) {
           `There ${regiones === 1 ? 'is a plateau' : `are ${regiones} plateaus`} in your data (below). What is weak is not “that no plateau exists”, but how much weight you can give it: ${criticas.length === 1 ? 'there is one serious limitation' : `there are ${criticas.length} serious limitations`} in what supports it. Keep that in mind before deciding.`)
       : L('No hay ninguna meseta en estos datos, solo configuraciones sueltas. Abajo tienes las mejores, pero un punto aislado puede ser suerte.',
           'There is no plateau in these data, only isolated configurations. Below you have the best ones, but an isolated point may be luck.');
-  } else if (warnings.length) {
-    level = LEVELS.MODERATE;
-    headline = L('Evidencia moderada', 'Moderate evidence');
-    summary = L(`Hay ${regiones === 1 ? 'una meseta' : `${regiones} mesetas`} con soporte real, pero con ${warnings.length === 1 ? 'un aviso que conviene leer' : `${warnings.length} avisos que conviene leer`} antes de decidir.`,
-      `There ${regiones === 1 ? 'is one plateau' : `are ${regiones} plateaus`} with real support, but with ${warnings.length === 1 ? 'one warning worth reading' : `${warnings.length} warnings worth reading`} before deciding.`);
-  } else {
+  } else if (validated && blocking.length === 0) {
     level = LEVELS.STRONG;
     headline = L('Evidencia sólida', 'Solid evidence');
-    summary = L(`${regiones === 1 ? 'La meseta propuesta' : 'Las mesetas propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinos que también superan tus mínimos, y el resultado aguanta al mover los umbrales. Es lo máximo que estos datos pueden respaldar.`,
-      `${regiones === 1 ? 'The proposed plateau rests' : 'The proposed plateaus rest'} on neighbors that also clear your minimums, and the result holds when thresholds are moved. That is the most these data can support.`);
+    summary = L(`${regiones === 1 ? 'La meseta propuesta' : 'Las mesetas propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinas que también cumplen tus mínimos, ${regiones === 1 ? 'aguanta' : 'aguantan'} en el forward y la recomendación se mantiene al mover los umbrales. Es lo máximo que el periodo optimizado y el forward pueden respaldar; un periodo no visto puede mantenerla o bajarla.`,
+      `${regiones === 1 ? 'The proposed plateau rests' : 'The proposed plateaus rest'} on neighbors that also clear your minimums, ${regiones === 1 ? 'holds' : 'hold'} on the forward, and the recommendation holds when thresholds are moved. That is the most the optimized period and the forward can support; an unseen period can keep it there or lower it.`);
+  } else if (validated && blocking.length === 1) {
+    level = LEVELS.GOOD;
+    headline = L('Evidencia buena', 'Good evidence');
+    summary = L(`${regiones === 1 ? 'La meseta propuesta' : 'Las mesetas propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinas que también cumplen tus mínimos, ${regiones === 1 ? 'aguanta' : 'aguantan'} en el forward y la recomendación se mantiene al mover los umbrales. Se queda a un paso de sólida: hay un aviso que conviene leer antes de decidir.`,
+      `${regiones === 1 ? 'The proposed plateau rests' : 'The proposed plateaus rest'} on neighbors that also clear your minimums, ${regiones === 1 ? 'holds' : 'hold'} on the forward, and the recommendation holds when thresholds are moved. It stays one step short of strong: there is one warning worth reading before deciding.`);
+  } else {
+    // Con avisos sobre la meseta, o sin forward con el que validarla.
+    level = LEVELS.MODERATE;
+    headline = L('Evidencia moderada', 'Moderate evidence');
+    summary = warnings.length
+      ? L(`Hay ${regiones === 1 ? 'una meseta' : `${regiones} mesetas`} con soporte real, pero con ${warnings.length === 1 ? 'un aviso que conviene leer' : `${warnings.length} avisos que conviene leer`} antes de decidir.`,
+        `There ${regiones === 1 ? 'is one plateau' : `are ${regiones} plateaus`} with real support, but with ${warnings.length === 1 ? 'one warning worth reading' : `${warnings.length} warnings worth reading`} before deciding.`)
+      : L(`Hay ${regiones === 1 ? 'una meseta' : `${regiones} mesetas`} con soporte real, pero no se ha podido validar en el forward.`,
+        `There ${regiones === 1 ? 'is one plateau' : `are ${regiones} plateaus`} with real support, but it could not be validated on the forward.`);
   }
 
   /*

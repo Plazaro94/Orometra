@@ -152,3 +152,26 @@ M1. Si no propone meseta, se registra como «se abstiene».
   a 0,180 de B4 en esos mismos casos; cuando se abstiene (129), la sugerencia orientativa da
   0,317 frente a 0,405 de B4. La derrota agregada viene solo de contar la abstención como 1.
   No se cambia ese criterio.
+- **2026-10-09, tras la calibración y antes del tercer examen.** Con exports reales de MT5
+  el motor no podía pasar de «moderada»: «sólida» exigía cero avisos y el aviso de que MT5
+  solo reexporta al forward las mejores pasadas sale en todo export real. En el banco
+  tampoco salía nunca (0 casos en el segundo examen). Cambios, elegidos solo con la
+  calibración (semillas 1-100; `calib-warn.jsonl` y `calib-v3.jsonl`):
+  (1) los avisos que miden el **orden de la tabla** y no la meseta propuesta (ranking de
+  MT5, orden de la nota de Orometra entre periodos, transferencia del ranking, asimetría
+  entre periodos, valores que se invierten por parámetro, preselección del forward) se
+  siguen mostrando, pero no cuentan para los niveles altos;
+  (2) **«sólida»**: sin críticos, la meseta recomendada tiene configuraciones probadas en
+  el forward, se ha repetido la búsqueda moviendo los umbrales y no queda ningún aviso
+  sobre la meseta; **«buena»**: lo mismo con un solo aviso; el resto con meseta,
+  «moderada». Ya no hace falta el periodo no visto para «sólida»: si se aporta y va en
+  contra, la interfaz la baja a «moderada»; si no la contradice, se queda igual (nunca
+  sube de nivel).
+  La elección de la configuración no cambia. En calibración: «buena» o «sólida» en 0 de
+  300 casos sin ventaja; con ventaja, 90 «buena» y 22 «sólida» de 500; ventaja real media
+  de la elegida 0,190 (moderada), 0,228 (buena), 0,256 (sólida).
+  **Criterios añadidos** (más exigentes): «sólida» ≤ 1 % y «buena» o «sólida» ≤ 2 % en
+  **cada** escenario sin ventaja; coherencia insuficiente/débil < moderada ≤ buena ≤
+  sólida. Los anteriores no cambian («moderada o sólida» pasa a leerse «moderada o más»).
+  **Tercer examen:** semillas 3001-3100, nunca generadas ni vistas antes; se ejecuta una
+  sola vez con el motor congelado y se publica tal como salga.
