@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-09 — Portada: las cifras del banco de pruebas, también en puntos
+
+- En «Puesto a prueba donde se sabe la respuesta», cada cifra lleva una rejilla con un punto
+  por optimización: 300 sin ventaja, con las 10 falsas alarmas en rojo, y 40 con ventaja, con
+  las 34 detectadas en lima. Las dos rejillas usan el mismo paso, así que también se ve que
+  una muestra es mucho más pequeña que la otra. En vez de foto de fondo: ya hay dos (portada y
+  cierre) y una tercera restaba contraste a las cifras.
+- SVG con patrones, sin peso apreciable; decorativo (`aria-hidden`), porque el texto ya dice lo
+  mismo. En escritorio, la rejilla de 40 ocupa el alto de la de 300 para que los textos de debajo
+  queden alineados.
+- `tests/home-bench.test.js` cuenta los puntos de cada rejilla contra `REPORT-exam5.md`.
+- Caché de estilos `?v=20261009l`.
+
 ## 2026-10-09 — Portada: la franja del banco de pruebas, más sencilla
 
 - «Ventajas detectadas» dicho como la cifra de al lado: «De 40 optimizaciones con una ventaja

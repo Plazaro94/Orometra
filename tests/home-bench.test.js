@@ -1,6 +1,6 @@
 // Las cifras del banco de pruebas que cita la portada (home.bench.*) salen del segundo
 // examen, ciego (bench/results/REPORT-exam5.md). Si el banco cambia, esta prueba falla
-// hasta que se actualice el texto en los dos idiomas.
+// hasta que se actualice el texto en los dos idiomas (y las rejillas de puntos de la portada).
 //
 //   node tests/home-bench.test.js
 
@@ -79,6 +79,23 @@ for (const [file, href] of [['index.html', '/methodology/#banco'], ['es/index.ht
   const strip = (html.match(/<section class="hm-section hm-bench"[\s\S]*?<\/section>/) || [''])[0];
   check(`${file}: la franja no manda a GitHub`, strip && !/github\.com/.test(strip));
   check(`${file}: remite a «Cómo sabemos que funciona» de Metodología`, strip.includes(`href="${href}"`));
+  // Las rejillas de puntos: un punto por optimización; los marcados (data-on) son los que cita
+  // el texto. Se cuentan sumando el área de los rectángulos (un punto por unidad).
+  const grids = strip.match(/<svg class="hm-dots[^"]*"[\s\S]*?<\/svg>/g) || [];
+  const dots = (svg = '') => {
+    let on = 0, all = 0;
+    for (const r of svg.matchAll(/<rect( data-on)? x="[\d.]+" y="[\d.]+" width="([\d.]+)" height="([\d.]+)"/g)) {
+      const a = Number(r[2]) * Number(r[3]);
+      all += a; if (r[1]) on += a;
+    }
+    const [, , , w, h] = (svg.match(/viewBox="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/) || []).map(Number);
+    return { on, all, box: w * h };
+  };
+  check(`${file}: dos rejillas de puntos`, grids.length === 2, String(grids.length));
+  const d1 = dots(grids[0]);
+  check(`${file}: puntos de falsas alarmas`, d1.all === noEdgeCases && d1.box === noEdgeCases && d1.on === falseAlarms, JSON.stringify(d1));
+  const d2 = dots(grids[1]);
+  check(`${file}: puntos de ventajas detectadas`, d2.all === powerCases && d2.box === powerCases && d2.on === detected, JSON.stringify(d2));
 }
 
 console.log('\nLo que Metodología da por cierto');

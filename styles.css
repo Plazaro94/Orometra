@@ -1985,6 +1985,16 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
   letter-spacing:-.02em;color:var(--text-hi);font-variant-numeric:tabular-nums;
 }
 .hm-bench-grid li > p:last-child{margin:0;color:var(--text-2);line-height:1.6}
+/* Un punto por optimización (300 y 40). El mismo paso en las dos rejillas: la de 40 mide un
+   tercio de ancho que la de 300 (10 columnas frente a 30), así se ve el tamaño de cada muestra. */
+.hm-dots{display:block;width:min(100%,420px);height:auto;margin:0 0 16px}
+.hm-dots-40{width:min(33.333%,140px)}
+/* En dos columnas, la de 40 ocupa el mismo alto que la de 300 (puntos arriba), para que los
+   textos de debajo empiecen a la misma altura. */
+@media (min-width:861px){.hm-dots-40{aspect-ratio:1 / 1}}
+.hm-dots .off{fill:var(--muted-3);opacity:.32}
+.hm-dots .fa{fill:var(--danger)}
+.hm-dots .ok{fill:var(--lime-fill)}
 .hm-bench-note{
   margin:40px auto 0;max-width:74ch;padding:18px 22px;border:1px solid var(--line);border-radius:var(--radius-lg);
   background:var(--surface);color:var(--text-2);line-height:1.65;
@@ -1997,9 +2007,11 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
   .hm-bench-k{grid-column:1 / -1}
   .hm-bench-n{margin:8px 0 0;font-size:44px}
   .hm-bench-grid li > p:last-child{margin-top:8px}
+  .hm-dots{grid-column:1 / -1;grid-row:3;margin:16px 0 0}
 }
 @media (max-width:560px){
   .hm-bench-grid li{display:block}
+  .hm-dots{margin:0 0 12px}
   .hm-bench-n{margin:8px 0 10px;font-size:40px}
   .hm-bench-note{padding:16px 18px}
 }
