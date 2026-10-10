@@ -37,7 +37,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=20261009l">
+<link rel="stylesheet" href="styles.css?v=20261010a">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separate the fragile from the stable in your MT5 optimization: which configuration of your EA is stable and how much evidence backs it. Free, in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js" data-hero-photo></script>
 </head>
@@ -178,8 +178,8 @@
 
   <!-- 2b. Banco de pruebas: cifras medidas en bench/ (quinto examen, ciego). Las comprueba tests/home-bench.test.js. -->
   <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
-    <h2 id="hm-bench-title" data-i18n="home.bench.title">Tested where the right answer is known</h2>
-    <p class="hm-sub" data-i18n="home.bench.sub">Before publishing it, we ran the engine on 800 simulated optimizations in which we know whether there is a real edge or not. The pass marks were written down before seeing any result, and the exam was blind.</p>
+    <h2 id="hm-bench-title" data-i18n="home.bench.title">Tested on cases with a known answer</h2>
+    <p class="hm-sub" data-i18n="home.bench.sub">We ran the engine on 800 simulated optimizations where we knew in advance whether there was a real edge or not. Orometra rates the evidence on five levels, from “insufficient” to “strong”.</p>
     <ul class="hm-bench-grid">
       <li>
         <h3 class="hm-bench-k" data-i18n="home.bench.1.k">False alarms</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">3.3%</p>
@@ -189,7 +189,7 @@
           <rect data-on x="0" y="0" width="1" height="10" fill="url(#hm-dot-fa)"/>
           <rect x="1" y="0" width="29" height="10" fill="url(#hm-dot-off)"/>
         </svg>
-        <p data-i18n="home.bench.1.body">Out of 300 optimizations with no real edge at all, 10 got “moderate” or higher, and none “strong”.</p>
+        <p data-i18n="home.bench.1.body">Out of 300 optimizations with no real edge at all, only 10 got “moderate” or higher, and none “strong”.</p>
       </li>
       <li>
         <h3 class="hm-bench-k" data-i18n="home.bench.2.k">Edges detected</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">85%</p>
@@ -203,7 +203,6 @@
         <p data-i18n="home.bench.2.body">Out of 40 optimizations with a clear real edge, 34 got “moderate” or higher.</p>
       </li>
     </ul>
-    <p class="hm-bench-note" data-i18n-html="home.bench.note"><strong>Where it falls short, too.</strong> It passed 10 of the 13 criteria set in advance; which ones it failed, and why, are in the methodology. These are simulated data: the test on real optimizations is still pending.</p>
     <p class="hm-more hm-bench-links"><a href="/methodology/#banco" data-track="portada-banco-metodologia" data-i18n="home.bench.how">How we tested it →</a></p>
   </section>
 

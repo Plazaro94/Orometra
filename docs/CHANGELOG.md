@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-10 — Portada: el banco de pruebas, dicho más claro
+
+- Título nuevo: «Lo probamos con casos de respuesta conocida». La entradilla dice qué se hizo
+  (800 optimizaciones simuladas en las que se sabía si había ventaja real) y presenta la escala
+  de niveles («insuficiente» a «sólida»), sin la cual «moderada o más» no se entendía. Fuera
+  la jerga de examen («criterios escritos antes», «a ciegas»).
+- Se quita la nota de «dónde falla» de la portada: los criterios no superados siguen
+  explicados en Metodología, a un clic desde el enlace de la franja.
+- `tests/home-bench.test.js`: la comprobación de «10 de los 13» pasa a vigilar solo
+  Metodología; en la portada se comprueba que la entradilla sigue diciendo «simuladas».
+- Caché de estilos `?v=20261010a`.
+
 ## 2026-10-09 — Portada: las cifras del banco de pruebas, también en puntos
 
 - En «Puesto a prueba donde se sabe la respuesta», cada cifra lleva una rejilla con un punto

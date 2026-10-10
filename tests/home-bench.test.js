@@ -54,10 +54,10 @@ for (const lang of ['en', 'es']) {
   const of = lang === 'es' ? `De ${powerCases} optimizaciones` : `Out of ${powerCases} optimizations`;
   const got = ` ${detected} `;
   check('potencia: n de N', t('home.bench.2.body').includes(of) && t('home.bench.2.body').includes(got), t('home.bench.2.body'));
-  // La portada se queda con dos cifras y remite a Metodología para el resto (elección,
-  // dónde no gana y por qué).
+  // La portada se queda con dos cifras y remite a Metodología para el resto (criterios,
+  // elección, dónde no gana y por qué).
   const crit = lang === 'es' ? `${passed} de los ${passed + failed}` : `${passed} of the ${passed + failed}`;
-  check('criterios aprobados', t('home.bench.note').includes(crit), crit);
+  check('la portada dice que los datos son simulados', /(simuladas|simulated)/.test(t('home.bench.sub')), t('home.bench.sub'));
   check('ninguna «sólida» sin ventaja', strongPct === 0 && /(none|ninguna) [«“](strong|sólida)[»”]/.test(t('home.bench.1.body')), `${strongPct}`);
   const s5 = lang === 'es' ? `${Math.round(s5Pos)} de 100` : `${Math.round(s5Pos)} of 100`;
   check('S5: moderada o más (en Metodología)', s5Pos > 5 && t('doc.method.bench.p2').includes(s5), `${s5Pos}`);
