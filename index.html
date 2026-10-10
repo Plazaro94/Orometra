@@ -218,13 +218,14 @@
     <p class="hm-more hm-bench-links"><a href="/methodology/#banco" data-track="portada-banco-metodologia" data-i18n="home.bench.how">How we tested it →</a></p>
   </section>
 
-  <!-- 6. Lo que hay detrás: dos pestañas en el hueco de una sección. Sin JS se ven las dos. -->
+  <!-- 6. Lo que hay detrás: tres pestañas en el hueco de una sección. Sin JS se ven todas. -->
   <section class="hm-section hm-more-sec" aria-labelledby="hm-more-title">
     <h2 id="hm-more-title" data-i18n="home.more.title">What’s behind the result</h2>
     <div class="hm-tabs" data-tabs>
       <div class="hm-tablist" role="tablist" aria-labelledby="hm-more-title">
         <button type="button" role="tab" id="hm-tab-engine" data-track="pestana-motor" aria-controls="hm-pane-engine" aria-selected="true" data-i18n="home.tab.engine">The engine</button>
         <button type="button" role="tab" id="hm-tab-proof" data-track="pestana-confianza" aria-controls="hm-pane-proof" aria-selected="false" tabindex="-1" data-i18n="home.tab.proof">Why trust it</button>
+        <button type="button" role="tab" id="hm-tab-ai" data-track="pestana-ia" aria-controls="hm-pane-ai" aria-selected="false" tabindex="-1" data-i18n="home.tab.ai">And an AI?</button>
       </div>
       <div class="hm-pane" role="tabpanel" id="hm-pane-engine" aria-labelledby="hm-tab-engine" tabindex="0">
         <p class="hm-sub" data-i18n="home.engine.sub">What would take you hours in a spreadsheet and a lot of judgment — done in seconds, the same way every time.</p>
@@ -246,6 +247,21 @@
           <li><h3 data-i18n="home.proof.3.title">Check that your files stay with you</h3><p data-i18n="home.proof.3.body">Open your browser’s developer tools, Network tab, while you analyze: you will only see the site’s own files and an anonymous usage count. Your files are not sent anywhere.</p><a href="privacy/" data-i18n="home.proof.3.link">Privacy →</a></li>
           <li><h3 data-i18n="home.proof.4.title">Tested before every release</h3><p data-i18n="home.proof.4.body">Before going live, each version passes hundreds of automated checks, including runs on data where the right answer is known in advance.</p></li>
         </ul>
+      </div>
+      <div class="hm-pane hm-ai" role="tabpanel" id="hm-pane-ai" aria-labelledby="hm-tab-ai" tabindex="0">
+        <p class="hm-ai-lead" data-i18n="home.ai.lead">An AI always has an answer. Orometra only gives you the one your data can defend.</p>
+        <table class="hm-vs">
+          <thead><tr><td></td><th scope="col" class="hm-vs-ai" data-i18n="home.ai.col.ai">An AI chat</th><th scope="col" class="hm-vs-oro" data-i18n="home.ai.col.oro">Orometra</th></tr></thead>
+          <tbody>
+            <tr><th scope="row" data-i18n="home.ai.1.k">Same table, another day</th><td class="hm-vs-ai" data-i18n="home.ai.1.ai">It can change its answer depending on how you ask</td><td class="hm-vs-oro" data-i18n="home.ai.1.oro">Always the same answer</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.2.k">The method</th><td class="hm-vs-ai" data-i18n="home.ai.2.ai">Improvised in each conversation</td><td class="hm-vs-oro" data-i18n="home.ai.2.oro">Fixed, published and tested</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.3.k">The numbers</th><td class="hm-vs-ai" data-i18n="home.ai.3.ai">It can make up a figure without warning you</td><td class="hm-vs-oro" data-i18n="home.ai.3.oro">Every figure comes from your data and can be checked</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.4.k">When the data can't support a conclusion</th><td class="hm-vs-ai" data-i18n="home.ai.4.ai">It answers anyway, with full confidence</td><td class="hm-vs-oro" data-i18n="home.ai.4.oro">It tells you: insufficient evidence</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.5.k">Your strategy</th><td class="hm-vs-ai" data-i18n="home.ai.5.ai">Uploaded to another company's servers</td><td class="hm-vs-oro" data-i18n="home.ai.5.oro">Never leaves your computer</td></tr>
+            <tr><th scope="row" data-i18n="home.ai.6.k">What you get</th><td class="hm-vs-ai" data-i18n="home.ai.6.ai">Text</td><td class="hm-vs-oro" data-i18n="home.ai.6.oro">A configuration, its evidence level and a .set for MT5</td></tr>
+          </tbody>
+        </table>
+        <p class="hm-ai-close"><span data-i18n="home.ai.close">Use AI to understand the report. To decide which configuration you risk your money on, use a criterion that doesn't change.</span> <a href="methodology/#ia" data-i18n="home.ai.more">Read the full explanation →</a></p>
       </div>
     </div>
   </section>
@@ -270,7 +286,7 @@
 
   <section class="hm-final has-photo">
     <h2 data-i18n="home.final.title">Ready to try it?</h2>
-    <p data-i18n="home.final.body">Drop your optimization here and see it in a minute.</p>
+    <p data-i18n="home.final.body">Drop your optimization here and see it in a minute. Nothing is uploaded.</p>
     <ul class="hm-checks">
       <li data-i18n="home.final.c1">Free, no sign-up</li>
       <li data-i18n="home.final.c2">Your files never leave your computer</li>

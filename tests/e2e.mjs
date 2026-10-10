@@ -141,7 +141,7 @@ try {
       return { i, steps: steps.length, tabs: document.querySelectorAll('.hm-tablist [role="tab"]').length };
     });
     check('«Cómo funciona» es la segunda sección y sus tres pasos se ven sin tocar nada', how.i === 1 && how.steps === 3, JSON.stringify(how));
-    check('«Lo que hay detrás» tiene dos pestañas (motor y confianza)', how.tabs === 2, JSON.stringify(how));
+    check('«Lo que hay detrás» se queda con tres pestañas (motor, confianza e IA)', how.tabs === 3, JSON.stringify(how));
     await page.goto(`${BASE}/es/guias/sobreoptimizacion-mt5/`);
     await page.waitForSelector('.guide-rail, .lp-menu-btn', { timeout: 10000 }).catch(() => {});
     check('una guía no descarga i18n.js', !(await loaded(/\/js\/i18n\.js/)));

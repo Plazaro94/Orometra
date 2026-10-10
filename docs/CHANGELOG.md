@@ -1,25 +1,20 @@
 # Changelog
 
-## 2026-10-10 — Portada: «Cómo funciona» arriba y sin repeticiones
+## 2026-10-10 — Portada: «Cómo funciona» justo después del titular
 
-De la auditoría de diseño: lo más claro para quien llega nuevo estaba escondido, y dos cosas se
-decían dos veces.
+De la auditoría de diseño: lo más claro para quien llega nuevo estaba escondido. El resto de la
+portada no cambia.
 
 - **«Cómo funciona» (exporta → suéltalos aquí → llévate tu configuración)** pasa a ser la
-  segunda sección, justo después del titular y a la vista. Antes era la primera de cuatro
-  pestañas en la sección 5 de 7.
-- **Fuera la pestaña «¿Y una IA?»:** repetía la pregunta frecuente «¿Por qué no se lo pregunto a
-  una IA?», que sigue y enlaza con la comparación completa de la Metodología. Fuera también su
-  tabla, sus 23 textos por idioma y sus estilos.
-- «Lo que hay detrás del resultado» se queda con dos pestañas: «El motor» (abierta al entrar) y
-  «Por qué fiarte».
-- **Cierre:** sin «No se sube nada», que la lista de justo debajo ya dice («Tus archivos no salen
-  de tu ordenador»).
-- La portada mide más: 6565 px en el móvil (antes 5669) y 5510 en escritorio (antes 4880). Los
-  pasos ya no están detrás de una pestaña, y la pestaña abierta al entrar ahora es «El motor»,
-  más larga que los pasos.
+  segunda sección, a la vista. Antes era la primera de cuatro pestañas en la sección 5 de 7.
+- «Lo que hay detrás del resultado» se queda con tres pestañas: «El motor» (abierta al entrar),
+  «Por qué fiarte» y «¿Y una IA?».
+- En el móvil, las tres pestañas van en una fila y cada una mide lo que su texto; a partes
+  iguales, «Por qué fiarte» no cabía a 320 px. Antes eran cuatro, en dos filas de dos.
+- La portada mide más (en el móvil, unos 900 px): los pasos ya no están detrás de una
+  pestaña, y la que se abre al entrar es ahora «El motor», más larga que los pasos.
 - Caché de estilos `?v=20261010d`. Prueba de navegador: «Cómo funciona» es la segunda sección,
-  con sus tres pasos a la vista, y hay dos pestañas.
+  con sus tres pasos a la vista, y quedan tres pestañas.
 
 ## 2026-10-10 — Auditoría de diseño: cuatro fallos
 

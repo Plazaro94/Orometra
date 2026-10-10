@@ -2034,8 +2034,37 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
   .hm-proof-grid li{padding:18px}
 }
 
+/* Portada: por que no una IA. Tabla comparativa; en movil cada fila se apila
+   con su pregunta arriba y las dos respuestas lado a lado. */
+.hm-ai-lead{
+  margin:-12px 0 12px;font-size:clamp(20px,2.2vw,26px);line-height:1.3;letter-spacing:-.02em;
+  font-weight:600;color:var(--ok-text);max-width:32ch;
+}
+.hm-ai .hm-sub{margin-top:0}
+.hm-vs{width:100%;border-collapse:collapse;margin:8px 0 0;table-layout:fixed}
+.hm-vs th,.hm-vs td{text-align:left;vertical-align:top;padding:16px 20px;border-bottom:1px solid var(--line);line-height:1.5;white-space:normal;font-size:15px;text-transform:none;letter-spacing:0}
+.hm-vs thead th{font-size:var(--fs-sm);font-weight:600;color:var(--muted);padding-top:12px;padding-bottom:12px}
+.hm-vs thead td{width:30%;border-bottom:1px solid var(--line)}
+.hm-vs tbody th{font-weight:600;color:var(--text-hi);padding-left:0}
+.hm-vs td.hm-vs-ai{color:var(--muted)}
+.hm-vs td.hm-vs-oro{color:var(--text-hi);background:color-mix(in srgb, var(--ok-bg) 70%, transparent)}
+.hm-vs thead th.hm-vs-oro{color:var(--ok-text);background:color-mix(in srgb, var(--ok-bg) 70%, transparent);border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+.hm-ai-close{margin:28px 0 0;color:var(--text-2);line-height:1.65;max-width:70ch;font-size:16px}
+@media (max-width:640px){
+  .hm-vs,.hm-vs thead,.hm-vs tbody{display:block}
+  .hm-vs tr{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+  .hm-vs thead td{display:none}
+  .hm-vs th,.hm-vs td{border-bottom:0;padding:12px 12px}
+  .hm-vs tbody th{grid-column:1 / -1;padding:16px 0 4px}
+  .hm-vs thead th{padding:10px 12px}
+  .hm-vs td{font-size:14.5px}
+  .hm-vs tbody th{font-size:15px}
+}
 
-/* Metodologia: por que no una IA (la pregunta frecuente de la portada enlaza aqui). */
+.hm-ai-close a{color:var(--ok-text);font-weight:600;text-underline-offset:3px;white-space:nowrap}
+.hm-ai-close a:hover{color:var(--ok-hi)}
+
+/* Metodologia: por que no una IA (el detalle de la tabla de la portada). */
 .doc-ai{margin-top:40px;max-width:760px;scroll-margin-top:24px}
 .doc-ai h2{font-size:clamp(22px,2.4vw,28px);margin:0 0 12px;color:var(--text-hi);letter-spacing:-.02em}
 .doc-ai > p{max-width:68ch;font-size:var(--fs-base);line-height:1.6;color:var(--text-2)}
@@ -2140,7 +2169,7 @@ html{zoom:var(--z)}
   text-align:center;font-size:clamp(28px,3.4vw,42px);line-height:1.12;letter-spacing:-.02em;color:var(--text);
   max-width:24ch;margin-left:auto;margin-right:auto;text-wrap:balance;
 }
-.hm-section > .hm-sub{text-align:center;margin-left:auto;margin-right:auto;font-size:19px;max-width:62ch}
+.hm-section > .hm-sub,.hm-section > .hm-ai-lead{text-align:center;margin-left:auto;margin-right:auto;font-size:19px;max-width:62ch}
 .hm-more{text-align:center}
 /* Segundo enlace bajo la tarjeta de ejemplo (el ejemplo sin ventaja): pegado al primero. */
 .hm-take .hm-more.hm-more-alt{margin-top:14px}
@@ -2366,7 +2395,7 @@ html,body{overflow-x:clip}
 
 /* ======================================================================
    Portada corta (2026-10): «Lo que hay detrás del resultado» en pestañas.
-   Sin JS no hay barra y se ven los dos paneles seguidos.
+   Sin JS no hay barra y se ven los tres paneles seguidos.
    ====================================================================== */
 .hm-tablist{
   display:flex;gap:4px;width:fit-content;max-width:100%;margin:0 auto 36px;padding:5px;
@@ -2386,8 +2415,10 @@ html,body{overflow-x:clip}
 .hm-pane > .hm-sub:first-child{margin-top:0}
 .hm-more-sec .hm-more{text-align:center}
 @media (max-width:640px){
-  .hm-tablist{display:grid;grid-template-columns:1fr 1fr;width:100%;border-radius:22px}
-  .hm-tablist [role="tab"]{border-radius:17px;padding:0 10px;font-size:14.5px}
+  /* Tres pestañas en una fila: cada una mide lo que su texto (a partes iguales no cabía
+     «Por qué fiarte» a 320 px) y el sobrante se reparte. */
+  .hm-tablist{width:100%}
+  .hm-tablist [role="tab"]{flex:1 1 auto;padding:0 8px;font-size:14.5px}
 }
 @media (max-width:640px){
   .hm-steps{gap:20px}
