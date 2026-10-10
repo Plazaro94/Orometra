@@ -22,14 +22,56 @@ export const HISTORY_MAX = 50;
 export const ATTEMPT_WARN = 3;
 export const LEVEL_ORDER = ['insufficient', 'weak', 'moderate', 'good', 'strong'];
 
-/** Hash FNV-1a de 32 bits en hexadecimal: corto y estable entre navegadores. */
-function fnv1a(text) {
-  let h = 0x811c9dc5;
+/** Hash FNV-1a de 32 bits: se puede ir alimentando por trozos. */
+function fnvAdd(h, text) {
   for (let i = 0; i < text.length; i++) {
     h ^= text.charCodeAt(i);
     h = Math.imul(h, 0x01000193) >>> 0;
   }
-  return h.toString(16).padStart(8, '0');
+  return h;
+}
+/** Hash FNV-1a de 32 bits en hexadecimal: corto y estable entre navegadores. */
+function fnv1a(text) {
+  return fnvAdd(0x811c9dc5, text).toString(16).padStart(8, '0');
+}
+
+/**
+ * Huella de los DATOS analizados (no de los nombres de archivo): cada pasada con su
+ * beneficio y operaciones en los dos periodos. Dos exports distintos que se llamen igual
+ * dan huellas distintas; el mismo export, la misma.
+ */
+export function dataSignature(analysis) {
+  let h = 0x811c9dc5;
+  for (const r of (analysis && analysis.records) || []) {
+    const is = r.is || {};
+    const oos = r.oos || {};
+    h = fnvAdd(h, `${r.id}:${is.profit}:${is.trades}:${oos.profit}:${oos.trades}|`);
+  }
+  return `d${h.toString(16).padStart(8, '0')}`;
+}
+
+/** Como mucho tantos valores distintos se guardan de un parámetro de sí/no o de lista. */
+const MAX_SPAN_VALUES = 20;
+
+/**
+ * Tramo de la meseta en un parámetro. Numérico: { min, max } (del motor). De sí/no o de
+ * lista (texto): { values } con los valores que toman sus configuraciones, porque entre
+ * «true» y «false» no hay mínimo ni máximo. null si no se puede saber.
+ */
+function spanOf(analysis, best, j) {
+  const s = (best.paramSpan || [])[j];
+  if (s) return { min: jsonSafe(s.min), max: jsonSafe(s.max) };
+  const members = best.indices && best.indices.length ? best.indices : [];
+  const values = [];
+  for (const i of members) {
+    const rec = analysis.records && analysis.records[i];
+    if (!rec) return null;
+    const v = jsonSafe(rec.params[j]);
+    if (v === null || v === undefined) return null;
+    if (!values.includes(v)) values.push(v);
+    if (values.length > MAX_SPAN_VALUES) return null;
+  }
+  return values.length ? { values } : null;
 }
 
 /**
@@ -60,6 +102,7 @@ export function summarize(analysis, ctx) {
     id: ctx.id,
     at: ctx.at,
     fp: fingerprint(meta.paramNames),
+    sig: dataSignature(analysis),
     params: [...(meta.paramNames || [])],
     files: { is: (ctx.files && ctx.files.is) || '', oos: (ctx.files && ctx.files.oos) || null },
     gates: {
@@ -78,7 +121,7 @@ export function summarize(analysis, ctx) {
       robust: round(best.robust, 1),
       qIs: round(best.record.qualityIs, 3),
       qOos: round(best.record.qualityOos, 3),
-      span: (best.paramSpan || []).map((s) => (s ? { min: jsonSafe(s.min), max: jsonSafe(s.max) } : null)),
+      span: (meta.paramNames || []).map((_, j) => spanOf(analysis, best, j)),
     } : null,
     fallback: !best && fb ? { pass: fb.record.id, values: fb.record.params.map(jsonSafe) } : null,
     unseen: null,
@@ -111,19 +154,29 @@ export function parseStore(text) {
 const sameGates = (a, b) => ['requireProfit', 'minProfitFactor', 'maxDrawdownPct', 'minTrades'].every((k) => (a || {})[k] === (b || {})[k]);
 
 /**
- * Añade un análisis. Si es literalmente el mismo que el último de ese EA (mismos archivos,
- * mismos mínimos, mismas filas y misma recomendación: recargar la página y volver a
- * analizar), lo sustituye en vez de contarlo como otro intento. Conserva los `max` más
- * recientes. No modifica `entries`.
+ * ¿Son los mismos datos? Con la huella de datos (`sig`), se compara esa huella: dos exports
+ * distintos que se llamen igual (el nombre que propone MT5, la misma rejilla sobre otro
+ * periodo) no son el mismo análisis. Los guardados antes de existir `sig`, como antes:
+ * mismos archivos, mismas filas y misma recomendación.
+ */
+function sameData(a, b) {
+  if (a.sig && b.sig) return a.sig === b.sig;
+  return Boolean(a.files && b.files && a.files.is === b.files.is && a.files.oos === b.files.oos)
+    && a.total === b.total
+    && (a.pick ? a.pick.pass : null) === (b.pick ? b.pick.pass : null);
+}
+
+/**
+ * Añade un análisis. Si es literalmente el mismo que el último de ese EA (mismos datos y
+ * mismos mínimos: recargar la página y volver a analizar), lo sustituye en vez de contarlo
+ * como otro intento. Conserva los `max` más recientes. No modifica `entries`.
  */
 export function addEntry(entries, entry, max = HISTORY_MAX) {
   const list = [...entries];
   for (let i = list.length - 1; i >= 0; i--) {
     const e = list[i];
     if (e.fp !== entry.fp) continue;
-    const same = e.files && entry.files && e.files.is === entry.files.is && e.files.oos === entry.files.oos
-      && sameGates(e.gates, entry.gates) && e.total === entry.total
-      && (e.pick ? e.pick.pass : null) === (entry.pick ? entry.pick.pass : null);
+    const same = sameData(e, entry) && sameGates(e.gates, entry.gates);
     if (same) {
       list.splice(i, 1);
       // Si al anterior ya se le había añadido el periodo no visto, no se pierde.
@@ -153,9 +206,13 @@ export function attempts(entries, fp) {
   return entriesFor(entries, fp).length;
 }
 
-/** ¿Cae `value` dentro del tramo [min, max]? Números con tolerancia; el resto, igualdad. */
+/**
+ * ¿Cae `value` dentro del tramo? { min, max }: números con tolerancia; el resto, igualdad.
+ * { values }: uno de los valores de la meseta (parámetros de sí/no o de lista).
+ */
 export function insideSpan(value, span) {
   if (!span) return false;
+  if (Array.isArray(span.values)) return span.values.some((v) => v === value);
   const { min, max } = span;
   if (typeof value === 'number' && typeof min === 'number' && typeof max === 'number') {
     const tol = 1e-9 * Math.max(1, Math.abs(min), Math.abs(max));
@@ -173,6 +230,10 @@ export function insideSpan(value, span) {
  *
  * `levelsComparable` es falso si cambiaron los mínimos o la presencia de forward: con otras
  * reglas, un nivel distinto no dice nada del EA.
+ *
+ * Si la otra vez no se guardó el tramo de un parámetro (análisis anteriores al 2026-10-10
+ * con parámetros de sí/no, o el parámetro no existía), `inside` es null: no consta, y no
+ * se cuenta ni dentro ni fuera.
  */
 export function compare(prev, cur) {
   const gatesSame = sameGates(prev.gates, cur.gates);
@@ -193,7 +254,7 @@ export function compare(prev, cur) {
         now,
         before: k >= 0 ? prev.pick.values[k] : null,
         span,
-        inside: span ? insideSpan(now, span) : false,
+        inside: span ? insideSpan(now, span) : null,
       };
     });
   }
@@ -203,6 +264,8 @@ export function compare(prev, cur) {
     gatesSame,
     forwardSame,
     sameFiles: Boolean(prev.files && cur.files && prev.files.is === cur.files.is && prev.files.oos === cur.files.oos),
+    // true/false si los dos tienen huella de datos; null si no se puede saber.
+    sameData: prev.sig && cur.sig ? prev.sig === cur.sig : null,
     levelsComparable: reasons.length === 0,
     reasons,
     levelBefore: prev.level,
@@ -210,7 +273,8 @@ export function compare(prev, cur) {
     levelDelta: iPrev >= 0 && iCur >= 0 ? iCur - iPrev : null,
     bothPicks: Boolean(prev.pick && cur.pick),
     params,
-    insideCount: params.filter((p) => p.inside).length,
+    insideCount: params.filter((p) => p.inside === true).length,
+    knownCount: params.filter((p) => p.inside !== null).length,
     sizeBefore: prev.pick ? prev.pick.size : null,
     sizeNow: cur.pick ? cur.pick.size : null,
     robustBefore: prev.pick ? prev.pick.robust : null,

@@ -563,6 +563,22 @@ try {
     check('la primera vez se avisa', Boolean(await page.$('.hist-notice')));
     await page.click('[data-hist="ack"]');
     check('«Entendido» quita el aviso', !(await page.$('.hist-notice')));
+    // El periodo no visto se apunta, y un intento que no llega a resultado no lo borra.
+    await page.click('.nav-item[data-tab="unseen"]');
+    await page.fill('#u_trades', '400');
+    await page.fill('#u_profit', '30000');
+    await page.fill('#u_profitFactor', '1.35');
+    await page.fill('#u_drawdown', '5');
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.u-result', { timeout: 15000 }).catch(() => {});
+    const u1 = (await stored()).entries[0].unseen;
+    await page.fill('#u_trades', '');
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.error-box', { timeout: 15000 }).catch(() => {});
+    const u2 = (await stored()).entries[0].unseen;
+    check('el periodo no visto se apunta en el historial', Boolean(u1 && u1.level), JSON.stringify(u1));
+    check('y un intento fallido no lo borra', Boolean(u2) && JSON.stringify(u2) === JSON.stringify(u1), JSON.stringify(u2));
+    await page.click('.nav-item[data-tab="verdict"]');
     // Segundo análisis del mismo EA con otros mínimos: compara y avisa de que no son comparables.
     await page.click('#intakeExpandBtn').catch(() => {});
     await page.fill('#gPf', '1.10');
@@ -576,6 +592,14 @@ try {
     // Pestaña Historial: se ve, se borra uno y se apaga.
     await page.click('.nav-item[data-tab="history"]');
     check('la pestaña Historial lista los análisis', (await page.$$('.hist-table tbody tr')).length === 2);
+    check('cada «Borrar» dice de qué análisis es', /^Delete the analysis from /.test((await page.getAttribute('[data-hist="delete"]', 'aria-label')) || ''));
+    // «Borrar todo» pide un segundo toque; sin él, a los 5 s vuelve a su texto y no borra.
+    await page.click('[data-hist="clear"]');
+    check('«Borrar todo» pide confirmación', /Tap again/.test(await page.textContent('[data-hist="clear"]')));
+    await page.waitForTimeout(5400);
+    check('sin segundo toque, a los 5 s vuelve a su texto', (await page.textContent('[data-hist="clear"]')).trim() === 'Delete all history', await page.textContent('[data-hist="clear"]'));
+    await page.click('[data-hist="clear"]');
+    check('y el toque siguiente vuelve a pedir confirmación, sin borrar', (await stored()).entries.length === 2 && /Tap again/.test(await page.textContent('[data-hist="clear"]')));
     await page.click('[data-hist="delete"]');
     check('se puede borrar uno', (await stored()).entries.length === 1);
     await page.uncheck('[data-hist="toggle"]');

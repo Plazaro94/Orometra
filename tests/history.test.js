@@ -6,7 +6,7 @@ import { buildDemoTables } from '../js/demo.js';
 import { runAnalysis } from '../core/analysis.js';
 import {
   fingerprint, summarize, emptyStore, parseStore, addEntry, previousFor, attempts,
-  insideSpan, compare, HISTORY_MAX, HISTORY_VERSION,
+  insideSpan, compare, dataSignature, HISTORY_MAX, HISTORY_VERSION,
 } from '../core/history.js';
 
 let failures = 0;
@@ -36,6 +36,10 @@ section('Tramo de la meseta: dentro o fuera');
   check('decimales con tolerancia', insideSpan(0.30000000000000004, { min: 0.1, max: 0.3 }));
   check('texto: igual al tramo', insideSpan('EMA', { min: 'EMA', max: 'EMA' }) && !insideSpan('SMA', { min: 'EMA', max: 'EMA' }));
   check('sin tramo → fuera', !insideSpan(5, null));
+  // Parámetros de sí/no o de lista: el tramo son los valores que toma la meseta.
+  check('sí/no: uno de los valores de la meseta', insideSpan(true, { values: [true] }) && insideSpan(false, { values: [true, false] }));
+  check('sí/no: un valor que la meseta no tenía → fuera', !insideSpan(false, { values: [true] }));
+  check('lista de texto', insideSpan('EMA', { values: ['SMA', 'EMA'] }) && !insideSpan('WMA', { values: ['SMA', 'EMA'] }));
 }
 
 section('Resumen de un análisis real (ejemplo sintético)');
@@ -77,6 +81,46 @@ section('Comparación con el análisis anterior del mismo EA');
   check('sin meseta antes → sin comparación por parámetro', compare(e5, e2).bothPicks === false && compare(e5, e2).params.length === 0);
 }
 
+section('Huella de los datos: mismo export, misma huella; otro export con el mismo nombre, otra');
+{
+  check('respuesta conocida: sin filas, la base de FNV-1a', dataSignature({ records: [] }) === 'd811c9dc5');
+  check('el mismo análisis da la misma huella', dataSignature(analysis) === dataSignature(runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable })));
+  const shifted = { ...demo.isTable, rows: demo.isTable.rows.map((r, i) => (i === 7 ? r.map((v, k) => (k === 2 ? v + 1 : v)) : r)) };
+  check('un beneficio distinto en una sola pasada cambia la huella', dataSignature(analysis) !== dataSignature(runAnalysis({ isTable: shifted, oosTable: demo.oosTable })));
+  check('se guarda en el resumen', e1.sig === dataSignature(analysis));
+  // Otra optimización con el mismo nombre de archivo, mismos mínimos, mismas filas y la misma
+  // pasada recomendada (la misma rejilla sobre otro periodo): es otro intento, no el mismo.
+  const otherPeriod = { ...e1, id: 'p2', sig: 'dffffffff', level: 'moderate' };
+  const both = addEntry([e1], otherPeriod);
+  check('otro export con el mismo nombre no sustituye al anterior', both.length === 2 && both[0].id === 'a1' && both[1].id === 'p2');
+  check('y la comparación sabe que no son los mismos datos', compare(e1, otherPeriod).sameData === false && compare(e1, { ...e1, id: 'x' }).sameData === true);
+  // El mismo export con otro nombre sí es el mismo análisis.
+  check('el mismo export renombrado no cuenta como otro intento', addEntry([e1], { ...e1, id: 'r', files: { is: 'otro.xml', oos: 'otro-fwd.xml' } }).length === 1);
+  // Guardados antes de la huella de datos: la regla de antes.
+  const legacy = { ...e1, sig: undefined };
+  check('sin huella de datos: mismos archivos, filas y pasada → el mismo', addEntry([legacy], { ...legacy, id: 'l2' }).length === 1);
+  check('sin huella de datos: otras filas → otro', addEntry([legacy], { ...legacy, id: 'l3', total: 1 }).length === 2);
+  check('sin huella: la comparación no se pronuncia', compare(legacy, { ...legacy, id: 'l4' }).sameData === null);
+}
+
+section('Parámetros de sí/no: la meseta en el mismo sitio con los mismos datos');
+{
+  // Respuesta conocida: los mismos datos dos veces → todos los parámetros dentro.
+  const addBool = (t) => ({ ...t, headers: [...t.headers, 'InpUseFilter'], rows: t.rows.map((r) => [...r, r[0] % 2 ? 'true' : 'false']) });
+  const ab = runAnalysis({ isTable: addBool(demo.isTable), oosTable: addBool(demo.oosTable) });
+  const j = ab.meta.paramNames.indexOf('InpUseFilter');
+  const b1 = summarize(ab, { id: 'b1', at: '2026-10-01T10:00:00.000Z', level: 'strong', files: { is: 'b.xml' } });
+  const b2 = { ...b1, id: 'b2', gates: { ...b1.gates, minProfitFactor: 1.15 } };
+  check('el parámetro de sí/no se detecta', j >= 0, ab.meta.paramNames.join(','));
+  check('su tramo son los valores de la meseta', b1.pick && b1.pick.span[j] && Array.isArray(b1.pick.span[j].values) && b1.pick.span[j].values.includes(b1.pick.values[j]), JSON.stringify(b1.pick && b1.pick.span[j]));
+  const cb = compare(b1, b2);
+  check('mismos datos → todos dentro, también el de sí/no', cb.insideCount === ab.meta.paramNames.length && cb.knownCount === ab.meta.paramNames.length, `${cb.insideCount}/${cb.knownCount}`);
+  // Un análisis guardado antes del arreglo no tenía ese tramo: no consta, ni dentro ni fuera.
+  const old = { ...b1, id: 'b0', pick: { ...b1.pick, span: b1.pick.span.map((s, k) => (k === j ? null : s)) } };
+  const co = compare(old, b2);
+  check('tramo que no consta → ni dentro ni fuera', co.params[j].inside === null && co.knownCount === ab.meta.paramNames.length - 1 && co.insideCount === co.knownCount);
+}
+
 section('Lista: añadir, no duplicar la misma ejecución, límite e intentos');
 {
   let list = [];
@@ -94,7 +138,7 @@ section('Lista: añadir, no duplicar la misma ejecución, límite e intentos');
   list = addEntry(list, foreign);
   check('otro EA no suma intentos', attempts(list, e1.fp) === 2 && attempts(list, 'p00000000') === 1);
   let big = [];
-  for (let i = 0; i < HISTORY_MAX + 7; i++) big = addEntry(big, { ...e1, id: `n${i}`, total: i });
+  for (let i = 0; i < HISTORY_MAX + 7; i++) big = addEntry(big, { ...e1, id: `n${i}`, total: i, sig: `d${i}` });
   check(`se conservan los ${HISTORY_MAX} más recientes`, big.length === HISTORY_MAX && big[0].id === 'n7' && big[big.length - 1].id === `n${HISTORY_MAX + 6}`);
 }
 

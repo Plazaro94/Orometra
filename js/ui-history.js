@@ -62,8 +62,11 @@ export function updateHistoryUnseen(analysis) {
   const e = store.entries.find((x) => x.id === state.historyId);
   if (!e) return;
   const res = state.unseen && state.unseen.result;
+  // Un intento que no llega a resultado (falta un dato, el formulario se ha limpiado) no
+  // borra la comprobación que ya estaba guardada.
+  if (!res) return;
   const hold = holdoutFact(analysis);
-  e.unseen = res ? { level: res.level, validates: hold.ok, against: Boolean(hold.against) } : null;
+  e.unseen = { level: res.level, validates: hold.ok, against: Boolean(hold.against) };
   e.level = displayVerdictLevel(analysis);
   saveStore(store);
 }
@@ -78,7 +81,9 @@ const pill = (level) => {
   const i = LEVEL_ORDER.indexOf(level);
   return i < 0 ? '—' : `<span class="rc-level hist-pill" style="--s:var(--lv-${i + 1})"><span class="rc-dot" aria-hidden="true"></span>${esc(levelName(level))}</span>`;
 };
-const span = (s) => (!s ? '—' : s.min === s.max ? paramHtml(s.min) : `${paramHtml(s.min)}–${paramHtml(s.max)}`);
+const span = (s) => (!s ? '—'
+  : Array.isArray(s.values) ? s.values.map(paramHtml).join(' · ')
+    : s.min === s.max ? paramHtml(s.min) : `${paramHtml(s.min)}–${paramHtml(s.max)}`);
 const gatesText = (g) => `PF ≥ ${num(g.minProfitFactor, 2)} · DD ≤ ${num(g.maxDrawdownPct, 0)}${pctSign()} · ${int(g.minTrades)} ${L('op.', 'trades')}`;
 const unseenText = (u) => {
   if (!u) return L('sin comprobar', 'not checked');
@@ -115,19 +120,29 @@ export function renderHistoryCompare() {
     : L('Uno de los dos análisis no tenía forward: los niveles no se pueden comparar.', 'One of the two analyses had no forward: the levels cannot be compared.'))}</p>` : '';
 
   let place = '';
-  if (c.bothPicks && c.params.length) {
+  if (c.bothPicks && c.knownCount) {
+    // Solo cuentan los parámetros cuyo tramo consta de la otra vez (ver core/history.js#compare).
     const total = c.params.length;
+    const known = c.knownCount;
     const k = c.insideCount;
-    const head = k === total
-      ? L(`Sí: la configuración recomendada ahora cae dentro de la meseta de la otra vez en sus ${total} parámetros.`, `Yes: the configuration recommended now falls inside last time's plateau on all ${total} parameters.`)
+    const all = known === total;
+    const head = k === known
+      ? (all
+        ? L(`Sí: la configuración recomendada ahora cae dentro de la meseta de la otra vez en sus ${total} parámetros.`, `Yes: the configuration recommended now falls inside last time's plateau on all ${total} parameters.`)
+        : L(`Sí: la configuración recomendada ahora cae dentro de la meseta de la otra vez en los ${known} parámetros que se pueden comparar.`, `Yes: the configuration recommended now falls inside last time's plateau on the ${known} parameters that can be compared.`))
       : k === 0
-        ? L('No: la configuración recomendada ahora cae fuera de la meseta de la otra vez en todos sus parámetros. La meseta ha cambiado de sitio.', 'No: the configuration recommended now falls outside last time\'s plateau on every parameter. The plateau has moved.')
-        : L(`En parte: ${k} de ${total} parámetros caen dentro de la meseta de la otra vez.`, `Partly: ${k} of ${total} parameters fall inside last time's plateau.`);
+        ? (all
+          ? L('No: la configuración recomendada ahora cae fuera de la meseta de la otra vez en todos sus parámetros. La meseta ha cambiado de sitio.', 'No: the configuration recommended now falls outside last time\'s plateau on every parameter. The plateau has moved.')
+          : L(`No: la configuración recomendada ahora cae fuera de la meseta de la otra vez en los ${known} parámetros que se pueden comparar. La meseta ha cambiado de sitio.`, `No: the configuration recommended now falls outside last time's plateau on the ${known} parameters that can be compared. The plateau has moved.`))
+        : L(`En parte: ${k} de ${known} parámetros caen dentro de la meseta de la otra vez.`, `Partly: ${k} of ${known} parameters fall inside last time's plateau.`);
+    const where = (p) => (p.inside === null
+      ? L('no consta la otra vez', 'not recorded last time')
+      : `${p.inside ? L('dentro', 'inside') : L('fuera', 'outside')} (${span(p.span)})`);
     place = `<h3>${L('¿La meseta sigue en el mismo sitio?', 'Is the plateau still in the same place?')}</h3>
       <p class="hist-lead">${esc(head)}</p>
-      <ul class="hist-params">${c.params.map((p) => `<li class="${p.inside ? 'is-in' : 'is-out'}">
+      <ul class="hist-params">${c.params.map((p) => `<li class="${p.inside === true ? 'is-in' : p.inside === false ? 'is-out' : 'is-unknown'}">
         <code>${esc(p.name)}</code> <b>${paramHtml(p.now)}</b>
-        <span>${p.inside ? L('dentro', 'inside') : L('fuera', 'outside')} (${span(p.span)})</span>
+        <span>${where(p)}</span>
       </li>`).join('')}</ul>
       <p class="hist-fine">${esc(L(
         'Que caiga en el mismo sitio es coherente con una meseta real; si los dos análisis son sobre los mismos datos, no es una prueba independiente.',
@@ -150,7 +165,7 @@ export function renderHistoryCompare() {
       <div><div class="panel-kicker">${L('Historial', 'History')}</div><h2>${L('Frente a tu análisis anterior de este EA', 'Compared with your previous analysis of this EA')}</h2></div>
       <button class="text-btn" type="button" data-goto="history">${L('Ver historial', 'See history')} <span aria-hidden="true">→</span></button>
     </div>
-    <p class="hist-meta">${esc(label ? `${label} · ` : '')}${esc(when(c.prevAt))} · ${esc(prev.files.is || '—')}${c.sameFiles ? ` · ${esc(L('mismos archivos', 'same files'))}` : ''}</p>
+    <p class="hist-meta">${esc(label ? `${label} · ` : '')}${esc(when(c.prevAt))} · ${esc(prev.files.is || '—')}${c.sameData === true ? ` · ${esc(L('mismos datos', 'same data'))}` : c.sameData === null && c.sameFiles ? ` · ${esc(L('mismos archivos', 'same files'))}` : ''}</p>
     <div class="hist-grid">
       <div class="hist-stat"><span>${L('Fiabilidad', 'Reliability')}</span><div>${levelLine}</div></div>
       ${c.bothPicks ? `<div class="hist-stat"><span>${L('Tamaño de la meseta', 'Plateau size')}</span><div><b>${int(c.sizeBefore)}</b> → <b>${int(c.sizeNow)}</b></div></div>
@@ -213,7 +228,7 @@ export function renderHistoryView() {
     ? `<span class="hist-pick">${e.params.map((p, j) => `<span>${esc(p)} <b>${paramHtml(e.pick.values[j])}</b></span>`).join('')}</span>`
     : esc(e.fallback ? L('ninguna con garantías', 'none you can rely on') : '—')}</td>
           <td data-label="${L('Periodo no visto', 'Unseen period')}">${esc(unseenText(e.unseen))}</td>
-          <td class="hist-actions"><button class="text-btn" type="button" data-hist="delete" data-id="${esc(e.id)}">${L('Borrar', 'Delete')}</button></td>
+          <td class="hist-actions"><button class="text-btn" type="button" data-hist="delete" data-id="${esc(e.id)}" aria-label="${esc(L(`Borrar el análisis del ${when(e.at)}`, `Delete the analysis from ${when(e.at)}`))}">${L('Borrar', 'Delete')}</button></td>
         </tr>`).join('')}</tbody>
       </table></div>
     </section>`;
@@ -226,7 +241,18 @@ export function renderHistoryView() {
 export function initHistory() {
   const view = document.getElementById('view');
   if (!view) return;
-  let clearArmed = false;
+  // «Borrar todo» en dos toques: el botón armado (el mismo elemento, aún en pantalla) y
+  // su temporizador. Un repintado crea un botón nuevo, sin armar.
+  let armed = null;
+  let armTimer = 0;
+  const disarm = () => {
+    clearTimeout(armTimer);
+    if (armed && armed.isConnected) {
+      armed.textContent = L('Borrar todo el historial', 'Delete all history');
+      armed.classList.remove('is-armed');
+    }
+    armed = null;
+  };
   view.addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-hist]');
     if (!b || b.tagName === 'INPUT') return;
@@ -235,23 +261,30 @@ export function initHistory() {
     if (act === 'ack') {
       store.seen = true; saveStore(store); state.historyFirst = false; api.render();
     } else if (act === 'off-now') {
-      // «No guardar»: se apaga y se borra lo que acaba de guardarse.
-      saveStore({ ...store, off: true, seen: true, entries: [] });
+      // «No guardar historial» en el aviso de la primera vez: se apaga y se borra todo lo
+      // guardado hasta ahora, nombres de los EA incluidos (mientras no se acepta el aviso,
+      // puede haber más de un análisis).
+      saveStore({ ...store, off: true, seen: true, entries: [], labels: {} });
       state.historyId = null; state.historyFirst = false; api.render();
     } else if (act === 'delete') {
+      const gone = store.entries.find((e) => e.id === b.dataset.id);
       store.entries = store.entries.filter((e) => e.id !== b.dataset.id);
+      // Sin análisis de ese EA, su nombre tampoco se queda guardado.
+      if (gone && !store.entries.some((e) => e.fp === gone.fp)) delete store.labels[gone.fp];
       if (state.historyId === b.dataset.id) state.historyId = null;
       saveStore(store); api.render();
     } else if (act === 'clear') {
-      // Dos pasos: el primer toque pide confirmación en el propio botón.
-      if (!clearArmed) {
-        clearArmed = true;
+      // Dos pasos: el primer toque pide confirmación en el propio botón; a los 5 s, si no
+      // hay segundo toque, el botón vuelve a su texto.
+      if (armed !== b || !b.isConnected) {
+        disarm();
+        armed = b;
         b.textContent = L('¿Seguro? Toca otra vez para borrar todo', 'Sure? Tap again to delete everything');
         b.classList.add('is-armed');
-        setTimeout(() => { clearArmed = false; }, 5000);
+        armTimer = setTimeout(disarm, 5000);
         return;
       }
-      clearArmed = false;
+      disarm();
       saveStore({ ...store, entries: [], labels: {} });
       state.historyId = null; api.render();
     }

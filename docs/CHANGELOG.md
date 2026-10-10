@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-10-10 — Historial: cuatro fallos y tres detalles
+
+Revisión del historial en el navegador (escritorio y móvil, claro y oscuro) y en Node.
+
+- **Parámetros de sí/no o de lista siempre «fuera»:** con los mismos datos dos veces, la
+  comparación decía «En parte: 6 de 7» e «InpUseFilter true — fuera (—)». El tramo de la meseta
+  solo se guardaba para parámetros numéricos. Ahora, para los de sí/no o de lista, se guardan
+  los valores que toma la meseta (hasta 20) y se compara si el de ahora es uno de ellos. Lo
+  guardado antes sin ese tramo sale como «no consta la otra vez» y no cuenta ni dentro ni fuera.
+- **Un intento fallido borraba el periodo no visto ya guardado:** comprobarlo y después pulsar
+  Comparar con un dato vacío dejaba el análisis «sin comprobar». Ahora solo se apunta un
+  resultado; un error no toca lo guardado.
+- **«Borrar todo el historial»:** a los 5 s el botón seguía diciendo «¿Seguro? Toca otra vez»,
+  pero ese toque solo lo volvía a armar. Ahora vuelve a su texto. Además, la confirmación es de
+  ese botón concreto: tras un repintado no se borra todo con un solo toque.
+- **Dos optimizaciones distintas con el mismo nombre de archivo** (la misma rejilla sobre otro
+  periodo, con la misma pasada recomendada) contaban como el mismo análisis y la nueva sustituía
+  a la anterior. Ahora cada resumen lleva una huella de las cifras de la tabla
+  (`core/history.js#dataSignature`): mismos datos y mismos mínimos es el mismo análisis, aunque
+  cambie el nombre; la comparación dice «mismos datos» solo si lo son. Lo guardado antes, con la
+  regla de antes.
+- **Detalles:** «No guardar historial» (aviso de la primera vez) borra también los nombres de los
+  EA; al borrar el último análisis de un EA se borra su nombre; cada botón «Borrar» dice de qué
+  análisis es para el lector de pantalla.
+- Privacidad (ES/EN): el historial guarda también ese código calculado a partir de las cifras.
+- Pendiente de decidir: optimizar otro conjunto de parámetros del mismo EA (por ejemplo, el
+  refinamiento con alguno fijado) cuenta como otro EA.
+- 17 pruebas de respuesta conocida nuevas (`tests/history.test.js`) y 6 de navegador.
+
 ## 2026-10-10 — Periodo no visto repetido, ejemplo sin ventaja y tarjeta de la portada exacta
 
 - **Un «periodo no visto» que repite uno ya usado ya no valida** (`core/unseen.js#repeatedPeriod`).
