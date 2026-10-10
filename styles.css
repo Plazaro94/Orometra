@@ -381,6 +381,13 @@ body.compact-top .topbar{align-items:center;gap:12px 28px;margin-bottom:16px}
 .primary-btn{background:var(--cta-bg);color:var(--cta-text);border-color:var(--cta-line);font-weight:700}
 @media (hover:hover){.primary-btn:hover:not(:disabled){background:var(--cta-hover)}}
 .primary-btn:disabled{background:var(--surface-2);border-color:var(--line);color:var(--muted-2);cursor:default}
+/* Cabecera del informe en móviles estrechos: «Descargar .set», «Empezar de cero» y «Exportar»
+ * suman 353 px en español y a 375 px hay 343; «Exportar» bajaba solo a una tercera fila.
+ * Con menos relleno lateral caben en una desde 360 px (y en inglés desde 320). */
+@media (max-width:420px){
+  .top-actions{gap:6px}
+  .top-actions .ghost-btn,.top-actions .primary-btn{padding-left:10px;padding-right:10px}
+}
 .text-btn{border:0;padding:0;background:none;color:var(--info-text);font-size:13px}
 @media (hover:hover){.text-btn:hover{color:var(--text);text-decoration:underline}}
 .link-btn{border:0;background:none;color:var(--accent);font-weight:700;padding:0;font-size:13.5px}
@@ -838,7 +845,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .inline-warn{border:1px solid var(--line-strong);background:var(--warn-bg);border-radius:9px;padding:10px 12px;font-size:13px;color:var(--warn)}
 .inline-warn code{background:var(--warn-bg);color:var(--warn-text)}
 
-.param-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:var(--radius);overflow:hidden}
+/* 140 px y no 150: a 375 px la rejilla mide 299 y dos columnas de 150 no cabían, así que
+ * los parámetros iban de uno en uno (393 px de alto con seis). Desde 360 px, a dos columnas. */
+.param-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:var(--radius);overflow:hidden}
 .param{background:var(--surface);padding:10px 12px}
 .param span{display:block;color:var(--muted-2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .param strong{display:block;color:var(--text);font-family:var(--mono);font-size:13px;margin-top:4px}

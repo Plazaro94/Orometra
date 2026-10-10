@@ -33,7 +33,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261010b">
+<link rel="stylesheet" href="../styles.css?v=20261010c">
 <script src="../js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -92,14 +92,14 @@
       <span class="lp-method-num">01</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s1.title">It reads your export as it is</h2>
-        <p data-i18n="doc.method.s1.body">Drop the XML that MT5 exports, with commas or dots as decimals. The engine does not trust column names to tell parameters from metrics: it uses how they behave (a parameter has the same value for the same pass in-sample and in forward; a metric does not). It does need to recognize the metric columns (profit, profit factor, drawdown, trades) by name, and it reads English and Spanish headers: if key columns are not recognized, it tells you instead of giving a verdict that rests on less than it seems. If it drops any row, it tells you.</p>
+        <p data-i18n="doc.method.s1.body">Drop the XML that MT5 exports, with commas or dots as decimals. The engine does not trust column names to tell parameters from metrics: it uses how they behave (a parameter has the same value for the same pass in the optimized period and in the forward; a metric does not). It does need to recognize the metric columns (profit, profit factor, drawdown, trades) by name, and it reads English and Spanish headers: if key columns are not recognized, it tells you instead of giving a verdict that rests on less than it seems. If it drops any row, it tells you.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="minimos">
       <span class="lp-method-num">02</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s2.title">Your minimums before any ranking</h2>
-        <p data-i18n="doc.method.s2.body">A configuration only enters the search if it clears your floors in-sample: profit factor, drawdown, number of trades and positive profit. A ranking always produces a “top 5%”, even when everything loses money; a floor does not.</p>
+        <p data-i18n="doc.method.s2.body">A configuration only enters the search if it clears your floors on the optimized period: profit factor, drawdown, number of trades and positive profit. A ranking always produces a “top 5%”, even when everything loses money; a floor does not.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -144,7 +144,7 @@
         <h2 data-i18n="doc.method.s4.title">Plateaus, not peaks</h2>
         <p data-i18n="doc.method.s4.body">For each configuration it looks at its neighbors: those one, two or three steps away on your grid, adding up the steps across parameters (from 30 to 35, or from 0.1 to 0.2, is one step). The radius only grows until the typical configuration has about eight neighbors. Only the parameters that really change the result count; yes/no and text parameters must match, and those that barely matter are ignored. And only the neighbors you actually tested count: missing ones are never made up.</p>
         <p data-i18n="doc.method.s4.body2">A plateau is a connected zone of at least three configurations that clear your minimums and whose neighbors respond too: each has at least four tested neighbors, at least 90% of them clear your minimums, three out of four have at least acceptable quality, and the point does not stick out sharply above them. Isolated peaks are rejected, and the report tells you why (too few neighbors, a sharp drop next to it, a peak that sticks out too much…).</p>
-        <p data-i18n="doc.method.s4.body3">Inside the plateau it picks the configuration with the best combined rank in-sample and forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau and there is a forward, it gives a tentative suggestion by the same rule and says so. In our blind benchmark this choice lands closer to the best possible configuration than the pass MT5 lists first, the best forward row, the rank sum and random choice. It narrowly loses to “average with neighbors” when every case without a plateau counts as a miss (with the tentative suggestion, it wins), and in genetic searches and on a grid taken from a real export, MT5’s #1 comes out ahead.</p>
+        <p data-i18n="doc.method.s4.body3">Inside the plateau it picks the configuration with the best combined rank on the optimized period and the forward, averaged with its neighbors: not the tallest point, and not luck at a single point. If there is no plateau and there is a forward, it gives a tentative suggestion by the same rule and says so. In our blind benchmark this choice lands closer to the best possible configuration than the pass MT5 lists first, the best forward row, the rank sum and random choice. It narrowly loses to “average with neighbors” when every case without a plateau counts as a miss (with the tentative suggestion, it wins), and in genetic searches and on a grid taken from a real export, MT5’s #1 comes out ahead.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -172,8 +172,8 @@
       <span class="lp-method-num">05</span>
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s5.title">The forward confirms or demotes</h2>
-        <p data-i18n="doc.method.s5.body">Plateaus are found with the in-sample only. Then the forward puts them to the test: the plateau’s configurations must clear your minimums again. MT5 only sends the best passes to the forward (the top 10% in a complete search and the top 25% in a genetic one), so many configurations have no forward: they count as not validated, never as passed.</p>
-        <p data-i18n="doc.method.s5.body2">If fewer than 80% of the plateau’s configurations that have a forward clear your minimums there, you get a warning; below 65%, it is a serious limitation and the level drops to weak. A plateau with many unvalidated configurations also drops in rank. Your minimums are required in each period separately, so a good forward cannot hide a weak in-sample, or the other way around, and the forward’s minimum number of trades is scaled to its length (never below 30). The two periods’ ranks are added together only to choose within an already validated plateau.</p>
+        <p data-i18n="doc.method.s5.body">Plateaus are found with the optimized period only. Then the forward puts them to the test: the plateau’s configurations must clear your minimums again. MT5 only sends the best passes to the forward (the top 10% in a complete search and the top 25% in a genetic one), so many configurations have no forward: they count as not validated, never as passed.</p>
+        <p data-i18n="doc.method.s5.body2">If fewer than 80% of the plateau’s configurations that have a forward clear your minimums there, you get a warning; below 65%, it is a serious limitation and the level drops to weak. A plateau with many unvalidated configurations also drops in rank. Your minimums are required in each period separately, so a good forward cannot hide a weak optimized period, or the other way around, and the forward’s minimum number of trades is scaled to its length (never below 30). The two periods’ ranks are added together only to choose within an already validated plateau.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step" id="suerte">
@@ -181,7 +181,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s6.title">It estimates how much could be chance</h2>
         <p data-i18n="doc.method.s6.body">Test thousands of configurations and some will look great by pure chance. The engine computes the best Sharpe ratio you would expect from luck alone, given how much the Sharpe ratios of your passes vary and how many distinct trials you ran, and compares it with your best one (the forward’s, if there is one). Near-identical configurations do not count as independent trials: those a few steps apart are grouped together. If your best result does not clear that bar, it is a serious limitation: the top result may be nothing but noise. Clearing it is necessary, not sufficient. It is an adaptation of the Bailey and López de Prado test, not their published Deflated Sharpe Ratio.</p>
-        <p data-i18n="doc.method.s6.body2">It also looks at your table the way MT5 ranks it: how often the best configuration of one period falls below the middle of the table in the other (what the report calls “how often MT5’s ranking fails”), whether what does well in-sample tends to do well in the forward, whether a parameter’s best value changes from one period to the other, whether the proposed configuration sits on the edge of the tested range, and how many trades there are per optimized parameter: below 50, everything is provisional; below 15, the surface is mostly noise.</p>
+        <p data-i18n="doc.method.s6.body2">It also looks at your table the way MT5 ranks it: how often the best configuration of one period falls below the middle of the table in the other (what the report calls “how often MT5’s ranking fails”), whether what does well on the optimized period tends to do well in the forward, whether a parameter’s best value changes from one period to the other, whether the proposed configuration sits on the edge of the tested range, and how many trades there are per optimized parameter: below 50, everything is provisional; below 15, the surface is mostly noise.</p>
       </div>
     </section>
     <section class="lp-doc-block lp-method-step has-media" id="umbrales">
@@ -269,7 +269,7 @@
 
   <section class="lp-doc-block doc-bench" id="banco" aria-labelledby="doc-bench-title">
     <h2 id="doc-bench-title" data-i18n="doc.method.bench.title">How we know it works</h2>
-    <p data-i18n="doc.method.bench.p1">Before every change to the engine is published, it goes through a benchmark: simulated optimizations shaped like an MT5 export in which we know the truth, because we put it there. There are cases with no real edge at all, pure overfitting (the edge exists only in the in-sample), a regime change, genetic searches and a grid taken from a real export. The pass marks were written down before seeing any result, and each exam is blind, on new cases.</p>
+    <p data-i18n="doc.method.bench.p1">Before every change to the engine is published, it goes through a benchmark: simulated optimizations shaped like an MT5 export in which we know the truth, because we put it there. There are cases with no real edge at all, pure overfitting (the edge exists only in the optimized period), a regime change, genetic searches and a grid taken from a real export. The pass marks were written down before seeing any result, and each exam is blind, on new cases.</p>
     <p data-i18n="doc.method.bench.intro">In the latest exam, 800 optimizations:</p>
     <ul class="lp-list">
       <li data-i18n-html="doc.method.bench.1"><strong>False alarms.</strong> Out of 300 optimizations with no real edge, 10 got “moderate” or higher, and none “strong”.</li>
@@ -277,7 +277,7 @@
       <li data-i18n-html="doc.method.bench.3"><strong>The choice.</strong> On the unseen period, the chosen configuration lands a median 0.23 away from the best possible one, versus 0.29 for MT5’s #1 (0 is picking the best; 1, picking an average one).</li>
       <li data-i18n-html="doc.method.bench.4"><strong>Consistent levels.</strong> The higher the level, the better the chosen configuration really is.</li>
     </ul>
-    <p data-i18n-html="doc.method.bench.p2">And where it fails: it passed 10 of the 13 criteria. When the edge exists only in the in-sample, it gives “moderate” or higher in 8 of 100 cases, above the 5% set in advance. When it sees no plateau, Orometra does not propose one (at most, a tentative suggestion), and the exam counts each of those cases as a miss: that is why averaging each configuration with its neighbors comes out slightly ahead overall (0.20 versus 0.23), and why MT5’s #1 beats it in genetic searches and on the grid taken from a real export, there by more than allowed. These are simulated data: the test on real MT5 optimizations is still pending. <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener">The rules, written in advance</a> and <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam5.md" target="_blank" rel="noopener">the full results</a> are public (in Spanish).</p>
+    <p data-i18n-html="doc.method.bench.p2">And where it fails: it passed 10 of the 13 criteria. When the edge exists only in the optimized period, it gives “moderate” or higher in 8 of 100 cases, above the 5% set in advance. When it sees no plateau, Orometra does not propose one (at most, a tentative suggestion), and the exam counts each of those cases as a miss: that is why averaging each configuration with its neighbors comes out slightly ahead overall (0.20 versus 0.23), and why MT5’s #1 beats it in genetic searches and on the grid taken from a real export, there by more than allowed. These are simulated data: the test on real MT5 optimizations is still pending. <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/PREREGISTRO.md" target="_blank" rel="noopener">The rules, written in advance</a> and <a href="https://github.com/Plazaro94/Orometra/blob/main/bench/results/REPORT-exam5.md" target="_blank" rel="noopener">the full results</a> are public (in Spanish).</p>
   </section>
 
   <section class="lp-doc-block doc-limits" id="limites" aria-labelledby="doc-lim-title">

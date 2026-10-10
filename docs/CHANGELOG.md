@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-10 — Auditoría de diseño: cuatro fallos
+
+Auditoría visual de todas las páginas (inglés y español, claro y oscuro, 375, 768 y 1440 px).
+Sin desbordes ni textos cortados en ninguna combinación. Se arreglan los cuatro fallos objetivos;
+las propuestas de organización (portada, cabeceras con foto, orden de las guías, escala de
+tamaños) quedan para decidir.
+
+- **«Solid» y «Strong» en inglés:** el titular del veredicto decía «Solid evidence» y la escala,
+  la cabecera de las pestañas, la portada y la Metodología, «Strong». Ahora es «Strong evidence»
+  en los dos titulares (`core/verdict.js`, `js/ui-verdict.js`). En español ya era «sólida».
+- **Metodología:** «periodo optimizado», como en la app, en vez de «in-sample» (8 frases, en los
+  dos idiomas). Las guías siguen diciendo «in-sample», y la de exportación lo define.
+- **Mesetas en el móvil:** a 360 y 375 px los parámetros de la configuración representativa iban
+  de uno en uno (393 px de alto con seis): la rejilla pedía columnas de 150 px y había 299.
+  Ahora de 140 px: a dos columnas desde 360 px (197 px de alto). Tableta y escritorio, igual.
+- **Cabecera del informe en español:** a 375 px, «Exportar» bajaba solo a una tercera fila
+  (los tres botones sumaban 353 px y había 343). Por debajo de 420 px los botones llevan menos
+  relleno lateral: una fila desde 360 px en español y desde 320 en inglés.
+- Caché de estilos `?v=20261010c`. Pruebas: `tests/audit-2026-10.test.js` (titulares con el
+  nombre de la escala; Metodología sin «in-sample») y 4 de navegador a 360 y 375 px.
+
 ## 2026-10-10 — Historial: cuatro fallos y tres detalles
 
 Revisión del historial en el navegador (escritorio y móvil, claro y oscuro) y en Node.

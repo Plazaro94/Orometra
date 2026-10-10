@@ -527,6 +527,33 @@ try {
     await ctx.close();
   }
 
+  section('5a. Mesetas en un móvil estrecho, en español');
+  // A 375 px los seis parámetros iban de uno en uno (393 px de alto) y «Exportar» bajaba
+  // solo a una tercera fila de la cabecera: el español no cabía donde el inglés sí.
+  for (const width of [360, 375]) {
+    const ctx = await browser.newContext({ viewport: { width, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+    await ctx.addInitScript(() => { try { localStorage.setItem('orometra.lang', 'es'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    watch(page);
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.click('.nav-item[data-tab="plateaus"]');
+    await page.waitForTimeout(300);
+    const got = await page.evaluate(() => {
+      const g = document.querySelector('#view .param-grid');
+      const tops = [...document.querySelectorAll('.top-actions > button')].filter((b) => b.offsetParent).map((b) => Math.round(b.getBoundingClientRect().top));
+      return {
+        cols: getComputedStyle(g).gridTemplateColumns.split(' ').length,
+        cut: [...g.querySelectorAll('.param span')].filter((s) => s.scrollWidth > s.clientWidth).length,
+        buttons: tops.length,
+        rows: new Set(tops).size,
+      };
+    });
+    check(`${width} px: los parámetros a dos columnas, sin nombres cortados`, got.cols === 2 && got.cut === 0, JSON.stringify(got));
+    check(`${width} px: los botones de la cabecera en una fila`, got.buttons === 3 && got.rows === 1, JSON.stringify(got));
+    await ctx.close();
+  }
+
   section('5b. Tema: el del sistema hasta que el usuario elige');
   for (const [scheme, saved, want] of [['light', null, 'light'], ['dark', null, 'dark'], ['light', 'dark', 'dark'], ['dark', 'light', 'light']]) {
     const ctx = await browser.newContext({ colorScheme: scheme });

@@ -151,7 +151,7 @@ export function displayVerdictCopy(a) {
       return {
         level,
         headline: level === 'strong'
-          ? L('Evidencia sólida, y el periodo no visto no la contradice', 'Solid evidence, and the unseen period does not contradict it')
+          ? L('Evidencia sólida, y el periodo no visto no la contradice', 'Strong evidence, and the unseen period does not contradict it')
           : L('Evidencia buena, y el periodo no visto no la contradice', 'Good evidence, and the unseen period does not contradict it'),
         summary: level === 'strong'
           ? L('La meseta propuesta se apoya en vecinas que también cumplen tus mínimos, aguanta en el forward y la recomendación se mantiene al mover los umbrales. Además, en un periodo que no se usó ni para optimizar ni para validar, su resultado entra en lo habitual de la meseta.',

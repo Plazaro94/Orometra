@@ -624,7 +624,7 @@ export function buildVerdict(ctx) {
           'There is no plateau in these data, only isolated configurations. Below you have the best ones, but an isolated point may be luck.');
   } else if (validated && blocking.length === 0) {
     level = LEVELS.STRONG;
-    headline = L('Evidencia sólida', 'Solid evidence');
+    headline = L('Evidencia sólida', 'Strong evidence');
     summary = L(`${regiones === 1 ? 'La meseta propuesta' : 'Las mesetas propuestas'} se ${regiones === 1 ? 'apoya' : 'apoyan'} en vecinas que también cumplen tus mínimos, ${regiones === 1 ? 'aguanta' : 'aguantan'} en el forward y la recomendación se mantiene al mover los umbrales. Es lo máximo que el periodo optimizado y el forward pueden respaldar; un periodo no visto puede mantenerla o bajarla.`,
       `${regiones === 1 ? 'The proposed plateau rests' : 'The proposed plateaus rest'} on neighbors that also clear your minimums, ${regiones === 1 ? 'holds' : 'hold'} on the forward, and the recommendation holds when thresholds are moved. That is the most the optimized period and the forward can support; an unseen period can keep it there or lower it.`);
   } else if (validated && blocking.length === 1 && stabilityCheck.regionRate >= 0.8) {
