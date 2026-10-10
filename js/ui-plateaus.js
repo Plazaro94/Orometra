@@ -569,23 +569,25 @@ export function renderDiagnostics(a) {
         <div>
           <h3>${L('Métricas usadas para juzgar', 'Metrics used for judgment')}</h3>
           <div class="chips">${a.meta.availableMetrics.filter((n) => n !== 'expectedPayoff').map((n) => `<span class="chip">${esc(METRIC_LABEL()[n] || n)}</span>`).join('')}</div>
-          <p class="chart-note">
-            ${L(
-              `Tu criterio de optimización${a.meta.criterionIsName ? ` (<code>${esc(a.meta.criterionIsName)}</code>)` : ''}
-            se lee pero <strong>no puntúa</strong>: significa algo distinto en cada optimización y está contaminado
-            por la propia selección. Sirve para reconstruir el orden en que MT5 te presenta las pasadas (la tabla de
-            descartes) y para medir si ese orden se mantiene entre periodos.${a.meta.availableMetrics.includes('expectedPayoff') ? ' El beneficio esperado tampoco puntúa: depende del tamaño del lote.' : ''}`,
-              `Your optimization criterion${a.meta.criterionIsName ? ` (<code>${esc(a.meta.criterionIsName)}</code>)` : ''}
-            is read but <strong>does not score</strong>: it means something different in every optimization and is contaminated
-            by the selection itself. It is used to rebuild the order in which MT5 presents the passes (the rejection
-            table) and to measure whether that order holds across periods.${a.meta.availableMetrics.includes('expectedPayoff') ? ' Expected payoff does not score either: it depends on the lot size.' : ''}`,
-            )}
-          </p>
-          ${integ && integ.vetoed && integ.vetoed.length ? `<p class="chart-note">${L(
-            'Columnas tomadas como métrica por su nombre (nunca como parámetro):',
-            'Columns taken as metrics by their name (never as parameters):',
-          )} ${integ.vetoed.map((v) => `<code>${esc(v.name)}</code>`).join(', ')}.</p>` : ''}
         </div>
+      </div>
+      <div class="columns-notes">
+        <p class="chart-note">
+          ${L(
+            `Tu criterio de optimización${a.meta.criterionIsName ? ` (<code>${esc(a.meta.criterionIsName)}</code>)` : ''}
+          se lee pero <strong>no puntúa</strong>: significa algo distinto en cada optimización y está contaminado
+          por la propia selección. Sirve para reconstruir el orden en que MT5 te presenta las pasadas (la tabla de
+          descartes) y para medir si ese orden se mantiene entre periodos.${a.meta.availableMetrics.includes('expectedPayoff') ? ' El beneficio esperado tampoco puntúa: depende del tamaño del lote.' : ''}`,
+            `Your optimization criterion${a.meta.criterionIsName ? ` (<code>${esc(a.meta.criterionIsName)}</code>)` : ''}
+          is read but <strong>does not score</strong>: it means something different in every optimization and is contaminated
+          by the selection itself. It is used to rebuild the order in which MT5 presents the passes (the rejection
+          table) and to measure whether that order holds across periods.${a.meta.availableMetrics.includes('expectedPayoff') ? ' Expected payoff does not score either: it depends on the lot size.' : ''}`,
+          )}
+        </p>
+        ${integ && integ.vetoed && integ.vetoed.length ? `<p class="chart-note">${L(
+          'Columnas tomadas como métrica por su nombre (nunca como parámetro):',
+          'Columns taken as metrics by their name (never as parameters):',
+        )} ${integ.vetoed.map((v) => `<code>${esc(v.name)}</code>`).join(', ')}.</p>` : ''}
       </div>
     </section>
 

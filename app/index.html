@@ -21,7 +21,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261010d">
+<link rel="stylesheet" href="../styles.css?v=20261010e">
 <script src="../js/theme-init.js"></script>
 </head>
 <body>
@@ -141,7 +141,7 @@
           <div class="file-icon" aria-hidden="true">&#8593;</div>
           <div class="drop-copy">
             <strong data-i18n="drop.main.title">Drop your MT5 files here</strong>
-            <span id="mainDropStatus" data-i18n="drop.main.status">The in-sample export and, if you have it, the forward one. The app works out which is which.</span>
+            <span id="mainDropStatus" data-i18n="drop.main.status">The optimization export and, if you have it, the forward one. The app works out which is which.</span>
           </div>
           <div class="drop-action" data-i18n="drop.chooseFiles">Choose files</div>
         </div>
@@ -176,7 +176,7 @@
       <div class="policy-panel" id="policyPanel">
         <div class="policy-head">
           <h2 data-i18n="policy.h2">Minimums a configuration must meet</h2>
-          <p data-i18n-html="policy.p">The plateau is searched among configurations that meet these minimums <strong>in-sample</strong>. On the <strong>forward</strong> they are required again to validate it: if many of its configurations fail them, the plateau drops in rank and you are warned. Nothing gets in just for ranking high in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
+          <p data-i18n-html="policy.p">The plateau is searched among configurations that meet these minimums <strong>on the optimized period</strong>. On the <strong>forward</strong> they are required again to validate it: if many of its configurations fail them, the plateau drops in rank and you are warned. Nothing gets in just for ranking high in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
         </div>
         <div class="policy-grid">
           <label class="field">
@@ -188,7 +188,7 @@
             <input type="text" inputmode="decimal" autocomplete="off" id="gDd" value="20">
           </label>
           <label class="field">
-            <span data-i18n="policy.trades">Minimum trades (in-sample)</span>
+            <span data-i18n="policy.trades">Minimum trades (optimized period)</span>
             <input type="text" inputmode="numeric" autocomplete="off" id="gTrades" value="100">
           </label>
           <label class="field checkbox">
@@ -238,7 +238,7 @@
   <div class="drop-overlay-card">
     <div class="drop-overlay-icon">&#8595;</div>
     <strong data-i18n="drop.overlay.title">Drop files here</strong>
-    <span data-i18n="drop.overlay.body">Anywhere on the page. The app detects which file is in-sample and which is forward.</span>
+    <span data-i18n="drop.overlay.body">Anywhere on the page. The app detects which file is the optimization and which is the forward.</span>
   </div>
 </div>
 

@@ -623,7 +623,7 @@ export function renderEmpty() {
       <li><span aria-hidden="true">2</span><p>${t('empty.s2')}</p></li>
       <li><span aria-hidden="true">3</span><p>${t('empty.s3')}</p></li>
     </ol>
-    <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo="good">${esc(t('empty.demoBtn'))}</button> <span aria-hidden="true">·</span> <button class="text-btn" type="button" data-demo="noedge">${esc(t('empty.demoNoEdge'))}</button></p>
+    <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo="noedge">${esc(t('empty.demoNoEdge'))}</button></p>
   </div>`;
 }
 

@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-10-10 — Escala de letra y espaciado, guías por orden de uso y detalles
+
+Lo que quedaba de la auditoría de diseño, salvo las fotos de cabecera (se quedan).
+
+- **Escala de tamaños de letra:** fuera los medios píxeles (12,5 → 13; 13,5 → 14; 14,5 → 15;
+  15,5 → 16; 16,5 → 17) y el 19 (→ 20). Los tamaños de 13, 14, 15, 17 y 20 px van con su token
+  (antes, 13 px se escribía a mano 93 veces). `--fs-xs` desaparece: valía lo mismo que
+  `--fs-sm`. `--fs-lg` pasa de 16,5 a 17 px y `--fs-xl` de 19,5 a 20. El texto de los diagramas
+  SVG va en unidades del dibujo y no cambia.
+- **Escala de espaciado** (margin, padding, gap): los impares, al par de arriba (nunca más
+  apretado); por encima de 20 px, múltiplos de 4. De 39 valores distintos a 25. Se quedan el
+  1 px, el 44 (zona táctil) y el 52 (hueco entre secciones en el móvil).
+- `tests/design-scale.test.js` falla si vuelve a aparecer un tamaño o un espaciado fuera de la
+  escala.
+- **Índice de guías** en dos grupos, en el orden en que hacen falta: «Antes de optimizar»
+  (criterio, genética o completa, forward) y «Después de optimizar» (exportar, sobreoptimización,
+  informe del probador). En escritorio, una fila de tres por grupo.
+- **«Cómo exportarlo →» en tema claro:** un halo del color del fondo detrás de la línea. Sobre la
+  roca de la foto, el contraste mediano pasa de 4,2 a 5,8:1 a 1440 px, y de 1024 a 1920 px
+  queda entre 5,6 y 5,8:1 (antes, entre 4,0 y 4,3).
+- **App vacía:** la nota del .set, alineada con el contenido de la caja de carga y con aire
+  debajo. Abajo ya no se repite «Ver un informe de ejemplo» (el botón de arriba sigue): solo el
+  ejemplo sin ventaja.
+- **Privacidad:** el texto de las tres tarjetas, de 14 a 16 px.
+- **Diagnóstico, «Columnas detectadas»:** las notas, a lo ancho debajo de las dos listas; antes
+  dejaban vacía la columna de los parámetros.
+- Cabecera del informe a ≤ 420 px: relleno lateral de 8 px (con la letra a 14 px, «Exportar»
+  volvía a bajar de fila a 360 px en español).
+- El texto de reserva del HTML de la app dice «optimized period», como `js/i18n.js`.
+- Caché de estilos `?v=20261010e`.
+
 ## 2026-10-10 — Portada: «Cómo funciona» justo después del titular
 
 De la auditoría de diseño: lo más claro para quien llega nuevo estaba escondido. El resto de la
