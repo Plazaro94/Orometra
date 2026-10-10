@@ -38,7 +38,7 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261010c">
+<link rel="stylesheet" href="/styles.css?v=20261010d">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separa lo frágil de lo estable en tu optimización de MT5: qué configuración de tu EA es estable y cuánta evidencia la respalda. Gratis y en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js" data-hero-photo></script>
 </head>
@@ -85,7 +85,17 @@
     </div>
   </section>
 
-  <!-- 2. El problema y la solucion -->
+  <!-- 2. Cómo funciona: lo primero que necesita quien llega. Antes era una pestaña casi al final. -->
+  <section class="hm-section" aria-labelledby="hm-how-title">
+    <h2 id="hm-how-title" data-i18n="home.how.title">Cómo funciona</h2>
+    <ol class="hm-steps">
+      <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Exporta</h3><p data-i18n="home.how.1.body">Exporta a XML los resultados de tu optimización de MT5, y la pestaña forward si la usaste.</p></li>
+      <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Suéltalos aquí</h3><p data-i18n="home.how.2.body">Se analizan en tu navegador, en segundos.</p></li>
+      <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Llévate tu configuración</h3><p data-i18n="home.how.3.body">La recomendada con sus motivos, su fiabilidad, un .set listo para MT5 y el rango para volver a optimizar a su alrededor.</p></li>
+    </ol>
+  </section>
+
+  <!-- 3. El problema y la solucion -->
   <section class="hm-section" aria-labelledby="hm-problem-title">
     <h2 id="hm-problem-title" data-i18n="home.problem.title">En MT5, el n.º 1 suele ser el más frágil</h2>
     <div class="hm-compare">
@@ -131,7 +141,7 @@
     </div>
   </section>
 
-  <!-- 2a. Una decisión, no una tabla: la misma tarjeta del informe -->
+  <!-- 4. Una decisión, no una tabla: la misma tarjeta del informe -->
   <section class="hm-section hm-take" aria-labelledby="hm-take-title">
     <h2 id="hm-take-title" data-i18n="home.take.title">Una decisión, no una tabla</h2>
     <p class="hm-sub" data-i18n="home.take.sub">Es lo primero que muestra el informe de ejemplo: qué configuración elegir, qué fiabilidad tiene y qué hacer después.</p>
@@ -179,7 +189,7 @@
     <p class="hm-more hm-more-alt"><a href="/app/?demo=noedge" data-track="portada-ejemplo-sin-ventaja" data-i18n="home.take.noedge">¿Y cuando no hay nada? Ver un ejemplo sin ventaja real →</a></p>
   </section>
 
-  <!-- 2b. Banco de pruebas: cifras medidas en bench/ (quinto examen, ciego). Las comprueba tests/home-bench.test.js. -->
+  <!-- 5. Banco de pruebas: cifras medidas en bench/ (quinto examen, ciego). Las comprueba tests/home-bench.test.js. -->
   <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
     <h2 id="hm-bench-title" data-i18n="home.bench.title">Lo probamos con casos de respuesta conocida</h2>
     <p class="hm-sub" data-i18n="home.bench.sub">Pasamos el motor por 800 optimizaciones simuladas en las que sabíamos de antemano si había una ventaja real o no. Orometra califica la evidencia en cinco niveles, de «insuficiente» a «sólida».</p>
@@ -209,22 +219,13 @@
     <p class="hm-more hm-bench-links"><a href="/es/methodology/#banco" data-track="portada-banco-metodologia" data-i18n="home.bench.how">Cómo lo probamos →</a></p>
   </section>
 
-  <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->
+  <!-- 6. Lo que hay detrás: dos pestañas en el hueco de una sección. Sin JS se ven las dos. -->
   <section class="hm-section hm-more-sec" aria-labelledby="hm-more-title">
     <h2 id="hm-more-title" data-i18n="home.more.title">Lo que hay detrás del resultado</h2>
     <div class="hm-tabs" data-tabs>
       <div class="hm-tablist" role="tablist" aria-labelledby="hm-more-title">
-        <button type="button" role="tab" id="hm-tab-how" data-track="pestana-como" aria-controls="hm-pane-how" aria-selected="true" data-i18n="home.tab.how">Cómo funciona</button>
-        <button type="button" role="tab" id="hm-tab-engine" data-track="pestana-motor" aria-controls="hm-pane-engine" aria-selected="false" tabindex="-1" data-i18n="home.tab.engine">El motor</button>
+        <button type="button" role="tab" id="hm-tab-engine" data-track="pestana-motor" aria-controls="hm-pane-engine" aria-selected="true" data-i18n="home.tab.engine">El motor</button>
         <button type="button" role="tab" id="hm-tab-proof" data-track="pestana-confianza" aria-controls="hm-pane-proof" aria-selected="false" tabindex="-1" data-i18n="home.tab.proof">Por qué fiarte</button>
-        <button type="button" role="tab" id="hm-tab-ai" data-track="pestana-ia" aria-controls="hm-pane-ai" aria-selected="false" tabindex="-1" data-i18n="home.tab.ai">¿Y una IA?</button>
-      </div>
-      <div class="hm-pane" role="tabpanel" id="hm-pane-how" aria-labelledby="hm-tab-how" tabindex="0">
-        <ol class="hm-steps">
-          <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Exporta</h3><p data-i18n="home.how.1.body">Exporta a XML los resultados de tu optimización de MT5, y la pestaña forward si la usaste.</p></li>
-          <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Suéltalos aquí</h3><p data-i18n="home.how.2.body">Se analizan en tu navegador, en segundos.</p></li>
-          <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Llévate tu configuración</h3><p data-i18n="home.how.3.body">La recomendada con sus motivos, su fiabilidad, un .set listo para MT5 y el rango para volver a optimizar a su alrededor.</p></li>
-        </ol>
       </div>
       <div class="hm-pane" role="tabpanel" id="hm-pane-engine" aria-labelledby="hm-tab-engine" tabindex="0">
         <p class="hm-sub" data-i18n="home.engine.sub">Lo que te llevaría horas de Excel y mucho criterio, hecho en segundos y siempre de la misma forma.</p>
@@ -247,25 +248,10 @@
           <li><h3 data-i18n="home.proof.4.title">Se pone a prueba en cada versión</h3><p data-i18n="home.proof.4.body">Antes de publicarse, cada versión pasa cientos de comprobaciones automáticas, entre ellas pruebas con datos en los que se conoce de antemano la respuesta correcta.</p></li>
         </ul>
       </div>
-      <div class="hm-pane hm-ai" role="tabpanel" id="hm-pane-ai" aria-labelledby="hm-tab-ai" tabindex="0">
-        <p class="hm-ai-lead" data-i18n="home.ai.lead">Una IA siempre tiene una respuesta. Orometra solo te da la que tus datos pueden defender.</p>
-        <table class="hm-vs">
-          <thead><tr><td></td><th scope="col" class="hm-vs-ai" data-i18n="home.ai.col.ai">Un chat de IA</th><th scope="col" class="hm-vs-oro" data-i18n="home.ai.col.oro">Orometra</th></tr></thead>
-          <tbody>
-            <tr><th scope="row" data-i18n="home.ai.1.k">Misma tabla, otro día</th><td class="hm-vs-ai" data-i18n="home.ai.1.ai">Puede cambiar de respuesta según cómo preguntes</td><td class="hm-vs-oro" data-i18n="home.ai.1.oro">Siempre la misma respuesta</td></tr>
-            <tr><th scope="row" data-i18n="home.ai.2.k">El método</th><td class="hm-vs-ai" data-i18n="home.ai.2.ai">Lo improvisa en cada conversación</td><td class="hm-vs-oro" data-i18n="home.ai.2.oro">Fijo, publicado y probado</td></tr>
-            <tr><th scope="row" data-i18n="home.ai.3.k">Los números</th><td class="hm-vs-ai" data-i18n="home.ai.3.ai">Puede inventarse una cifra sin avisarte</td><td class="hm-vs-oro" data-i18n="home.ai.3.oro">Cada cifra sale de tus datos y se puede comprobar</td></tr>
-            <tr><th scope="row" data-i18n="home.ai.4.k">Si tus datos no dan para una conclusión</th><td class="hm-vs-ai" data-i18n="home.ai.4.ai">Te contesta igual, con total seguridad</td><td class="hm-vs-oro" data-i18n="home.ai.4.oro">Te lo dice: evidencia insuficiente</td></tr>
-            <tr><th scope="row" data-i18n="home.ai.5.k">Tu estrategia</th><td class="hm-vs-ai" data-i18n="home.ai.5.ai">Se sube a los servidores de otra empresa</td><td class="hm-vs-oro" data-i18n="home.ai.5.oro">No sale de tu ordenador</td></tr>
-            <tr><th scope="row" data-i18n="home.ai.6.k">Lo que te llevas</th><td class="hm-vs-ai" data-i18n="home.ai.6.ai">Un texto</td><td class="hm-vs-oro" data-i18n="home.ai.6.oro">Una configuración, su nivel de evidencia y un .set para MT5</td></tr>
-          </tbody>
-        </table>
-        <p class="hm-ai-close"><span data-i18n="home.ai.close">Usa la IA para entender el informe. Para decidir con qué configuración arriesgas tu dinero, usa un criterio que no cambie.</span> <a href="/es/methodology/#ia" data-i18n="home.ai.more">Leer la explicación completa →</a></p>
-      </div>
     </div>
   </section>
 
-  <!-- 4. Preguntas frecuentes -->
+  <!-- 7. Preguntas frecuentes -->
   <section class="hm-section hm-faq-section" aria-labelledby="hm-faq-title">
     <div class="hm-faq-head">
       <h2 id="hm-faq-title" data-i18n="home.faq.title">Preguntas frecuentes</h2>
@@ -285,7 +271,7 @@
 
   <section class="hm-final has-photo">
     <h2 data-i18n="home.final.title">¿Lo pruebas?</h2>
-    <p data-i18n="home.final.body">Suelta aquí tu optimización y mira el resultado en un minuto. No se sube nada.</p>
+    <p data-i18n="home.final.body">Suelta aquí tu optimización y mira el resultado en un minuto.</p>
     <ul class="hm-checks">
       <li data-i18n="home.final.c1">Gratis y sin registro</li>
       <li data-i18n="home.final.c2">Tus archivos no salen de tu ordenador</li>
