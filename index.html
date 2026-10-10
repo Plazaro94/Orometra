@@ -37,7 +37,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=20261010a">
+<link rel="stylesheet" href="styles.css?v=20261010b">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separate the fragile from the stable in your MT5 optimization: which configuration of your EA is stable and how much evidence backs it. Free, in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js" data-hero-photo></script>
 </head>
@@ -133,32 +133,32 @@
   <!-- 2a. Una decisión, no una tabla: la misma tarjeta del informe -->
   <section class="hm-section hm-take" aria-labelledby="hm-take-title">
     <h2 id="hm-take-title" data-i18n="home.take.title">A decision, not a table</h2>
-    <p class="hm-sub" data-i18n="home.take.sub">This is the first thing the report shows: which configuration to pick, how reliable it is and what to do next (example data).</p>
+    <p class="hm-sub" data-i18n="home.take.sub">This is the first thing the sample report shows: which configuration to pick, how reliable it is and what to do next.</p>
     <div class="hm-take-grid">
       <figure class="hm-take-card">
         <div class="vx v-go" role="group" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Example verdict card">
           <div class="vx-main">
             <div class="vx-pick">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">A</b><span data-i18n="home.take.pick.label">Which configuration to use</span></span>
-              <div class="vx-pass"><span data-i18n="home.take.pick.pass">Pass</span> <b>4283</b></div>
-              <p class="vx-pass-note" data-i18n="home.take.pick.note">The center of a plateau of 412 similar configurations.</p>
-              <div class="t3-param-chips vx-params"><span>FastMA <b>14</b></span><span>SlowMA <b>70</b></span><span>ATR_SL <b>2</b></span><span>ATR_TP <b>4</b></span></div>
+              <div class="vx-pass"><span data-i18n="home.take.pick.pass">Pass</span> <b>11445</b></div>
+              <p class="vx-pass-note" data-i18n="home.take.pick.note">Chosen within a plateau of 5,018 similar configurations.</p>
+              <div class="t3-param-chips vx-params"><span>InpFastMA <b>14</b></span><span>InpSlowMA <b>70</b></span><span>InpATR_SL <b>2</b></span><span>InpATR_TP <b>4</b></span><span>InpTrailStart <b>1.5</b></span><span>InpMinBodyPct <b>20</b></span></div>
               <div class="vx-actions"><span class="primary-btn is-static" data-i18n="home.take.pick.download">Download .set</span><span class="ghost-btn is-static" data-i18n="home.take.pick.copy">Copy parameters</span></div>
             </div>
             <div class="vx-trust">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">B</b><span data-i18n="home.take.trust.label">Reliability</span></span>
-              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Reliability: good (4 of 5)">
+              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Reliability: strong (5 of 5)">
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.1">Insufficient</span></div>
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.2">Weak</span></div>
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.3">Moderate</span></div>
-                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Good</span></div>
-                <div class="vx-seg"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Strong</span></div>
+                <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Good</span></div>
+                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Strong</span></div>
               </div>
-              <p class="vx-trust-line" data-i18n="home.take.trust.line">Validated on the forward and stable when thresholds are moved, with one warning worth reading.</p>
+              <p class="vx-trust-line" data-i18n="home.take.trust.line">The most the optimized period and the forward can support: a validated, stable plateau with no warnings about it. An unseen period can keep it there or lower it.</p>
               <div class="vx-stats">
-                <div class="vx-stat"><strong>88<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustness</span></div>
+                <div class="vx-stat"><strong>93<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustness</span></div>
                 <div class="vx-stat"><strong>12<small data-i18n="home.take.stat.of"> of 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Neighbors that pass</span></div>
-                <div class="vx-stat"><strong data-i18n="home.take.stat.pct">94%</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Holds on validation</span></div>
+                <div class="vx-stat"><strong data-i18n="home.take.stat.pct">90%</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Holds on validation</span></div>
               </div>
             </div>
           </div>
@@ -174,6 +174,8 @@
       </figure>
       <p class="hm-more"><a href="app/?demo=1" data-track="portada-informe-ejemplo" data-i18n="home.take.more">See the full sample report →</a></p>
     </div>
+    <!-- Fuera de .hm-take-grid: allí el enlace se estira sobre toda la tarjeta. -->
+    <p class="hm-more hm-more-alt"><a href="app/?demo=noedge" data-track="portada-ejemplo-sin-ventaja" data-i18n="home.take.noedge">And when there is nothing? See an example with no real edge →</a></p>
   </section>
 
   <!-- 2b. Banco de pruebas: cifras medidas en bench/ (quinto examen, ciego). Las comprueba tests/home-bench.test.js. -->

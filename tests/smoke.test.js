@@ -99,7 +99,8 @@ section('2. Arranque /app/: sin progreso ni error visibles en el marcado');
 section('3. Demo: carga y encuentra meseta (botón / ?demo=1)');
 {
   check('landing enlaza demo con ?demo=1', /href="app\/\?demo=1"/.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')));
-  check('ui arranca demo si ?demo=1', /get\('demo'\)\s*===\s*'1'[\s\S]{0,80}loadDemo\(/.test(uiSrc));
+  check('ui arranca demo si ?demo=1', /get\('demo'\)[\s\S]{0,80}===\s*'1'\)\s*loadDemo\('good'\)/.test(uiSrc));
+  check('y el ejemplo sin ventaja si ?demo=noedge', /===\s*'noedge'\)\s*loadDemo\('noedge'\)/.test(uiSrc));
 
   const demo = buildDemoTables();
   check('demo genera IS y OOS', Boolean(demo.isTable && demo.oosTable && demo.isTable.rows.length > 100));

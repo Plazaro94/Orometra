@@ -6,7 +6,7 @@
 // corrige por duracion. Esto ultimo es lo que separa el metodo de mirarlo a ojo.
 
 import { runAnalysis } from '../core/analysis.js';
-import { evaluateUnseen, buildReference } from '../core/unseen.js';
+import { evaluateUnseen, buildReference, repeatedPeriod } from '../core/unseen.js';
 import { buildDemoTables } from '../js/demo.js';
 
 let failures = 0;
@@ -131,7 +131,33 @@ section('5. Potencia: con muy pocas operaciones hay que decir que no se detecta 
   check('lo dice en las notas', r.notes.some((n) => /potencia/i.test(n)), r.notes.join(' | '));
 }
 
-section('6. Errores de uso');
+section('6. Un «periodo no visto» que repite uno ya usado se reconoce');
+{
+  const figures = (m) => ({ trades: m.trades, profit: m.profit, profitFactor: m.profitFactor, drawdown: m.drawdown, recoveryFactor: m.recoveryFactor, sharpe: m.sharpe });
+  // Sin la detección, las cifras del propio periodo optimizado dan «no contradice».
+  const sameIs = evaluateUnseen(analysis, plateau, figures(rep.is));
+  check('mismo periodo optimizado: el contraste por sí solo no lo ve', sameIs.level === 'normal', sameIs.level);
+  check('mismo periodo optimizado: repeated = is', sameIs.repeated === 'is', String(sameIs.repeated));
+  const sameOos = evaluateUnseen(analysis, plateau, figures(rep.oos));
+  check('mismo forward: repeated = oos', sameOos.repeated === 'oos', String(sameOos.repeated));
+  // Como lo escribe el informe de MT5: beneficio con dos decimales, factor de beneficio con dos.
+  const rounded = { trades: rep.is.trades, profit: Math.round(rep.is.profit * 100) / 100, profitFactor: Math.round(rep.is.profitFactor * 100) / 100 };
+  check('con el redondeo del informe sigue reconociéndose', repeatedPeriod(rep, rounded) === 'is');
+  // El rango entero (sin forward en el probador, lote fijo): la suma de los dos periodos,
+  // con una operación de más por la posición que quedaba abierta en el corte.
+  const whole = { trades: rep.is.trades + rep.oos.trades + 1, profit: (rep.is.profit + rep.oos.profit) * 1.004 };
+  check('optimizado + forward juntos: repeated = both', repeatedPeriod(rep, whole) === 'both', String(repeatedPeriod(rep, whole)));
+  // Lo que NO es repetición.
+  const shortNormal = { trades: Math.round(rep.oos.trades * 0.35), profit: (rep.oos.profit / rep.oos.trades) * Math.round(rep.oos.trades * 0.35), profitFactor: rep.oos.profitFactor };
+  check('un tramo distinto con el mismo ritmo no es repetición', repeatedPeriod(rep, shortNormal) === null);
+  check('mismas operaciones y un 3 % más de beneficio no es repetición', repeatedPeriod(rep, { trades: rep.is.trades, profit: rep.is.profit * 1.03 }) === null);
+  check('mismo beneficio con un 5 % más de operaciones no es repetición', repeatedPeriod(rep, { trades: Math.round(rep.is.trades * 1.05), profit: rep.is.profit }) === null);
+  check('mismas operaciones y beneficio con otro factor de beneficio no es repetición', repeatedPeriod(rep, { trades: rep.is.trades, profit: rep.is.profit, profitFactor: rep.is.profitFactor + 0.2 }) === null);
+  check('sin forward solo se compara con el periodo optimizado', repeatedPeriod({ is: rep.is }, figures(rep.oos)) === null && repeatedPeriod({ is: rep.is }, figures(rep.is)) === 'is');
+  check('sin operaciones no se pronuncia', repeatedPeriod(rep, { profit: rep.is.profit }) === null);
+}
+
+section('7. Errores de uso');
 {
   let msg = '';
   try { evaluateUnseen(analysis, plateau, { profitFactor: 1.2 }); } catch (e) { msg = e.message; }

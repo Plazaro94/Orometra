@@ -110,7 +110,8 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
 - **Validación en periodo no visto**: se introducen los resultados del backtest de la
   configuración elegida sobre un tramo que no se haya usado ni para optimizar ni para
   validar, y se comprueba si son *normales para ese EA* comparándolos con el recorrido
-  que la meseta entera demostró.
+  que la meseta entera demostró. Si las operaciones y el beneficio coinciden con los de un
+  periodo ya usado (el optimizado, el forward o los dos juntos), se dice y no cuenta.
 - **A partir de las operaciones una a una del informe** (agrupadas por día): Monte Carlo
   por bootstrap estacionario (Politis & Romano 1994) sobre el periodo no visto —
   distribución de resultado, drawdown esperado y probabilidad de pérdida a 3/6/12 meses,

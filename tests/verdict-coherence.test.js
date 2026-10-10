@@ -71,6 +71,15 @@ section('AUD-05: un solo nivel de evidencia en pantalla y en el export');
   state.unseen = { result: { level: 'normal' } };
   const ok = displayVerdictCopy(a);
   check('si no la contradice, se queda en sólida (no sube ni baja)', ok.level === 'strong' && /no la contradice/.test(ok.headline), ok.headline);
+  // Un «periodo no visto» que repite el periodo optimizado (core/unseen.js#repeatedPeriod) no
+  // valida nada: ni mantiene el nivel con la mención del periodo no visto ni lo baja.
+  state.unseen = { plateauIndex: 0, result: { level: 'normal', repeated: 'is' } };
+  const { holdoutFact } = await import('../js/ui-verdict.js');
+  const rep = holdoutFact(a);
+  const repCopy = displayVerdictCopy(a);
+  check('periodo repetido: no valida', rep.ok === false && rep.against === false && /no valida/.test(rep.value), rep.value);
+  check('periodo repetido: dice por qué', /repite el periodo optimizado/.test(rep.note), rep.note);
+  check('periodo repetido: el nivel no cambia y no presume de periodo no visto', repCopy.level === 'strong' && !/no la contradice/.test(repCopy.headline), repCopy.headline);
   state.unseen = null;
   const report = buildReport(a, { shownVerdict: against });
   check('el JSON exporta el nivel mostrado', report.verdict.level === 'moderate', report.verdict.level);

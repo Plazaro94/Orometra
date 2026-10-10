@@ -115,6 +115,45 @@ export function buildReference(analysis, plateau) {
 }
 
 /**
+ * ¿Es este «periodo no visto» un periodo que ya se usó?
+ *
+ * Error fácil de cometer: repetir en MT5 el backtest de la configuración con las mismas
+ * fechas de la optimización, o quitar el forward y probar el rango entero. Esas cifras
+ * caen de lleno en lo que la meseta ya había dado (son parte de ella), así que el contraste
+ * diría «no contradice» y el nivel se quedaría como está sin que se haya probado nada nuevo.
+ *
+ * Con la misma configuración, el mismo periodo da las mismas operaciones y el mismo
+ * beneficio. Se compara con la fila de la configuración en el periodo optimizado, en el
+ * forward y con la suma de los dos (el rango entero, con lote fijo). Las tolerancias cubren
+ * el redondeo del informe y una operación que quede abierta en el corte entre periodos; que
+ * un periodo de verdad distinto coincida a la vez en operaciones (±1 %) y en beneficio
+ * (±1-2 %) es muy improbable. Un solape parcial no se puede detectar: el export de MT5 no
+ * trae fechas.
+ *
+ * @param {object} record    la configuración probada (analysis.records[i])
+ * @param {object} observed  { trades, profit, profitFactor }
+ * @returns {'is'|'oos'|'both'|null}
+ */
+export function repeatedPeriod(record, observed) {
+  const trades = Number(observed && observed.trades);
+  const profit = Number(observed && observed.profit);
+  const pf = Number(observed && observed.profitFactor);
+  if (!record || !Number.isFinite(trades) || trades <= 0 || !Number.isFinite(profit)) return null;
+  const near = (a, b, rel, abs) => Math.abs(a - b) <= Math.max(abs, rel * Math.max(Math.abs(a), Math.abs(b)));
+  const usable = (m) => Boolean(m && Number.isFinite(m.trades) && m.trades > 0 && Number.isFinite(m.profit));
+  const same = (m) => usable(m)
+    && near(trades, m.trades, 0.01, 1)
+    && near(profit, m.profit, 0.01, 1)
+    && (!Number.isFinite(pf) || !Number.isFinite(m.profitFactor) || near(pf, m.profitFactor, 0.02, 0.01));
+  if (same(record.is)) return 'is';
+  if (same(record.oos)) return 'oos';
+  if (usable(record.is) && usable(record.oos)
+    && near(trades, record.is.trades + record.oos.trades, 0.01, 2)
+    && near(profit, record.is.profit + record.oos.profit, 0.02, 1)) return 'both';
+  return null;
+}
+
+/**
  * Compara lo observado en el periodo no visto contra esa referencia.
  *
  * @param {object} analysis  resultado de runAnalysis
@@ -279,6 +318,9 @@ export function evaluateUnseen(analysis, plateau, observed) {
     trades,
     lowPower,
     tradeShare,
+    // El periodo ya se usó ('is', 'oos' o 'both'): el resultado no valida nada (ver
+    // repeatedPeriod y js/ui-verdict.js#holdoutFact).
+    repeated: repeatedPeriod(plateau.record || analysis.records[plateau.representative], observed),
     reference: {
       observations: reference.observations.length,
       members: reference.memberCount,

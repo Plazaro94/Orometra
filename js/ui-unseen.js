@@ -11,7 +11,7 @@ import { bpToPoints } from '../core/trades/costs.js';
 import { MIN_SAMPLE_DAYS } from '../core/trades/sample.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, paramHtml, decodeHead } from './ui-state.js';
-import { holdoutFact, displayVerdictLevel, levelName } from './ui-verdict.js';
+import { holdoutFact, displayVerdictLevel, levelName, repeatedPeriodText } from './ui-verdict.js';
 
 /**
  * El informe del backtest se acepta en los dos formatos que ofrece MT5 (Informe → HTML u
@@ -530,15 +530,22 @@ export function renderUnseen(a) {
   const pcmp = state.report ? compareParams(state.report.params, a.meta.paramNames, p.record.params) : null;
   const paramsDiffer = Boolean(pcmp && pcmp.different.length);
   const paramsUnverified = Boolean(pcmp && !paramsDiffer && !pcmp.matches);
+  // Mismas operaciones y mismo beneficio que un periodo ya usado (core/unseen.js#repeatedPeriod):
+  // tampoco valida nada, y el contraste diría «no contradice» por construcción.
+  const repeated = paramsDiffer || paramsUnverified ? null : res.repeated;
+  const repeatedText = repeated ? repeatedPeriodText(repeated, p.record.id) : null;
   const paramsOk = !paramsDiffer && !paramsUnverified;
-  const cls = !paramsOk ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
-  const stamp = !paramsOk ? L('No valida', 'Does not validate')
+  const valid = paramsOk && !repeated;
+  const cls = !valid ? 'v-warn' : res.level === 'outside' ? 'v-no' : res.level === 'tail' ? 'v-warn' : 'v-go';
+  const stamp = !valid ? L('No valida', 'Does not validate')
     : res.level === 'outside' ? L('Fuera de rango', 'Out of range')
       : res.level === 'tail' ? L('En la cola', 'In the tail') : L('No contradice lo visto', 'Not contradicted');
-  const headline = paramsOk ? res.headline
-    : paramsDiffer ? L('Estas cifras son de otra configuración', 'These figures are from another configuration')
-      : L('No consta que estas cifras sean de la configuración propuesta', 'It is not confirmed that these figures are from the proposed configuration');
-  const subline = paramsOk
+  const headline = repeatedText ? repeatedText.headline
+    : paramsOk ? res.headline
+      : paramsDiffer ? L('Estas cifras son de otra configuración', 'These figures are from another configuration')
+        : L('No consta que estas cifras sean de la configuración propuesta', 'It is not confirmed that these figures are from the proposed configuration');
+  const subline = repeatedText ? repeatedText.body
+    : paramsOk
     ? L(
       `Comparado con ${int(res.reference.observations)} resultados de las ${int(res.reference.members)} configuraciones de su meseta, ${res.reference.periods.length > 1 ? 'en el periodo optimizado y en el forward' : 'en el periodo optimizado'}.`,
       `Compared with ${int(res.reference.observations)} results from the ${int(res.reference.members)} configurations in its plateau, ${res.reference.periods.length > 1 ? 'on the optimized period and on the forward' : 'on the optimized period'}.`,
@@ -572,6 +579,12 @@ export function renderUnseen(a) {
           : L('Este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.',
             'This result does not count toward the evidence level: it neither keeps nor lowers it.');
 
+  // Con un periodo repetido, la lectura del contraste («no lo contradicen») engañaría: esas
+  // cifras forman parte de la meseta con la que se comparan.
+  const notes = repeated
+    ? [L('Que estas cifras caigan dentro de lo habitual de la meseta era de esperar: son de un periodo que ya se usó y forman parte de ella. Por eso este resultado no cuenta para el nivel de evidencia.',
+      'It is no surprise that these figures fall within the plateau\'s usual range: they come from a period that was already used and are part of it. That is why this result does not count toward the evidence level.')]
+    : res.notes;
   const statusMap = unseenStatus();
   const rows = res.results.map((r) => {
     const st = statusMap[r.status];
@@ -616,7 +629,7 @@ export function renderUnseen(a) {
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Lectura', 'Reading')}</div><h2>${L('Qué significa', 'What it means')}</h2></div></div>
-      <ul class="limits">${res.notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
+      <ul class="limits">${notes.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
     </section>`;
 
   // El resultado va justo después del informe: es lo que se viene a ver. Antes iba detrás

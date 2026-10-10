@@ -303,6 +303,60 @@ try {
     await page.context().close();
   }
 
+  section('2e. Los dos ejemplos, y un «periodo no visto» que repite el optimizado');
+  {
+    const page = await appPage('es');
+    const verdictShown = () => page.waitForSelector('.vx', { timeout: 120000 });
+    // La tarjeta de la portada abre el ejemplo con meseta, y enseña su misma pasada.
+    await page.goto(`${BASE}/es/`);
+    const cardPass = (await page.textContent('.hm-take-card .vx-pass b')).trim();
+    // El enlace de debajo se estira sobre toda la tarjeta: se pulsa en su centro, como un usuario.
+    await page.$eval('.hm-take-card', (e) => e.scrollIntoView({ block: 'center' }));
+    const box = await (await page.$('.hm-take-card')).boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForURL(/demo=1/, { timeout: 10000 }).catch(() => {});
+    check('la tarjeta de la portada abre el ejemplo con meseta', /demo=1/.test(page.url()), page.url());
+    await verdictShown();
+    const appPass = (await page.textContent('.vx-pass b')).trim();
+    check('con la misma pasada que enseña la tarjeta', appPass === cardPass, `${cardPass} frente a ${appPass}`);
+    // Del ejemplo con meseta al ejemplo sin ventaja, y vuelta.
+    await page.click('.demo-note [data-demo="noedge"]');
+    await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
+    check('desde el ejemplo se llega al de sin ventaja', Boolean(await page.$('.demo-note [data-demo="good"]')));
+    check('que no propone ninguna configuración con garantías', Boolean(await page.$('.vx-pass-risk')));
+    check('y se queda en «débil»', /débil/i.test(await page.textContent('.vx-meter .is-here')), await page.textContent('.vx-meter .is-here'));
+    // El enlace de debajo de la tarjeta lleva a ese mismo ejemplo.
+    await page.goto(`${BASE}/es/`);
+    await page.click('.hm-more-alt a');
+    await page.waitForURL(/demo=noedge/, { timeout: 10000 }).catch(() => {});
+    await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
+    check('la portada enlaza con el ejemplo sin ventaja', /demo=noedge/.test(page.url()) && Boolean(await page.$('.vx-pass-risk')), page.url());
+    // Y la pantalla vacía de la app ofrece los dos.
+    await page.goto(`${BASE}/app/`);
+    await page.click('.empty-demo [data-demo="noedge"]');
+    await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
+    check('la app vacía ofrece el ejemplo sin ventaja', Boolean(await page.$('.vx-pass-risk')));
+    // Periodo no visto con las cifras del propio periodo optimizado de la pasada propuesta.
+    await page.goto(`${BASE}/app/?demo=1`);
+    await verdictShown();
+    const h = demo.isTable.headers;
+    const row = demo.isTable.rows.find((r) => String(r[0]) === appPass);
+    const col = (name) => row[h.indexOf(name)];
+    await page.click('.nav-item[data-tab="unseen"]');
+    await page.fill('#u_trades', String(col('Trades')));
+    await page.fill('#u_profit', String(col('Profit')));
+    await page.fill('#u_profitFactor', String(col('Profit Factor')));
+    await page.fill('#u_drawdown', String(col('Equity DD %')));
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.u-result', { timeout: 15000 }).catch(() => {});
+    const tag = await page.textContent('.u-result-tag').catch(() => '');
+    const title = await page.textContent('.u-result-title').catch(() => '');
+    check('un periodo no visto que repite el optimizado no valida', /No valida/.test(tag), tag);
+    check('y dice por qué', /repite el periodo optimizado/.test(title), title);
+    check('el nivel no cambia', /sólida/i.test(await page.textContent('.rc-level')), await page.textContent('.rc-level'));
+    await page.context().close();
+  }
+
   section('3. Tus archivos de MT5, de principio a fin');
   {
     const page = await appPage('en');

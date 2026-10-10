@@ -5,7 +5,7 @@ import { metricColumns, inferParamsSingle, roleFromTable } from '../core/schema.
 import { looksLikeReport, mentionsReport } from '../core/report.js';
 import { looksLikeSetFile, parseSetText } from '../core/setfile.js';
 import { AnalysisError, classifyError, CODE } from '../core/errors.js';
-import { buildDemoTables } from './demo.js';
+import { buildDemoTables, buildNoEdgeDemoTables } from './demo.js';
 import { t, L } from './i18n.js';
 import { state, api, $, $$, esc, int, decodeHead } from './ui-state.js';
 
@@ -571,15 +571,20 @@ export function bindDropzone(zoneSel, inputSel, which) {
 }
 
 // ---------------------------------------------------------------- arranque
-export async function loadDemo() {
+/**
+ * Carga un ejemplo sintético: 'good' (un EA con una meseta real, el de siempre) o 'noedge'
+ * (un EA sin ninguna ventaja: lo que se ve cuando no hay nada).
+ */
+export async function loadDemo(kind = 'good') {
   if (state.busy) return;
+  if (kind !== 'noedge') kind = 'good';
   // Generar las 30.240 filas del ejemplo bloquea ~200 ms. Hacerlo dentro del clic
   // retrasaba la respuesta del boton (INP "mejorable" en Cloudflare): primero se pinta
   // el aviso de progreso y despues se genera.
   $('#demoBtn').disabled = true;
   api.showProgress(1, L('Generando el ejemplo…', 'Generating the example…'));
   await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
-  const demo = buildDemoTables();
+  const demo = kind === 'noedge' ? buildNoEdgeDemoTables() : buildDemoTables();
   state.isTable = demo.isTable;
   state.oosTable = demo.oosTable;
   state.demoTruth = demo.truth;

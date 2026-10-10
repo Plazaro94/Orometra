@@ -540,7 +540,7 @@ function positionGlossCards() {
 
 export function bindViewEvents() {
   $$('[data-goto]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.goto)));
-  $$('[data-demo]').forEach((b) => b.addEventListener('click', () => { const d = $('#demoBtn'); if (d && !d.disabled) d.click(); }));
+  $$('[data-demo]').forEach((b) => b.addEventListener('click', () => { if (api.loadDemo) api.loadDemo(b.dataset.demo || 'good'); }));
   $$('[data-scroll]').forEach((b) => b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -623,7 +623,7 @@ export function renderEmpty() {
       <li><span aria-hidden="true">2</span><p>${t('empty.s2')}</p></li>
       <li><span aria-hidden="true">3</span><p>${t('empty.s3')}</p></li>
     </ol>
-    <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo>${esc(t('empty.demoBtn'))}</button></p>
+    <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo="good">${esc(t('empty.demoBtn'))}</button> <span aria-hidden="true">·</span> <button class="text-btn" type="button" data-demo="noedge">${esc(t('empty.demoNoEdge'))}</button></p>
   </div>`;
 }
 

@@ -69,6 +69,7 @@ export {
 };
 
 Object.assign(api, {
+  loadDemo,
   clearError,
   showError,
   showProgress,
@@ -121,7 +122,7 @@ bindDropzone('#mainDrop', '#mainFile', null);
 bindGlobalDrop();
 $('#analyzeBtn').addEventListener('click', runAudit);
 $('#cancelBtn').addEventListener('click', cancelAudit);
-$('#demoBtn').addEventListener('click', loadDemo);
+$('#demoBtn').addEventListener('click', () => loadDemo('good'));
 $('#exportBtn').addEventListener('click', toggleExportMenu);
 $('#intakeExpandBtn').addEventListener('click', () => {
   document.body.classList.remove('intake-collapsed');
@@ -168,7 +169,7 @@ document.addEventListener('click', (e) => {
 
 render();
 
-// Enlace desde la landing: /app/?demo=1
-if (new URLSearchParams(location.search).get('demo') === '1') {
-  loadDemo();
-}
+// Enlaces desde la landing: /app/?demo=1 (el ejemplo con meseta) y /app/?demo=noedge (sin ventaja).
+const demoParam = new URLSearchParams(location.search).get('demo');
+if (demoParam === '1') loadDemo('good');
+else if (demoParam === 'noedge') loadDemo('noedge');

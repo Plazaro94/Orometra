@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-10-10 — Periodo no visto repetido, ejemplo sin ventaja y tarjeta de la portada exacta
+
+- **Un «periodo no visto» que repite uno ya usado ya no valida** (`core/unseen.js#repeatedPeriod`).
+  Repetir el backtest con las fechas de la optimización (o quitar el forward y probar el rango
+  entero) daba «no contradice» y dejaba el nivel en «sólida»: esas cifras forman parte de la
+  meseta con la que se comparan (comprobado con el ejemplo: las 5 métricas en «normal»). Ahora,
+  si las operaciones y el beneficio coinciden con los de la configuración en el periodo
+  optimizado, en el forward o con la suma de los dos (±1 % en operaciones; ±1 % en beneficio,
+  ±2 % con la suma; y el factor de beneficio si lo hay), el resultado sale como «No valida»,
+  dice por qué y no cuenta para el nivel, como un informe de otra configuración. Un solape
+  parcial no se puede detectar: el export de MT5 no trae fechas. Pruebas de respuesta conocida
+  (`tests/unseen.test.js`, `tests/verdict-coherence.test.js`) y de navegador.
+- **Segundo ejemplo: un EA sin ninguna ventaja** (`js/demo.js#buildNoEdgeDemoTables`). Cada
+  operación es ruido y solo hay suerte por zonas en cada periodo (como el escenario S2 del banco);
+  el forward trae el 25 % mejor, como MT5. La n.º 1 de MT5 sale con factor de beneficio 2,08 y
+  drawdown del 4 %, y Orometra da «débil» sin meseta. Semilla de un caso típico: con 16 semillas,
+  15 «débil» sin meseta y 1 «moderada». Se abre desde la pantalla vacía de la app, desde la nota
+  del otro ejemplo, desde la portada y con `/app/?demo=noedge`.
+- **La tarjeta «Una decisión, no una tabla» de la portada** enseñaba la pasada 4283, una meseta
+  de 412, «buena», 88/100 y 94 %, y su enlace abría el ejemplo, que da la pasada 11445, una meseta
+  de 5018, «sólida», 93/100 y 90 %. Ahora enseña lo que da el ejemplo, con sus seis parámetros y
+  sus nombres. La sección de arriba («En MT5, el n.º 1 suele ser el más frágil») sigue siendo una
+  ilustración propia. `tests/home-sample.test.js` calcula el ejemplo y compara la tarjeta en los
+  dos idiomas.
+- Visto al hacerlo, sin cambiar: en los 16 casos sin ventaja, el contraste del Sharpe aprueba (la
+  suerte por zonas del forward es real dentro de ese periodo). Ya se dice que aprobarlo no
+  demuestra nada por sí solo.
+- Caché de estilos `?v=20261010b`.
+
 ## 2026-10-10 — Portada: el banco de pruebas, dicho más claro
 
 - Título nuevo: «Lo probamos con casos de respuesta conocida». La entradilla dice qué se hizo

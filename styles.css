@@ -2162,6 +2162,9 @@ html{zoom:var(--z)}
 }
 .hm-section > .hm-sub,.hm-section > .hm-ai-lead{text-align:center;margin-left:auto;margin-right:auto;font-size:19px;max-width:62ch}
 .hm-more{text-align:center}
+/* Segundo enlace bajo la tarjeta de ejemplo (el ejemplo sin ventaja): pegado al primero. */
+.hm-take .hm-more.hm-more-alt{margin-top:14px}
+.hm-take .hm-more-alt a{font-weight:500}
 
 /* Bandas de azul noche a todo el ancho */
 .hm-take,.hm-proof,.hm-final{
