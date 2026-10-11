@@ -8,7 +8,7 @@ import { L, pctSign, shareText } from './i18n.js';
 import { gloss } from './glossary.js';
 import { fallbackNote } from './ui-verdict.js';
 import { setCoverageNote } from './export.js';
-import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory, findInMt5Html, mt5Figure } from './ui-state.js';
+import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory, findInMt5Html, mt5Figure, forwardHoldHtml } from './ui-state.js';
 
 /**
  * Hallazgos del motor que narran en prosa el mismo numero que esta tabla muestra en
@@ -125,6 +125,7 @@ export function renderPlateaus(a) {
       <td>${num(p.q10Score, 2)}</td>
       <td>${num(p.medianScore, 2)}</td>
       <td>${num(p.coherence, 2)}</td>
+      ${a.meta.hasForward ? `<td>${forwardHoldHtml(p, a.meta.plateauForwardCritical)}</td>` : ''}
       <td>${p.boundary.length ? `<span class="badge warn">${p.boundary.length}</span>` : '<span class="badge ok">0</span>'}</td>
     </tr>`).join('');
 
@@ -133,9 +134,12 @@ export function renderPlateaus(a) {
   return `<div class="detail-head">
       
       <h2>${L('Las mesetas de tu optimización', 'The plateaus in your optimization')}</h2>
-      <p>${L(
-        'Ordenadas por cómo rinden sus configuraciones <strong>más flojas</strong>, no las mejores. Una meseta es una zona continua donde incluso las más flojas siguen rindiendo bien.',
-        'Ordered by how their <strong>weakest</strong> configurations perform, not their best. A plateau is a continuous zone where even the weakest ones keep performing well.',
+      <p>${a.meta.hasForward ? L(
+        'Ordenadas por lo que rinden sus configuraciones <strong>más flojas</strong> (no las mejores), por su tamaño y por cuántas cumplen tus mínimos en el forward. Una meseta es una zona continua donde incluso las más flojas siguen rindiendo bien.',
+        'Ordered by how their <strong>weakest</strong> configurations perform (not their best), by their size and by how many clear your minimums on the forward. A plateau is a continuous zone where even the weakest ones keep performing well.',
+      ) : L(
+        'Ordenadas por lo que rinden sus configuraciones <strong>más flojas</strong> (no las mejores) y por su tamaño. Una meseta es una zona continua donde incluso las más flojas siguen rindiendo bien.',
+        'Ordered by how their <strong>weakest</strong> configurations perform (not their best) and by their size. A plateau is a continuous zone where even the weakest ones keep performing well.',
       )}</p>
     </div>
     ${sparseSampling ? `<div class="inline-warn">${L(
@@ -144,7 +148,7 @@ export function renderPlateaus(a) {
     )} <button class="text-btn" data-scroll="refinementPanel">${L('repite el rango en rejilla completa &rarr;', 're-run this range on a full grid &rarr;')}</button> ${L('— es un rango acotado y así confirmas si la meseta aguanta entera.', '— it is a bounded range and confirms whether the whole plateau holds.')}</div>` : ''}
     <section class="panel">
       <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>${L('Pasada elegida', 'Chosen pass')}</th><th>${gloss('robustness', L('Robustez', 'Robustness'))}</th><th>${L('Tamaño', 'Size')}</th><th>${gloss('core', L('Núcleo', 'Core'))}</th><th>${gloss('q10', L('Las más flojas', 'Weakest'))}</th><th>${L('Mediana', 'Median')}</th><th>${gloss('coherence', L('Variación', 'Variation'))}</th><th>${L('Bordes', 'Edges')}</th></tr></thead>
+        <thead><tr><th>#</th><th>${L('Pasada elegida', 'Chosen pass')}</th><th>${gloss('robustness', L('Robustez', 'Robustness'))}</th><th>${L('Tamaño', 'Size')}</th><th>${gloss('core', L('Núcleo', 'Core'))}</th><th>${gloss('q10', L('Las más flojas', 'Weakest'))}</th><th>${L('Mediana', 'Median')}</th><th>${gloss('coherence', L('Variación', 'Variation'))}</th>${a.meta.hasForward ? `<th>${L('Cumplen en el forward', 'Pass on the forward')}</th>` : ''}<th>${L('Bordes', 'Edges')}</th></tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
     </section>
@@ -251,8 +255,8 @@ function renderPlateauSurfacePanel(a, plateau) {
       </div>
     </div>
     <p class="panel-intro">${L(
-      `La altura es la calidad real de cada pasada en el periodo optimizado. En azul, las configuraciones que pertenecen a esta meseta ${a.meta.hasForward ? '(se descubre en el periodo optimizado; el forward solo la valida)' : '(se descubre en el periodo optimizado)'}, y en lima, la pasada elegida. El resto de parámetros queda fijo en los valores de la pasada ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
-      `Height is the real quality of each pass on the optimized period. In blue, the configurations that belong to this plateau ${a.meta.hasForward ? '(found on the optimized period; the forward only validates it)' : '(found on the optimized period)'}, and in lime, the chosen pass. The rest of the parameters stay fixed at pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
+      `La altura es la calidad real de cada pasada en el periodo optimizado. En color, las configuraciones que pertenecen a esta meseta ${a.meta.hasForward ? '(se descubre en el periodo optimizado; el forward solo la valida)' : '(se descubre en el periodo optimizado)'}; en gris, las de fuera, y en lima, la pasada elegida. El resto de parámetros queda fijo en los valores de la pasada ${esc(plateau.record.id)}. Arrastra en horizontal para rotar.`,
+      `Height is the real quality of each pass on the optimized period. In color, the configurations that belong to this plateau ${a.meta.hasForward ? '(found on the optimized period; the forward only validates it)' : '(found on the optimized period)'}; in gray, those outside it, and in lime, the chosen pass. The rest of the parameters stay fixed at pass ${esc(plateau.record.id)}'s values. Drag horizontally to rotate.`,
     )}</p>
     <div class="chart-legend" role="list">
       <span class="chart-legend-item" role="listitem"><span class="chart-swatch chart-swatch-plateau" aria-hidden="true"></span>${L('Meseta', 'Plateau')}</span>
@@ -387,7 +391,7 @@ export function renderRejected(a) {
     <section class="panel">
       ${rejectedMinimums(a)}
       <div class="table-wrap"><table class="stack-table rej-table">
-        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${L('Beneficio al optimizar (como en MT5)', 'Profit when optimizing (as in MT5)')}</th><th>${esc(critName)}</th><th>${L('Calidad (periodo optimizado)', 'Quality (optimized period)')}</th><th>${L('Vecinas', 'Neighbors')}</th><th>${L('Vecinas flojos', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
+        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${L('Beneficio al optimizar (como en MT5)', 'Profit when optimizing (as in MT5)')}</th><th>${esc(critName)}</th><th>${L('Calidad (periodo optimizado)', 'Quality (optimized period)')}</th><th>${L('Vecinas', 'Neighbors')}</th><th>${L('Vecinas flojas', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
         <tbody>${a.peaks.map((p) => `<tr class="stack-row">
           <td data-label="${L('Puesto', 'Rank')}"><span class="rank-mini">#${int(p.criterionRank)}</span></td>
           <td class="mono" data-label="${L('Pasada', 'Pass')}">${esc(p.record.id)}</td>

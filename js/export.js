@@ -282,6 +282,9 @@ export function buildCsv(analysis) {
   };
   const { paramNames } = analysis.meta;
   const hasF = analysis.meta.hasForward;
+  // inPlateau guarda el orden en que se encontró cada meseta, no su puesto: la columna lleva
+  // el número que se ve en pantalla («Meseta 1» es la recomendada), como el JSON.
+  const rankOf = new Map(analysis.plateaus.map((p) => [p.id, p.rank]));
   const head = es
     ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinas', 'suelo_vecindad_q25', 'frac_vecinas_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta']
     : ['pass', ...paramNames, 'quality_is', 'quality_forward', 'score', 'robustness', 'neighbors', 'neighborhood_floor_q25', 'neighbors_ok_share', 'cliff', 'peak_z', 'meets_minima_is', 'meets_minima_forward', 'plateau'];
@@ -293,7 +296,7 @@ export function buildCsv(analysis) {
       cell(r.id), ...r.params.map(cell),
       n(r.qualityIs), n(r.qualityOos), n(analysis.scores[i]), n(analysis.robust[i]),
       st.support, n(st.q25), n(st.fracPass), n(st.cliff), n(st.peakZ),
-      okIs ? 1 : 0, okOos, analysis.inPlateau[i] >= 0 ? analysis.inPlateau[i] + 1 : '',
+      okIs ? 1 : 0, okOos, analysis.inPlateau[i] >= 0 ? (rankOf.get(analysis.inPlateau[i]) ?? '') : '',
     ].join(sep);
   });
   return [head.map(cell).join(sep), ...rows].join('\r\n');

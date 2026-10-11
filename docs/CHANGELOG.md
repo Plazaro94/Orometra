@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-10-11 — Auditoría de uso: CSV, gráficos, refinamiento con enums y el forward de cada meseta
+
+Auditoría de la app usándola de verdad (Playwright, 1440 y 390 px, claro y oscuro, ES y EN)
+con el export real del autor (5517 pasadas, su forward y su .set) y cifras recalculadas
+desde el XML. Se arreglan siete fallos y se añade una mejora; el resto de propuestas queda
+para decidir.
+
+- **CSV, columna «meseta»** (`js/export.js`): llevaba el orden en que se encontró cada meseta,
+  no su puesto. Con el export real, las 38 configuraciones de la «Meseta 1» salían con
+  `meseta=2` y el `1` era la Meseta 4. Ahora es el número de la pantalla y del JSON.
+- **Nube de puntos** (`styles.css`, `js/charts.js`): «Pasan mínimos» y «En meseta» tenían el
+  mismo color (`--ok` y `--info` valen lo mismo en los dos temas) y solo cambiaba la opacidad.
+  Ahora son tres pasos del mismo azul, del más tenue (no pasan) al más intenso (meseta),
+  validados como rampa ordinal en los dos temas, y la meseta se dibuja encima. El texto ya no
+  dice «en lavanda» (en el tema claro era azul marino); el del 3D, tampoco «en azul».
+- **Deciles** (`js/charts.js`): la leyenda de D1–D9 no tenía el color de sus barras, y las barras
+  salían del mínimo del eje, no del cero: con el export real, las medianas negativas de D1–D4
+  se dibujaban hacia arriba, y en el ejemplo D10 parecía 4,2 veces D1 cuando es 3. Ahora salen
+  del cero, con línea del cero si hay negativos.
+- **Refinamiento con .set** (`core/engine.js#refinementRange`): un enum que el .set delata (paso
+  0) pero que el XML trae como número se barría (`InpEntryMode=0||0||1||1||Y`) mientras la
+  cabecera del .set decía que los enums se dejan fijos. Ahora se deja fijo. El análisis no
+  cambia (mismas mesetas y misma recomendada con y sin .set); sin .set, como antes. Que las
+  vecinas traten esos enums como categoría queda para decidir: haría que el .set cambiara las
+  mesetas.
+- **Aviso «La recomendación depende de los mínimos que elijas»** (`core/verdict.js`): citaba
+  siempre «1,25 en vez de 1,15», fuera cual fuera el mínimo; con 1,10 se prueba de 1,08 a 1,12.
+  Ahora da el tramo probado (`stabilityCheck.gates.profitFactorRange`).
+- **Mesetas, «Ordenadas por cómo rinden sus configuraciones más flojas»**: el orden también
+  depende del tamaño y del forward (con el export real, la de 0,86 va antes que la de 0,92).
+  La frase lo dice. **Descartes**: «Vecinas flojos» → «Vecinas flojas».
+- **Lo que aguanta cada meseta en el forward, a la vista** (`js/ui-state.js#forwardHoldHtml`):
+  columna «Cumplen en el forward» en la tabla de mesetas, fila en la comparativa del veredicto
+  y cifra en las tarjetas de las alternativas (en el móvil, las columnas de la derecha no se
+  ven sin deslizar). Con el export real, la recomendada aguanta el 63 % (24 de 38) y por eso
+  lleva un aviso crítico; las alternativas 1 y 2, el 100 %. La elección no cambia.
+- Caché de estilos `?v=20261011a`. Pruebas: `tests/audit-2026-10b.test.js` (36; cada sección
+  falla con el código anterior) y 2 de navegador.
+
 ## 2026-10-11 — Cada configuración se busca en MT5 por sus cifras, no por su número de pasada
 
 El número de pasada no identifica una configuración en MT5 (PASS-2 en

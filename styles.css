@@ -50,6 +50,9 @@
   --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
   --peak:#848a9a;            --peak-text:#ccd2e0;
   --plateau:var(--ok);
+  /* Nube de puntos y deciles: tres pasos del mismo azul, del más tenue (no pasa tus mínimos) al
+   * más intenso (meseta). Validados como rampa ordinal (ΔL ≥ 0,06 entre pasos) sobre --surface. */
+  --ch-fail:#5a6480;     --ch-pass:#7c8cb8;     --ch-plateau:#c3cfea;
 
   --accent:var(--ok);    --accent2:var(--info);
   /* Escala de bordes (2 niveles + píldora). Antes había 9 valores de radio distintos
@@ -121,6 +124,7 @@
   --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
   --peak:#6a7181;            --peak-text:#394560;
   --plateau:var(--ok);
+  --ch-fail:#a3acbf;     --ch-pass:#6f86bf;     --ch-plateau:#2b4a8c;
   --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --navy:#e6eaf4; --navy-line:#cdd4e4;
   --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
@@ -1160,15 +1164,16 @@ tr.sel td{color:var(--text-2)}
 .chart-swatch{
   width:10px;height:10px;border-radius:50%;flex:none;border:1px solid transparent;
 }
-.chart-swatch-pass{background:var(--info);opacity:.7}
-.chart-swatch-fail{background:var(--muted-3);opacity:.45}
+.chart-swatch-sc-fail{background:var(--ch-fail)}
+.chart-swatch-sc-pass{background:var(--ch-pass)}
+.chart-swatch-sc-plateau{background:var(--ch-plateau)}
 .chart-swatch-plateau{background:var(--ok)}
 .chart-swatch-ground{background:#3a4152;border-color:var(--line-strong)}
 [data-theme="light"] .chart-swatch-ground{background:#c9cdd6;border-color:#b3b9c6}
 .chart-swatch-pick{background:var(--lime-fill);border-color:var(--lime-line)}
 .chart-swatch-rep{background:var(--ok-hi);border:2px solid var(--ok);width:8px;height:8px}
-.chart-swatch-bar{width:14px;height:8px;border-radius:2px;background:var(--info)}
-.chart-swatch-bar-top{width:14px;height:8px;border-radius:2px;background:var(--ok)}
+.chart-swatch-bar{width:14px;height:8px;border-radius:2px;background:var(--ch-pass)}
+.chart-swatch-bar-top{width:14px;height:8px;border-radius:2px;background:var(--ch-plateau)}
 .chart-swatch-q25{width:14px;height:0;border-top:2px dashed var(--warn);border-radius:0}
 .ch-grid{stroke:var(--surface-3);stroke-width:1}
 .ch-axis{stroke:var(--line);stroke-width:1}
@@ -1178,16 +1183,17 @@ tr.sel td{color:var(--text-2)}
 .ch-row-label{fill:var(--muted);font-size:13px;font-family:var(--mono)}
 .ch-point-label{fill:var(--text-2);font-size:12px;font-weight:700;font-family:var(--font)}
 .ch-diagonal{stroke:var(--line-strong);stroke-width:1;stroke-dasharray:4 4}
-.pt-fail{fill:var(--muted-3);opacity:.4}
-.pt-pass{fill:var(--info);opacity:.55}
-.pt-plateau{fill:var(--plateau);opacity:.7}
+.pt-fail{fill:var(--ch-fail);opacity:.75}
+.pt-pass{fill:var(--ch-pass);opacity:.85}
+.pt-plateau{fill:var(--ch-plateau);opacity:.85}
 .pt-rep{fill:var(--text-hi);stroke:var(--plateau);stroke-width:2.5}
 .chart-swatch-plateau{background:var(--plateau)}
 .chart-swatch-rep{background:var(--text-hi);border:2px solid var(--plateau);width:8px;height:8px}
 .ch-iqr{fill:var(--ok-bg);stroke:var(--ok-line);stroke-width:1}
 .ch-median{stroke:var(--accent);stroke-width:2}
-.ch-bar{fill:var(--info-line)}
-.ch-bar-top{fill:var(--accent2)}
+.ch-bar{fill:var(--ch-pass)}
+.ch-bar-top{fill:var(--ch-plateau)}
+.ch-zero{stroke:var(--muted-3);stroke-width:1}
 .ch-line-q25{fill:none;stroke:var(--warn);stroke-width:1.6;stroke-dasharray:3 3}
 /* Influencia relativa (sensitivityBars en charts.js): lista HTML, no SVG, para que se
  * adapte al ancho. En escritorio, nombre | barra | cifra; en el móvil, nombre y cifra
@@ -1412,6 +1418,7 @@ tr.sel td{color:var(--text-2)}
   --evidence-moderate-bg:var(--warn-bg); --evidence-moderate-line:var(--warn-line); --evidence-moderate-text:var(--warn-text);
   --peak:#6a7181;            --peak-text:#394560;
   --plateau:var(--ok);
+  --ch-fail:#a3acbf;     --ch-pass:#6f86bf;     --ch-plateau:#2b4a8c;
   --cta-bg:#c6ec3c; --cta-line:#a9cf1e; --cta-text:#161d05; --cta-hover:#d2f25a; --navy:#e6eaf4; --navy-line:#cdd4e4;
   --hero-a:#e2e7f3; --hero-b:#d2d9ea;
   color-scheme:light;
@@ -1470,9 +1477,6 @@ tr.sel td{color:var(--text-2)}
   .sens-track,.sens-fill,.sens-mark{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .ch-grid{stroke:var(--line)}
   .ch-axis{stroke:var(--muted)}
-  .pt-fail{fill:var(--line-strong)}
-  .pt-pass{fill:var(--muted)}
-  .pt-plateau{fill:var(--ok)}
   .hm-c0{fill:#eef1f8;background:#eef1f8}.hm-c1{fill:#d5ddef;background:#d5ddef}.hm-c2{fill:#b3c1e2;background:#b3c1e2}.hm-c3{fill:#7f95c9;background:#7f95c9}.hm-c4{fill:#4f69a8;background:#4f69a8}.hm-c5{fill:#2b4a8c;background:#2b4a8c}
   .hm-text{fill:#17295a}.hm-text-on{fill:#ffffff}
   .hm-cell{color:#17295a}.hm-cell.hm-on{color:#ffffff}

@@ -438,6 +438,14 @@ try {
     check('hay una segunda meseta (alternativa)', await alt.count() === 1);
     const m2 = (await alt.locator('.t3-pass').textContent()).replace(/\D+/g, '');
     check('la alternativa es otra pasada', Boolean(m2) && m2 !== m1, `${m1} / ${m2}`);
+    // Lo que cumple cada meseta en el forward está a la vista: en la comparativa del
+    // veredicto y en la tabla de mesetas (antes solo salía en el aviso de la recomendada).
+    const holdRow = await page.$$eval('.t3-table tr', (trs) => {
+      const tr = trs.find((r) => /Cumplen tus mínimos en el forward/.test(r.textContent));
+      return tr ? [...tr.querySelectorAll('td')].map((td) => td.textContent.trim()) : null;
+    });
+    check('la comparativa dice qué parte de cada meseta cumple en el forward',
+      Array.isArray(holdRow) && holdRow.length === 2 && holdRow.every((t) => /\d+\s?%.*\d+ de \d+/.test(t)), JSON.stringify(holdRow));
 
     const save = async (click) => {
       const [d] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), click()]);
@@ -447,6 +455,14 @@ try {
     await alt.locator('[data-plateau]').click();
     await page.waitForSelector('.rep-card');
     check('la ficha muestra la meseta 2', (await page.textContent('.rep-card .rep-pass')).includes(m2));
+    const holdCol = await page.$$eval('#view table', (tables) => {
+      const t = tables.find((x) => /Cumplen en el forward/.test(x.querySelector('thead')?.textContent || ''));
+      if (!t) return null;
+      const k = [...t.querySelectorAll('thead th')].findIndex((th) => /Cumplen en el forward/.test(th.textContent));
+      return [...t.querySelectorAll('tbody tr')].map((tr) => tr.children[k].textContent.trim());
+    });
+    check('la tabla de mesetas tiene la columna «Cumplen en el forward», rellena',
+      Array.isArray(holdCol) && holdCol.length === 2 && holdCol.every((t) => /\d+\s?%/.test(t)), JSON.stringify(holdCol));
     const fichaSet = await save(() => page.click('.rep-card [data-export="set"]'));
     check('el .set de la ficha es el de la meseta 2', fichaSet.includes(`M2-pass${m2}`), fichaSet);
     await page.click('.rep-card [data-scroll="plateauSurfacePanel"]');

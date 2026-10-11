@@ -7,7 +7,7 @@ import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag, pctSign, shareText } from './i18n.js';
-import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding, findInMt5Html, mt5Figure } from './ui-state.js';
+import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, forwardHoldHtml } from './ui-state.js';
 import { gloss } from './glossary.js';
 
 /*
@@ -551,8 +551,8 @@ export function renderVerdict(a) {
           <h3>${L('Calidad en la optimización frente a la validación', 'Quality in optimization vs validation')}</h3>
           <div data-chart="scatter">${scatterIsOos(a)}</div>
           <p class="chart-note">${L(
-            'Cada punto es una configuración. La diagonal marca &laquo;no se degrada&raquo;. Los puntos por debajo pierden calidad fuera de la muestra. En lavanda, las que forman meseta.',
-            'Each point is a configuration. The diagonal marks &ldquo;no degradation&rdquo;. Points below lose quality out of sample. In lavender, those that form a plateau.',
+            'Cada punto es una configuración. La diagonal marca &laquo;no se degrada&raquo;. Los puntos por debajo pierden calidad fuera de la muestra. Cuanto más intenso el tono, mejor: las que forman meseta van en el más intenso.',
+            'Each point is a configuration. The diagonal marks &ldquo;no degradation&rdquo;. Points below lose quality out of sample. The stronger the shade, the better: those that form a plateau get the strongest.',
           )}</p>
         </div>
         <div>
@@ -856,7 +856,7 @@ export function renderTop3(a) {
       <div class="t3-pass">${L('Pasada', 'Pass')} ${esc(p.record.id)}</div>
       <div class="t3-score t3-score-sm">${num(p.robust, 0)}<small>${L('de 100 · robustez', 'of 100 · robustness')}</small></div>
       <div class="t3-flags">${flagBadges(p)}</div>
-      <p class="t3-alt-meta">${int(p.size)} ${L('configuraciones', 'configurations')} · ${int(p.stability.support)} ${L('vecinas', 'neighbors')}</p>
+      <p class="t3-alt-meta">${int(p.size)} ${L('configuraciones', 'configurations')} · ${int(p.stability.support)} ${L('vecinas', 'neighbors')}${hasF && p.oosValidation && p.oosValidation.withForward ? ` · ${L(`el ${pct(p.oosValidation.passFrac, 0)} cumple en el forward`, `${pct(p.oosValidation.passFrac, 0)} pass on the forward`)}` : ''}</p>
       <div class="t3-alt-actions">
         ${a.meta.hasForward ? `<button class="ghost-btn t3-btn-inline" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
         <button class="text-btn t3-btn-inline" data-plateau="${p.rank - 1}">${L('Detalle →', 'Detail →')}</button>
@@ -900,6 +900,7 @@ export function renderTop3(a) {
         <tbody>
           ${metricRow(L('Meseta', 'Plateau'), (p) => `${zone(p)} · ${int(p.size)}`)}
           ${metricRow(gloss('quality', L('Calidad al optimizar', 'Quality when optimizing')), (p) => `${num(p.record.qualityIs, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityIs))}</em>`)}
+          ${hasF ? metricRow(L('Cumplen tus mínimos en el forward', 'Clear your minimums on the forward'), (p) => forwardHoldHtml(p, a.meta.plateauForwardCritical)) : ''}
           ${hasF ? metricRow(L('Calidad al validar', 'Quality on validation'), (p) => `${num(p.record.qualityOos, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityOos))}</em>`) : ''}
           ${hasF ? metricRow(L('Al validar · PF / drawdown / operaciones', 'On validation · PF / drawdown / trades'), (p) => `${num(p.record.oos.profitFactor, 2)} / ${num(p.record.oos.drawdown, 1)}${pctSign()} / ${int(p.record.oos.trades)}`) : ''}
           ${metricRow(L('Beneficio al optimizar (como en MT5)', 'Profit when optimizing (as in MT5)'), (p) => `<span class="mono">${mt5Figure(p.record.is.profit)}</span>`)}

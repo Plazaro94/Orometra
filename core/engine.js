@@ -1099,10 +1099,12 @@ export function finerRefinement(refinement, levels, sensitivity, budget = 20000)
   });
 }
 
-export function refinementRange(repIndex, coords, levels, paramNames, sensitivity, types, budget = 20000, flat = []) {
+export function refinementRange(repIndex, coords, levels, paramNames, sensitivity, types, budget = 20000, flat = [], categorical = []) {
   const z0 = coords[repIndex];
   const optimised = [];
-  const isNumeric = (j) => !types || types[j] === 'number';
+  // `categorical`: enums que el .set delata (paso 0) aunque el XML los traiga como número.
+  const categoricalSet = new Set(categorical);
+  const isNumeric = (j) => (!types || types[j] === 'number') && !categoricalSet.has(j);
   const flatSet = new Set(flat);
   const radius = levels.map((lv, j) => {
     // Un booleano o una enumeracion no se barre por rango: se deja en su valor.

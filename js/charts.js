@@ -81,14 +81,17 @@ export function scatterIsOos(analysis, compact = isCompact()) {
   if (!analysis.meta.hasForward) return `<p class="muted">${L('Sin periodo forward no hay comparación entre la optimización y la validación.', 'Without a forward period there is no comparison between optimization and validation.')}</p>`;
   const xScale = (v) => pad.l + v * (W - pad.l - pad.r);
   const yScale = (v) => H - pad.b - v * (H - pad.t - pad.b);
-  const pts = [];
+  // Por capas: las que no pasan debajo y las de meseta encima, para que la nube no las
+  // tape. Todas muestreadas con el mismo paso, para que la densidad siga siendo la real.
+  const layers = { 'pt-fail': [], 'pt-pass': [], 'pt-plateau': [] };
   const step = Math.max(1, Math.floor(analysis.records.length / 4000));
   for (let i = 0; i < analysis.records.length; i += step) {
     const r = analysis.records[i];
     if (!Number.isFinite(r.qualityIs) || !Number.isFinite(r.qualityOos)) continue;
     const cls = analysis.inPlateau[i] >= 0 ? 'pt-plateau' : r.passes ? 'pt-pass' : 'pt-fail';
-    pts.push(`<circle class="${cls}" cx="${fx(xScale(r.qualityIs))}" cy="${fx(yScale(r.qualityOos))}" r="${compact ? 1.6 : 2}"/>`);
+    layers[cls].push(`<circle class="${cls}" cx="${fx(xScale(r.qualityIs))}" cy="${fx(yScale(r.qualityOos))}" r="${compact ? 1.6 : 2}"/>`);
   }
+  const pts = [...layers['pt-fail'], ...layers['pt-pass'], ...layers['pt-plateau']];
   const reps = analysis.plateaus.slice(0, 5).map((p, i) => {
     const r = p.record;
     // La etiqueta, a la izquierda del punto si a la derecha no cabe (en el móvil, la elegida
@@ -109,9 +112,9 @@ export function scatterIsOos(analysis, compact = isCompact()) {
     minW: compact ? 240 : W,
   });
   return wrapChart(svg, legend([
-    { cls: 'chart-swatch-fail', label: L('No pasan mínimos', 'Fail the minimums') },
-    { cls: 'chart-swatch-pass', label: L('Pasan mínimos', 'Pass the minimums') },
-    { cls: 'chart-swatch-plateau', label: L('En meseta', 'In a plateau') },
+    { cls: 'chart-swatch-sc-fail', label: L('No pasan mínimos', 'Fail the minimums') },
+    { cls: 'chart-swatch-sc-pass', label: L('Pasan mínimos', 'Pass the minimums') },
+    { cls: 'chart-swatch-sc-plateau', label: L('En meseta', 'In a plateau') },
     { cls: 'chart-swatch-rep', label: L('Configuración elegida de cada meseta', 'Chosen configuration of each plateau') },
   ]));
 }
@@ -161,18 +164,24 @@ export function degradationChart(analysis, compact = isCompact()) {
   const W = compact ? 280 : 620; const H = compact ? 250 : 320;
   const pad = compact ? { l: 42, r: 8, t: 12, b: 46 } : { l: 52, r: 16, t: 16, b: 48 };
   const allVals = rows.flatMap((r) => [r.oosMedian, r.oosQ25]).filter(Number.isFinite);
+  // Las barras salen del cero: con la base en el mínimo, una mediana negativa se dibujaba
+  // hacia arriba y la diferencia entre grupos se veía mayor de lo que es.
   let [lo, hi] = extent(allVals);
+  lo = Math.min(lo, 0); hi = Math.max(hi, 0);
   const span = hi - lo || 1;
-  lo -= span * 0.1; hi += span * 0.1;
+  if (lo < 0) lo -= span * 0.05;
+  hi += span * 0.1;
   const xScale = (k) => pad.l + ((k + 0.5) / rows.length) * (W - pad.l - pad.r);
   const yScale = (v) => H - pad.b - ((v - lo) / (hi - lo)) * (H - pad.t - pad.b);
   const w = (W - pad.l - pad.r) / rows.length * 0.6;
+  const y0 = yScale(0);
   const bars = rows.map((r, k) => {
-    const base = yScale(lo);
     const y = yScale(r.oosMedian);
     const cls = k === rows.length - 1 ? 'ch-bar-top' : 'ch-bar';
-    return `<rect class="${cls}" x="${fx(xScale(k) - w / 2)}" y="${fx(y)}" width="${fx(w)}" height="${fx(Math.max(1, base - y))}" rx="2"/>`;
+    return `<rect class="${cls}" x="${fx(xScale(k) - w / 2)}" y="${fx(Math.min(y, y0))}" width="${fx(w)}" height="${fx(Math.max(1, Math.abs(y0 - y)))}" rx="2"/>`;
   }).join('');
+  // Con medianas negativas, la línea del cero separa lo que gana de lo que pierde.
+  const zeroLine = lo < 0 ? `<line class="ch-zero" x1="${pad.l}" y1="${fx(y0)}" x2="${W - pad.r}" y2="${fx(y0)}"/>` : '';
   const q25line = rows.map((r, k) => `${k ? 'L' : 'M'}${fx(xScale(k))},${fx(yScale(r.oosQ25))}`).join(' ');
   // En el móvil, «D1…D10» no cabe bajo diez barras de 23 unidades: solo el número.
   const labels = rows.map((r, k) => `<text class="ch-tick" x="${fx(xScale(k))}" y="${H - pad.b + 15}" text-anchor="middle">${compact ? r.decile : `D${r.decile}`}</text>`).join('');
@@ -186,7 +195,7 @@ export function degradationChart(analysis, compact = isCompact()) {
   );
   const yMid = (pad.t + H - pad.b) / 2;
   const svg = `${svgOpen(W, H, degLabel, compact ? 240 : W)}
-    ${gy}${bars}<path class="ch-line-q25" d="${q25line}"/>${labels}
+    ${gy}${bars}${zeroLine}<path class="ch-line-q25" d="${q25line}"/>${labels}
     <text class="ch-axis-label" x="12" y="${yMid}" text-anchor="middle" transform="rotate(-90 12 ${yMid})">${esc(compact ? L('Forward (mediana)', 'Forward (median)') : L('Resultado en el forward (mediana)', 'Result on the forward (median)'))}</text>
     <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
     <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(compact ? L('Decil de puesto (10 = tu 10\u00A0% mejor)', 'Rank decile (10 = your best 10%)') : L('Grupos según su puesto en la optimización (D10 = tu 10\u00A0% mejor)', 'Groups by optimization rank (D10 = your best 10%)'))}</text>

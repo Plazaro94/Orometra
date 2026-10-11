@@ -77,6 +77,22 @@ export const pct = (v, d = 1) => (Number.isFinite(v) ? `${nf(d).format(v * 100)}
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 /** Escape HTML but keep the inline tags the verdict engine embeds in finding details. */
 export const rich = (s) => esc(s).replace(/&lt;(\/?(?:strong|em))&gt;/gi, '<$1>');
+/**
+ * Qué parte de una meseta cumple tus mínimos en el forward: «63 % · 24 de 38». Es lo que
+ * la baja de puesto y lo que decide el aviso de «no se sostiene en el forward»; sin
+ * enseñarlo, no se veía que una alternativa lo aguantaba entero. Por debajo del corte
+ * crítico (65 %) va con la marca de aviso.
+ */
+export function forwardHoldHtml(p, critical = 0.65) {
+  const v = p && p.oosValidation;
+  if (!v || !v.withForward) return '—';
+  const ok = Math.round(v.passFrac * v.withForward);
+  const of = v.withForward < v.size
+    ? L(`${int(ok)} de ${int(v.withForward)} con forward`, `${int(ok)} of ${int(v.withForward)} with a forward`)
+    : L(`${int(ok)} de ${int(v.size)}`, `${int(ok)} of ${int(v.size)}`);
+  const share = pct(v.passFrac, 0);
+  return `${v.passFrac < critical ? `<span class="badge warn">${share}</span>` : share} <small class="muted">${of}</small>`;
+}
 export const money = (v) => (Number.isFinite(v) ? new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 0 }).format(v) : '—');
 /** Valor tal como lo escribe MT5: punto decimal y sin separador de millares. */
 export const rawValue = (v) => {

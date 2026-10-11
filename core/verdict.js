@@ -313,9 +313,18 @@ export function buildVerdict(ctx) {
           L(`Moviendo un ±20\u00A0% los mínimos que has configurado, la meseta ganadora cambia hasta en la mitad de los casos. Antes de decidir, prueba a subir y bajar el factor de beneficio exigido y mira si te sigue recomendando lo mismo: si no, lo que estás eligiendo es tu umbral, no una propiedad de tu EA.`,
             `Shifting the minimums you configured by ±20%, the winning plateau changes in up to half the cases. Before deciding, try raising and lowering the required profit factor and see whether it still recommends the same thing: if not, what you are choosing is your threshold, not a property of your EA.`), 'stability');
       } else {
+        // Las cifras del ejemplo salen de TUS mínimos (el tramo que se ha probado), no de unas
+        // fijas: con un mínimo de 1,10 se prueba de 1,08 a 1,12, y hablar de 1,15 y 1,25 era falso.
+        const [pfLo, pfHi] = gs.profitFactorRange || [];
+        const pfEs = Number.isFinite(pfLo) && Number.isFinite(pfHi)
+          ? `: con tus mínimos movidos así (por ejemplo, el factor de beneficio mínimo entre ${fmt(pfLo, 2)} y ${fmt(pfHi, 2)}), en más de la mitad de los casos gana otra meseta, igual de válida`
+          : '';
+        const pfEn = Number.isFinite(pfLo) && Number.isFinite(pfHi)
+          ? `: with your minimums shifted like this (for example, the minimum profit factor between ${fmt(pfLo, 2)} and ${fmt(pfHi, 2)}), another plateau wins in more than half of the cases, equally valid`
+          : '';
         add(SEV.CRITICAL, L(`La recomendación depende de los mínimos que elijas (${fmt(p, 0)}\u00A0%)`, `The recommendation depends on the minimums you choose (${fmt(p, 0)}%)`),
-          L(`Con los mínimos movidos un ±20\u00A0%, la meseta ganadora solo se mantiene el ${fmt(p, 0)}\u00A0% de las veces. La recomendación la decide el umbral que has escrito, no tus datos: con un factor de beneficio de 1,25 en vez de 1,15 saldría otra, igual de válida.`,
-            `With minimums shifted ±20%, the winning plateau holds only ${fmt(p, 0)}% of the time. The threshold you wrote decides the recommendation, not your data: a profit factor of 1.25 instead of 1.15 would give another, equally valid one.`), 'stability');
+          L(`Con los mínimos movidos un ±20\u00A0%, la meseta ganadora solo se mantiene el ${fmt(p, 0)}\u00A0% de las veces. La recomendación la decide el umbral que has escrito, no tus datos${pfEs}.`,
+            `With minimums shifted ±20%, the winning plateau holds only ${fmt(p, 0)}% of the time. The threshold you wrote decides the recommendation, not your data${pfEn}.`), 'stability');
       }
     } else if (stabilityCheck.gatesSkipped) {
       add(SEV.INFO, L('No se ha podido auditar el efecto de tus mínimos', 'The effect of your minimums could not be audited'),

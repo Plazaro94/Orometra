@@ -564,7 +564,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     }
     // Con la rejilla ya probada entera, el refinamiento propone el paso a la mitad: repetir
     // los mismos pasos no aportaría nada.
-    const baseRefinement = refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes, undefined, dims.flatDims);
+    const baseRefinement = refinementRange(rep, coords, levels, paramNames, sensitivity, paramTypes, undefined, dims.flatDims, categoricalDims);
     const refinement = sampling === 'grid' ? finerRefinement(baseRefinement, levels, sensitivity) : baseRefinement;
     const st = stability[rep];
     const passing = Number.isFinite(st.passCount)
@@ -974,7 +974,13 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
         const rb2 = robustnessScores(scores, p2, st2, opts, nb.medianSupport);
         return winner(opts, p2, st2, rb2, oosFails2);
       });
-      gates = { ...tally(winners), perturbation: 0.2 };
+      // El tramo de factor de beneficio que se ha probado, para que el aviso hable de los
+      // mínimos del usuario y no de unos fijos.
+      gates = {
+        ...tally(winners),
+        perturbation: 0.2,
+        profitFactorRange: [mk(0.8, 1, 1).minProfitFactor, mk(1.2, 1, 1).minProfitFactor],
+      };
     }
 
     return {
