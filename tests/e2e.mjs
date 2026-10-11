@@ -567,6 +567,16 @@ try {
     const rowChips = row ? demo.isTable.headers.map((h, k) => [h, r => r[k]]).filter(([h]) => chips.some((c) => c.startsWith(`${h} `))).map(([h, f]) => `${h} ${f(row)}`) : [];
     check('la pasada mostrada existe en el archivo', Boolean(row), shown);
     check('y es la de los parámetros recomendados', row && chips.length > 0 && chips.every((c) => rowChips.includes(c)), `${shown}: ${chips.join(', ')} frente a ${rowChips.join(', ')}`);
+    // El número no basta para encontrarla en MT5 (no lo guarda al cerrarse): se dan sus cifras,
+    // que tienen que ser las de esa fila del archivo.
+    const find = await page.$$eval('.vx .vx-pass-note', (ps) => {
+      const p = ps.find((x) => /Búscala/.test(x.textContent));
+      return p ? [...p.querySelectorAll('b')].map((b) => b.textContent.trim()) : [];
+    });
+    const col = (name) => demo.isTable.headers.indexOf(name);
+    check('se dan sus cifras para buscarla en MT5: beneficio y operaciones de esa fila',
+      row && find[0] === Number(row[col('Profit')]).toFixed(2) && find[1] === String(row[col('Trades')]),
+      `${find.join(' · ')} frente a ${row && row[col('Profit')]} · ${row && row[col('Trades')]}`);
     await page.context().close();
   }
 

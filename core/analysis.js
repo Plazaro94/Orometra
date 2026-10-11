@@ -192,6 +192,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   const before = records.length;
   records = records.filter((r) => r.params.every((v) => v !== null && v !== undefined && v !== ''));
   const droppedParams = before - records.length;
+  markResultTwins(records);
   if (records.length < 10) {
     throw new AnalysisError(CODE.DATA_ERROR, L(
       droppedParams > 0
@@ -1177,4 +1178,27 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     },
     verdict,
   };
+}
+
+/**
+ * El número de pasada no sirve para encontrar una configuración en MT5: el probador no lo
+ * guarda al cerrarse y el del XML puede no coincidir con el de su tabla (PASS-2 en
+ * docs/MT5_ASSUMPTIONS.md). Lo que sí se ve igual en los dos es el beneficio y las
+ * operaciones del periodo optimizado. `twins` cuenta cuántas configuraciones DISTINTAS del
+ * archivo comparten esos dos valores: si hay alguna, buscar por resultados no basta y hay
+ * que cargar los parámetros.
+ */
+export function markResultTwins(records) {
+  const keyOf = (r) => `${r.is && r.is.profit}|${r.is && r.is.trades}`;
+  const paramsOf = (r) => r.params.map((v) => String(v)).join('\0');
+  const groups = new Map();
+  for (const r of records) {
+    const k = keyOf(r);
+    if (!groups.has(k)) groups.set(k, new Set());
+    groups.get(k).add(paramsOf(r));
+  }
+  for (const r of records) {
+    const known = r.is && Number.isFinite(r.is.profit) && Number.isFinite(r.is.trades);
+    r.twins = known ? groups.get(keyOf(r)).size - 1 : 0;
+  }
 }

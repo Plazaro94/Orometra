@@ -3,7 +3,7 @@
 import { track } from './track.js';
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { t, L, localeTag } from './i18n.js';
-import { state, api, $, esc, paramValue, num, int } from './ui-state.js';
+import { state, api, $, esc, paramValue, num, int, findInMt5Text } from './ui-state.js';
 import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights, nextStepText } from './ui-verdict.js';
 
 const plain = (s) => String(s ?? '').replace(/<[^>]+>/g, '');
@@ -58,10 +58,14 @@ export function buildPlainSummary(a) {
     lines.push(top.length === 1
       ? L('CONFIGURACIÓN GANADORA', 'WINNING CONFIGURATION')
       : L(`TOP ${top.length}: CONFIGURACIONES GANADORAS`, `TOP ${top.length}: WINNING CONFIGURATIONS`));
+    lines.push(L('El número de pasada es el de tu archivo exportado: MT5 no lo guarda al cerrarse y puede enseñar otro. Busca cada configuración por sus cifras.',
+      'The pass number is the one in your exported file: MT5 does not keep it after closing and may show a different one. Find each configuration by its figures.'));
     top.forEach((p, i) => {
       const role = i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`);
       lines.push('');
       lines.push(`${role} — ${L('Pasada', 'Pass')} ${p.record.id} (${L('meseta', 'plateau')} ${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
+      const figures = findInMt5Text(p.record);
+      if (figures) lines.push(`  ${L('En MT5, búscala por', 'In MT5, find it by')}: ${figures}${p.record.twins ? L(` (${p.record.twins} más con esas cifras: usa sus parámetros)`, ` (${p.record.twins} more with those figures: use its parameters)`) : ''}`);
       // Factor de beneficio, drawdown y operaciones de cada periodo. Una configuración que MT5
       // no pasó al forward lo dice, en vez de escribir «undefined».
       const per = (m) => `PF ${num(m.profitFactor, 2)} · DD ${num(m.drawdown, 1)}${L('\u00A0%', '%')} · ${int(m.trades)} ${L('operaciones', 'trades')}`;

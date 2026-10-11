@@ -7,7 +7,7 @@ import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag, pctSign, shareText } from './i18n.js';
-import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding } from './ui-state.js';
+import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding, findInMt5Html, mt5Figure } from './ui-state.js';
 import { gloss } from './glossary.js';
 
 /*
@@ -448,6 +448,7 @@ function renderDecision(a, dv, best, hold) {
     </div>`;
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass">${L('Pasada', 'Pass')} <b>${esc(best.record.id)}</b></div>
+      ${findInMt5Html(best.record, hasF)}
       <p class="vx-pass-note">${esc(hasF
     ? L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado y en el forward (promediado con sus vecinas).`,
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on both the optimized period and the forward (averaged with its neighbors).`)
@@ -461,7 +462,8 @@ function renderDecision(a, dv, best, hold) {
   } else if (a.fallback) {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass vx-pass-risk">${esc(L('Ninguna con garantías', 'None you can rely on'))}</div>
-      <p class="vx-pass-note">${L('Sugerencia orientativa:', 'Tentative suggestion:')} <b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>`;
+      <p class="vx-pass-note">${L('Sugerencia orientativa:', 'Tentative suggestion:')} <b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>
+      ${findInMt5Html(a.fallback.record, hasF)}`;
   } else {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass vx-pass-risk">${esc(t('verdict.nopick'))}</div>
@@ -900,6 +902,7 @@ export function renderTop3(a) {
           ${metricRow(gloss('quality', L('Calidad al optimizar', 'Quality when optimizing')), (p) => `${num(p.record.qualityIs, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityIs))}</em>`)}
           ${hasF ? metricRow(L('Calidad al validar', 'Quality on validation'), (p) => `${num(p.record.qualityOos, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityOos))}</em>`) : ''}
           ${hasF ? metricRow(L('Al validar · PF / drawdown / operaciones', 'On validation · PF / drawdown / trades'), (p) => `${num(p.record.oos.profitFactor, 2)} / ${num(p.record.oos.drawdown, 1)}${pctSign()} / ${int(p.record.oos.trades)}`) : ''}
+          ${metricRow(L('Beneficio al optimizar (como en MT5)', 'Profit when optimizing (as in MT5)'), (p) => `<span class="mono">${mt5Figure(p.record.is.profit)}</span>`)}
           ${metricRow(L('Al optimizar · PF / drawdown / operaciones', 'When optimizing · PF / drawdown / trades'), (p) => `${num(p.record.is.profitFactor, 2)} / ${num(p.record.is.drawdown, 1)}${pctSign()} / ${int(p.record.is.trades)}`)}
           <tr class="t3-params-head"><th class="t3-label" colspan="${top.length + 1}">${L('Parámetros de entrada', 'Input parameters')}</th></tr>
           ${paramRows}

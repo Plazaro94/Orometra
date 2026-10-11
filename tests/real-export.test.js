@@ -13,7 +13,8 @@
 //   node tests/real-export.test.js
 
 import { setLocale, shareText } from '../js/i18n.js';
-import { runAnalysis } from '../core/analysis.js';
+import { runAnalysis, markResultTwins } from '../core/analysis.js';
+import { mt5Figure, findInMt5Html } from '../js/ui-state.js';
 import { parseSetText, coverageAgainstSet, discreteRange } from '../core/setfile.js';
 import { passIds, damageReport, isImpossibleNumber } from '../core/schema.js';
 import { parseXmlSpreadsheet } from '../core/parse.js';
@@ -199,6 +200,31 @@ console.log('\nMuestreo disperso con .set: un aviso, no dos');
     const differs = shareText(withSet.searchCoverage?.coverageSearch ?? withSet.meta.searchCoverage?.coverageSearch, 'combinaciones') !== shareText(without.meta.coverage, 'combinaciones');
     check(`${label}: la cifra sobre niveles vistos sale ${differs ? 'en el detalle' : 'una sola vez'}`, (w[0]?.detail || '').includes(seenText) === differs, w[0]?.detail);
   }
+}
+
+console.log('\nBuscarla en MT5 por sus cifras, no por el número de pasada');
+{
+  check('13412.5 → «13412.50», como la tabla de MT5', mt5Figure(13412.5) === '13412.50');
+  check('-289.56 → «-289.56» (punto decimal, sin millares)', mt5Figure(-289.56) === '-289.56');
+  check('más de dos decimales: tal cual', mt5Figure(1.234567) === '1.234567');
+  const rec = (params, profit, trades) => ({ params, is: { profit, trades } });
+  const rs = [rec([1, 2], 100.5, 10), rec([1, 3], 100.5, 10), rec([2, 2], 100.5, 10), rec([1, 2], 100.5, 10), rec([5, 5], 7, 3), rec([6, 6], 7, 4)];
+  markResultTwins(rs);
+  check('3 configuraciones distintas con las mismas cifras: 2 gemelas cada una', rs[0].twins === 2 && rs[1].twins === 2 && rs[2].twins === 2, rs.map((r) => r.twins).join(','));
+  check('la fila repetida con los mismos parámetros no cuenta como otra', rs[3].twins === 2);
+  check('mismo beneficio y distintas operaciones: no son gemelas', rs[4].twins === 0 && rs[5].twins === 0);
+  setLocale('es');
+  const html = findInMt5Html({ is: { profit: 155206.34, trades: 515 }, criterionIs: 5.21, twins: 2 }, true);
+  check('el texto da beneficio, operaciones y Result como en MT5', /beneficio <b>155206\.34<\/b> · <b>515<\/b> operaciones · Resultado <b>5\.21<\/b>/.test(html), html);
+  check('dice que el número es del archivo y que MT5 no lo guarda', /número de pasada es el de tu archivo exportado: MT5 no lo guarda al cerrarse/.test(html));
+  check('y avisa de las 2 con las mismas cifras', /Hay 2 configuraciones más con esas mismas cifras/.test(html));
+  check('con forward: en los resultados de la optimización, no en los del forward', /no en los del forward/.test(html));
+  setLocale('en');
+  const en = findInMt5Html({ is: { profit: 155206.34, trades: 515 }, criterionIs: 5.21, twins: 1 }, false);
+  check('EN: profit 155206.34 · 515 trades · Result 5.21, one twin', /profit <b>155206\.34<\/b> · <b>515<\/b> trades · Result <b>5\.21<\/b>/.test(en) && /Another configuration has the same figures/.test(en), en);
+  setLocale('es');
+  const a = runAnalysis({ isTable: buildDemoTables().isTable });
+  check('el análisis marca las gemelas de cada configuración', a.plateaus.every((p) => Number.isInteger(p.record.twins)));
 }
 
 console.log(`\n${checks - failures}/${checks} comprobaciones correctas`);

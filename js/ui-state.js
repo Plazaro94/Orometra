@@ -105,6 +105,48 @@ export const paramValue = (v) => {
  */
 export const paramHtml = (v) => esc(paramValue(v));
 
+/** Cifra de la tabla de resultados de MT5 tal como la enseña: punto decimal, dos decimales. */
+export const mt5Figure = (v) => {
+  if (!Number.isFinite(v)) return '—';
+  const cents = Math.round(v * 100);
+  return Math.abs(v * 100 - cents) < 1e-6 ? (cents / 100).toFixed(2) : String(v);
+};
+
+/**
+ * Cifras con las que se encuentra una configuración en la tabla de MT5. El número de pasada
+ * no sirve: el probador no lo guarda al cerrarse y el del XML puede no coincidir con el de
+ * su tabla (PASS-2 en docs/MT5_ASSUMPTIONS.md). El beneficio, las operaciones y el Result
+ * del periodo optimizado sí son los mismos en el archivo y en MT5. HTML.
+ */
+export function mt5Figures(rec) {
+  const r = (rec && rec.is) || {};
+  if (!Number.isFinite(r.profit) || !Number.isFinite(r.trades)) return '';
+  const result = Number.isFinite(rec.criterionIs) ? ` · ${L('Resultado', 'Result')} <b>${mt5Figure(rec.criterionIs)}</b>` : '';
+  return `${L('beneficio', 'profit')} <b>${mt5Figure(r.profit)}</b> · <b>${Math.round(r.trades)}</b> ${L('operaciones', 'trades')}${result}`;
+}
+
+/** Párrafo «búscala en MT5 por sus cifras», con el aviso de cifras repetidas. HTML. */
+export function findInMt5Html(rec, hasForward, cls = 'vx-pass-note') {
+  const figures = mt5Figures(rec);
+  if (!figures) return '';
+  const where = hasForward
+    ? L('Búscala en los resultados de la optimización de MT5 (no en los del forward) por sus cifras', 'Find it in MT5’s optimization results (not the forward ones) by its figures')
+    : L('Búscala en los resultados de la optimización de MT5 por sus cifras', 'Find it in MT5’s optimization results by its figures');
+  const n = rec.twins || 0;
+  const twins = n === 1
+    ? L(' Hay otra configuración con esas mismas cifras: para cargar exactamente esta, usa sus parámetros.', ' Another configuration has the same figures: to load exactly this one, use its parameters.')
+    : n > 1
+      ? L(` Hay ${n} configuraciones más con esas mismas cifras: para cargar exactamente esta, usa sus parámetros.`, ` ${n} more configurations have the same figures: to load exactly this one, use its parameters.`)
+      : '';
+  return `<p class="${cls}">${where}: ${figures}. ${L('El número de pasada es el de tu archivo exportado: MT5 no lo guarda al cerrarse y puede enseñar otro.', 'The pass number is the one in your exported file: MT5 does not keep it after closing and may show a different one.')}${twins}</p>`;
+}
+
+/** Lo mismo en texto plano, para el resumen y el .set. */
+export function findInMt5Text(rec) {
+  const html = mt5Figures(rec);
+  return html ? html.replace(/<\/?b>/g, '') : '';
+}
+
 /** MT5 guarda el informe en UTF-16; las optimizaciones, en UTF-8. */
 export function decodeHead(buffer) {
   const b = new Uint8Array(buffer);

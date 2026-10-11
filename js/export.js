@@ -16,6 +16,24 @@ function fmt(value) {
   return formatSetValue(value);
 }
 
+/** Cifra como la enseña la tabla de MT5: punto decimal, dos decimales. */
+function mt5Figure(v) {
+  const cents = Math.round(v * 100);
+  return Math.abs(v * 100 - cents) < 1e-6 ? (cents / 100).toFixed(2) : String(v);
+}
+
+/**
+ * Con qué cifras se encuentra la configuración en MT5: el número de pasada no se conserva al
+ * cerrar el probador y el del XML puede no coincidir con el de su tabla (PASS-2).
+ */
+function mt5FiguresComment(rec) {
+  const r = (rec && rec.is) || {};
+  if (!Number.isFinite(r.profit) || !Number.isFinite(r.trades)) return [];
+  const result = Number.isFinite(rec.criterionIs) ? ` · ${L('Resultado', 'Result')} ${mt5Figure(rec.criterionIs)}` : '';
+  return [L(`; En MT5 (periodo optimizado): beneficio ${mt5Figure(r.profit)} · ${Math.round(r.trades)} operaciones${result}`,
+    `; In MT5 (optimized period): profit ${mt5Figure(r.profit)} · ${Math.round(r.trades)} trades${result}`)];
+}
+
 /**
  * Fichero .set de despliegue: solo valores, que es lo que carga el probador al
  * pulsar "Cargar" en la pestana de parámetros de entrada.
@@ -26,7 +44,8 @@ export function buildSetFile(analysis, plateau, baseSet = null) {
   const lines = [
     '; ================================================================',
     L('; Orometra (orometra.com) - configuración representativa', '; Orometra (orometra.com) - representative configuration'),
-    L(`; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pasada original ${plateau.record.id}`, `; Plateau ${plateau.rank} of ${analysis.plateaus.length} | Original pass ${plateau.record.id}`),
+    L(`; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pasada ${plateau.record.id} del archivo exportado`, `; Plateau ${plateau.rank} of ${analysis.plateaus.length} | Pass ${plateau.record.id} in the exported file`),
+    ...mt5FiguresComment(plateau.record),
     L(`; Robustez ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configuraciones en la meseta`, `; Robustness ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configurations in the plateau`),
     L('; Elegida por buen puesto en el periodo optimizado y en el forward, promediado con sus vecinas.', '; Chosen for ranking well on both the optimized period and the forward, averaged with its neighbors.'),
     L(`; Generado ${new Date().toISOString()}`, `; Generated ${new Date().toISOString()}`),
@@ -215,6 +234,9 @@ export function buildReport(analysis, extra = {}) {
       oosValidation: p.oosValidation || null,
       representative: {
         pass: p.record.id,
+        // Configuraciones distintas del archivo con el mismo beneficio y operaciones (al
+        // buscarla en MT5 por sus cifras, cuántas más salen).
+        sameFiguresCount: p.record.twins || 0,
         params: Object.fromEntries(analysis.meta.paramNames.map((n, j) => [n, p.record.params[j]])),
         qualityIs: p.record.qualityIs,
         qualityOos: p.record.qualityOos,
@@ -228,6 +250,8 @@ export function buildReport(analysis, extra = {}) {
     })),
     rejectedPeaks: analysis.peaks.map((p) => ({
       pass: p.record.id,
+      profitIs: p.record.is ? p.record.is.profit : null,
+      tradesIs: p.record.is ? p.record.is.trades : null,
       criterionRank: p.criterionRank,
       criterionValue: p.key,
       quality: p.score,

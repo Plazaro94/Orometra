@@ -8,7 +8,7 @@ import { L, pctSign, shareText } from './i18n.js';
 import { gloss } from './glossary.js';
 import { fallbackNote } from './ui-verdict.js';
 import { setCoverageNote } from './export.js';
-import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory } from './ui-state.js';
+import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory, findInMt5Html, mt5Figure } from './ui-state.js';
 
 /**
  * Hallazgos del motor que narran en prosa el mismo numero que esta tabla muestra en
@@ -54,6 +54,7 @@ export function renderRepCard(a, p) {
       <div>
         <div class="rep-pass">${L('Pasada', 'Pass')} ${esc(r.id)}</div>
         <div class="rep-sub">${L('Meseta', 'Plateau')} ${p.rank} · ${int(p.size)} ${L('configuraciones', 'configurations')}${p.coreSize ? ` · ${int(p.coreSize)} ${L('en el núcleo', 'in the core')}` : ''}</div>
+        ${findInMt5Html(r, hasF, 'rep-sub')}
       </div>
       <div class="rep-score">${num(p.robust, 0)}<small>${gloss('robustness', L('robustez', 'robustness'), { align: 'right' })}</small></div>
     </div>
@@ -111,7 +112,7 @@ export function renderPlateaus(a) {
         'Ninguna región conexa supera los mínimos con estabilidad suficiente. Revisa el diagnóstico: lo habitual es que falten datos, que el rango probado sea demasiado estrecho o que la estrategia no tenga ventaja.',
         'No plateau clears the minimums with enough stability. Check diagnostics: usually data are missing, the tested range is too narrow, or the strategy has no edge.',
       )}</p></div>
-      ${a.fallback ? `<div class="inline-warn"><strong>${L('Sugerencia orientativa', 'Tentative suggestion')}: ${L('pasada', 'pass')} ${esc(a.fallback.record.id)}.</strong> ${fallbackNote(a)}</div>` : ''}
+      ${a.fallback ? `<div class="inline-warn"><strong>${L('Sugerencia orientativa', 'Tentative suggestion')}: ${L('pasada', 'pass')} ${esc(a.fallback.record.id)}.</strong> ${fallbackNote(a)}${findInMt5Html(a.fallback.record, a.meta.hasForward, '')}</div>` : ''}
       <button class="text-btn" data-goto="diagnostics">${L('Ir al diagnóstico &rarr;', 'Go to diagnostics &rarr;')}</button>`;
   }
   const sel = a.plateaus[Math.min(state.selectedPlateau, a.plateaus.length - 1)];
@@ -285,6 +286,7 @@ function renderSurfaceDetail(a, grid, hit) {
     <div><span>${esc(grid.names[0])}</span><strong>${paramHtml(grid.levelsA[hit.a])}</strong></div>
     <div><span>${esc(grid.names[1])}</span><strong>${paramHtml(grid.levelsB[hit.b])}</strong></div>
     <div><span>${L('Pasada', 'Pass')}</span><strong class="mono">${esc(rec.id)}</strong></div>
+    <div><span>${L('Beneficio al optimizar (como en MT5)', 'Profit when optimizing (as in MT5)')}</span><strong class="mono">${mt5Figure(rec.is && rec.is.profit)}</strong></div>
     <div><span>${L('Calidad al optimizar', 'Quality when optimizing')}</span><strong>${num(hit.quality, 2)}</strong></div>
     <div><span>${L('Calidad en el forward', 'Quality on the forward')}</span><strong>${Number.isFinite(hit.qualityOos) ? num(hit.qualityOos, 2) : '—'}</strong></div>
     <div><span>${L('¿En esta meseta?', 'In this plateau?')}</span><strong class="big ${hit.inPlateau ? 'ok' : 'warn'}">${hit.inPlateau ? L('sí', 'yes') : L('no', 'no')}</strong></div>
@@ -385,10 +387,11 @@ export function renderRejected(a) {
     <section class="panel">
       ${rejectedMinimums(a)}
       <div class="table-wrap"><table class="stack-table rej-table">
-        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${esc(critName)}</th><th>${L('Calidad (periodo optimizado)', 'Quality (optimized period)')}</th><th>${L('Vecinas', 'Neighbors')}</th><th>${L('Vecinas flojos', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
+        <thead><tr><th>${L('Puesto', 'Rank')}</th><th>${L('Pasada', 'Pass')}</th><th>${L('Beneficio al optimizar (como en MT5)', 'Profit when optimizing (as in MT5)')}</th><th>${esc(critName)}</th><th>${L('Calidad (periodo optimizado)', 'Quality (optimized period)')}</th><th>${L('Vecinas', 'Neighbors')}</th><th>${L('Vecinas flojos', 'Weak neighbors')}</th><th>${L('Motivo del descarte', 'Rejection reason')}</th></tr></thead>
         <tbody>${a.peaks.map((p) => `<tr class="stack-row">
           <td data-label="${L('Puesto', 'Rank')}"><span class="rank-mini">#${int(p.criterionRank)}</span></td>
           <td class="mono" data-label="${L('Pasada', 'Pass')}">${esc(p.record.id)}</td>
+          <td class="mono" data-label="${L('Beneficio al optimizar', 'Profit when optimizing')}">${mt5Figure(p.record.is && p.record.is.profit)}</td>
           <td class="strong" data-label="${esc(critName)}">${num(p.key, 2)}</td>
           <td data-label="${L('Calidad', 'Quality')}">${num(p.score, 2)}</td>
           <td data-label="${L('Vecinas', 'Neighbors')}">${int(p.st.support)}</td>

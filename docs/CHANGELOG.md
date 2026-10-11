@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-11 — Cada configuración se busca en MT5 por sus cifras, no por su número de pasada
+
+El número de pasada no identifica una configuración en MT5 (PASS-2 en
+`docs/MT5_ASSUMPTIONS.md`). Con el export real del autor, las pasadas 4300…4310 que enseñaba
+el probador estaban en el XML con otro `Pass` (4300 → 1431, 4305 → 1448…), y al cerrar y
+reabrir MT5 la columna «Paso» sale vacía: el probador no lo guarda. Orometra recomendaba la
+configuración correcta, pero con un número que no servía para encontrarla.
+
+- **Veredicto, sugerencia orientativa y ficha de la meseta** (`js/ui-state.js#findInMt5Html`):
+  «Búscala en los resultados de la optimización de MT5 por sus cifras: beneficio 29136.64 ·
+  190 operaciones · Resultado 5.70», con punto decimal como en MT5, y que el número de pasada es
+  el del archivo exportado. Si otras configuraciones tienen las mismas cifras (≈10 % de las filas
+  en dos exports reales, las que solo cambian parámetros que no influyen), lo dice y remite a sus
+  parámetros (`core/analysis.js#markResultTwins`).
+- **Descartes, comparativa del Top 3 y gráfico de la meseta**: beneficio al optimizar de cada una.
+- **Exportaciones**: el resumen da las cifras de cada configuración; el .set lo dice en la
+  cabecera («Pasada N del archivo exportado» y sus cifras); el JSON añade cuántas comparten
+  cifras y el beneficio y operaciones de los descartes.
+- Pruebas: `tests/real-export.test.js` (59) y una de navegador más (114).
+
 ## 2026-10-11 — Forward con todas las pasadas, enums sin «borde», un aviso de cobertura y prueba estable
 
 - **Textos del forward** (guías de exportación, forward, sobreoptimización y criterio;
