@@ -17,7 +17,7 @@
 // Solo se emite la segunda clase de afirmacion. Los hallazgos concretos -acantilados,
 // bordes de rango, inversiones, puertas inertes- se conservan intactos: son lo valioso.
 
-import { L, localeTag, pctSign } from '../js/i18n.js';
+import { L, localeTag, pctSign, shareText } from '../js/i18n.js';
 
 /** Numero en el formato del idioma activo (1,20 en ES, 1.20 en EN). */
 const fmt = (v, d = 2) => (Number.isFinite(v)
@@ -398,7 +398,7 @@ export function buildVerdict(ctx) {
   }
 
   if (sampling === 'sparse') {
-    add(SEV.WARN, L(`Muestreo disperso (sobre niveles vistos): ${fmt((100 * coverage), 4)}\u00A0%`, `Sparse sampling (on seen levels): ${fmt((100 * coverage), 4)}%`),
+    add(SEV.WARN, L(`Muestreo disperso (sobre niveles vistos): ${shareText(coverage, 'combinaciones')}`, `Sparse sampling (on seen levels): ${shareText(coverage, '', 'combinations')}`),
       L('Has optimizado con algoritmo genético, no con rejilla completa. El GA concentra las pruebas donde el periodo optimizado era bueno, así que la densidad de vecinas mide dónde miró el optimizador tanto como dónde hay estabilidad. Usa el rango de refinamiento que propone la app y repite con rejilla completa.',
         'You optimized with a genetic algorithm, not a full grid. The GA concentrates trials where the optimized period was good, so neighbor density measures where the optimizer looked as much as where there is stability. Use the refinement range the app proposes and repeat with a full grid.'), 'coverage');
   }
@@ -407,7 +407,7 @@ export function buildVerdict(ctx) {
     const cs = searchCoverage.coverageSearch;
     const obs = Number.isFinite(coverage) ? coverage : NaN;
     if (cs < 0.02) {
-      add(SEV.WARN, L(`Solo ${fmt((100 * cs), 2)}\u00A0% del rango del .set`, `Only ${fmt((100 * cs), 2)}% of the .set search range`),
+      add(SEV.WARN, L(`Solo ${shareText(cs, 'combinaciones')} del rango del .set`, `Only ${shareText(cs, '', 'combinations')} of the .set search range`),
         L(`El .set pide un espacio de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configuraciones; tus archivos cubren ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas. La cobertura «alta» sobre niveles vistos no implica que hayas explorado el rango que pediste en MT5.`,
           `The .set asks for a space of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configurations; your files cover ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells. High coverage on seen levels does not mean you explored the range you asked MT5 for.`), 'coverage');
     } else if (Number.isFinite(obs) && obs >= 0.5 && cs < obs * 0.5) {
@@ -440,7 +440,7 @@ export function buildVerdict(ctx) {
   }
 
   if (Number.isFinite(medianSupport) && medianSupport < 4) {
-    add(SEV.WARN, L(`Soporte local insuficiente (mediana de ${fmt(medianSupport, 0)} vecinas)`, `Insufficient local support (median of ${fmt(medianSupport, 0)} neighbors)`),
+    add(SEV.WARN, L(`Soporte local insuficiente (mediana de ${fmt(medianSupport, 0)} ${pl(Math.round(medianSupport), 'vecina', 'vecinas')})`, `Insufficient local support (median of ${fmt(medianSupport, 0)} ${pl(Math.round(medianSupport), 'neighbor', 'neighbors')})`),
       L('La mayoría de configuraciones tiene muy pocas vecinas observadas. Cualquier afirmación sobre mesetas es provisional hasta que refines con una rejilla.',
         'Most configurations have very few observed neighbors. Any claim about plateaus is provisional until you refine with a grid.'), 'coverage');
   }
@@ -553,6 +553,16 @@ export function buildVerdict(ctx) {
         L(`El export del forward trae ${integrity.oosRows.toLocaleString(localeTag())} filas frente a ${integrity.isRows.toLocaleString(localeTag())} del export de la optimización (~${pct}\u00A0%). MT5 solo prueba en el forward las mejores pasadas según tu criterio de optimización, así que las mesetas y la fragilidad en forward se miden solo entre candidatas ya preseleccionadas: la validación queda sesgada al alza. Interpreta el forward con cautela.`,
           `The forward export has ${integrity.oosRows.toLocaleString(localeTag())} rows versus ${integrity.isRows.toLocaleString(localeTag())} in the optimization export (~${pct}%). MT5 only tests the best passes by your optimization criterion in the forward, so plateaus and forward fragility are measured only among already pre-selected candidates: validation is biased upward. Treat the forward with caution.`), 'integrity');
       tableOnly();
+    }
+    if (integrity.passSource && integrity.passSource !== 'pass') {
+      const why = {
+        row: L('Tu archivo no trae la columna «Pass».', 'Your file has no "Pass" column.'),
+        'pass-incomplete': L('A la columna «Pass» de tu archivo le faltan valores.', 'The "Pass" column in your file has missing values.'),
+        'pass-duplicated': L('La columna «Pass» de tu archivo repite números.', 'The "Pass" column in your file repeats numbers.'),
+      }[integrity.passSource];
+      add(SEV.WARN, L('Las configuraciones van numeradas por su fila, no por la pasada de MT5', 'Configurations are numbered by their row, not by the MT5 pass'),
+        L(`${why} El número que ves (1, 2, 3…) es la fila del archivo: en MT5 busca la configuración por sus parámetros o carga el .set, no por ese número.`,
+          `${why} The number you see (1, 2, 3…) is the row in the file: in MT5, find the configuration by its parameters or load the .set, not by that number.`), 'integrity');
     }
     if (integrity.duplicateIds > 0) {
       add(SEV.WARN, L(`${integrity.duplicateIds} identificadores duplicados`, `${integrity.duplicateIds} duplicate identifiers`),

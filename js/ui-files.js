@@ -463,6 +463,13 @@ export function renderPreflight() {
   if (note) {
     if (hasError) {
       note.textContent = t('preflight.note.warn');
+    } else if (rejected && state.analysisRejected.reason === 'damagedExport') {
+      // Un export dañado se abre, pero sus datos no valen: no decir «se lee bien».
+      note.textContent = state.analysisRejected.which === 'oos'
+        ? L('El archivo del forward se abre, pero sus datos están dañados: el detalle está en el aviso de abajo. Vuelve a exportarlo.',
+          'The forward file opens, but its data is damaged: the details are in the notice below. Export it again.')
+        : L('El archivo de la optimización se abre, pero sus datos están dañados: el detalle está en el aviso de abajo. Vuelve a exportarlo.',
+          'The optimization file opens, but its data is damaged: the details are in the notice below. Export it again.');
     } else if (rejected) {
       note.textContent = L(
         'Cada archivo se lee bien, pero el análisis los ha rechazado: el motivo está en el aviso de abajo. Cambia el archivo que corresponda.',

@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-10-11 — Pasada real sin forward, .set con booleanos y enums, export dañado y GitHub
+
+Lo destapó un export real de MT5 (optimización genética de 19 parámetros, su forward y su
+.set) y un comentario de Reddit.
+
+- **Número de pasada sin forward** (`core/analysis.js`, `core/schema.js#passIds`): sin forward,
+  cada configuración se numeraba por su posición en la tabla, empezando en 0. MT5 exporta las
+  pasadas desordenadas, así que la «pasada» recomendada era otra configuración (en el export
+  real, la fila 1432 es la pasada 4194, y la pasada 1432 de MT5 tiene otros parámetros) o no
+  existía (el «#75» de Reddit). Ahora se usa la columna `Pass`; si falta o repite números, se
+  numera por fila y el informe lo avisa. El .set descargado ya llevaba los parámetros
+  correctos. Afecta a todo lo que muestra el número (veredicto, mesetas, .set, CSV, JSON,
+  historial): un análisis sin forward guardado antes en el historial ya no se reconoce como
+  «mismos datos» que uno nuevo, porque su huella usaba el número de fila.
+- **.set: booleanos y enums optimizados** (`core/setfile.js#discreteRange`): MT5 los guarda como
+  `false||false||0||true||Y` y con paso 0 (`16385||16385||0||16388||Y`), y se tomaban como
+  fijos. En el export real la cobertura salía 32 veces más pequeña: 8.230 millones de
+  combinaciones en vez de 263.364 millones.
+- **Proporciones diminutas** (`js/i18n-core.js#shareText`): «Muestreo disperso: 0,0000 %» y
+  «Solo 0,00 % del rango del .set» dicen ahora «1 de cada 26.111.817 combinaciones» y «Solo 1
+  de cada 52.223.635 combinaciones del rango del .set». Igual en Diagnóstico y en la ficha del
+  veredicto.
+- «Mediana de 1 vecinas» → «1 vecina» (y en inglés, «1 neighbor»).
+- **Export dañado** (`core/schema.js#assertNotDamaged`): con el 1 % de las filas o más sin número
+  de pasada o con valores que MT5 no genera (subnormales, enteros de más de 15 cifras), el
+  análisis para y dice qué archivo está dañado. Antes, el forward real salía como «los archivos
+  no encajan» (sí eran de la misma optimización), y uno con un 10 % de filas sanas se analizaba
+  en silencio con esas filas. Una celda numérica vacía se lee vacía, no como 0.
+- **Enlace a GitHub** en el pie de todas las páginas y en la app («Código en GitHub»). Antes solo
+  estaba en una pestaña de la portada.
+- `docs/MT5_ASSUMPTIONS.md`: PASS-1, SET-2 y FWD-3. Pruebas: `tests/real-export.test.js` (29) y
+  2 de navegador.
+
 ## 2026-10-10 — Escala de letra y espaciado, guías por orden de uso y detalles
 
 Lo que quedaba de la auditoría de diseño, salvo las fotos de cabecera (se quedan).

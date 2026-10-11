@@ -6,7 +6,7 @@ import { setCoverageNote } from './export.js';
 import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
-import { t, L, localeTag, pctSign } from './i18n.js';
+import { t, L, localeTag, pctSign, shareText } from './i18n.js';
 import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding } from './ui-state.js';
 import { gloss } from './glossary.js';
 
@@ -612,13 +612,10 @@ export function renderEvidenceSheet(a, best) {
   const cov = a.meta.coverage;
   const sc = a.meta.searchCoverage;
   let covTxt = Number.isFinite(cov)
-    ? `${nf(cov >= 0.1 ? 1 : 4).format(cov * 100)}${pctSign()} · ${samplingLabel(a.meta.sampling)}`
+    ? `${shareText(cov)} · ${samplingLabel(a.meta.sampling)}`
     : '—';
   if (sc && sc.usable && Number.isFinite(sc.coverageSearch)) {
-    covTxt += L(
-      ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)}\u00A0%`,
-      ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)}%`,
-    );
+    covTxt += ` · .set ${shareText(sc.coverageSearch)}`;
   }
 
   const covNote = sc && sc.usable && Number.isFinite(sc.coverageSearch)

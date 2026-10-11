@@ -142,6 +142,8 @@ try {
     });
     check('«Cómo funciona» es la segunda sección y sus tres pasos se ven sin tocar nada', how.i === 1 && how.steps === 3, JSON.stringify(how));
     check('«Lo que hay detrás» se queda con tres pestañas (motor, confianza e IA)', how.tabs === 3, JSON.stringify(how));
+    // El código es público y se dice en la portada: el enlace tiene que estar a la vista.
+    check('el pie enlaza con el código en GitHub', await page.$eval('footer', (f) => Boolean(f.querySelector('a[href="https://github.com/Plazaro94/Orometra"]'))));
     await page.goto(`${BASE}/es/guias/sobreoptimizacion-mt5/`);
     await page.waitForSelector('.guide-rail, .lp-menu-btn', { timeout: 10000 }).catch(() => {});
     check('una guía no descarga i18n.js', !(await loaded(/\/js\/i18n\.js/)));
@@ -178,6 +180,7 @@ try {
     await page.waitForFunction(() => document.querySelector('#mainDrop').classList.contains('error'), null, { timeout: 15000 }).catch(() => {});
     check('se marca como error', await page.$eval('#mainDrop', (e) => e.classList.contains('error')));
     check('y no se puede analizar', await page.$eval('#analyzeBtn', (b) => b.disabled));
+    check('la app también enlaza con el código en GitHub', (await page.$$('a[href="https://github.com/Plazaro94/Orometra"]')).length >= 1);
     await page.context().close();
   }
 

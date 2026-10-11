@@ -4,7 +4,7 @@ import { qualityLabel } from '../core/metrics.js';
 import { topInfluentialPair, buildAxisPairGrid } from '../core/surface.js';
 import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
-import { L, pctSign } from './i18n.js';
+import { L, pctSign, shareText } from './i18n.js';
 import { gloss } from './glossary.js';
 import { fallbackNote } from './ui-verdict.js';
 import { setCoverageNote } from './export.js';
@@ -541,8 +541,8 @@ export function renderDiagnostics(a) {
         <div class="evidence-list">
           <div><span>${L('Configuraciones posibles', 'Possible configurations')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones analizadas', 'Configurations analyzed')}</span><strong>${int(a.meta.total)}${a.integrity && a.integrity.collapsedTopology > 0 ? ` <em>${L('tras agrupar', 'after grouping')} ${esc((a.meta.flatDims || []).join(', '))}</em>` : ''}</strong></div>
-          <div><span>${L('Parte probada', 'Share tested')}</span><strong>${Number.isFinite(a.meta.coverage) ? nf(1).format(a.meta.coverage * 100) + pctSign() : '—'}</strong></div>
-          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? nf(1).format(a.meta.searchCoverage.coverageSearch * 100) + pctSign() : L('sin .set', 'no .set')}</strong></div>
+          <div><span>${L('Parte probada', 'Share tested')}</span><strong>${Number.isFinite(a.meta.coverage) ? shareText(a.meta.coverage) : '—'}</strong></div>
+          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? shareText(a.meta.searchCoverage.coverageSearch) : L('sin .set', 'no .set')}</strong></div>
           <div><span>${L('Distancia entre vecinas', 'Neighbor distance')}</span><strong>${int(a.meta.radius)} ${a.meta.radius === 1 ? L('paso', 'step') : L('pasos', 'steps')}</strong></div>
           <div><span>${L('Vecinas por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del periodo optimizado', ' of the optimized period') : '—'}</strong></div>

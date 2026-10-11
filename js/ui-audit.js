@@ -426,7 +426,8 @@ export async function runAudit() {
     // Fallos de los datos de estos archivos: repetir con los mismos daría lo mismo. La ficha
     // y el botón lo dicen hasta que cambien (ui-files.js, rejectedNow).
     if (!run.isDemo && [CODE.FILE_ERROR, CODE.SCHEMA_ERROR, CODE.DATA_ERROR].includes(code)) {
-      state.analysisRejected = { isFile: run.isFile, oosFile: run.oosFile };
+      const det = (error && error.details) || {};
+      state.analysisRejected = { isFile: run.isFile, oosFile: run.oosFile, reason: det.reason || null, which: det.which || null };
       if (api.renderPreflight) api.renderPreflight();
     }
     // Los fallos nuestros se cuentan aparte: son los que hay que arreglar.

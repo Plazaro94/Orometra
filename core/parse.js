@@ -58,7 +58,9 @@ export function parseXmlSpreadsheet(text) {
         if (d) {
           const type = (d[1].match(/ss:Type="([^"]*)"/) || [, ''])[1];
           const raw = decodeEntities(d[2].replace(/<[^>]+>/g, ''));
-          cells[col] = type === 'Number' ? Number(raw) : raw;
+          // Una celda numérica vacía es «sin dato», no 0 (Number('') vale 0): en un forward
+          // dañado, miles de filas sin número de pasada se leían todas como la pasada 0.
+          cells[col] = type === 'Number' ? (raw.trim() === '' ? null : Number(raw)) : raw;
         } else {
           cells[col] = null;
         }

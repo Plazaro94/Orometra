@@ -146,6 +146,37 @@ function sameValue(a, b) {
   return a === b;
 }
 
+/** Enum de MT5 cuyos valores entre inicio y fin se cuentan uno a uno (p. ej. de H1 a H4). */
+const ENUM_SPAN_LIMIT = 64;
+
+/**
+ * Rango optimizado de un booleano o de una enumeración (paso 0), o null si no lo es.
+ * @param {object} entry           línea del .set ya leída
+ * @param {number} observedDistinct valores distintos vistos en el export
+ * @returns {{kind:'bool'|'enum', levels:number, approximate:boolean, contains:(v:any)=>boolean}|null}
+ */
+export function discreteRange(entry, observedDistinct = 0) {
+  const { start, stop, step } = entry;
+  if (typeof start === 'boolean' && typeof stop === 'boolean') {
+    return {
+      kind: 'bool',
+      levels: start === stop ? 1 : 2,
+      approximate: false,
+      contains: (v) => typeof v === 'boolean' && (start === stop ? v === start : true),
+    };
+  }
+  if (Number.isFinite(start) && Number.isFinite(stop) && step === 0 && start !== stop) {
+    const lo = Math.min(start, stop);
+    const hi = Math.max(start, stop);
+    const contains = (v) => Number.isFinite(v) && v >= lo - 1e-9 && v <= hi + 1e-9;
+    if (Number.isInteger(lo) && Number.isInteger(hi) && hi - lo + 1 <= ENUM_SPAN_LIMIT) {
+      return { kind: 'enum', levels: hi - lo + 1, approximate: false, contains };
+    }
+    return { kind: 'enum', levels: Math.max(2, observedDistinct), approximate: true, contains };
+  }
+  return null;
+}
+
 function inNumericRange(v, start, stop, step) {
   if (!Number.isFinite(v) || !Number.isFinite(start) || !Number.isFinite(stop)) return false;
   const lo = Math.min(start, stop);
@@ -213,6 +244,31 @@ export function coverageAgainstSet(paramNames, paramMatrix, setFile) {
         observedDistinct: observed.size,
         outsideCount: outside,
         onGridCount: onGrid,
+      });
+    } else if (entry.hasRange && entry.enabled && discreteRange(entry, observed.size)) {
+      // Booleano o enumeración optimizados. MT5 los guarda así (visto en un .set real):
+      //   InpUseFilter=false||false||0||true||Y      (booleano: de false a true)
+      //   InpTrendTF=16385||16385||0||16388||Y       (enum: paso 0, de H1 a H4)
+      // y prueba todos los valores entre inicio y fin. Antes se tomaban como fijos y la
+      // cobertura salía hasta 32 veces más pequeña de lo real.
+      const d = discreteRange(entry, observed.size);
+      searchCartesian *= d.levels;
+      optimisedInSet++;
+      let outside = 0;
+      for (const row of paramMatrix) if (!d.contains(row[j])) outside++;
+      dims.push({
+        name,
+        role: 'optimised',
+        kind: d.kind,
+        start: entry.start,
+        stop: entry.stop,
+        searchLevels: d.levels,
+        // Enumeración con valores muy separados (p. ej. de M1 a H4): no se sabe cuántos
+        // miembros tiene el enum entre medias; se cuentan los vistos.
+        approximate: d.approximate,
+        observedDistinct: observed.size,
+        outsideCount: outside,
+        onGridCount: paramMatrix.length - outside,
       });
     } else {
       // Fijo o no optimizado en el .set: no multiplica el espacio de búsqueda.

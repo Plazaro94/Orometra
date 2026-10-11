@@ -3,7 +3,7 @@
 
 import { AnalysisError, CODE } from './errors.js';
 import { toNumber, canonicalValue } from './parse.js';
-import { pairTables, metricColumns, metricRole, inferParamsSingle, estimatePeriodRatio, roleFromTable, KEY_METRICS } from './schema.js';
+import { pairTables, metricColumns, metricRole, inferParamsSingle, passIds, assertNotDamaged, estimatePeriodRatio, roleFromTable, KEY_METRICS } from './schema.js';
 import { DEFAULT_POLICY, resolvePolicy, periodQuality, payoffScale, gateFailures, combineScores, retention } from './metrics.js';
 import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
@@ -154,6 +154,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       }
     }
   } else {
+    assertNotDamaged(isTable, 'is');
     const inferred = inferParamsSingle(isTable);
     if (!inferred.params.length) {
       throw new AnalysisError(CODE.DATA_ERROR, L(
@@ -162,14 +163,17 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       ));
     }
     paramNames = inferred.params.map((p) => p.name);
+    // La pasada de MT5, no la posición de la fila: MT5 exporta las pasadas desordenadas.
+    const passes = passIds(isTable);
     integrity = {
       isRows: isTable.rows.length, oosRows: 0, matchedRows: isTable.rows.length,
       unmatchedIs: 0, duplicateIds: 0, provenance: { checked: false, mismatches: 0 },
+      passSource: passes.source,
       inferredParams: inferred,
       vetoed: inferred.rejected.filter((r) => r.reason === 'métrica reconocida').map((r) => ({ name: r.name, role: metricRole(r.name) })),
     };
     records = isTable.rows.map((row, i) => ({
-      id: String(i),
+      id: passes.ids[i],
       params: inferred.params.map((p) => canonicalValue(row[p.isCol])),
       is: readMetrics(row, isRoles),
       oos: {},

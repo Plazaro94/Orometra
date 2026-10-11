@@ -5,7 +5,7 @@
 // mismo Pass, un parámetro vale lo mismo en el archivo IS y en el OOS, mientras que
 // una métrica cambia porque se ha medido sobre otro periodo.
 
-import { L } from '../js/i18n.js';
+import { L, localeTag } from '../js/i18n.js';
 import { AnalysisError, CODE } from './errors.js';
 import { toNumber } from './parse.js';
 
@@ -57,6 +57,73 @@ function findIdColumn(table) {
   return -1;
 }
 
+/**
+ * Números de pasada de un solo archivo, tal como los escribe MT5 en su columna «Pass».
+ *
+ * MT5 no exporta las pasadas en orden (sobre todo en el genético): la posición de la fila
+ * NO es la pasada. Antes, sin forward, se numeraba por posición y el informe recomendaba
+ * una «pasada» que en MT5 era otra configuración, o no existía. Si el archivo no trae esa
+ * columna, o le faltan valores, o se repiten, se numera por fila (1, 2, 3…) y se dice.
+ *
+ * @returns {{ ids: string[], source: 'pass'|'row'|'pass-incomplete'|'pass-duplicated' }}
+ */
+export function passIds(table) {
+  const byRow = () => table.rows.map((_, i) => String(i + 1));
+  const col = table.headers.findIndex((h) => ID_PATTERN.test(String(h).trim()));
+  if (col < 0) return { ids: byRow(), source: 'row' };
+  const ids = table.rows.map((r) => String(r[col] ?? '').trim());
+  if (ids.some((x) => x === '')) return { ids: byRow(), source: 'pass-incomplete' };
+  if (new Set(ids).size !== ids.length) return { ids: byRow(), source: 'pass-duplicated' };
+  return { ids, source: 'pass' };
+}
+
+/**
+ * Un número que una pasada normal de MT5 no produce: subnormales (|x| < 1e-300) o enteros
+ * de más de 15 cifras. Son los bits de un entero leídos como decimal, o al revés: se vio en
+ * un forward real dañado (2026-10-11), con «4616189618054758400» (= 4.0) o «9.88e-324» (= 2).
+ */
+export function isImpossibleNumber(v) {
+  return typeof v === 'number' && v !== 0 && Number.isFinite(v)
+    && (Math.abs(v) < 1e-300 || (Number.isInteger(v) && Math.abs(v) > 1e15));
+}
+
+/**
+ * Filas dañadas de un export: sin número de pasada o con algún valor imposible.
+ * @returns {{ rows:number, damaged:number, example:number|null }}
+ */
+export function damageReport(table) {
+  const idCol = table.headers.findIndex((h) => ID_PATTERN.test(String(h).trim()));
+  let damaged = 0;
+  let example = null;
+  for (const row of table.rows) {
+    const noId = idCol >= 0 && (row[idCol] === null || row[idCol] === undefined || String(row[idCol]).trim() === '');
+    const bad = row.find(isImpossibleNumber);
+    if (noId || bad !== undefined) {
+      damaged++;
+      if (example === null && bad !== undefined) example = bad;
+    }
+  }
+  return { rows: table.rows.length, damaged, example };
+}
+
+/**
+ * Para el análisis si un export viene dañado (1 % de las filas o más). Antes, un forward
+ * dañado salía como «los archivos no encajan» (y no era eso: eran de la misma optimización)
+ * o, peor, se analizaba en silencio con las pocas filas sanas.
+ * @param {'is'|'oos'} which
+ */
+export function assertNotDamaged(table, which) {
+  const r = damageReport(table);
+  if (!r.rows || r.damaged === 0 || r.damaged / r.rows < 0.01) return;
+  const n = r.damaged.toLocaleString(localeTag());
+  const m = r.rows.toLocaleString(localeTag());
+  const ex = r.example !== null ? r.example.toExponential(2) : null;
+  throw new AnalysisError(CODE.FILE_ERROR, L(
+    `El export ${which === 'oos' ? 'del forward' : 'de la optimización'} está dañado: en ${n} de ${m} filas falta el número de pasada o hay valores que MT5 no genera en una pasada normal${ex ? ` (por ejemplo, ${ex.replace('.', ',')})` : ''}. Así no se puede analizar. Vuelve a exportar esa tabla desde MT5; si sale igual, repite la optimización y expórtala de nuevo.`,
+    `The ${which === 'oos' ? 'forward' : 'optimization'} export is damaged: in ${n} of ${m} rows the pass number is missing or there are values MT5 does not produce in a normal pass${ex ? ` (for example, ${ex})` : ''}. It cannot be analyzed like this. Export that table from MT5 again; if it comes out the same, run the optimization again and re-export it.`,
+  ), { reason: 'damagedExport', which, damaged: r.damaged, rows: r.rows, noHint: true });
+}
+
 /** Indexa una tabla por su columna identificadora. */
 function indexById(table, idCol) {
   const map = new Map();
@@ -74,6 +141,8 @@ function indexById(table, idCol) {
  * Devuelve también el informe de integridad que la interfaz debe mostrar.
  */
 export function pairTables(isTable, oosTable) {
+  assertNotDamaged(isTable, 'is');
+  assertNotDamaged(oosTable, 'oos');
   const isId = findIdColumn(isTable);
   const oosId = findIdColumn(oosTable);
   if (isId < 0 || oosId < 0) {
