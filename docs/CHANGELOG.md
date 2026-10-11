@@ -23,15 +23,18 @@ Lo destapó un export real de MT5 (optimización genética de 19 parámetros, su
   de cada 52.223.635 combinaciones del rango del .set». Igual en Diagnóstico y en la ficha del
   veredicto.
 - «Mediana de 1 vecinas» → «1 vecina» (y en inglés, «1 neighbor»).
-- **Export dañado** (`core/schema.js#assertNotDamaged`): con el 1 % de las filas o más sin número
+- **Export dañado** (`core/schema.js#screenDamaged`): con el 1 % de las filas o más sin número
   de pasada o con valores que MT5 no genera (subnormales, enteros de más de 15 cifras), el
   análisis para y dice qué archivo está dañado. Antes, el forward real salía como «los archivos
   no encajan» (sí eran de la misma optimización), y uno con un 10 % de filas sanas se analizaba
-  en silencio con esas filas. Una celda numérica vacía se lee vacía, no como 0.
+  en silencio con esas filas. Por debajo del 1 %, esas filas se descartan antes de analizar
+  (una con un beneficio imposible ya no puede encabezar el ranking) y el informe dice cuántas.
+  Una celda numérica vacía se lee vacía, no como 0.
 - **Enlace a GitHub** en el pie de todas las páginas y en la app («Código en GitHub»). Antes solo
   estaba en una pestaña de la portada.
-- `docs/MT5_ASSUMPTIONS.md`: PASS-1, SET-2 y FWD-3. Pruebas: `tests/real-export.test.js` (29) y
-  2 de navegador.
+- `docs/MT5_ASSUMPTIONS.md`: PASS-1, SET-2 y FWD-3. Pruebas: `tests/real-export.test.js` (34) y
+  4 de navegador (una carga un export con las pasadas desordenadas y sin forward: con el número
+  de fila, falla).
 
 ## 2026-10-10 — Escala de letra y espaciado, guías por orden de uso y detalles
 

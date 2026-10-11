@@ -53,6 +53,12 @@ fs.writeFileSync(oosXml, toMt5Xml(demo.oosTable));
 fs.writeFileSync(junk, 'esto no es una exportación de MT5');
 const optFile = path.join(tmp, 'cache.opt');
 fs.writeFileSync(optFile, Buffer.from([1, 2, 3, 4, 0, 0, 9, 9]));
+// Pasadas desordenadas, como las exporta MT5 (sobre todo en genético): la fila n NO es la
+// pasada n. Sin forward, el informe numeraba por fila y recomendaba otra configuración.
+const shuffledXml = path.join(tmp, 'Desordenada.xml');
+const passColIs = demo.isTable.headers.findIndex((h) => /^pass$/i.test(h));
+const shuffledRows = demo.isTable.rows.map((r, i) => { const c = r.slice(); c[passColIs] = ((i * 7919) % demo.isTable.rows.length) + 50000; return c; }).reverse();
+fs.writeFileSync(shuffledXml, toMt5Xml({ ...demo.isTable, rows: shuffledRows }));
 const fewXml = path.join(tmp, 'Pocas.xml');
 fs.writeFileSync(fewXml, toMt5Xml({ ...demo.isTable, rows: demo.isTable.rows.slice(0, 6) }));
 // El forward de otra optimización: el Back Result no coincide con el Result.
@@ -537,6 +543,23 @@ try {
     check('los gráficos de Parámetros caben en el móvil sin deslizar', htmlCharts.n === 3 && htmlCharts.scrolls === 0, JSON.stringify(htmlCharts));
     check('y su texto se lee (≥ 10 px)', htmlCharts.min >= 10, JSON.stringify(htmlCharts));
     await ctx.close();
+  }
+
+  section('4b. Sin forward: la pasada es la de MT5, no la fila');
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [shuffledXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    const shown = (await page.textContent('.vx-pass b')).trim();
+    const chips = await page.$$eval('.vx-params span', (els) => els.map((e) => e.textContent.trim()));
+    const row = shuffledRows.find((r) => String(r[passColIs]) === shown);
+    const rowChips = row ? demo.isTable.headers.map((h, k) => [h, r => r[k]]).filter(([h]) => chips.some((c) => c.startsWith(`${h} `))).map(([h, f]) => `${h} ${f(row)}`) : [];
+    check('la pasada mostrada existe en el archivo', Boolean(row), shown);
+    check('y es la de los parámetros recomendados', row && chips.length > 0 && chips.every((c) => rowChips.includes(c)), `${shown}: ${chips.join(', ')} frente a ${rowChips.join(', ')}`);
+    await page.context().close();
   }
 
   section('5a. Mesetas en un móvil estrecho, en español');

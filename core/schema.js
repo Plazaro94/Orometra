@@ -91,15 +91,19 @@ export function isImpossibleNumber(v) {
  * Filas dañadas de un export: sin número de pasada o con algún valor imposible.
  * @returns {{ rows:number, damaged:number, example:number|null }}
  */
+function isDamagedRow(table, row, idCol = table.headers.findIndex((h) => ID_PATTERN.test(String(h).trim()))) {
+  const noId = idCol >= 0 && (row[idCol] === null || row[idCol] === undefined || String(row[idCol]).trim() === '');
+  return noId || row.some(isImpossibleNumber);
+}
+
 export function damageReport(table) {
   const idCol = table.headers.findIndex((h) => ID_PATTERN.test(String(h).trim()));
   let damaged = 0;
   let example = null;
   for (const row of table.rows) {
-    const noId = idCol >= 0 && (row[idCol] === null || row[idCol] === undefined || String(row[idCol]).trim() === '');
-    const bad = row.find(isImpossibleNumber);
-    if (noId || bad !== undefined) {
+    if (isDamagedRow(table, row, idCol)) {
       damaged++;
+      const bad = row.find(isImpossibleNumber);
       if (example === null && bad !== undefined) example = bad;
     }
   }
@@ -107,21 +111,26 @@ export function damageReport(table) {
 }
 
 /**
- * Para el análisis si un export viene dañado (1 % de las filas o más). Antes, un forward
- * dañado salía como «los archivos no encajan» (y no era eso: eran de la misma optimización)
- * o, peor, se analizaba en silencio con las pocas filas sanas.
+ * Filtro de filas dañadas. Si son el 1 % o más, el export entero es sospechoso y el análisis
+ * para (antes, un forward dañado salía como «los archivos no encajan», que no era verdad, o
+ * se analizaba en silencio con las pocas filas sanas). Si son menos, se quitan esas filas y se
+ * cuenta: con un beneficio de 4,6·10^18 dentro, una fila suelta podía encabezar el ranking.
  * @param {'is'|'oos'} which
+ * @returns {{ table: object, dropped: number }}
  */
-export function assertNotDamaged(table, which) {
+export function screenDamaged(table, which) {
   const r = damageReport(table);
-  if (!r.rows || r.damaged === 0 || r.damaged / r.rows < 0.01) return;
-  const n = r.damaged.toLocaleString(localeTag());
-  const m = r.rows.toLocaleString(localeTag());
-  const ex = r.example !== null ? r.example.toExponential(2) : null;
-  throw new AnalysisError(CODE.FILE_ERROR, L(
-    `El export ${which === 'oos' ? 'del forward' : 'de la optimización'} está dañado: en ${n} de ${m} filas falta el número de pasada o hay valores que MT5 no genera en una pasada normal${ex ? ` (por ejemplo, ${ex.replace('.', ',')})` : ''}. Así no se puede analizar. Vuelve a exportar esa tabla desde MT5; si sale igual, repite la optimización y expórtala de nuevo.`,
-    `The ${which === 'oos' ? 'forward' : 'optimization'} export is damaged: in ${n} of ${m} rows the pass number is missing or there are values MT5 does not produce in a normal pass${ex ? ` (for example, ${ex})` : ''}. It cannot be analyzed like this. Export that table from MT5 again; if it comes out the same, run the optimization again and re-export it.`,
-  ), { reason: 'damagedExport', which, damaged: r.damaged, rows: r.rows, noHint: true });
+  if (!r.rows || r.damaged === 0) return { table, dropped: 0 };
+  if (r.damaged / r.rows >= 0.01) {
+    const n = r.damaged.toLocaleString(localeTag());
+    const m = r.rows.toLocaleString(localeTag());
+    const ex = r.example !== null ? r.example.toExponential(2) : null;
+    throw new AnalysisError(CODE.FILE_ERROR, L(
+      `El export ${which === 'oos' ? 'del forward' : 'de la optimización'} está dañado: en ${n} de ${m} filas falta el número de pasada o hay valores que MT5 no genera en una pasada normal${ex ? ` (por ejemplo, ${ex.replace('.', ',')})` : ''}. Así no se puede analizar. Vuelve a exportar esa tabla desde MT5; si sale igual, repite la optimización y expórtala de nuevo.`,
+      `The ${which === 'oos' ? 'forward' : 'optimization'} export is damaged: in ${n} of ${m} rows the pass number is missing or there are values MT5 does not produce in a normal pass${ex ? ` (for example, ${ex})` : ''}. It cannot be analyzed like this. Export that table from MT5 again; if it comes out the same, run the optimization again and re-export it.`,
+    ), { reason: 'damagedExport', which, damaged: r.damaged, rows: r.rows, noHint: true });
+  }
+  return { table: { ...table, rows: table.rows.filter((row) => !isDamagedRow(table, row)) }, dropped: r.damaged };
 }
 
 /** Indexa una tabla por su columna identificadora. */
@@ -141,8 +150,6 @@ function indexById(table, idCol) {
  * Devuelve también el informe de integridad que la interfaz debe mostrar.
  */
 export function pairTables(isTable, oosTable) {
-  assertNotDamaged(isTable, 'is');
-  assertNotDamaged(oosTable, 'oos');
   const isId = findIdColumn(isTable);
   const oosId = findIdColumn(oosTable);
   if (isId < 0 || oosId < 0) {

@@ -3,7 +3,7 @@
 
 import { AnalysisError, CODE } from './errors.js';
 import { toNumber, canonicalValue } from './parse.js';
-import { pairTables, metricColumns, metricRole, inferParamsSingle, passIds, assertNotDamaged, estimatePeriodRatio, roleFromTable, KEY_METRICS } from './schema.js';
+import { pairTables, metricColumns, metricRole, inferParamsSingle, passIds, screenDamaged, estimatePeriodRatio, roleFromTable, KEY_METRICS } from './schema.js';
 import { DEFAULT_POLICY, resolvePolicy, periodQuality, payoffScale, gateFailures, combineScores, retention } from './metrics.js';
 import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
@@ -58,6 +58,12 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     ), { rows: rowCount, max: MAX_ROWS });
   }
   progress(onProgress, 5, L('Emparejando archivos', 'Matching files'));
+  // Filas dañadas (sin pasada o con valores que MT5 no genera): con el 1 % o más el análisis
+  // para; con menos, se quitan y se cuenta.
+  const screenedIs = screenDamaged(isTable, 'is');
+  isTable = screenedIs.table;
+  const screenedOos = oosTable ? screenDamaged(oosTable, 'oos') : { table: null, dropped: 0 };
+  if (oosTable) oosTable = screenedOos.table;
 
   let paramNames = [];
   let records = [];
@@ -154,7 +160,6 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       }
     }
   } else {
-    assertNotDamaged(isTable, 'is');
     const inferred = inferParamsSingle(isTable);
     if (!inferred.params.length) {
       throw new AnalysisError(CODE.DATA_ERROR, L(
@@ -227,6 +232,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       integrity = { ...integrity, duplicateParamVectors: 0 };
     }
   }
+  integrity = { ...integrity, damagedDropped: { is: screenedIs.dropped, oos: screenedOos.dropped } };
 
   progress(onProgress, 18, L('Evaluando calidad y puertas', 'Evaluating quality and gates'));
   const periodRatio = hasForward ? estimatePeriodRatio(records) : NaN;

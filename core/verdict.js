@@ -554,6 +554,14 @@ export function buildVerdict(ctx) {
           `The forward export has ${integrity.oosRows.toLocaleString(localeTag())} rows versus ${integrity.isRows.toLocaleString(localeTag())} in the optimization export (~${pct}%). MT5 only tests the best passes by your optimization criterion in the forward, so plateaus and forward fragility are measured only among already pre-selected candidates: validation is biased upward. Treat the forward with caution.`), 'integrity');
       tableOnly();
     }
+    const dd = integrity.damagedDropped;
+    if (dd && (dd.is > 0 || dd.oos > 0)) {
+      const n = dd.is + dd.oos;
+      const where = [dd.is > 0 ? L(`${dd.is} de la optimización`, `${dd.is} from the optimization`) : null, dd.oos > 0 ? L(`${dd.oos} del forward`, `${dd.oos} from the forward`) : null].filter(Boolean).join(L(' y ', ' and '));
+      add(SEV.WARN, L(`${n} ${pl(n, 'fila dañada descartada', 'filas dañadas descartadas')}`, `${n} damaged ${pl(n, 'row', 'rows')} discarded`),
+        L(`${where}: sin número de pasada o con valores que MT5 no genera en una pasada normal. Son menos del 1 % y se han quitado para que no entren en el análisis; si quieres el export completo, vuelve a exportarlo.`,
+          `${where}: no pass number, or values MT5 does not produce in a normal pass. They are under 1% and were removed so they do not enter the analysis; for the full export, export it again.`), 'integrity');
+    }
     if (integrity.passSource && integrity.passSource !== 'pass') {
       const why = {
         row: L('Tu archivo no trae la columna «Pass».', 'Your file has no "Pass" column.'),

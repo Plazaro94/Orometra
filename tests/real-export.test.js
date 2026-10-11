@@ -133,6 +133,22 @@ console.log('\nExport dañado');
   check('y el aviso dice que es el forward', err && /forward/.test(err.message) && err.code === 'FILE_ERROR', err && err.message);
   const fine = runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable });
   check('el ejemplo sano se sigue analizando', fine.plateaus.length > 0);
+  check('y sin filas descartadas', fine.integrity.damagedDropped.is === 0 && fine.integrity.damagedDropped.oos === 0);
+
+  // Menos del 1 %: esas filas se quitan y se dice. Una de ellas, con un beneficio y un factor de
+  // beneficio imposibles, no puede colarse en el ranking.
+  const t = demo.isTable;
+  const prof = t.headers.findIndex((h) => /^profit$/i.test(h));
+  const pf = t.headers.findIndex((h) => /^profit factor$/i.test(h));
+  const ipc = t.headers.findIndex((h) => /^pass$/i.test(h));
+  const few = { headers: t.headers, rows: t.rows.map((row, i) => (i % 500 === 7 ? row.map((v, k) => (k === prof ? 4616189618054758400 : k === pf ? 4616189618054758400 : v)) : row)) };
+  const nBad = few.rows.filter((_, i) => i % 500 === 7).length;
+  const g = runAnalysis({ isTable: few, oosTable: demo.oosTable });
+  check(`${nBad} filas dañadas (< 1 %): se analizan las demás`, g.plateaus.length > 0);
+  check('se cuentan como descartadas', g.integrity.damagedDropped.is === nBad, JSON.stringify(g.integrity.damagedDropped));
+  check('y el informe lo dice', g.verdict.findings.some((f) => /filas dañadas descartadas/.test(f.title)), g.verdict.findings.map((f) => f.title).join(' | '));
+  const badIds = new Set(few.rows.filter((_, i) => i % 500 === 7).map((r) => String(r[ipc])));
+  check('ninguna fila dañada aparece en el resultado', !g.plateaus.some((p) => badIds.has(p.record.id)) && !g.peaks.some((p) => badIds.has(p.record.id)));
 }
 
 console.log(`\n${checks - failures}/${checks} comprobaciones correctas`);
