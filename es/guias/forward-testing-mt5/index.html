@@ -77,7 +77,7 @@
     <h2 id="guide-sum-title" data-i18n="guide.forward.sum.title">En resumen</h2>
     <ol>
       <li data-i18n-html="guide.forward.sum.1">Activa el Forward en la pestaña de ajustes del probador y elige qué parte del periodo reservar.</li>
-      <li data-i18n-html="guide.forward.sum.2">MT5 optimiza con la primera parte y vuelve a probar solo las mejores pasadas en la última.</li>
+      <li data-i18n-html="guide.forward.sum.2">MT5 optimiza con la primera parte y vuelve a probar las pasadas en la última: solo las mejores, según su ayuda, aunque algunas exportaciones reales las traen todas.</li>
       <li data-i18n-html="guide.forward.sum.3">Lo que importa es el número de operaciones del forward, no su duración en meses.</li>
       <li data-i18n-html="guide.forward.sum.4">Espera que el forward salga peor; preocúpate por los hundimientos y por que el orden se dé la vuelta.</li>
       <li data-i18n-html="guide.forward.sum.5">No elijas la pasada solo por su forward, y guarda un tercer tramo que no toques.</li>
@@ -92,7 +92,7 @@
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s2.title">Cómo activarlo en MT5</h2>
     <p data-i18n-html="guide.forward.s2.p1">En el probador de estrategias (Ctrl+R), pestaña de ajustes, junto a las fechas está la opción <strong>Forward</strong>. Puedes elegir 1/2, 1/3 o 1/4 del periodo, o la opción personalizada (Custom) para fijar la fecha en la que empieza el forward. MT5 siempre toma el tramo final. Solo se aplica al optimizar.</p>
-    <p class="guide-note" data-i18n-html="guide.forward.s2.n1"><strong>Ejemplo.</strong> Fechas del 1 de enero de 2020 al 1 de enero de 2024 con Forward 1/4: MT5 optimiza con 2020–2022 (tres años) y vuelve a probar las mejores pasadas en 2023 (un año). Con 1/3 serían 32 meses de optimización y 16 de forward, desde el 1 de septiembre de 2022.</p>
+    <p class="guide-note" data-i18n-html="guide.forward.s2.n1"><strong>Ejemplo.</strong> Fechas del 1 de enero de 2020 al 1 de enero de 2024 con Forward 1/4: MT5 optimiza con 2020–2022 (tres años) y vuelve a probar las pasadas en 2023 (un año). Con 1/3 serían 32 meses de optimización y 16 de forward, desde el 1 de septiembre de 2022.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s3.title">Cuánto periodo reservar</h2>
@@ -102,8 +102,8 @@
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s4.title">Qué pasadas se prueban en el forward</h2>
-    <p data-i18n-html="guide.forward.s4.p1">MT5 no prueba todas las pasadas en el periodo forward, solo las mejores de la optimización según el criterio que elegiste: el 10 % mejor en una búsqueda completa y el 25 % en una genética, según la ayuda de MT5. La ayuda fija además un número mínimo de pasadas. En una exportación real que hemos examinado, una optimización genética de 810 pasadas mandó 256 al forward, más que el 25 % (202), lo que encaja con el mínimo de 256 pasadas que se cita en los foros de MQL5.</p>
-    <p data-i18n-html="guide.forward.s4.p2">Esto tiene dos consecuencias. La primera, que la tabla del forward no es una muestra al azar: solo trae pasadas que ya eran buenas en el in-sample, elegidas por tu criterio. La segunda, que las vecinas de la mejor pasada, las configuraciones a un paso, pueden no estar en ella, así que el forward por sí solo no siempre puede decirte si la zona alrededor de tu pasada aguanta.</p>
+    <p data-i18n-html="guide.forward.s4.p1">Según la ayuda de MT5, el forward no prueba todas las pasadas, solo las mejores de la optimización según el criterio que elegiste: el 10 % mejor en una búsqueda completa y el 25 % en una genética, con un número mínimo de pasadas. Las exportaciones reales no siempre lo cumplen. En una que hemos examinado, una optimización genética de 810 pasadas mandó 256 al forward, más que el 25 % (202), lo que encaja con el mínimo de 256 pasadas que se cita en los foros de MQL5. En otra, una optimización genética de 5517 pasadas las mandó todas. Todavía no sabemos de qué depende. Compruébalo en tu exportación: si la tabla del forward tiene tantas filas como la de la optimización, se probaron todas; si tiene menos, Orometra te lo dice.</p>
+    <p data-i18n-html="guide.forward.s4.p2">Cuando solo llegan las mejores, esto tiene dos consecuencias. La primera, que la tabla del forward no es una muestra al azar: solo trae pasadas que ya eran buenas en el in-sample, elegidas por tu criterio. La segunda, que las vecinas de la mejor pasada, las configuraciones a un paso, pueden no estar en ella, así que el forward por sí solo no siempre puede decirte si la zona alrededor de tu pasada aguanta.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s5.title">Cómo leer la tabla del forward</h2>

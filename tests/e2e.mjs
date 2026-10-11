@@ -199,10 +199,15 @@ try {
     const stored = () => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('orometra.history')); } catch { return null; } });
     const ready = () => page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
     const analyzed = () => page.waitForFunction(() => !document.querySelector('#analyzeBtn').classList.contains('busy') && document.querySelector('.vx'), null, { timeout: 120000 });
+    // Tras el ejemplo, «Analizar» ya está activo: no dice si lo soltado se ha colocado. La app
+    // lee primero el principio de cada archivo para saber qué es; hasta que el nombre sale en
+    // la caja, la caja sigue diciendo «Ejemplo sintético cargado» (fallaba en máquinas lentas).
+    const placed = (name) => page.waitForFunction((n) => document.querySelector('#mainDropStatus').textContent.includes(n), name, { timeout: 60000 }).catch(() => {});
     // Tras el ejemplo, un solo archivo propio no se mezcla con la otra mitad del ejemplo.
     await page.goto(`${BASE}/app/?demo=1`);
     await page.waitForSelector('.vx', { timeout: 120000 });
     await page.setInputFiles('#mainFile', [isXml]);
+    await placed('ReportOptimizer.xml');
     await ready();
     const drop = await page.textContent('#mainDropStatus');
     check('tras el ejemplo, un archivo propio no se junta con el forward del ejemplo', drop.includes('ReportOptimizer.xml') && !/DEMO/i.test(drop), drop);
@@ -216,7 +221,10 @@ try {
     await page.goto(`${BASE}/app/?demo=1`);
     await page.waitForSelector('.vx', { timeout: 120000 });
     await page.setInputFiles('#mainFile', [setFile, isXml, oosXml]);
+    await placed('ReportOptimizer.forward.xml');
     await ready();
+    // El .set va después de las tablas: hasta que no está cargado, no hay nada que comprobar.
+    await page.waitForFunction(() => document.querySelector('#setStatus').textContent.includes('DemoEA.set'), null, { timeout: 60000 }).catch(() => {});
     await page.waitForTimeout(500);
     check('el .set de la tanda no analiza solo', await page.$eval('#statusBar', (e) => e.hidden) && !(await stored()));
     check('el .set queda cargado', (await page.textContent('#setStatus')).includes('DemoEA.set'));

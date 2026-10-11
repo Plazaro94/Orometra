@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-11 — Forward con todas las pasadas, enums sin «borde», un aviso de cobertura y prueba estable
+
+- **Textos del forward** (guías de exportación, forward, sobreoptimización y criterio;
+  Metodología, paso 5; `docs/MT5_ASSUMPTIONS.md` FWD-1): decían que MT5 solo vuelve a probar
+  el 10 % o el 25 % mejor. Un export real del autor (genética, 5517 pasadas) las trae todas.
+  Ahora dicen lo que dice la ayuda de MT5 y que hay exports que las traen todas. El motor ya
+  funcionaba en los dos casos.
+- **Enums del .set sin «pegada al borde»** (`core/analysis.js`): un enum optimizado llega al XML
+  como número y salía en el aviso con «amplía el rango». Con el .set (paso 0) se excluye, como
+  ya se hacía con los booleanos. Sin .set no cambia nada (el banco no usa .set).
+- **Un aviso de cobertura, no dos** (`core/verdict.js`): con muestreo disperso y .set salían
+  «Muestreo disperso (sobre niveles vistos)» y «Solo X del rango del .set», a menudo con la
+  misma cifra. Ahora sale uno («Muestreo disperso: solo X del rango del .set»), y la cifra sobre
+  niveles vistos va en el detalle si es distinta. Aportar el .set ya no suma un aviso (y los
+  avisos cuentan para el nivel).
+- **Prueba de navegador 2b estable** (`tests/e2e.mjs`): tras el ejemplo, «Analizar» ya está
+  activo y la prueba leía la caja antes de que la app colocara el archivo («Ejemplo sintético
+  cargado»). Reproducido retrasando la lectura del archivo: fallaba 3 de 3; ahora espera al
+  nombre del archivo y pasa.
+- Pruebas: `tests/real-export.test.js` (47).
+
 ## 2026-10-11 — Pasada real sin forward, .set con booleanos y enums, export dañado y GitHub
 
 Lo destapó un export real de MT5 (optimización genética de 19 parámetros, su forward y su

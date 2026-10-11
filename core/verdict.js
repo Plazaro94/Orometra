@@ -397,16 +397,31 @@ export function buildVerdict(ctx) {
         'With so many optimized parameters, enumerating every possible offset within the radius would be too costly, so only those that move one or two parameters at a time were considered. It is a conservative approximation: it may understate support, never invent it.'), null);
   }
 
-  if (sampling === 'sparse') {
+  const sparseGa = L('Has optimizado con algoritmo genético, no con rejilla completa. El GA concentra las pruebas donde el periodo optimizado era bueno, así que la densidad de vecinas mide dónde miró el optimizador tanto como dónde hay estabilidad. Usa el rango de refinamiento que propone la app y repite con rejilla completa.',
+    'You optimized with a genetic algorithm, not a full grid. The GA concentrates trials where the optimized period was good, so neighbor density measures where the optimizer looked as much as where there is stability. Use the refinement range the app proposes and repeat with a full grid.');
+  const setUsable = Boolean(searchCoverage && searchCoverage.usable && Number.isFinite(searchCoverage.coverageSearch));
+  // Con muestreo disperso y .set, los dos avisos de cobertura dicen lo mismo (a menudo con
+  // la misma cifra, si el GA llegó a ver todos los niveles del rango): uno solo, el del .set,
+  // que es el rango que pediste. Si no, aportar el .set sumaba un aviso sin información nueva.
+  const sparseMerged = sampling === 'sparse' && setUsable && searchCoverage.coverageSearch < 0.02;
+
+  if (sampling === 'sparse' && !sparseMerged) {
     add(SEV.WARN, L(`Muestreo disperso (sobre niveles vistos): ${shareText(coverage, 'combinaciones')}`, `Sparse sampling (on seen levels): ${shareText(coverage, '', 'combinations')}`),
-      L('Has optimizado con algoritmo genético, no con rejilla completa. El GA concentra las pruebas donde el periodo optimizado era bueno, así que la densidad de vecinas mide dónde miró el optimizador tanto como dónde hay estabilidad. Usa el rango de refinamiento que propone la app y repite con rejilla completa.',
-        'You optimized with a genetic algorithm, not a full grid. The GA concentrates trials where the optimized period was good, so neighbor density measures where the optimizer looked as much as where there is stability. Use the refinement range the app proposes and repeat with a full grid.'), 'coverage');
+      sparseGa, 'coverage');
   }
 
-  if (searchCoverage && searchCoverage.usable && Number.isFinite(searchCoverage.coverageSearch)) {
+  if (setUsable) {
     const cs = searchCoverage.coverageSearch;
     const obs = Number.isFinite(coverage) ? coverage : NaN;
-    if (cs < 0.02) {
+    if (sparseMerged) {
+      const seenEs = Number.isFinite(obs) && shareText(obs, 'combinaciones') !== shareText(cs, 'combinaciones')
+        ? ` Sobre los niveles que aparecen en tus archivos: ${shareText(obs, 'combinaciones')}.` : '';
+      const seenEn = Number.isFinite(obs) && shareText(obs, '', 'combinations') !== shareText(cs, '', 'combinations')
+        ? ` On the levels that appear in your files: ${shareText(obs, '', 'combinations')}.` : '';
+      add(SEV.WARN, L(`Muestreo disperso: solo ${shareText(cs, 'combinaciones')} del rango del .set`, `Sparse sampling: only ${shareText(cs, '', 'combinations')} of the .set search range`),
+        L(`El .set pide un espacio de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configuraciones; tus archivos cubren ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas.${seenEs} ${sparseGa}`,
+          `The .set asks for a space of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configurations; your files cover ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells.${seenEn} ${sparseGa}`), 'coverage');
+    } else if (cs < 0.02) {
       add(SEV.WARN, L(`Solo ${shareText(cs, 'combinaciones')} del rango del .set`, `Only ${shareText(cs, '', 'combinations')} of the .set search range`),
         L(`El .set pide un espacio de ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configuraciones; tus archivos cubren ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} celdas distintas. La cobertura «alta» sobre niveles vistos no implica que hayas explorado el rango que pediste en MT5.`,
           `The .set asks for a space of ${searchCoverage.searchCartesian.toLocaleString(localeTag())} configurations; your files cover ${searchCoverage.uniqueObserved.toLocaleString(localeTag())} distinct cells. High coverage on seen levels does not mean you explored the range you asked MT5 for.`), 'coverage');

@@ -151,5 +151,55 @@ console.log('\nExport dañado');
   check('ninguna fila dañada aparece en el resultado', !g.plateaus.some((p) => badIds.has(p.record.id)) && !g.peaks.some((p) => badIds.has(p.record.id)));
 }
 
+console.log('\nEnums del .set: sin «pegada al borde»');
+{
+  // InpMinBodyPct sin el nivel 10: la recomendada (20) queda en el borde inferior.
+  const t = buildDemoTables().isTable;
+  const j = t.headers.indexOf('InpMinBodyPct');
+  const table = { headers: t.headers, rows: t.rows.filter((r) => r[j] !== 10) };
+  const base = ['InpFastMA=8||8||2||18||Y', 'InpSlowMA=40||40||10||100||Y', 'InpATR_SL=1.0||1.0||0.5||3.5||Y',
+    'InpATR_TP=1.0||1.0||1.0||6.0||Y', 'InpTrailStart=0.5||0.5||0.5||2.5||Y'];
+  const edgeNames = (a) => a.plateaus[0].boundary.map((b) => b.name);
+  const plain = runAnalysis({ isTable: table });
+  check('sin .set: InpMinBodyPct = 20 sale pegado al borde', edgeNames(plain).includes('InpMinBodyPct'), JSON.stringify(edgeNames(plain)));
+  const asNumber = runAnalysis({ isTable: table, searchSet: parseSetText([...base, 'InpMinBodyPct=20||20||10||40||Y'].join('\r\n')) });
+  check('con .set y paso 10 (numérico): sigue saliendo', edgeNames(asNumber).includes('InpMinBodyPct'));
+  const asEnum = runAnalysis({ isTable: table, searchSet: parseSetText([...base, 'InpMinBodyPct=20||20||0||40||Y'].join('\r\n')) });
+  check('con .set y paso 0 (enum): ya no sale', !edgeNames(asEnum).includes('InpMinBodyPct'), JSON.stringify(edgeNames(asEnum)));
+  check('y la recomendación es la misma', asEnum.plateaus[0].record.id === plain.plateaus[0].record.id);
+}
+
+console.log('\nMuestreo disperso con .set: un aviso, no dos');
+{
+  // 1 de cada 200 pasadas de la rejilla del ejemplo: muestreo disperso (1 % sobre niveles vistos).
+  const t = buildDemoTables().isTable;
+  const table = { headers: t.headers, rows: t.rows.filter((_, i) => i % 200 === 0) };
+  const names = ['InpFastMA', 'InpSlowMA', 'InpATR_SL', 'InpATR_TP', 'InpTrailStart', 'InpMinBodyPct'];
+  const wide = parseSetText(['InpFastMA=8||8||2||18||Y', 'InpSlowMA=40||40||10||100||Y', 'InpATR_SL=1.0||1.0||0.5||3.5||Y',
+    'InpATR_TP=1.0||1.0||1.0||6.0||Y', 'InpTrailStart=0.5||0.5||0.5||2.5||Y', 'InpMinBodyPct=10||10||10||40||Y'].join('\r\n'));
+  // El mismo rango que los niveles que aparecen en la muestra: las dos cifras coinciden.
+  const seen = parseSetText(names.map((n) => {
+    const j = t.headers.indexOf(n);
+    const v = [...new Set(table.rows.map((r) => r[j]))].sort((a, b) => a - b);
+    const step = v.length > 1 ? Math.min(...v.slice(1).map((x, k) => x - v[k])) : 0;
+    return `${n}=${v[0]}||${v[0]}||${step}||${v[v.length - 1]}||${v.length > 1 ? 'Y' : 'N'}`;
+  }).join('\r\n'));
+  const warns = (a) => a.verdict.findings.filter((f) => f.severity === 'warn');
+  const coverageWarns = (a) => warns(a).filter((f) => /disperso|rango del \.set/.test(f.title));
+  const without = runAnalysis({ isTable: table });
+  check('es muestreo disperso', without.meta.sampling === 'sparse', without.meta.sampling);
+  for (const [label, set] of [['rango más amplio que lo visto', wide], ['rango = niveles vistos', seen]]) {
+    const withSet = runAnalysis({ isTable: table, searchSet: set });
+    const w = coverageWarns(withSet);
+    check(`${label}: un solo aviso de cobertura`, w.length === 1, w.map((f) => f.title).join(' | '));
+    check(`${label}: el del rango del .set`, /^Muestreo disperso: solo .* del rango del \.set$/.test(w[0]?.title || ''), w[0]?.title);
+    check(`${label}: aportar el .set no suma avisos ni cambia el nivel`,
+      warns(withSet).length === warns(without).length && withSet.verdict.level === without.verdict.level, `${warns(without).length} → ${warns(withSet).length}`);
+    const seenText = `Sobre los niveles que aparecen en tus archivos: ${shareText(without.meta.coverage, 'combinaciones')}.`;
+    const differs = shareText(withSet.searchCoverage?.coverageSearch ?? withSet.meta.searchCoverage?.coverageSearch, 'combinaciones') !== shareText(without.meta.coverage, 'combinaciones');
+    check(`${label}: la cifra sobre niveles vistos sale ${differs ? 'en el detalle' : 'una sola vez'}`, (w[0]?.detail || '').includes(seenText) === differs, w[0]?.detail);
+  }
+}
+
 console.log(`\n${checks - failures}/${checks} comprobaciones correctas`);
 if (failures) process.exit(1);

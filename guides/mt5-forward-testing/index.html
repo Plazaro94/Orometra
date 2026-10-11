@@ -76,7 +76,7 @@
     <h2 id="guide-sum-title" data-i18n="guide.forward.sum.title">In short</h2>
     <ol>
       <li data-i18n-html="guide.forward.sum.1">Turn on Forward in the Settings tab of the tester and choose how much of the period to keep aside.</li>
-      <li data-i18n-html="guide.forward.sum.2">MT5 optimizes on the first part and re-tests only the best passes on the last part.</li>
+      <li data-i18n-html="guide.forward.sum.2">MT5 optimizes on the first part and re-tests the passes on the last part: only the best ones, according to its help, though some real exports bring them all.</li>
       <li data-i18n-html="guide.forward.sum.3">What matters is the number of trades in the forward, not its length in months.</li>
       <li data-i18n-html="guide.forward.sum.4">Expect the forward to be worse; worry about collapses and about the ranking turning upside down.</li>
       <li data-i18n-html="guide.forward.sum.5">Do not choose the pass by its forward alone, and keep a third stretch you never touch.</li>
@@ -91,7 +91,7 @@
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s2.title">How to turn it on in MT5</h2>
     <p data-i18n-html="guide.forward.s2.p1">In the Strategy Tester (Ctrl+R), Settings tab, next to the dates there is the <strong>Forward</strong> option. You can choose 1/2, 1/3 or 1/4 of the period, or Custom to set the date where the forward starts. MT5 always takes the final stretch. It only applies when you optimize.</p>
-    <p class="guide-note" data-i18n-html="guide.forward.s2.n1"><strong>Example.</strong> Dates from 1 January 2020 to 1 January 2024 with Forward 1/4: MT5 optimizes on 2020–2022 (three years) and re-tests the best passes on 2023 (one year). With 1/3 it would be 32 months of optimization and 16 of forward, starting on 1 September 2022.</p>
+    <p class="guide-note" data-i18n-html="guide.forward.s2.n1"><strong>Example.</strong> Dates from 1 January 2020 to 1 January 2024 with Forward 1/4: MT5 optimizes on 2020–2022 (three years) and re-tests the passes on 2023 (one year). With 1/3 it would be 32 months of optimization and 16 of forward, starting on 1 September 2022.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s3.title">How much of the period to keep aside</h2>
@@ -101,8 +101,8 @@
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s4.title">Which passes are tested in the forward</h2>
-    <p data-i18n-html="guide.forward.s4.p1">MT5 does not run every pass on the forward period, only the best ones of the optimization according to the criterion you chose: the top 10% in a complete search and the top 25% in a genetic one, according to the MT5 help. The help also sets a minimum number of passes. In a real export we have examined, a genetic optimization of 810 passes sent 256 to the forward, more than 25% (202), which fits the minimum of 256 passes quoted on the MQL5 forums.</p>
-    <p data-i18n-html="guide.forward.s4.p2">This has two consequences. First, the forward table is not a random sample: it only has passes that were already good in-sample, chosen by your criterion. Second, the neighbors of the best pass, the configurations one step away, may be missing from it, so the forward alone cannot always tell you whether the zone around your pass holds up.</p>
+    <p data-i18n-html="guide.forward.s4.p1">According to the MT5 help, the forward does not run every pass, only the best ones of the optimization by the criterion you chose: the top 10% in a complete search and the top 25% in a genetic one, with a minimum number of passes. Real exports do not always match that. In one we examined, a genetic optimization of 810 passes sent 256 to the forward, more than 25% (202), which fits the minimum of 256 passes quoted on the MQL5 forums. In another, a genetic optimization of 5,517 passes sent all 5,517. We do not know yet what decides it. Check your own export: if the forward table has as many rows as the optimization one, every pass was tested; if it has fewer, Orometra tells you.</p>
+    <p data-i18n-html="guide.forward.s4.p2">When only the best ones reach the forward, this has two consequences. First, the forward table is not a random sample: it only has passes that were already good in-sample, chosen by your criterion. Second, the neighbors of the best pass, the configurations one step away, may be missing from it, so the forward alone cannot always tell you whether the zone around your pass holds up.</p>
   </section>
   <section class="lp-doc-block guide-step">
     <h2 data-i18n="guide.forward.s5.title">How to read the forward table</h2>

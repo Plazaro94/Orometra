@@ -17,7 +17,7 @@ import {
   mean, stdev, extent, makeRng,
 } from './stats.js';
 import { buildVerdict, peakRejectReasons, peakRejectTags } from './verdict.js';
-import { coverageAgainstSet } from './setfile.js';
+import { coverageAgainstSet, discreteRange } from './setfile.js';
 import { L } from '../js/i18n.js';
 
 // Tope de configuraciones por archivo. Un XML de MT5 de 80 MB (el máximo que se admite)
@@ -116,8 +116,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       oosKnown: true,
     }));
     /*
-     * FWD-1 verificado: MT5 solo pasa al forward las MEJORES pasadas del in-sample (~10 %
-     * en búsqueda completa, ~25 % en genética). Si solo se analizaran las emparejadas, las
+     * FWD-1: MT5 puede pasar al forward solo las MEJORES pasadas del in-sample (~10 % en
+     * búsqueda completa, ~25 % en genética, según su ayuda), aunque hay exports reales que
+     * las traen todas. Cuando solo trae las mejores, si solo se analizaran las emparejadas, las
      * mesetas se buscarían únicamente entre las mejores y nunca se verían las vecinas
      * malas que delatan un pico: un sesgo optimista. En el modo por defecto (las mesetas
      * se descubren en el in-sample) se usan TODAS las pasadas del in-sample; el forward
@@ -330,6 +331,15 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     records.map((r) => r.params),
     searchSet,
   );
+  // Un enum optimizado llega al XML como número (0, 1, 16385…) y pasaría por numérico: solo
+  // el .set lo delata (paso 0). En un enum o un booleano no hay un «más allá» del rango, así
+  // que no pueden estar «pegados al borde».
+  const categoricalDims = searchSet
+    ? paramNames.map((name, j) => {
+      const entry = searchSet.params.find((p) => p.name === name);
+      return entry && discreteRange(entry) ? j : -1;
+    }).filter((j) => j >= 0)
+    : [];
 
   /*
    * DENSIDAD DE EVIDENCIA (no "grados de libertad" estadísticos): operaciones
@@ -605,8 +615,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       // Riesgo accionable: la configuración RECOMENDADA esta pegada a un extremo del
       // rango probado. Listar los límites de toda la región no informa cuando la
       // región es amplia, porque entonces los toca todos.
-      boundary: boundaryParams([rep], coords, levels, paramNames, paramTypes, dims.flatDims),
-      boundaryRegion: boundaryParams(basis, coords, levels, paramNames, paramTypes, dims.flatDims),
+      boundary: boundaryParams([rep], coords, levels, paramNames, paramTypes, [...dims.flatDims, ...categoricalDims]),
+      boundaryRegion: boundaryParams(basis, coords, levels, paramNames, paramTypes, [...dims.flatDims, ...categoricalDims]),
       refinement,
       // Coherencia interna: si se apoya justo en el valor que gana en el in-sample de un
       // parámetro invertido, su buen resultado forward va a contracorriente de su propio
