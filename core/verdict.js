@@ -163,7 +163,11 @@ export function buildVerdict(ctx) {
           `When you keep the best row by the Result column of one period, it falls below the median of the other period ${fmt((100 * fragility), 0)}% of the time. That condemns your table order, not the plateau Orometra proposes. Ignore the ranking and keep the plateau below.`), 'stats');
       tableOnly();
     } else if (fragility >= 0.5) {
-      add(SEV.CRITICAL, L(`La regla «primera de Result» falla el ${fmt((100 * fragility), 0)}\u00A0% de las veces`, `The "top Result row" rule fails ${fmt((100 * fragility), 0)}% of the time`),
+      // Mide el orden de la tabla, no la meseta: se enseña, pero no baja el nivel (antes era
+      // crítico). Medido en el banco (bench/results/REPORT-calib-orden-tabla.md): en 1.600
+      // casos de calibración saltó 525 veces y nunca fue el único crítico, así que no cambia
+      // ningún nivel; y saltaba más cuanto más exigentes los mínimos, no por los datos.
+      add(SEV.WARN, L(`La regla «primera de Result» falla el ${fmt((100 * fragility), 0)}\u00A0% de las veces`, `The "top Result row" rule fails ${fmt((100 * fragility), 0)}% of the time`),
         // «No hay región amplia» a secas contradecía al titular cuando sí hay mesetas: lo que
         // falta es que muchas configuraciones cumplan en los dos periodos (ver VIABLE_REFUGE).
         hasRegion
@@ -171,6 +175,7 @@ export function buildVerdict(ctx) {
             `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and only ${fmt(100 * viableShare, viableShare < 0.1 ? 1 : 0)}% of configurations clear your minimums in both periods: at least 1 in 4 is needed to speak of a broad region, where the table order matters little. Above 50% that ranking is worth less than a coin flip.`)
           : L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)}\u00A0% al cruzar periodos, y no hay ninguna meseta donde refugiarse. Por encima del 50\u00A0% ese ranking vale menos que lanzar una moneda.`,
             `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and there is no plateau to fall back on. Above 50% that ranking is worth less than a coin flip.`), 'stats');
+      tableOnly();
     } else if (fragility >= 0.3) {
       add(SEV.WARN, L(`El orden de MT5 solo se mantiene a medias: falla el ${fmt((100 * fragility), 0)}\u00A0%`, `The MT5 order only half holds: it fails ${fmt((100 * fragility), 0)}%`),
         L(`La mejor fila según la columna Result de un periodo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)}\u00A0% de las veces. Ese orden conserva algo de valor, pero no el suficiente para fiarte de la primera fila: elige por meseta.`,

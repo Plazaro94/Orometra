@@ -201,3 +201,13 @@ M1. Si no propone meseta, se registra como «se abstiene».
   cambia. Calibración (`calib-v4`): sin falsos positivos en «buena» ni «sólida»; con
   ventaja, 64 «buena» y 22 «sólida» de 500. **Quinto examen:** semillas 5001-5100, nunca
   generadas; una sola vez, motor congelado, se publica tal como salga.
+- **2026-10-11, tras el quinto examen.** De la auditoría de uso: el aviso «La regla "primera
+  de Result" falla» era **crítico** cuando el orden de MT5 fallaba la mitad de las veces o más
+  y menos de 1 de cada 4 configuraciones cumplía en los dos periodos, aunque mide el orden de
+  la tabla y no la meseta (y Metodología dice que esos avisos no bajan el nivel). Medición, con
+  el motor actual, de cuántos niveles cambiaría pasarlo a aviso de tabla
+  (`bench/orden-tabla.js`, `REPORT-calib-orden-tabla.md`): en la calibración salta 218 veces de
+  800 (307 con un factor de beneficio mínimo de 1,40) y **nunca es el único crítico**; en el
+  quinto examen, ya publicado, 216 de 800 y tampoco. **Cambio:** pasa a aviso de tabla. No
+  cambia ningún nivel en el banco, así que los resultados publicados del quinto examen no
+  cambian y no hace falta otro examen. Los criterios no cambian.

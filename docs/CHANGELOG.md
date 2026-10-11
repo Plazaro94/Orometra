@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-11 — «La regla "primera de Result" falla» deja de bajar el nivel, medido en el banco
+
+- **Motor** (`core/verdict.js`): el aviso era **crítico** cuando el orden de la columna Result
+  fallaba al cruzar periodos la mitad de las veces o más y menos de 1 de cada 4 configuraciones
+  cumplía en los dos periodos. Mide el orden de la tabla, no la meseta, y Metodología dice que
+  esos avisos se enseñan pero no bajan el nivel: era una excepción sin escribir. Ahora es un
+  aviso de tabla, como los demás; se sigue viendo en Diagnóstico → Pruebas estadísticas.
+- **Medido antes de cambiarlo** (`bench/orden-tabla.js`, `bench/results/REPORT-calib-orden-tabla.md`,
+  enmienda en `bench/PREREGISTRO.md`): en 2.400 casos (calibración con los mínimos por defecto y
+  con factor de beneficio ≥ 1,40, y el quinto examen) salta 741 veces y **nunca es el único
+  crítico**, así que no cambia ningún nivel y las cifras publicadas del quinto examen siguen
+  valiendo. Además saltaba más cuanto más exigentes los mínimos (218 frente a 307 en la
+  calibración), no por los datos.
+- Con el export real del autor, el veredicto pasa de 4 a 3 limitaciones serias y sigue en
+  «débil».
+- Pruebas: 2 más en `tests/audit-2026-10b.test.js` (47; las dos fallan con la regla anterior).
+
 ## 2026-10-11 — El CSV trae las cifras para encontrar cada configuración en MT5
 
 - **CSV** (`js/export.js#buildCsv`): tres columnas al final de cada fila, `beneficio_is`,

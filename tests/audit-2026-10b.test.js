@@ -200,6 +200,14 @@ section('M2, M3, M4 y M7: textos que se contradecían o no decían de qué es la
   check('M3: con mesetas, dice cuántas cumplen en los dos periodos (9,4 %), no que no haya región',
     withPlateau && /solo el 9,4 % de las configuraciones cumple tus mínimos en los dos periodos/.test(withPlateau.detail) && !/no hay región amplia/.test(withPlateau.detail),
     withPlateau && withPlateau.detail);
+  // Mide el orden de la tabla, no la meseta: se enseña, pero no baja el nivel (en el banco nunca
+  // fue el único crítico: bench/results/REPORT-calib-orden-tabla.md).
+  check('es un aviso de la tabla, no un crítico', withPlateau && withPlateau.severity === 'warn' && withPlateau.scope === 'table',
+    withPlateau && `${withPlateau.severity}/${withPlateau.scope}`);
+  const levelForced = rebuildLocalizedCopy({
+    ...a, meta: { ...a.meta, gatePassCount: Math.round(a.meta.forwardCount * 0.094) }, stats: { ...a.stats, fragility: 0.6 },
+  }).verdict.level;
+  check(`con él, el ejemplo se queda en su nivel (${a.verdict.level}), no baja a débil`, levelForced === a.verdict.level, levelForced);
   const noPlateau = forced({ plateaus: [] });
   check('M3: sin mesetas, dice que no hay ninguna', noPlateau && /no hay ninguna meseta donde refugiarse/.test(noPlateau.detail), noPlateau && noPlateau.detail);
   // M7: el máximo es el de las pasadas con más de 30 operaciones, no el de toda la tabla.
