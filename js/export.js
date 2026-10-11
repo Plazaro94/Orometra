@@ -286,8 +286,8 @@ export function buildCsv(analysis) {
   // el número que se ve en pantalla («Meseta 1» es la recomendada), como el JSON.
   const rankOf = new Map(analysis.plateaus.map((p) => [p.id, p.rank]));
   const head = es
-    ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinas', 'suelo_vecindad_q25', 'frac_vecinas_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta']
-    : ['pass', ...paramNames, 'quality_is', 'quality_forward', 'score', 'robustness', 'neighbors', 'neighborhood_floor_q25', 'neighbors_ok_share', 'cliff', 'peak_z', 'meets_minima_is', 'meets_minima_forward', 'plateau'];
+    ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinas', 'suelo_vecindad_q25', 'frac_vecinas_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta', 'beneficio_is', 'operaciones_is', 'result_is']
+    : ['pass', ...paramNames, 'quality_is', 'quality_forward', 'score', 'robustness', 'neighbors', 'neighborhood_floor_q25', 'neighbors_ok_share', 'cliff', 'peak_z', 'meets_minima_is', 'meets_minima_forward', 'plateau', 'profit_is', 'trades_is', 'result_is'];
   const rows = analysis.records.map((r, i) => {
     const st = analysis.stability[i];
     const okIs = r.failsIs ? !r.failsIs.length : r.passes;
@@ -297,6 +297,9 @@ export function buildCsv(analysis) {
       n(r.qualityIs), n(r.qualityOos), n(analysis.scores[i]), n(analysis.robust[i]),
       st.support, n(st.q25), n(st.fracPass), n(st.cliff), n(st.peakZ),
       okIs ? 1 : 0, okOos, analysis.inPlateau[i] >= 0 ? (rankOf.get(analysis.inPlateau[i]) ?? '') : '',
+      // Las cifras con las que se busca la configuración en MT5 (el número de pasada no sirve:
+      // PASS-2 en docs/MT5_ASSUMPTIONS.md). Al final, para no descolocar a quien lea por posición.
+      n(r.is && r.is.profit), n(r.is && r.is.trades), n(r.criterionIs),
     ].join(sep);
   });
   return [head.map(cell).join(sep), ...rows].join('\r\n');

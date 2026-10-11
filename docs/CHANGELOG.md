@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-11 — El CSV trae las cifras para encontrar cada configuración en MT5
+
+- **CSV** (`js/export.js#buildCsv`): tres columnas al final de cada fila, `beneficio_is`,
+  `operaciones_is` y `result_is` (en inglés, `profit_is`, `trades_is`, `result_is`): el
+  beneficio, las operaciones y el Result del periodo optimizado. Hasta ahora solo traía el número
+  de pasada, que no sirve para encontrarla en MT5 (PASS-2). Van al final para no descolocar a
+  quien lea el CSV por posición. Comprobado con el export real del autor: 5517 filas, todas
+  iguales a su fila del XML.
+- **Enums que el XML trae como número** (CLAUDE.md, «Aceptado a propósito»): siguen contando
+  como distancia al buscar vecinas, con o sin .set. Tratarlos como categoría haría que el mismo
+  XML diera mesetas distintas según se aporte el .set, y el banco no lo puede medir. En el
+  refinamiento, el .set ya los deja fijos.
+- Pruebas: 2 más en `tests/audit-2026-10b.test.js` (45).
+
 ## 2026-10-11 — Cuatro textos que se contradecían o no decían de qué es la cifra
 
 Segunda tanda de la auditoría de uso. Solo textos; ninguna cifra del análisis cambia.

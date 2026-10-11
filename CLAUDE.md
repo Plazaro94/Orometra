@@ -89,3 +89,8 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
   del terminal en español coinciden con los patrones de `core/schema.js`.
 - Aceptado a propósito: `collapseToTopology` (`core/engine.js`) se queda con la mejor fila
   al agrupar configuraciones que solo difieren en parámetros planos; el sesgo es pequeño.
+- Aceptado a propósito: un enum que el XML trae como número (el `.set` lo delata con paso 0)
+  cuenta como distancia al buscar vecinas, con o sin `.set`. Tratarlo como categoría haría que
+  el mismo XML diera mesetas distintas según se aporte o no el `.set`, y el banco no usa `.set`.
+  Con el export real del autor afectaba a 1 de 38 configuraciones. El `.set` sí lo deja fijo
+  en el refinamiento. Revisarlo si un caso real muestra que cambia la recomendada.

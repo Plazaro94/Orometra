@@ -77,6 +77,15 @@ section('E1: la columna «meseta» del CSV es el puesto que se ve en pantalla');
     const n = csv.slice(1).filter((l) => l.split(';')[col] === String(p.rank)).length;
     check(`meseta=${p.rank} tiene ${p.size} filas, el tamaño de la Meseta ${p.rank}`, n === p.size, String(n));
   }
+  // M6: las cifras con las que se busca cada configuración en MT5, al final de la fila.
+  check('M6: el CSV termina con beneficio, operaciones y Result del periodo optimizado',
+    head.slice(-3).join(',') === 'beneficio_is,operaciones_is,result_is', head.slice(-4).join(','));
+  const rec = a.plateaus[0].record;
+  const row = csv.slice(1).map((l) => l.split(';')).find((c) => c[passCol] === String(rec.id));
+  const es = (v) => String(Number(v.toFixed(6))).replace('.', ',');
+  check('M6: las de la recomendada son las de su fila del export',
+    row && row.at(-3) === es(rec.is.profit) && row.at(-2) === es(rec.is.trades) && row.at(-1) === es(rec.criterionIs),
+    row && row.slice(-3).join(' | '));
 }
 
 section('E2: los enums del .set se dejan fijos en el refinamiento');
