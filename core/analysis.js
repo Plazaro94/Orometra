@@ -771,8 +771,11 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // Sharpe calculado sobre un punado de operaciones es ruidoso por si solo (por eso
   // ya se exige aparte en las politicas de minimos), y dejarlo colar aqui podria
   // inflar sigma con una sola pasada, no con la forma real de la superficie.
+  // El informe lo dice: el Sharpe máximo que enseña es el de estas pasadas, no el de toda la
+  // tabla (sin forward, en un export real: 33,37 frente a 40,24 de una pasada de 24 operaciones).
+  const SHARPE_MIN_TRADES = 30;
   const sharpeValues = records
-    .filter((r) => Number.isFinite(r[period].sharpe) && Number.isFinite(r[period].trades) && r[period].trades > 30)
+    .filter((r) => Number.isFinite(r[period].sharpe) && Number.isFinite(r[period].trades) && r[period].trades > SHARPE_MIN_TRADES)
     .map((r) => r[period].sharpe);
   let sharpeTest = null;
   // Sin dispersión (todos los Sharpe iguales, p. ej. a 0 porque el export no lo trae)
@@ -783,6 +786,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const observedMax = extent(sharpeValues)[1];
     sharpeTest = {
       period,
+      minTrades: SHARPE_MIN_TRADES,
       observedMax,
       mean: mean(sharpeValues),
       sigma,

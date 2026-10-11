@@ -337,7 +337,7 @@ function keyFigures(a, best) {
     ${hasF
     ? tile(Number.isFinite(keep) ? pct(keep, 0) : '—',
       gloss('retention', esc(L('Se mantiene al validar', 'Holds on validation'))),
-      esc(L('Qué parte de su calidad conserva en el periodo de validación (forward).', 'How much of its quality it keeps on the validation period (forward).')))
+      esc(L(Number.isFinite(best.medianRetention) ? 'Qué parte de su calidad conservan en el forward las configuraciones de su meseta (la mediana).' : 'Qué parte de su calidad conserva en el periodo de validación (forward).', Number.isFinite(best.medianRetention) ? 'How much of their quality the configurations of its plateau keep on the forward (the median).' : 'How much of its quality it keeps on the validation period (forward).')))
     : tile('—',
       esc(L('Sin validar', 'Not validated')),
       esc(L('No hay periodo de validación (forward): añádelo para poder medirlo.', 'No validation period (forward): add one to measure this.')))}

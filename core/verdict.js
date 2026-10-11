@@ -164,8 +164,13 @@ export function buildVerdict(ctx) {
       tableOnly();
     } else if (fragility >= 0.5) {
       add(SEV.CRITICAL, L(`La regla «primera de Result» falla el ${fmt((100 * fragility), 0)}\u00A0% de las veces`, `The "top Result row" rule fails ${fmt((100 * fragility), 0)}% of the time`),
-        L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)}\u00A0% al cruzar periodos, y no hay región amplia donde refugiarse. Por encima del 50\u00A0% ese ranking vale menos que lanzar una moneda.`,
-          `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and there is no broad region to fall back on. Above 50% that ranking is worth less than a coin flip.`), 'stats');
+        // «No hay región amplia» a secas contradecía al titular cuando sí hay mesetas: lo que
+        // falta es que muchas configuraciones cumplan en los dos periodos (ver VIABLE_REFUGE).
+        hasRegion
+          ? L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)}\u00A0% al cruzar periodos, y solo el ${fmt(100 * viableShare, viableShare < 0.1 ? 1 : 0)}\u00A0% de las configuraciones cumple tus mínimos en los dos periodos: hace falta al menos 1 de cada 4 para hablar de una región amplia, donde el orden de la tabla importe poco. Por encima del 50\u00A0% ese ranking vale menos que lanzar una moneda.`,
+            `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and only ${fmt(100 * viableShare, viableShare < 0.1 ? 1 : 0)}% of configurations clear your minimums in both periods: at least 1 in 4 is needed to speak of a broad region, where the table order matters little. Above 50% that ranking is worth less than a coin flip.`)
+          : L(`Elegir por la columna Result falla el ${fmt((100 * fragility), 0)}\u00A0% al cruzar periodos, y no hay ninguna meseta donde refugiarse. Por encima del 50\u00A0% ese ranking vale menos que lanzar una moneda.`,
+            `Choosing by the Result column fails ${fmt((100 * fragility), 0)}% across periods, and there is no plateau to fall back on. Above 50% that ranking is worth less than a coin flip.`), 'stats');
     } else if (fragility >= 0.3) {
       add(SEV.WARN, L(`El orden de MT5 solo se mantiene a medias: falla el ${fmt((100 * fragility), 0)}\u00A0%`, `The MT5 order only half holds: it fails ${fmt((100 * fragility), 0)}%`),
         L(`La mejor fila según la columna Result de un periodo cae por debajo de la mitad de la tabla en el otro el ${fmt((100 * fragility), 0)}\u00A0% de las veces. Ese orden conserva algo de valor, pero no el suficiente para fiarte de la primera fila: elige por meseta.`,
@@ -283,8 +288,8 @@ export function buildVerdict(ctx) {
     const pctRegion = 100 * stabilityCheck.regionRate;
     if (stabilityCheck.regionRate >= 0.8) {
       add(SEV.OK, L(`La recomendación aguanta el ${fmt(pctRegion, 0)}\u00A0% de las variaciones de umbral`, `The recommendation holds through ${fmt(pctRegion, 0)}% of threshold variations`),
-        L(`Se ha repetido la búsqueda ${stabilityCheck.draws} veces moviendo al azar un ±20\u00A0% nuestros criterios (calidad mínima de una meseta, tamaño mínimo, vecinas mínimas…). En el ${fmt(pctRegion, 0)}\u00A0% de los casos la configuración ganadora sigue cayendo dentro de la MISMA meseta. La recomendación es una propiedad de tus datos, no del ajuste de la herramienta.`,
-          `The search was repeated ${stabilityCheck.draws} times randomly shifting our criteria by ±20% (minimum plateau quality, minimum size, minimum neighbors…). In ${fmt(pctRegion, 0)}% of cases the winning configuration still falls inside the SAME plateau. The recommendation is a property of your data, not of the tool's tuning.`), 'stability');
+        L(`Se ha repetido la búsqueda ${stabilityCheck.draws} veces moviendo al azar un ±20\u00A0% nuestros criterios (calidad mínima de una meseta, tamaño mínimo, vecinas mínimas…). En el ${fmt(pctRegion, 0)}\u00A0% de los casos la configuración ganadora sigue cayendo dentro de la MISMA meseta: no depende de dónde pusimos nosotros los cortes. Cuánto depende de los mínimos que has escrito tú se mide aparte.`,
+          `The search was repeated ${stabilityCheck.draws} times randomly shifting our criteria by ±20% (minimum plateau quality, minimum size, minimum neighbors…). In ${fmt(pctRegion, 0)}% of cases the winning configuration still falls inside the SAME plateau: it does not depend on where we placed the cuts. How much it depends on the minimums you wrote is measured separately.`), 'stability');
     } else if (stabilityCheck.regionRate >= 0.5) {
       add(SEV.WARN, L(`La recomendación solo aguanta el ${fmt(pctRegion, 0)}\u00A0% de las variaciones de umbral`, `The recommendation only holds through ${fmt(pctRegion, 0)}% of threshold variations`),
         L(`Moviendo un ±20\u00A0% nuestros criterios, la meseta ganadora cambia hasta en la mitad de los casos. Hay señal, pero la frontera entre las mesetas candidatas es difusa: trata el Top como un conjunto de opciones equivalentes y decide por criterio operativo, no por el orden.`,
@@ -335,6 +340,11 @@ export function buildVerdict(ctx) {
 
   if (sharpeTest && Number.isFinite(sharpeTest.observedMax) && Number.isFinite(sharpeTest.chanceMax)) {
     const { observedMax, chanceMax, trials } = sharpeTest;
+    // Solo cuentan las pasadas con más de N operaciones (core/analysis.js): sin decirlo, el
+    // máximo no cuadraba con el de la tabla de MT5.
+    const among = Number.isFinite(sharpeTest.minTrades)
+      ? L(` (entre las pasadas con más de ${sharpeTest.minTrades} operaciones)`, ` (among passes with more than ${sharpeTest.minTrades} trades)`)
+      : '';
     // El umbral se calcula con las pruebas EFECTIVAS (zonas distintas del espacio), no
     // con todas las pasadas: hay que decir el número que de verdad se usa.
     const eff = Number.isFinite(sharpeTest.effectiveTrials) ? sharpeTest.effectiveTrials : trials;
@@ -345,12 +355,12 @@ export function buildVerdict(ctx) {
       : L(`${n(eff)} pruebas`, `${n(eff)} trials`);
     if (observedMax <= chanceMax) {
       add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar', 'Best Sharpe does not beat the chance threshold'),
-        L(`Con ${howMany}, el Sharpe máximo esperable sin ninguna ventaja real es ${fmt(chanceMax, 2)}. El mejor observado${sharpeTest.period === 'oos' ? ' en el forward' : ''} es ${fmt(observedMax, 2)}. Probar muchas configuraciones produce buenos resultados por sí solo, y este no destaca sobre ese ruido.`,
-          `With ${howMany}, the maximum Sharpe expected with no real edge is ${fmt(chanceMax, 2)}. The best observed${sharpeTest.period === 'oos' ? ' on the forward' : ''} is ${fmt(observedMax, 2)}. Trying many configurations produces good results on its own, and this one does not stand out above that noise.`), 'stats');
+        L(`Con ${howMany}, el Sharpe máximo esperable sin ninguna ventaja real es ${fmt(chanceMax, 2)}. El mejor observado${sharpeTest.period === 'oos' ? ' en el forward' : ''}${among} es ${fmt(observedMax, 2)}. Probar muchas configuraciones produce buenos resultados por sí solo, y este no destaca sobre ese ruido.`,
+          `With ${howMany}, the maximum Sharpe expected with no real edge is ${fmt(chanceMax, 2)}. The best observed${sharpeTest.period === 'oos' ? ' on the forward' : ''}${among} is ${fmt(observedMax, 2)}. Trying many configurations produces good results on its own, and this one does not stand out above that noise.`), 'stats');
     } else {
       add(SEV.OK, L('El mejor Sharpe supera el umbral del azar', 'Best Sharpe beats the chance threshold'),
-        L(`Sharpe máximo${sharpeTest.period === 'oos' ? ' en el forward' : ''} ${fmt(observedMax, 2)} frente a ${fmt(chanceMax, 2)} esperable sin ventaja real con ${howMany}. Superar este contraste es condición necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
-          `Maximum Sharpe${sharpeTest.period === 'oos' ? ' on the forward' : ''} ${fmt(observedMax, 2)} versus ${fmt(chanceMax, 2)} expected with no real edge with ${howMany}. Passing this test is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`), 'stats');
+        L(`Sharpe máximo${sharpeTest.period === 'oos' ? ' en el forward' : ''}${among} ${fmt(observedMax, 2)} frente a ${fmt(chanceMax, 2)} esperable sin ventaja real con ${howMany}. Superar este contraste es condición necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
+          `Maximum Sharpe${sharpeTest.period === 'oos' ? ' on the forward' : ''}${among} ${fmt(observedMax, 2)} versus ${fmt(chanceMax, 2)} expected with no real edge with ${howMany}. Passing this test is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`), 'stats');
     }
   }
 

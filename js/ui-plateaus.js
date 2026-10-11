@@ -462,8 +462,8 @@ export function renderParams(a) {
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Mapa', 'Map')}</div><h2>${L('Los dos parámetros más influyentes', 'The two most influential parameters')}</h2></div></div>
       ${pair ? `${plateauHeatmap(a, pair[0], pair[1])}
       <p class="chart-note">${L(
-        'Calidad mediana de cada par de valores, del tono más suave (peor) al más intenso (mejor). Una zona contigua de valores altos es una meseta; una celda alta rodeada de bajas es un pico.',
-        'Median quality of each pair of values, from the softest shade (worst) to the strongest (best). A contiguous zone of high values is a plateau; a high cell surrounded by low ones is a peak.',
+        'Calidad mediana de cada par de valores, del tono más suave (peor) al más intenso (mejor). Cuenta todas las configuraciones probadas, también las que no cumplen tus mínimos: por eso puede salir más baja que en el gráfico de arriba, que solo cuenta las que cumplen. Una zona contigua de valores altos es una meseta; una celda alta rodeada de bajas es un pico.',
+        'Median quality of each pair of values, from the softest shade (worst) to the strongest (best). It counts every tested configuration, including those that miss your minimums: that is why it can come out lower than in the chart above, which only counts those that pass. A contiguous zone of high values is a plateau; a high cell surrounded by low ones is a peak.',
       )}</p>` : `<p class="muted">${L('Hacen falta al menos dos parámetros con varios valores para dibujar el mapa.', 'At least two parameters with several values are needed to draw the map.')}</p>`}
     </section>
     <section class="panel">
@@ -626,7 +626,7 @@ export function renderDiagnostics(a) {
         <div><span>${L('Pasadas analizadas', 'Passes analyzed')}</span><strong>${int(a.meta.total)}</strong></div>
         <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (independientes)', 'Effective trials (independent)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
         ${a.stats.sharpeTest ? `
-        <div><span>${gloss('sharpe', a.stats.sharpeTest.period === 'oos' ? L('Sharpe máximo observado (forward)', 'Maximum observed Sharpe (forward)') : L('Sharpe máximo observado (periodo optimizado)', 'Maximum observed Sharpe (optimized period)'))}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
+        <div><span>${gloss('sharpe', a.stats.sharpeTest.period === 'oos' ? L('Sharpe máximo observado (forward)', 'Maximum observed Sharpe (forward)') : L('Sharpe máximo observado (periodo optimizado)', 'Maximum observed Sharpe (optimized period)'))}${Number.isFinite(a.stats.sharpeTest.minTrades) ? `<small class="muted"> ${L(`pasadas con más de ${a.stats.sharpeTest.minTrades} operaciones`, `passes with more than ${a.stats.sharpeTest.minTrades} trades`)}</small>` : ''}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
         <div><span>${L('Sharpe medio entre pasadas', 'Mean Sharpe across passes')}</span><strong>${num(a.stats.sharpeTest.mean, 3)}</strong></div>
         <div><span>${L('Dispersión entre pasadas (σ)', 'Dispersion across passes (σ)')}</span><strong>${num(a.stats.sharpeTest.sigma, 3)}</strong></div>
         <div><span>${L('Umbral por azar (pruebas efectivas)', 'Chance threshold (effective trials)')}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>` : ''}

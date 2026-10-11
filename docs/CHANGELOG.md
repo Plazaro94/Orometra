@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-11 — Cuatro textos que se contradecían o no decían de qué es la cifra
+
+Segunda tanda de la auditoría de uso. Solo textos; ninguna cifra del análisis cambia.
+
+- **«Se mantiene al validar»** (veredicto): la nota decía «qué parte de **su** calidad conserva»,
+  pero la cifra es la mediana de la meseta (con el export real, 63 %, mientras la configuración
+  recomendada conserva el 75 %: 0,95 → 0,71). Ahora lo dice.
+- **Dos frases que se contradecían** (`core/verdict.js`): «La recomendación es una propiedad de
+  tus datos» (umbrales internos) salía junto a «la decide el umbral que has escrito, no tus
+  datos» (tus mínimos); ahora dice que no depende de nuestros cortes y que lo de tus mínimos se
+  mide aparte. Y «no hay región amplia donde refugiarse» salía bajo «Sí hay 11 mesetas»: ahora
+  dice cuántas configuraciones cumplen en los dos periodos (9,4 % en el export real; hace falta
+  1 de cada 4) o, si no hay mesetas, que no hay ninguna.
+- **Mapa de los dos parámetros** (Parámetros): dice que cuenta todas las configuraciones, también
+  las que no cumplen tus mínimos; el gráfico de perfil de encima solo cuenta las que cumplen, y
+  la misma pareja salía con 0,58 en uno y 0,00 en el otro.
+- **Sharpe máximo** (veredicto y Diagnóstico): dice que es el de las pasadas con más de 30
+  operaciones (`sharpeTest.minTrades`). Sin forward, en el export real, la app decía 33,37 y la
+  tabla de MT5 tiene 40,24 (una pasada de 24 operaciones).
+- Pruebas: 7 más en `tests/audit-2026-10b.test.js` (43; todas las nuevas fallan con el código
+  anterior).
+
 ## 2026-10-11 — Auditoría de uso: CSV, gráficos, refinamiento con enums y el forward de cada meseta
 
 Auditoría de la app usándola de verdad (Playwright, 1440 y 390 px, claro y oscuro, ES y EN)

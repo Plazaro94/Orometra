@@ -173,6 +173,38 @@ section('E5: el ejemplo del aviso de los mínimos sale de los mínimos del usuar
   setLocale('es');
 }
 
+section('M2, M3, M4 y M7: textos que se contradecían o no decían de qué es la cifra');
+{
+  const a = runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable });
+  const vsrc = fs.readFileSync(path.join(ROOT, 'core/verdict.js'), 'utf8');
+  // M3: «propiedad de tus datos» (umbrales internos) salía junto a «no tus datos» (tus mínimos).
+  check('M3: ya no dice «es una propiedad de tus datos» junto al aviso de tus mínimos', !/propiedad de tus datos|property of your data/.test(vsrc));
+  // M3: «no hay región amplia» con mesetas a la vista. Se fuerza: el orden de MT5 falla el 60 %
+  // y solo el 9,4 % de las configuraciones cumple en los dos periodos.
+  const forced = (extra) => rebuildLocalizedCopy({
+    ...a,
+    meta: { ...a.meta, gatePassCount: Math.round(a.meta.forwardCount * 0.094), ...extra.meta },
+    stats: { ...a.stats, fragility: 0.6 },
+    plateaus: extra.plateaus || a.plateaus,
+  }).verdict.findings.find((f) => /primera de Result|top Result row/.test(f.title));
+  const withPlateau = forced({});
+  check('M3: con mesetas, dice cuántas cumplen en los dos periodos (9,4 %), no que no haya región',
+    withPlateau && /solo el 9,4 % de las configuraciones cumple tus mínimos en los dos periodos/.test(withPlateau.detail) && !/no hay región amplia/.test(withPlateau.detail),
+    withPlateau && withPlateau.detail);
+  const noPlateau = forced({ plateaus: [] });
+  check('M3: sin mesetas, dice que no hay ninguna', noPlateau && /no hay ninguna meseta donde refugiarse/.test(noPlateau.detail), noPlateau && noPlateau.detail);
+  // M7: el máximo es el de las pasadas con más de 30 operaciones, no el de toda la tabla.
+  check('M7: el contraste guarda el mínimo de operaciones que usa', a.stats.sharpeTest.minTrades === 30, String(a.stats.sharpeTest.minTrades));
+  const sh = a.verdict.findings.find((f) => /Sharpe/.test(f.title));
+  check('M7: el texto del Sharpe lo dice', sh && /entre las pasadas con más de 30 operaciones/.test(sh.detail), sh && sh.detail);
+  const psrc = fs.readFileSync(path.join(ROOT, 'js/ui-plateaus.js'), 'utf8');
+  check('M4: la nota del mapa dice que cuenta todas las configuraciones',
+    /Cuenta todas las configuraciones probadas, también las que no cumplen tus mínimos/.test(psrc) && /It counts every tested configuration/.test(psrc));
+  const usrc = fs.readFileSync(path.join(ROOT, 'js/ui-verdict.js'), 'utf8');
+  check('M2: la tarjeta «Se mantiene al validar» dice que es la mediana de la meseta',
+    /conservan en el forward las configuraciones de su meseta \(la mediana\)/.test(usrc));
+}
+
 section('E6 y E7: textos de Mesetas y Descartes');
 {
   const src = fs.readFileSync(path.join(ROOT, 'js/ui-plateaus.js'), 'utf8');
