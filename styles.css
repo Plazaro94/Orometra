@@ -300,12 +300,13 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
  * practicamente invisible a poco brillo. --muted-3 es el mismo espiritu de marca de
  * agua pero sigue siendo texto legible. */
 .version{font-size:12px;color:var(--muted-3);padding:6px 6px 0}
-/* Pie de la barra lateral en escritorio: una sola linea de enlaces cortos separados por
-   puntos, y la version debajo (`.version`), mas pequena, como dato. Antes eran cuatro lineas que en
-   espanol no cabian en 768 px de alto y cambiaban de forma segun el idioma. */
-.side-foot{flex-wrap:nowrap;gap:0;padding:12px 6px 0;white-space:nowrap}
-.side-foot .text-btn{font-size:var(--fs-sm)}
-.side-foot-sep{color:var(--muted-3);padding:0 4px;font-size:var(--fs-sm)}
+/* Aviso legal, comentarios y GitHub: una sola linea de enlaces cortos separados por puntos,
+   en la barra lateral (escritorio, con la version debajo como dato) y al pie de la pagina
+   (movil). Antes eran lineas sueltas que cambiaban de forma segun el idioma y que, en
+   espanol, no dejaban caber la barra lateral en 768 px de alto. */
+.foot-links{flex-wrap:nowrap;gap:0;padding:12px 6px 0;white-space:nowrap}
+.foot-links .text-btn{font-size:var(--fs-sm)}
+.foot-links-sep{color:var(--muted-3);padding:0 4px;font-size:var(--fs-sm)}
 
 /* ---------------------------------------------------------------- main */
 .main{--mpt:32px;--mpx:36px;padding:var(--mpt) var(--mpx) 64px;min-width:0}

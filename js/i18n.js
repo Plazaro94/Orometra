@@ -374,7 +374,7 @@ const STRINGS = {
     'nav.aria.analysis': 'Analysis',
     'legal.link': 'Legal notice & privacy',
     'version.short': 'Engine v2',
-    'legal.short': 'Legal',
+    'legal.short': 'Privacy',
 
     'top.eyebrow': 'Quantitative robustness analysis',
     'top.h1': 'See which configuration holds up before you trust it with your money.',
@@ -1132,7 +1132,7 @@ const STRINGS = {
     'nav.aria.analysis': 'Análisis',
     'legal.link': 'Aviso legal y privacidad',
     'version.short': 'Motor v2',
-    'legal.short': 'Aviso legal',
+    'legal.short': 'Privacidad',
 
     'top.eyebrow': 'Análisis cuantitativo de robustez',
     'top.h1': 'Descubre qué configuración aguanta antes de confiarle tu dinero.',

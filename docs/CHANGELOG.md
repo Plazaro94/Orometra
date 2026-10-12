@@ -1,18 +1,20 @@
 # Changelog
 
-## 2026-10-12 — Pie de la barra lateral de la app: una línea y la versión como dato
+## 2026-10-12 — Pie de la app: privacidad, comentarios y GitHub en una línea; la versión, como dato
 
 Debajo del idioma y el tema había cuatro líneas sueltas (aviso legal, comentarios, GitHub y la
 versión del motor). En español cada enlace ocupaba su línea y en inglés dos compartían una, así que
 la zona cambiaba de forma según el idioma; la versión, con el mismo aspecto que los enlaces,
 parecía uno más; y con 768 px de alto (portátil típico) la barra medía 815 px y había que
-desplazarla para ver el final.
+desplazarla para ver el final. En el móvil, el pie de la página repetía lo de los dos enlaces en
+una línea y GitHub solo en la siguiente.
 
-- Escritorio: «Aviso legal · Comentarios · GitHub» («Legal · Feedback · GitHub») en una sola línea
-  y debajo «Motor v2» («Engine v2»), más pequeño. Cada enlace conserva su nombre completo para
-  lectores de pantalla (`aria-label`, que contiene el texto visible). La barra cabe ahora en
+- «Privacidad · Comentarios · GitHub» («Privacy · Feedback · GitHub») en una sola línea, en la
+  barra lateral y en el pie del móvil. «Privacidad» y no «Aviso legal»: es lo que más se busca
+  ahí, y la página es la misma. Cada enlace conserva su nombre completo para lectores de
+  pantalla (`aria-label`, que contiene el texto visible).
+- En escritorio, debajo, «Motor v2» («Engine v2»), más pequeño. La barra cabe ahora en
   1366 x 768 en los dos idiomas.
-- Móvil, sin cambios: allí estos enlaces van al pie de la página (`.app-footer`).
 
 ## 2026-10-12 — Paso 0 en la app: reservar el periodo no visto antes de optimizar
 
