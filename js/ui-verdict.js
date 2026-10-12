@@ -202,8 +202,8 @@ export function nextStepText(a, hold) {
     if (displayVerdictLevel(a) === 'weak') {
       return a.meta.hasForward
         ? L(
-          'El periodo no visto no la contradice, pero eso no compensa lo que la deja en débil: esta prueba detecta poco, y aprobarla no la confirma. Lee la limitación seria en «Por qué este nivel». Si sigues con ella, que sea en demo, sin dinero real, comparando con el rango habitual de la meseta. Para tener más evidencia hace falta un tramo nuevo: el periodo optimizado, el forward y este ya están usados.',
-          'The unseen period does not contradict it, but that does not make up for what keeps it weak: this check detects little, and passing it does not confirm it. Read the serious limitation in “Why this level”. If you go on with it, do so on demo, without real money, comparing with the plateau\'s usual range. More evidence needs a new segment: the optimized period, the forward and this one are already used.',
+          'El periodo no visto no la contradice, pero eso no compensa lo que la deja en débil: esta prueba detecta poco, y aprobarla no la confirma. Lee en «Por qué este nivel» qué la deja ahí. Si sigues con ella, que sea en demo, sin dinero real, comparando con el rango habitual de la meseta. Para tener más evidencia hace falta un tramo nuevo: el periodo optimizado, el forward y este ya están usados.',
+          'The unseen period does not contradict it, but that does not make up for what keeps it weak: this check detects little, and passing it does not confirm it. Read in “Why this level” what keeps it there. If you go on with it, do so on demo, without real money, comparing with the plateau\'s usual range. More evidence needs a new segment: the optimized period, the forward and this one are already used.',
         )
         : L(
           'El periodo no visto no la contradice, pero sin forward la evidencia no pasa de débil y esta prueba no la sube. Para medir más, vuelve a optimizar con Forward en fechas que no hayas usado (tampoco las de este tramo) y analiza de nuevo. Si sigues con ella mientras tanto, que sea en demo, sin dinero real.',
