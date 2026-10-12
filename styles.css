@@ -632,6 +632,10 @@ details.panel > .panel-body{padding:0 20px 20px}
 }
 .empty-steps p{margin:2px 0 0;font-size:var(--fs-md);line-height:1.55;color:var(--text-2)}
 .empty-steps em{color:var(--text-hi);font-style:normal;font-weight:600}
+/* Paso 0 (reservar el periodo no visto antes de optimizar): fila entera, encima de los otros tres. */
+.empty-steps .empty-step-pre{grid-column:1/-1}
+.empty-steps .empty-step-pre p{max-width:78ch}
+.empty-steps strong{color:var(--text-hi);font-weight:600}
 .empty-demo{margin:0;padding-top:16px;border-top:1px solid var(--line-soft);font-size:var(--fs-md);color:var(--muted)}
 .empty-demo .text-btn{font-size:var(--fs-md);font-weight:600;color:var(--ok-text)}
 

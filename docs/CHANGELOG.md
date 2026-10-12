@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-12 — Paso 0 en la app: reservar el periodo no visto antes de optimizar
+
+La app pedía probar la configuración en «un periodo que no hayas usado» solo después de analizar,
+cuando muchos usuarios ya habían optimizado hasta hoy y no les quedaba ese tramo. La guía de
+sobreoptimización sí lo decía («divide tu histórico en tres»), la app no.
+
+- «Cómo conseguir los archivos» (pantalla inicial de la app) empieza con un paso 0, **opcional, pero
+  muy recomendable**: dejar fuera de las fechas del probador un tramo final que no se mire hasta el
+  final, con la salida si ya se optimizó hasta hoy (un tramo anterior al optimizado). Opcional porque
+  la evidencia puede llegar a buena o sólida sin él (enmienda del 2026-10-09 del banco).
+- «Por qué →» lleva a la sección «Cómo tenerla bajo control en MT5, paso a paso» de la guía, que
+  estrena ancla (`#workflow`, en las dos versiones).
+
 ## 2026-10-12 — «Qué hacer ahora» tras el periodo no visto: débil no lleva a real, y en contra hay opciones
 
 Dos ramas en las que la app aconsejaba de más o dejaba al usuario sin salida (auditoría del recorrido).

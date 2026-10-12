@@ -620,6 +620,7 @@ export function renderEmpty() {
   return `<div class="empty-state">
     <h2>${esc(t('empty.h2'))}</h2>
     <ol class="empty-steps">
+      <li class="empty-step-pre"><span aria-hidden="true">0</span><p>${t('empty.s0')}</p></li>
       <li><span aria-hidden="true">1</span><p>${t('empty.s1')}</p></li>
       <li><span aria-hidden="true">2</span><p>${t('empty.s2')}</p></li>
       <li><span aria-hidden="true">3</span><p>${t('empty.s3')}</p></li>
