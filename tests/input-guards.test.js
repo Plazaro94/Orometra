@@ -119,18 +119,20 @@ section('AUD-07: CSP en <meta> en todas las paginas, igual que la cabecera de to
 }
 
 // ------------------------------------------------------------------ AUD-08
-section('AUD-08: el texto legal nombra todo lo que se guarda en el navegador');
+section('AUD-08: la página de privacidad nombra todo lo que se guarda en el navegador');
 {
   const keys = new Set();
   for (const f of fs.readdirSync(path.join(ROOT, 'js'))) {
     const src = fs.readFileSync(path.join(ROOT, 'js', f), 'utf8');
     for (const m of src.matchAll(/'(orometra\.[a-z]+)'/g)) keys.add(m[1]);
   }
-  const legal = fs.readFileSync(path.join(ROOT, 'js/ui-chrome.js'), 'utf8');
+  // El texto legal vive en la página de privacidad («Qué se queda solo en tu dispositivo»).
+  const i18n = fs.readFileSync(path.join(ROOT, 'js/i18n.js'), 'utf8');
+  const legal = (i18n.match(/'doc\.privacy\.s2\.body': '(El navegador[^']*)'/) || [])[1] || '';
   const words = { 'orometra.theme': /tema de color/, 'orometra.lang': /idioma/, 'orometra.gates': /mínimos que configures/, 'orometra.history': /historial\s+de análisis/ };
   check('solo se usan claves conocidas', [...keys].every((k) => k in words), [...keys].join(', '));
-  check('el aviso legal dice "cuatro cosas"', /Se guardan cuatro cosas/.test(legal) && keys.size === 4, String(keys.size));
-  for (const k of keys) check(`el aviso legal menciona ${k}`, words[k] && words[k].test(legal));
+  check('la página de privacidad tiene el texto de lo que se guarda', legal.length > 0);
+  for (const k of keys) check(`la página de privacidad menciona ${k}`, words[k] && words[k].test(legal));
 }
 
 console.log(`\n${'='.repeat(70)}\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas\n${'='.repeat(70)}`);

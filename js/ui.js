@@ -142,21 +142,19 @@ $('#policyRerun').addEventListener('click', () => {
 // Ancla inicial y botón de atrás del navegador.
 window.addEventListener('hashchange', () => {
   const tab = HASH_TAB[location.hash.replace('#', '')];
-  const noAnalysisNeeded = tab === 'method' || tab === 'legal' || tab === 'history' || tab === 'verdict';
+  const noAnalysisNeeded = tab === 'method' || tab === 'history' || tab === 'verdict';
   if (tab && tab !== state.tab && (state.analysis || noAnalysisNeeded)) setTab(tab, true);
 });
 {
+  // El texto legal era una pestaña (#legal); ahora es la página de privacidad. Los enlaces
+  // antiguos siguen llevando a él.
+  if (location.hash === '#legal') location.replace('/privacy/');
   const initial = HASH_TAB[location.hash.replace('#', '')];
-  if (initial === 'method' || initial === 'legal' || initial === 'history') setTab(initial, true);
+  if (initial === 'method' || initial === 'history') setTab(initial, true);
 }
 $$('.nav-item').forEach((b) => b.addEventListener('click', () => {
   if (!b.disabled) setTab(b.dataset.tab);
 }));
-// El enlace legal del pie no es una pestaña numerada, pero navega igual.
-$$('.legal-links [data-tab], .lp-menu [data-tab]').forEach((b) => b.addEventListener('click', () => {
-  setTab(b.dataset.tab);
-}));
-
 // Atajo del informe del backtest (pestaña Periodo no visto): además de soltarlo, se
 // puede elegir con un botón. Sin esto, en el móvil y con teclado no había forma.
 document.addEventListener('click', (e) => {

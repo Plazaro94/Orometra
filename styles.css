@@ -162,9 +162,9 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
   background:var(--navy);
   padding:28px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:calc(100vh / var(--z));
 }
-/* `.header-controls` (idioma+tema junto a la marca) y `.app-footer` (aviso legal al
-   pie de la pagina) solo existen en movil: en escritorio el idioma/tema/aviso legal
-   ya viven en `.sidebar-bottom`, fijo abajo del todo en la barra lateral. */
+/* `.header-controls` (idioma+tema junto a la marca) y `.app-footer` (pie de la pagina)
+   solo existen en movil: en escritorio el idioma, el tema y los enlaces (privacidad,
+   comentarios, GitHub) ya viven en `.sidebar-bottom`, abajo del todo en la barra lateral. */
 .header-controls,.app-footer{display:none}
 /* La marca es un boton o un enlace a la landing. */
 .brand,.brand-link{
@@ -296,17 +296,18 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
    sobrante puede llegar a 0 y la pestana activa queda pegada al idioma/tema. padding-top
    + border-top garantizan un hueco minimo pase lo que pase con el alto disponible. */
 .sidebar-bottom{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft)}
-/* Antes usaba --line-strong (un tono para bordes, no para texto): 2,15:1 de contraste,
- * practicamente invisible a poco brillo. --muted-3 es el mismo espiritu de marca de
- * agua pero sigue siendo texto legible. */
-.version{font-size:12px;color:var(--muted-3);padding:6px 6px 0}
-/* Aviso legal, comentarios y GitHub: una sola linea de enlaces cortos separados por puntos,
-   en la barra lateral (escritorio, con la version debajo como dato) y al pie de la pagina
-   (movil). Antes eran lineas sueltas que cambiaban de forma segun el idioma y que, en
-   espanol, no dejaban caber la barra lateral en 768 px de alto. */
+/* Privacidad, comentarios y GitHub al pie de la barra lateral: una sola linea de enlaces
+   cortos separados por puntos. Antes eran lineas sueltas que cambiaban de forma segun el
+   idioma y que, en espanol, no dejaban caber la barra en 768 px de alto. */
 .foot-links{flex-wrap:nowrap;gap:0;padding:12px 6px 0;white-space:nowrap}
 .foot-links .text-btn{font-size:var(--fs-sm)}
 .foot-links-sep{color:var(--muted-3);padding:0 4px;font-size:var(--fs-sm)}
+/* Metodologia e historial son paginas propias: sin el titular de la app ni la carga de
+   archivos encima (que siguen en el veredicto). */
+body.page-view .topbar,body.page-view .intake{display:none}
+/* Con un analisis cargado, el informe lleva una raya encima que lo separa de la carga;
+   aqui no hay nada que separar. */
+body.page-view .content{border-top:0;padding-top:0}
 
 /* ---------------------------------------------------------------- main */
 .main{--mpt:32px;--mpx:36px;padding:var(--mpt) var(--mpx) 64px;min-width:0}
@@ -1376,16 +1377,16 @@ tr.sel td{color:var(--text-2)}
      texto invisible (accent sobre accent). El span visible hereda el color del boton. */
   .sidebar-section .nav-item.active span{color:inherit}
   /* Con idioma/tema ya en `.sidebar-head`, a `.sidebar-bottom` no le queda nada que
-     mostrar en movil (el aviso legal baja al pie de la pagina, ver `.app-footer`). */
+     mostrar en movil (privacidad y demas enlaces bajan al pie de la pagina, ver `.app-footer`). */
   .sidebar-bottom{display:none}
   .header-controls .theme-btn{display:flex;align-items:center;justify-content:center}
   .theme-btn .swatch{margin:0}
-  /* El aviso legal va al pie de la pagina, como en cualquier sitio: es lo ultimo que
-     se lee, no un control mas junto al idioma y el tema. */
+  /* Al pie de la pagina, el mismo pie que las paginas publicas (marca, lema y enlaces):
+     es lo ultimo que se lee, no un control mas junto al idioma y el tema. */
   .app-footer{
-    display:block;margin-top:32px;padding:16px 0;border-top:1px solid var(--line-soft);
+    display:flex;flex-direction:column;gap:16px;margin-top:32px;padding:28px 0 8px;
+    border-top:1px solid var(--line);font-size:var(--fs-md);color:var(--muted);
   }
-  .app-footer .legal-links{padding:0}
   .main{padding:20px 16px 44px}
   .t3-consensus{text-align:left;margin-top:10px}
   .t3-consensus span{max-width:none}
@@ -1703,6 +1704,8 @@ tr.sel td{color:var(--text-2)}
 
 .lp-list{margin:0;padding-left:20px;color:var(--text-2);font-size:var(--fs-base);line-height:1.55}
 .lp-list li+li{margin-top:8px}
+/* Un parrafo seguido de su lista (descargo de la pagina de privacidad). */
+.lp-doc-block p+.lp-list{margin-top:12px}
 
 /* Guias */
 .guide-list{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:14px}
@@ -2605,7 +2608,6 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
 @media (min-width:721px) and (max-height:800px){
   .brand,.brand-link{padding-bottom:12px}
   .nav-item{padding-top:6px;padding-bottom:6px}
-  .version{padding-top:4px}
 }
 
 /* Enlaces dentro del texto de las páginas de documento (Quiénes somos, Privacidad,

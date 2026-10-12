@@ -1,4 +1,4 @@
-// Tema, idioma, prefs, policy preview, tabs, empty/legal/method.
+// Tema, idioma, prefs, policy preview, tabs, empty/method.
 
 import { DEFAULT_POLICY, gateFailures } from '../core/metrics.js';
 import { enhanceRadioGroups } from './radiogroup.js';
@@ -132,8 +132,9 @@ function mountAppMenu() {
   };
   // detail === 0: el clic viene del teclado (Intro o Espacio), no de un toque o del ratón.
   btn.addEventListener('click', (e) => (panel.hidden ? open(e.detail === 0) : close()));
-  // Ir al aviso legal es una pestaña de la propia app: el menú se cierra al elegirla.
-  panel.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => close()));
+  // Lo que se abre en otra pestaña (privacidad) no saca de la app: al volver, el menú ya
+  // no debe seguir abierto.
+  panel.querySelectorAll('a[target="_blank"]').forEach((b) => b.addEventListener('click', () => close()));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(true); });
   document.addEventListener('click', (e) => { if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) close(); });
   window.matchMedia('(min-width:721px)').addEventListener('change', (e) => { if (e.matches) close(); });
@@ -331,7 +332,7 @@ export function updatePolicyPreview() {
 export const TAB_HASH = {
   verdict: 'veredicto', plateaus: 'mesetas', rejected: 'descartes', params: 'parametros',
   diagnostics: 'diagnostico', unseen: 'periodo-no-visto', method: 'metodologia',
-  history: 'historial', legal: 'legal',
+  history: 'historial',
 };
 export const HASH_TAB = Object.fromEntries(Object.entries(TAB_HASH).map(([k, v]) => [v, k]));
 
@@ -468,10 +469,13 @@ export function render() {
   }
 
   const view = $('#view');
-  // Metodologia y legal no necesitan analisis cargado: se pueden leer siempre.
-  if (state.tab === 'method' || state.tab === 'legal' || state.tab === 'history') {
+  // Metodologia e historial no necesitan analisis cargado: se pueden leer siempre. Son
+  // paginas propias, asi que no llevan encima la cabecera ni la carga de archivos.
+  const pageView = state.tab === 'method' || state.tab === 'history';
+  document.body.classList.toggle('page-view', pageView);
+  if (pageView) {
     api.disposePlateauSurface();
-    view.innerHTML = state.tab === 'legal' ? renderLegal() : state.tab === 'history' ? api.renderHistoryView() : renderMethod();
+    view.innerHTML = state.tab === 'history' ? api.renderHistoryView() : renderMethod();
     bindViewEvents();
     return;
   }
@@ -627,165 +631,6 @@ export function renderEmpty() {
     </ol>
     <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo="noedge">${esc(t('empty.demoNoEdge'))}</button></p>
   </div>`;
-}
-
-/**
- * Textos legales.
- *
- * No van en la navegacion numerada porque no forman parte del analisis: se llega a
- * ellos desde el pie de la barra lateral, como en cualquier producto serio.
- *
- * AVISO: son borradores redactados con cuidado, no asesoramiento juridico. Antes de
- * cobrar un euro tienen que pasar por un gestor. En particular, el dia que haya
- * dimension economica -cobro, publicidad, recogida de correos- la LSSI obliga a
- * anadir nombre o razon social, NIF y domicilio, que hoy no hacen falta.
- */
-export function renderLegal() {
-  return `<div class="detail-head">
-      <div class="detail-kicker">${L('Legal', 'Legal')}</div>
-      <h2>${L('Condiciones, privacidad y descargo', 'Terms, privacy and disclaimer')}</h2>
-      <p>${L(
-        'Lee esto antes de tomar cualquier decisión con lo que te diga esta herramienta.',
-        'Read this before making any decision based on what this tool tells you.',
-      )}</p>
-    </div>
-
-    <section class="panel legal-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Lo más importante', 'Most important')}</div><h2>${L('Esto no es asesoramiento financiero', 'This is not financial advice')}</h2></div></div>
-      <p class="panel-intro">
-        ${L(
-          `Orometra es una <strong>herramienta de análisis estadístico</strong> que examina datos históricos que tú
-        le proporcionas. No es un asesor financiero, no es un servicio de inversión, no gestiona dinero y no
-        recomienda operar.`,
-          `Orometra is a <strong>statistical analysis tool</strong> that examines historical data you
-        provide. It is not a financial adviser, not an investment service, does not manage money and does not
-        recommend trading.`,
-        )}
-      </p>
-      <ul class="limits">
-        <li>${L(
-          `<strong>Un veredicto favorable no es una recomendación de compra ni de venta.</strong> Significa
-        únicamente que la configuración ha superado unos contrastes estadísticos sobre datos pasados. Nada más.`,
-          `<strong>A favorable verdict is not a buy or sell recommendation.</strong> It only means
-        the configuration passed some statistical tests on past data. Nothing more.`,
-        )}</li>
-        <li>${L(
-          `<strong>Los resultados de un backtest no predicen resultados futuros.</strong> Esta frase se repite
-        tanto que ha perdido fuerza, así que conviene decirla con precisión: todo lo que mide esta aplicación
-        ocurrió en el pasado, y el mercado no tiene ninguna obligación de repetirse.`,
-          `<strong>Backtest results do not predict future results.</strong> That sentence is repeated
-        so often it has lost force, so it is worth saying precisely: everything this app measures
-        happened in the past, and the market has no obligation to repeat itself.`,
-        )}</li>
-        <li>${L(
-          `<strong>La calidad de la salida depende por completo de la calidad de tus datos.</strong> Si tu
-        backtest usó un histórico pobre, un spread irreal o no contó las comisiones, el análisis heredará
-        esos defectos sin poder detectarlos.`,
-          `<strong>Output quality depends entirely on your data quality.</strong> If your
-        backtest used a poor history, an unrealistic spread or ignored commissions, the analysis will inherit
-        those defects without being able to detect them.`,
-        )}</li>
-        <li>${L(
-          `<strong>Operar con apalancamiento puede hacerte perder más de lo que inviertes.</strong> La
-        responsabilidad de cualquier decisión que tomes es enteramente tuya.`,
-          `<strong>Trading with leverage can make you lose more than you invest.</strong>
-        Responsibility for any decision you make is entirely yours.`,
-        )}</li>
-        <li>${L(
-          `La herramienta se ofrece <strong>tal cual</strong>, sin garantía de disponibilidad, de exactitud
-        ni de adecuación a ningún propósito concreto.`,
-          `The tool is offered <strong>as is</strong>, with no warranty of availability, accuracy
-        or fitness for any particular purpose.`,
-        )}</li>
-              <li>${L(
-          'Orometra no está afiliado a MetaQuotes. MetaTrader y MQL5 son marcas de MetaQuotes Ltd.',
-          'Orometra is not affiliated with MetaQuotes. MetaTrader and MQL5 are trademarks of MetaQuotes Ltd.',
-        )}</li>
-      </ul>
-    </section>
-
-    <section class="panel legal-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Privacidad', 'Privacy')}</div><h2>${L('Tus archivos no salen de tu ordenador', 'Your files never leave your computer')}</h2></div></div>
-      <p class="panel-intro">
-        ${L(
-          `No es una promesa de intenciones: es cómo está construida. Todo el análisis se ejecuta en el
-        JavaScript de tu navegador. <strong>Ningún servidor recibe tus archivos: no hay servidor de análisis.</strong>`,
-          `This is not a promise of intent: it is how it is built. The entire analysis runs in your
-        browser's JavaScript. <strong>No server receives your files: there is no analysis server.</strong>`,
-        )}
-      </p>
-      <ul class="limits">
-        <li>${L(
-          `<strong>No se sube ningún archivo.</strong> Los <code>.xml</code> de tu optimización y el informe
-        HTML de tu backtest se leen en memoria y se descartan al cerrar la pestaña.`,
-          `<strong>No file is uploaded.</strong> Your optimization <code>.xml</code> files and the
-        HTML backtest report are read in memory and discarded when you close the tab.`,
-        )}</li>
-        <li>${L(
-          `<strong>No hay cuentas ni registro.</strong> En esta app usamos solo GoatCounter, servido desde el propio
-        orometra.com, para contar visitas y cuántas veces se usa cada función (por ejemplo, «se hizo un análisis» o
-        «se descargó un .set»): sin cookies y sin nada de tus archivos, solo el nombre del evento. Nada de lo que
-        medimos se puede relacionar con lo que analizas.`,
-          `<strong>There are no accounts, no signup.</strong> In this app we only use GoatCounter, served from
-        orometra.com itself, to count visits and how often each feature is used (for example, “an analysis was
-        run” or “a .set was downloaded”): no cookies and nothing from your files, only the event name. Nothing we
-        measure can be tied to what you analyze.`,
-        )}</li>
-        <li>${L(
-          `<strong>Se guardan cuatro cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
-        nadie): el tema de color, el idioma, los mínimos que configures, para no tener que repetirlos, y el historial
-        de análisis (un resumen de cada uno, nunca tus archivos), que puedes desactivar o borrar en la pestaña
-        Historial. Puedes borrarlo todo vaciando los datos del sitio.`,
-          `<strong>Four things are stored in your own browser</strong> (local storage, never sent to
-        anyone): the color theme, the language, the minimums you set, so you do not have to repeat them, and the
-        analysis history (a summary of each one, never your files), which you can turn off or delete in the History
-        tab. You can clear everything by wiping the site data.`,
-        )}</li>
-        <li>${L(
-          `<strong>Lo que no podemos evitar:</strong> el proveedor que aloja la página y el servicio de
-        analítica reciben, como en cualquier web, tu dirección IP y los datos básicos del navegador. No está
-        relacionado con el contenido de tus archivos. Responsable: Pol Lázaro
-        (<a href="mailto:hello@orometra.com">hello@orometra.com</a>). Tus derechos y el detalle, en la
-        <a href="../privacy/">página de privacidad</a>.`,
-          `<strong>What we cannot avoid:</strong> the provider that hosts the page and the analytics service
-        receive, as on any website, your IP address and basic browser data. That is unrelated to the content of
-        your files. Controller: Pol Lázaro (<a href="mailto:hello@orometra.com">hello@orometra.com</a>). Your
-        rights and the details are on the <a href="../privacy/">privacy page</a>.`,
-        )}</li>
-      </ul>
-    </section>
-
-    <section class="panel legal-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Condiciones de uso', 'Terms of use')}</div><h2>${L('Qué puedes esperar', 'What you can expect')}</h2></div></div>
-      <ul class="limits">
-        <li>${L(
-          `El uso no requiere registro. No se garantiza que la página esté siempre disponible ni que
-        se mantenga indefinidamente.`,
-          `Use requires no signup. There is no guarantee the page will always be available or
-        maintained indefinitely.`,
-        )}</li>
-        <li>${L(
-          'Puedes usar los resultados libremente, incluso con fines comerciales, bajo tu responsabilidad.',
-          'You may use the results freely, including commercially, under your own responsibility.',
-        )}</li>
-        <li>${L(
-          `El código de la aplicación y su metodología son propiedad de su autor, publicados bajo licencia
-        <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener">PolyForm Noncommercial</a>:
-        puedes verlo, usarlo y modificarlo para fines no comerciales; el uso comercial del código en sí
-        necesita permiso.`,
-          `The application code and its methodology are the property of its author, published under the
-        <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener">PolyForm Noncommercial</a>
-        license: you may view, use and modify it for noncommercial purposes; commercial use of the code
-        itself needs permission.`,
-        )}</li>
-        <li>${L(
-          `Si encuentras un error en los cálculos, comunícalo a <a href="mailto:hello@orometra.com">hello@orometra.com</a>: un fallo en
-        una herramienta como esta puede costarle dinero a alguien, y eso importa más que cualquier otra consideración.`,
-          `If you find an error in the calculations, report it to <a href="mailto:hello@orometra.com">hello@orometra.com</a>: a bug in a
-        tool like this can cost someone money, and that matters more than any other consideration.`,
-        )}</li>
-      </ul>
-    </section>`;
 }
 
 // Mismos pasos, numeracion y limites que la pagina publica /methodology/, leidos de las

@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-12 — Privacidad, metodología e historial, como páginas propias; pie de portada en el móvil
+
+Al pulsar «Privacidad» en la app, el texto legal salía debajo del titular y de la carga de
+archivos, como si fuera parte del informe; a «Metodología» e «Historial» les pasaba lo mismo. Y había
+dos textos legales: la pestaña de la app (condiciones, privacidad y descargo) y la página /privacy/,
+más completa. Dos textos legales a mano acaban contradiciéndose.
+
+- **Un solo texto legal: la página de privacidad.** Recibe lo que solo tenía la app: el descargo
+  ampliado (un backtest no predice, la calidad depende de tus datos, el apalancamiento, «tal cual»)
+  y las condiciones de uso. La pestaña legal de la app desaparece; `/app/#legal` lleva a la página.
+- **Desde la app, las páginas se abren en otra pestaña** (privacidad y los enlaces del pie del
+  móvil): los archivos solo están en memoria, y salir de la app perdía el análisis cargado.
+- **Metodología e historial, sin titular ni carga de archivos encima** (`body.page-view`): empiezan
+  arriba, como una página. La carga sigue en el veredicto.
+- **Fuera «Motor v2»** de la barra lateral: era un texto fijo que no está en los exports ni en el
+  historial y no le decía nada a nadie.
+- **Pie del móvil como el de la portada**: marca, lema y Metodología, Guías, Quiénes somos,
+  Privacidad, Código en GitHub y correo (sin «App»: ya estás en ella).
+- Prueba: AUD-08 (`tests/input-guards.test.js`) comprueba ahora que la página de privacidad nombra
+  todo lo que se guarda en el navegador.
+
 ## 2026-10-12 — Pie de la app: privacidad, comentarios y GitHub en una línea; la versión, como dato
 
 Debajo del idioma y el tema había cuatro líneas sueltas (aviso legal, comentarios, GitHub y la

@@ -49,7 +49,7 @@
           <a href="/guides/" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
           <a href="/" data-i18n="help.home.href" data-i18n-attr="href"><span data-i18n="help.home">Home</span></a>
           <a href="mailto:hello@orometra.com?subject=Orometra"><span data-i18n="contact.feedback">Send feedback</span></a>
-          <button type="button" data-tab="legal"><span data-i18n="legal.link">Legal notice &amp; privacy</span></button>
+          <a href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a>
         </nav>
         <div class="lp-menu-theme">
           <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
@@ -102,13 +102,11 @@
           <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
         </button>
       </div>
-      <!-- Pie compacto (igual que el de movil, .app-footer): textos cortos y el nombre
-           completo para lectores de pantalla (aria-label contiene el texto visible). La
-           version es un dato, no un enlace. -->
+      <!-- Enlaces a paginas aparte: se abren en otra pestana para no perder el analisis
+           cargado (los archivos solo estan en memoria). -->
       <div class="legal-links foot-links">
-        <button class="text-btn" data-tab="legal" type="button" aria-label="Legal notice &amp; privacy" data-i18n="legal.link" data-i18n-attr="aria-label"><span data-i18n="legal.short">Privacy</span></button><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" aria-label="Send feedback" data-i18n="contact.feedback" data-i18n-attr="aria-label"><span data-i18n="contact.short">Feedback</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" aria-label="Code on GitHub" data-i18n="nav.code" data-i18n-attr="aria-label">GitHub</a>
+        <a class="text-btn" href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" aria-label="Send feedback" data-i18n="contact.feedback" data-i18n-attr="aria-label"><span data-i18n="contact.short">Feedback</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" aria-label="Code on GitHub" data-i18n="nav.code" data-i18n-attr="aria-label">GitHub</a>
       </div>
-      <div class="version" data-i18n="version.short">Engine v2</div>
     </div>
   </aside>
 
@@ -227,10 +225,21 @@
     <!-- Anuncio corto al cambiar de pestaña. Con aria-live en #view entero, el lector leia el informe completo. -->
     <div class="sr-only" id="viewStatus" role="status" aria-live="polite"></div>
 
+    <!-- Pie del movil: el mismo que el de las paginas publicas (sin «App»: ya estas en
+         ella). Las paginas se abren en otra pestana para no perder el analisis cargado. -->
     <footer class="app-footer">
-      <div class="legal-links foot-links">
-        <button class="text-btn" data-tab="legal" type="button" aria-label="Legal notice &amp; privacy" data-i18n="legal.link" data-i18n-attr="aria-label"><span data-i18n="legal.short">Privacy</span></button><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" aria-label="Send feedback" data-i18n="contact.feedback" data-i18n-attr="aria-label"><span data-i18n="contact.short">Feedback</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" aria-label="Code on GitHub" data-i18n="nav.code" data-i18n-attr="aria-label">GitHub</a>
+      <div class="lp-foot-brand">
+        <strong>Orometra</strong>
+        <span data-i18n="lp.foot.tagline">Separate the fragile from the stable</span>
       </div>
+      <nav class="lp-foot-nav" aria-label="Footer" data-i18n="nav.footer" data-i18n-attr="aria-label">
+        <a href="/methodology/" target="_blank" rel="noopener" data-i18n="help.method.href" data-i18n-attr="href"><span data-i18n="nav.method">Methodology</span></a>
+        <a href="/guides/" target="_blank" rel="noopener" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
+        <a href="/about/" target="_blank" rel="noopener" data-i18n="help.about.href" data-i18n-attr="href"><span data-i18n="doc.about.nav">About us</span></a>
+        <a href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a>
+        <a href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" data-i18n="nav.code">Code on GitHub</a>
+        <a href="mailto:hello@orometra.com" title="Contact" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
+      </nav>
     </footer>
   </main>
 </div>
