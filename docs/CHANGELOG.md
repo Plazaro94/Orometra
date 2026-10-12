@@ -2,26 +2,36 @@
 
 ## 2026-10-12 — Un forward con las pasadas perdedoras sin número ya no es «un export dañado»
 
-Lo destapó un export real del autor: Orometra decía «El export del forward está dañado: en 1839
-de 5423 filas falta el número de pasada…» y paraba. No lo estaba.
+Lo destapó un export real del autor (genética, 23 parámetros): Orometra decía «El export del
+forward está dañado: en 1839 de 5423 filas falta el número de pasada…» y paraba. No lo estaba.
 
 - **Qué pasaba** (FWD-4 en `docs/MT5_ASSUMPTIONS.md`): el export de la optimización traía solo
   las 3584 pasadas con beneficio (el del día anterior traía 1550 con pérdidas), y el del forward
-  las 5423, con las 1839 perdedoras sin número de pasada. Esas filas están completas y sanas;
-  las otras 3584 emparejan perfectamente. Cuadra con la opción del probador que omite los
-  resultados inútiles; el nombre exacto y la causa, sin confirmar.
-- **Ahora** (`core/schema.js#screenHiddenLosers`): si las filas sin pasada del forward no tienen
-  ningún valor imposible, ninguna de sus configuraciones está en la optimización y la
-  optimización no trae ninguna pasada con pérdidas, se apartan y el análisis sigue. Si la firma
-  no se cumple entera, sigue siendo un export dañado, como antes.
-- **Aviso nuevo**, entre los primeros de «En contra» del veredicto: el export de la optimización
-  no trae las pasadas que perdieron dinero, sin ellas las vecinas que perdieron salen como no
-  probadas (el análisis sale optimista) y cómo exportarlas. Cuenta para el nivel como aviso
-  sobre la meseta.
-- Con el export real: 18 mesetas, «débil», recomendada con beneficio 152569.21 · 534
+  las 5423, con las 1839 perdedoras sin número de pasada. Esas filas están completas y sanas; las
+  otras 3584 emparejan perfectamente. Por qué MT5 lo exporta así, sin confirmar.
+- **Ahora** (`core/schema.js#screenHiddenLosers`, `core/analysis.js`): si las filas sin pasada del
+  forward no tienen ningún valor imposible, ninguna de sus configuraciones está en la optimización
+  y la optimización no trae ninguna pasada con pérdidas, se **recuperan** como lo que son:
+  configuraciones probadas que perdieron dinero en el periodo optimizado (calidad 0, no cumplen
+  los mínimos, igual que con su fila completa), con su forward entero y su Result. Lo demás de
+  ese periodo queda vacío, no se inventa. Si la firma no se cumple entera, sigue siendo un export
+  dañado, como antes. El usuario no tiene que tocar nada en MT5.
+- **Medido** con el export completo del día anterior, ocultando sus 1550 perdedoras como en el
+  nuevo: misma recomendada, misma meseta (38) y mismo nivel; solo cambia el mínimo de operaciones
+  del forward (47 frente a 48), que se estima sin las operaciones de esas pasadas, y con él la
+  meseta pasa del 63 % al 66 % en el forward. Apartarlas sin recuperarlas (la primera versión
+  del arreglo) daba ~5 operaciones por parámetro en vez de ~10 y otra cifra de dependencia de los
+  mínimos (29 % en vez de 46 %); en la prueba sintética, otra meseta y otro nivel.
+- **Diagnóstico**: «Filas forward» cuenta todas las del archivo (antes salía 3584 de 5423) y una fila
+  dice cuántas se han recuperado.
+- **Aviso informativo** (no cuenta para el nivel ni pide nada): MT5 dejó fuera del export de la
+  optimización las pasadas que perdieron dinero, Orometra las ha recuperado del forward y, como
+  de ese periodo solo se sabe su resultado, en Descartes y en el CSV salen sin el resto de cifras.
+- Con el export real nuevo: 17 mesetas, «débil», recomendada con beneficio 152569.21 · 534
   operaciones · Resultado 252569.21. El export del día anterior no cambia.
-- Pruebas: 12 más en `tests/audit-2026-10b.test.js` (59), con datos sintéticos: el caso que se
-  reconoce y los tres que siguen siendo un export dañado.
+- Pruebas: 15 más en `tests/audit-2026-10b.test.js` (62), de respuesta conocida con datos
+  sintéticos: el mismo análisis que con el export completo, y los tres casos que siguen siendo un
+  export dañado.
 
 ## 2026-10-11 — «La regla "primera de Result" falla» deja de bajar el nivel, medido en el banco
 

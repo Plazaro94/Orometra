@@ -64,7 +64,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   isTable = screenedIs.table;
   // Antes que el filtro de dañadas: las pasadas que MT5 ocultó en la tabla de la optimización
   // llegan al forward sin número de pasada, pero sanas (FWD-4). Se apartan y se avisa.
-  const hiddenLosers = oosTable ? screenHiddenLosers(isTable, oosTable) : { table: null, hidden: 0 };
+  const hiddenLosers = oosTable ? screenHiddenLosers(isTable, oosTable) : { table: null, hidden: 0, rows: [] };
   if (oosTable) oosTable = hiddenLosers.table;
   const screenedOos = oosTable ? screenDamaged(oosTable, 'oos') : { table: null, dropped: 0 };
   if (oosTable) oosTable = screenedOos.table;
@@ -145,6 +145,28 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       }
     }
     integrity.unmatchedUsedForDiscovery = discoverOnAllIs;
+    /*
+     * FWD-4: las pasadas que MT5 dejó fuera del export de la optimización (todas las que
+     * perdieron dinero) y que el forward trae sin número de pasada. Se recuperan como lo que
+     * son: configuraciones probadas que perdieron en el periodo optimizado. De ese periodo
+     * solo se sabe eso y su Result (el Back Result del forward); el resto de sus cifras queda
+     * vacío, no se inventa. Con un export completo, una configuración con pérdidas puntúa 0 y
+     * no cumple tus mínimos: es lo que se les asigna más abajo (`lostInIs`). Apartarlas sin
+     * más las dejaba como «no probadas» y movía cifras del informe (medido con un export real
+     * completo, ocultando sus 1550 perdedoras: operaciones por parámetro ~5 en vez de ~10).
+     */
+    hiddenLosers.rows.forEach((row, k) => {
+      records.push({
+        id: `—${k + 1}`,
+        params: paired.paramColumns.map((p) => canonicalValue(row[p.oosCol])),
+        is: {},
+        oos: readMetrics(row, oosRoles),
+        criterionIs: oosRoles.backResult ? toNumber(row[oosRoles.backResult.col]) : NaN,
+        criterionOos: oosRoles.forwardResult ? toNumber(row[oosRoles.forwardResult.col]) : NaN,
+        oosKnown: true,
+        lostInIs: true,
+      });
+    });
     // Dos periodos distintos no dan las mismas cifras pasada a pasada. Si coinciden casi
     // siempre, es el mismo periodo cargado dos veces.
     {
@@ -280,6 +302,16 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     r.score = selectionMode === 'isThenOos' ? qi.score : r.qualityCombined;
     r.retention = known ? retention(qi.score, qo.score) : NaN;
     r.failsIs = gateFailures(r.is, policy, minTradesIs);
+    if (r.lostInIs) {
+      // FWD-4: perdió dinero en el periodo optimizado (de ahí no hay más cifras). Lo mismo que
+      // daría su fila completa: calidad 0 y no cumple tus mínimos por el beneficio.
+      r.qualityIs = 0;
+      r.score = 0;
+      r.qualityCombined = hasForward ? combineScores(0, qo.score) : 0;
+      if (selectionMode !== 'isThenOos') r.score = r.qualityCombined;
+      r.retention = known ? retention(0, qo.score) : NaN;
+      r.failsIs = ['beneficio <= 0'];
+    }
     // Sin forward no hay fallos que medir, pero tampoco aprueba el forward: no cuenta
     // como validada (passesJoint exige datos).
     r.failsOos = known ? gateFailures(r.oos, policy, minTradesOos) : [];

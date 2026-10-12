@@ -525,8 +525,9 @@ export function renderDiagnostics(a) {
         <div class="panel-head compact"><div><div class="panel-kicker">${L('Integridad', 'Integrity')}</div><h2>${L('Emparejado de archivos', 'File matching')}</h2></div></div>
         <div class="evidence-list">
           <div><span>${L('Filas de la optimización', 'Optimization rows')}</span><strong>${int(integ.isRows)}</strong></div>
-          ${a.meta.hasForward ? `<div><span>${L('Filas forward', 'Forward rows')}</span><strong>${integ.oosRows ? int(integ.oosRows) : '—'}</strong></div>
+          ${a.meta.hasForward ? `<div><span>${L('Filas forward', 'Forward rows')}</span><strong>${integ.oosRows ? int(integ.oosRows + (integ.hiddenLosers || 0)) : '—'}</strong></div>
           <div><span>${L('Emparejadas por pasada', 'Matched by Pass')}</span><strong>${int(integ.matchedRows)}</strong></div>
+          ${integ.hiddenLosers ? `<div><span>${L('Recuperadas del forward (sin pasada: perdieron al optimizar)', 'Recovered from the forward (no pass: lost when optimizing)')}</span><strong>${int(integ.hiddenLosers)}</strong></div>` : ''}
           <div><span>${integ.unmatchedUsedForDiscovery ? L('Sin forward (solo en la optimización)', 'No forward (optimization only)') : L('Sin pareja (descartadas)', 'Unmatched (dropped)')}</span><strong>${int(integ.unmatchedIs)}</strong></div>` : ''}
           <div><span>${L('Identificadores duplicados', 'Duplicate identifiers')}</span><strong>${int(integ.duplicateIds)}</strong></div>
           <div><span>${L('Filas con parámetros ilegibles', 'Rows with unreadable parameters')}</span><strong>${int(a.meta.droppedParams)}</strong></div>

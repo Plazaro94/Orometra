@@ -128,13 +128,14 @@ export function damageReport(table) {
  *   - en el forward, las filas sin pasada no tienen ningún valor imposible;
  *   - ninguna de sus configuraciones está en el export de la optimización;
  *   - el export de la optimización no trae ninguna pasada con beneficio ≤ 0.
- * Se apartan (no se pueden emparejar) y se cuentan, para avisar de que sin ellas las
- * vecinas que perdieron dinero salen como «no probadas».
+ * Se sacan del forward para emparejar y se devuelven aparte: el análisis las recupera como lo
+ * que son, configuraciones probadas que perdieron dinero en el periodo optimizado (ver
+ * core/analysis.js). Apartarlas sin más las dejaba como «no probadas» y distorsionaba cifras.
  *
- * @returns {{ table: object, hidden: number }}
+ * @returns {{ table: object, hidden: number, rows: Array }}
  */
 export function screenHiddenLosers(isTable, oosTable) {
-  const none = { table: oosTable, hidden: 0 };
+  const none = { table: oosTable, hidden: 0, rows: [] };
   if (!isTable || !oosTable) return none;
   const idOf = (t) => t.headers.findIndex((h) => ID_PATTERN.test(String(h).trim()));
   const idOos = idOf(oosTable);
@@ -156,7 +157,7 @@ export function screenHiddenLosers(isTable, oosTable) {
   const key = (r, side) => shared.map((c) => String(r[c[side]] ?? '').trim()).join('\u0000');
   const inIs = new Set(isTable.rows.map((r) => key(r, 'is')));
   if (unnumbered.some((r) => inIs.has(key(r, 'oos')))) return none;
-  return { table: { ...oosTable, rows: oosTable.rows.filter((r) => !empty(r[idOos])) }, hidden: unnumbered.length };
+  return { table: { ...oosTable, rows: oosTable.rows.filter((r) => !empty(r[idOos])) }, hidden: unnumbered.length, rows: unnumbered };
 }
 
 export function screenDamaged(table, which) {

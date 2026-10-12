@@ -28,7 +28,6 @@ import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { buildCsv } from '../js/export.js';
 import { degradationChart } from '../js/charts.js';
 import { forwardHoldHtml } from '../js/ui-state.js';
-import { whyGradeHighlights } from '../js/ui-verdict.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let failures = 0;
@@ -228,41 +227,50 @@ section('FWD-4: pasadas que MT5 ocultó en la optimización no son un forward da
 {
   // Como el export real del 12-10: la optimización sin ninguna pasada con pérdidas (opción de
   // omitir los resultados inútiles) y el forward con todas, las perdedoras sin número de pasada.
-  const t = demo.isTable;
-  const pc = t.headers.indexOf('Pass');
-  const prof = t.headers.indexOf('Profit');
-  const res = t.headers.indexOf('Result');
-  // Las que MT5 oculta son todas las que pierden en el periodo optimizado. El ejemplo tiene
-  // pocas (44), así que se tratan como perdedoras también 1 de cada 3, como en el export real
-  // (1839 de 5423): lo que importa es que en la optimización no quede ninguna con pérdidas.
-  const losers = new Set(t.rows.filter((r, i) => r[prof] <= 0 || i % 3 === 0).map((r) => r[pc]));
-  const isRows = t.rows.filter((r) => !losers.has(r[pc]));
-  const o = demo.oosTable;
-  const opc = o.headers.indexOf('Pass');
-  const oosRows = o.rows.map((r) => (losers.has(r[opc]) ? ['', ...r.slice(1)] : r));
-  const isT = { ...t, rows: isRows };
-  const oosT = { ...o, rows: oosRows };
-  const hidden = oosRows.filter((r) => r[opc] === '').length;
-  check('el caso de prueba: más del 1 % del forward sin pasada', hidden / oosRows.length > 0.01, `${hidden} de ${oosRows.length}`);
-  check('se reconoce la firma y se apartan las filas sin pasada', screenHiddenLosers(isT, oosT).hidden === hidden);
+  // Un export «completo» con perdedoras de verdad: 1 de cada 3 configuraciones pierde dinero en
+  // el periodo optimizado (como en el export real: 1839 de 5423). Y el mismo como lo exporta
+  // MT5 con las perdedoras ocultas: fuera de la optimización y sin pasada en el forward.
+  const t0 = demo.isTable;
+  const pc = t0.headers.indexOf('Pass');
+  const prof = t0.headers.indexOf('Profit');
+  const res = t0.headers.indexOf('Result');
+  const o0 = demo.oosTable;
+  const opc = o0.headers.indexOf('Pass');
+  const back = o0.headers.indexOf('Back Result');
+  const losers = new Set(t0.rows.filter((r, i) => r[prof] <= 0 || i % 3 === 0).map((r) => r[pc]));
+  const lose = (v) => -Math.abs(v) - 1;
+  const t = { ...t0, rows: t0.rows.map((r) => (losers.has(r[pc]) ? r.map((v, j) => (j === prof || j === res ? lose(v) : v)) : r)) };
+  const o = { ...o0, rows: o0.rows.map((r) => (losers.has(r[opc]) ? r.map((v, j) => (j === back ? lose(t0.rows.find((x) => x[pc] === r[opc])[res]) : v)) : r)) };
+  const isT = { ...t, rows: t.rows.filter((r) => !losers.has(r[pc])) };
+  const oosT = { ...o, rows: o.rows.map((r) => (losers.has(r[opc]) ? ['', ...r.slice(1)] : r)) };
+  const hidden = oosT.rows.filter((r) => r[opc] === '').length;
+  check('el caso de prueba: más del 1 % del forward sin pasada', hidden / oosT.rows.length > 0.01, `${hidden} de ${oosT.rows.length}`);
+  check('se reconoce la firma', screenHiddenLosers(isT, oosT).hidden === hidden);
   let a = null;
   let err = null;
   try { a = runAnalysis({ isTable: isT, oosTable: oosT }); } catch (e) { err = e.message; }
   check('el análisis sigue (antes: «El export del forward está dañado»)', a && !err, err);
-  const f = a && a.verdict.findings.find((x) => /no trae las pasadas que perdieron dinero/.test(x.title));
-  check('y avisa de que faltan las perdedoras, con cuántas', f && f.title.includes(`(${hidden.toLocaleString('es-ES')})`) && /omitir los resultados inútiles/.test(f.detail), f && f.title);
-  check('el aviso es de la meseta (cuenta para el nivel), no solo de la tabla', f && f.severity === 'warn' && f.scope !== 'table', f && `${f.severity}/${f.scope}`);
-  // Se ve en el veredicto, no solo en Diagnóstico: cambia cómo leer todo lo demás.
-  const cons = a ? whyGradeHighlights(a).cons : [];
-  check('sale entre los «En contra» del veredicto', cons.some((x) => /perdieron dinero/.test(x.title)), cons.map((x) => x.title).join(' | '));
+  const full = runAnalysis({ isTable: t, oosTable: o });
+  // Respuesta conocida: recuperadas como «probadas que perdieron», el análisis es el del export completo.
+  check('se recuperan todas: mismas configuraciones que el export completo', a && a.meta.total === full.meta.total, a && `${a.meta.total} frente a ${full.meta.total}`);
+  const lost = a ? a.records.filter((r) => r.lostInIs) : [];
+  check('las recuperadas cuentan como probadas que no cumplen tus mínimos y puntúan 0',
+    lost.length === hidden && lost.every((r) => r.qualityIs === 0 && r.failsIs.length && r.oosKnown), String(lost.length));
+  const same = (x, y) => x.plateaus.length && y.plateaus.length && x.plateaus[0].record.id === y.plateaus[0].record.id && x.plateaus[0].size === y.plateaus[0].size;
+  check('misma recomendada y misma meseta que con el export completo', a && same(a, full),
+    a && `${a.plateaus[0]?.record.id}/${a.plateaus[0]?.size} frente a ${full.plateaus[0]?.record.id}/${full.plateaus[0]?.size}`);
+  check('y el mismo nivel', a && a.verdict.level === full.verdict.level, a && `${a.verdict.level} frente a ${full.verdict.level}`);
+  const f = a && a.verdict.findings.find((x) => /dejó fuera del export de la optimización las pasadas que perdieron dinero/.test(x.title));
+  check('lo dice, con cuántas, y que no es un archivo dañado', f && f.title.includes(`(${hidden.toLocaleString('es-ES')})`) && /No es un archivo dañado/.test(f.detail), f && f.title);
+  check('solo informa: no pide tocar MT5 ni cuenta para el nivel', f && f.severity === 'info' && !/desactiva|vuelve a exportar/i.test(f.detail), f && f.severity);
   check('nada se cuenta como dañado', a && a.integrity.damagedDropped.oos === 0 && a.integrity.hiddenLosers === hidden, a && JSON.stringify(a.integrity.damagedDropped));
   setLocale('en');
-  const fen = rebuildLocalizedCopy(a).verdict.findings.find((x) => /leaves out the passes that lost money/.test(x.title));
+  const fen = rebuildLocalizedCopy(a).verdict.findings.find((x) => /left the passes that lost money out of the optimization export/.test(x.title));
   check('en inglés también', Boolean(fen), '');
   setLocale('es');
 
   // Si la firma no se cumple entera, sigue siendo un export dañado.
-  const withLoserInIs = { ...isT, rows: [...isT.rows, (() => { const r = t.rows[0].slice(); r[pc] = 999999; r[prof] = -5; r[res] = -5; return r; })()] };
+  const withLoserInIs = { ...isT, rows: [...isT.rows, (() => { const r = t0.rows[0].slice(); r[pc] = 999999; r[prof] = -5; r[res] = -5; return r; })()] };
   check('si la optimización trae alguna pasada con pérdidas, no se reconoce', screenHiddenLosers(withLoserInIs, oosT).hidden === 0);
   const withImpossible = { ...oosT, rows: oosT.rows.map((r, i) => (r[opc] === '' && i === oosT.rows.findIndex((x) => x[opc] === '') ? [...r.slice(0, -1), 9.88e-324] : r)) };
   check('si una fila sin pasada trae un valor imposible, no se reconoce', screenHiddenLosers(isT, withImpossible).hidden === 0);
