@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-12 — Tres contradicciones del recorrido, corregidas
+
+De la auditoría del recorrido completo (exports del banco recorridos en el navegador como un
+usuario de MT5). Solo textos y botones; el motor no cambia.
+
+- **Mesetas sin forward**: cuando MT5 no pasa al forward ninguna configuración de una meseta
+  (FWD-1: a veces solo pasa las mejores del periodo optimizado), la alternativa salía «frágil al
+  validar» y con «Descargar .set», aunque solo se había medido en el periodo optimizado. Ahora
+  sale «sin forward» y solo ofrece el rango de refinamiento, como cuando no hay archivo forward
+  (`js/ui-state.js#deployableSet`). En el banco pasa en 3 de 6 alternativas y en ninguna
+  recomendada de 47; si le pasara a la recomendada, los pasos lo dicen y ofrecen el rango.
+- **Sugerencia orientativa**: decía «No la uses sin probarla antes en un periodo no visto», y la
+  pestaña del periodo no visto contestaba «No hay ninguna configuración propuesta que validar»
+  (sin meseta no hay recorrido normal con el que comparar). Ahora la sugerencia dice que no se
+  puede contrastar ahí y que es solo un punto de partida para volver a optimizar, y la pestaña
+  lo explica y, si se ha soltado un informe, dice que se ha leído pero no se compara.
+- **Validando una alternativa**, la ficha del informe decía «coinciden con la configuración
+  propuesta»; ahora nombra la meseta elegida.
+- Prueba: `tests/recorrido-2026-10.test.js`.
+
 ## 2026-10-12 — Un forward con las pasadas perdedoras sin número ya no es «un export dañado»
 
 Lo destapó un export real del autor (genética, 23 parámetros): Orometra decía «El export del

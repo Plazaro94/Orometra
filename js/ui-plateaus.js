@@ -8,7 +8,7 @@ import { L, pctSign, shareText } from './i18n.js';
 import { gloss } from './glossary.js';
 import { fallbackNote } from './ui-verdict.js';
 import { setCoverageNote } from './export.js';
-import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory, findInMt5Html, mt5Figure, forwardHoldHtml } from './ui-state.js';
+import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory, findInMt5Html, mt5Figure, forwardHoldHtml, deployableSet } from './ui-state.js';
 
 /**
  * Hallazgos del motor que narran en prosa el mismo numero que esta tabla muestra en
@@ -84,10 +84,10 @@ export function renderRepCard(a, p) {
       `Pegada al borde del rango en: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
       `Stuck to the range edge at: ${p.boundary.map((b) => `<code>${esc(b.name)} = ${paramHtml(b.atMin ? b.min : b.max)}</code>`).join(', ')}`,
     )}</div>` : ''}
-    ${a.meta.hasForward ? `<p class="muted set-note">${esc(setCoverageNote(a, p, state.searchSet))}</p>` : ''}
+    ${deployableSet(a, p) ? `<p class="muted set-note">${esc(setCoverageNote(a, p, state.searchSet))}</p>` : ''}
     <div class="rep-actions">
       <button class="ghost-btn" data-copy="${p.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
-      ${hasF ? `<button class="ghost-btn" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
+      ${deployableSet(a, p) ? `<button class="ghost-btn" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
       <button class="ghost-btn" data-export="refine" data-plateau-index="${p.rank - 1}">${L('.set de refinamiento', 'Refinement .set')}</button>
       <button class="text-btn" data-scroll="plateauSurfacePanel">${L('Ver la meseta completa &rarr;', 'View the full plateau &rarr;')}</button>
     </div>

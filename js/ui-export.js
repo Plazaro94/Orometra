@@ -3,7 +3,7 @@
 import { track } from './track.js';
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { t, L, localeTag } from './i18n.js';
-import { state, api, $, esc, paramValue, num, int, findInMt5Text } from './ui-state.js';
+import { state, api, $, esc, paramValue, num, int, findInMt5Text, deployableSet, forwardUntested } from './ui-state.js';
 import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights, nextStepText } from './ui-verdict.js';
 
 const plain = (s) => String(s ?? '').replace(/<[^>]+>/g, '');
@@ -144,6 +144,12 @@ export function doExport(kind, plateauIndex) {
         'Without forward, a deployment .set is not exported: the plateau was only measured on the optimized period. Export the refinement range, or re-audit with the forward file.',
       ));
     }
+    if (forwardUntested(a, best)) {
+      return api.showError(L(
+        'MT5 no pasó al forward ninguna configuración de esta meseta: solo se ha medido en el periodo optimizado, así que no se exporta un .set de despliegue. Exporta su rango de refinamiento y vuelve a optimizarlo con forward.',
+        'MT5 sent no configuration of this plateau to the forward: it has only been measured on the optimized period, so a deployment .set is not exported. Export its refinement range and re-optimize it with a forward.',
+      ));
+    }
     downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best, state.searchSet), SET_MIME);
   } else if (kind === 'refine') {
     if (!best) return api.showError(L('No hay ninguna meseta que refinar.', 'There is no plateau to refine.'));
@@ -176,7 +182,7 @@ export function toggleExportMenu() {
     <button data-export="summary">${esc(t('export.summary'))}</button>
     <button data-export="json">${esc(t('export.json'))}</button>
     <button data-export="csv">${esc(t('export.csv'))}</button>
-    <button data-export="set" ${state.analysis && !state.analysis.meta.hasForward ? 'disabled title="' + esc(L('Requiere forward', 'Requires forward')) + '"' : ''}>${esc(t('export.set'))}</button>
+    <button data-export="set" ${state.analysis && (!state.analysis.meta.hasForward || (state.analysis.plateaus[0] && !deployableSet(state.analysis, state.analysis.plateaus[0]))) ? 'disabled title="' + esc(L('Requiere forward', 'Requires forward')) + '"' : ''}>${esc(t('export.set'))}</button>
     <button data-export="refine">${esc(t('export.refine'))}</button>`;
   $('.top-actions').appendChild(menu);
   menu.querySelectorAll('[data-export]').forEach((b) => b.addEventListener('click', () => {

@@ -10,7 +10,7 @@ import { auditUnseenTrades } from '../core/trades/from-deals.js';
 import { bpToPoints } from '../core/trades/costs.js';
 import { MIN_SAMPLE_DAYS } from '../core/trades/sample.js';
 import { L, localeTag } from './i18n.js';
-import { state, api, $, num, int, pct, esc, paramHtml, decodeHead } from './ui-state.js';
+import { state, api, $, num, int, pct, esc, paramHtml, decodeHead, deployableSet } from './ui-state.js';
 import { holdoutFact, displayVerdictLevel, levelName, repeatedPeriodText } from './ui-verdict.js';
 
 /**
@@ -120,6 +120,17 @@ export function unseenBand(r) {
  * cometer y mas dificil de ver: lanzar el backtest del periodo no visto con una
  * configuracion distinta de la que se estaba validando.
  */
+/**
+ * Con qué configuración se compara el informe: la propuesta (meseta 1) o la de la meseta
+ * que se ha elegido en el desplegable. Decir «la propuesta» validando una alternativa
+ * confundía.
+ */
+export function targetConfig(plateau) {
+  return plateau && plateau.rank > 1
+    ? { es: `la configuración de la meseta ${plateau.rank}`, en: `the configuration of plateau ${plateau.rank}` }
+    : { es: 'la configuración propuesta', en: 'the proposed configuration' };
+}
+
 export function renderReportCard(a, plateau) {
   const rep = state.report;
   if (!rep) {
@@ -164,10 +175,11 @@ export function renderReportCard(a, plateau) {
   }
 
   const cmp = compareParams(rep.params, a.meta.paramNames, plateau.record.params);
+  const tc = targetConfig(plateau);
   const fecha = (d) => (d instanceof Date && !Number.isNaN(d.valueOf()) ? d.toLocaleDateString(localeTag()) : '—');
   const mismatch = cmp.different.length
     ? `<div class="inline-warn report-mismatch">
-        <strong>${L('El backtest no se ha lanzado con la configuración propuesta.', 'The backtest was not run with the proposed configuration.')}</strong>
+        <strong>${L(`El backtest no se ha lanzado con ${tc.es}.`, `The backtest was not run with ${tc.en}.`)}</strong>
         ${cmp.different.slice(0, 6).map((d) => `<code>${esc(d.name)}</code>: ${L(
           `el informe trae <b>${esc(String(d.report))}</b> y debería ser <b>${paramHtml(d.expected)}</b>`,
           `the report has <b>${esc(String(d.report))}</b> and it should be <b>${paramHtml(d.expected)}</b>`,
@@ -177,20 +189,20 @@ export function renderReportCard(a, plateau) {
     : !cmp.same.length && a.meta.paramNames.length
       ? `<div class="inline-warn report-mismatch">
         <strong>${L('No se han podido leer los parámetros de este informe.', 'The parameters of this report could not be read.')}</strong>
-        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta, así que este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.', 'Without them there is no way to check that the backtest used the proposed configuration, so this result does not count toward the evidence level: it neither keeps nor lowers it.')}
+        ${L(`Sin ellos no se puede comprobar que el backtest sea de ${tc.es}, así que este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.`, `Without them there is no way to check that the backtest used ${tc.en}, so this result does not count toward the evidence level: it neither keeps nor lowers it.`)}
       </div>`
     : cmp.missing.length
       ? `<div class="inline-warn report-mismatch">
         <strong>${L(`Al informe le ${cmp.missing.length === 1 ? 'falta' : 'faltan'} ${int(cmp.missing.length)} de los ${int(a.meta.paramNames.length)} parámetros optimizados.`, `The report is missing ${int(cmp.missing.length)} of the ${int(a.meta.paramNames.length)} optimized parameters.`)}</strong>
         ${cmp.missing.slice(0, 8).map((n) => `<code>${esc(n)}</code>`).join(', ')}${cmp.missing.length > 8 ? L(` y ${cmp.missing.length - 8} más`, ` and ${cmp.missing.length - 8} more`) : ''}.
-        ${L('Sin ellos no se puede comprobar que el backtest sea de la configuración propuesta (¿otra versión del EA, o un nombre de parámetro distinto?), así que este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.', 'Without them there is no way to check that the backtest used the proposed configuration (another EA version, or a different parameter name?), so this result does not count toward the evidence level: it neither keeps nor lowers it.')}
+        ${L(`Sin ellos no se puede comprobar que el backtest sea de ${tc.es} (¿otra versión del EA, o un nombre de parámetro distinto?), así que este resultado no cuenta para el nivel de evidencia: ni lo mantiene ni lo baja.`, `Without them there is no way to check that the backtest used ${tc.en} (another EA version, or a different parameter name?), so this result does not count toward the evidence level: it neither keeps nor lowers it.`)}
       </div>`
     : cmp.same.length
       ? `<div class="report-ok">${cmp.same.length === 1
-        ? L('El parámetro del informe coincide con la configuración propuesta.',
-          'The parameter in the report matches the proposed configuration.')
-        : L(`Los ${int(cmp.same.length)} parámetros del informe coinciden con la configuración propuesta.`,
-          `The ${int(cmp.same.length)} parameters in the report match the proposed configuration.`)}</div>`
+        ? L(`El parámetro del informe coincide con ${tc.es}.`,
+          `The parameter in the report matches ${tc.en}.`)
+        : L(`Los ${int(cmp.same.length)} parámetros del informe coinciden con ${tc.es}.`,
+          `The ${int(cmp.same.length)} parameters in the report match ${tc.en}.`)}</div>`
       : '';
 
   // Parámetros que no se optimizaron: si el backtest usa otros valores que tu .set de la
@@ -427,6 +439,7 @@ export function renderTradesAudit() {
 }
 
 export function renderUnseen(a) {
+  if (!a.plateaus.length) return renderUnseenNoPlateau(a);
   const fieldsDef = unseenFields();
   const head = `<div class="detail-head">
       
@@ -464,10 +477,6 @@ export function renderUnseen(a) {
         )}
       </p>
     </div>`;
-
-  if (!a.plateaus.length) {
-    return `${head}<section class="panel"><p class="muted">${L('No hay ninguna configuración propuesta que validar. Vuelve al', 'There is no proposed configuration to validate. Go back to the')} <button class="text-btn" data-goto="verdict">${L('veredicto', 'verdict')}</button> ${L('para ver por qué.', 'to see why.')}</p></section>`;
-  }
 
   const idx = Math.min(state.unseen.plateauIndex, a.plateaus.length - 1);
   const p = a.plateaus[idx];
@@ -513,7 +522,7 @@ export function renderUnseen(a) {
 
   const params = `<section class="panel">
     <div class="panel-head compact"><div><div class="panel-kicker">${L('Recordatorio', 'Reminder')}</div><h2>${L('Configuración que debes probar', 'Configuration you must test')}</h2></div>
-      ${a.meta.hasForward ? `<button class="ghost-btn" data-export="set" data-plateau-index="${idx}">${L('Descargar .set', 'Download .set')}</button>` : ''}</div>
+      ${deployableSet(a, p) ? `<button class="ghost-btn" data-export="set" data-plateau-index="${idx}">${L('Descargar .set', 'Download .set')}</button>` : ''}</div>
     <div class="param-grid">
       ${a.meta.paramNames.map((n, j) => `<div class="param"><span>${esc(n)}</span><strong>${paramHtml(p.record.params[j])}</strong></div>`).join('')}
     </div>
@@ -528,6 +537,7 @@ export function renderUnseen(a) {
   // optimizados. Ese resultado no cuenta para el nivel (holdoutFact), pero el sello salía en
   // verde, y la pantalla se contradecía.
   const pcmp = state.report ? compareParams(state.report.params, a.meta.paramNames, p.record.params) : null;
+  const tc = targetConfig(p);
   const paramsDiffer = Boolean(pcmp && pcmp.different.length);
   const paramsUnverified = Boolean(pcmp && !paramsDiffer && !pcmp.matches);
   // Mismas operaciones y mismo beneficio que un periodo ya usado (core/unseen.js#repeatedPeriod):
@@ -543,7 +553,7 @@ export function renderUnseen(a) {
   const headline = repeatedText ? repeatedText.headline
     : paramsOk ? res.headline
       : paramsDiffer ? L('Estas cifras son de otra configuración', 'These figures are from another configuration')
-        : L('No consta que estas cifras sean de la configuración propuesta', 'It is not confirmed that these figures are from the proposed configuration');
+        : L(`No consta que estas cifras sean de ${tc.es}`, `It is not confirmed that these figures are from ${tc.en}`);
   const subline = repeatedText ? repeatedText.body
     : paramsOk
     ? L(
@@ -552,12 +562,12 @@ export function renderUnseen(a) {
     )
     : paramsDiffer
       ? L(
-        'El backtest se lanzó con parámetros distintos de los propuestos, así que este contraste no dice nada sobre la configuración que estás validando. Vuelve a lanzarlo en MT5 con el .set correcto.',
-        'The backtest was run with parameters different from those proposed, so this check says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.',
+        `El backtest se lanzó con parámetros distintos de los de ${tc.es}, así que este contraste no dice nada sobre la configuración que estás validando. Vuelve a lanzarlo en MT5 con el .set correcto.`,
+        `The backtest was run with parameters different from those of ${tc.en}, so this check says nothing about the configuration you are validating. Run it again in MT5 with the correct .set.`,
       )
       : L(
-        'En el informe no están todos los parámetros optimizados, así que no se puede comprobar que el backtest sea de la configuración propuesta. Las cifras se muestran, pero no validan nada hasta que eso se pueda comprobar.',
-        'The report does not contain all the optimized parameters, so there is no way to check that the backtest used the proposed configuration. The figures are shown, but they validate nothing until that can be checked.',
+        `En el informe no están todos los parámetros optimizados, así que no se puede comprobar que el backtest sea de ${tc.es}. Las cifras se muestran, pero no validan nada hasta que eso se pueda comprobar.`,
+        `The report does not contain all the optimized parameters, so there is no way to check that the backtest used ${tc.en}. The figures are shown, but they validate nothing until that can be checked.`,
       );
 
   // Qué hace este resultado con el nivel del veredicto (js/ui-verdict.js#displayVerdictLevel):
@@ -635,6 +645,32 @@ export function renderUnseen(a) {
   // El resultado va justo después del informe: es lo que se viene a ver. Antes iba detrás
   // del Monte Carlo y del formulario, a ~5.500 px en el móvil.
   return `${head}${reportCard}${result}${form}${tradesAudit}${params}`;
+}
+
+/**
+ * Sin meseta no hay un recorrido «normal» con el que comparar un backtest, tampoco el de la
+ * sugerencia orientativa. Antes esta pestaña empezaba con «Ya has elegido configuración…»
+ * y, si se soltaba un informe, no pasaba nada visible.
+ */
+function renderUnseenNoPlateau(a) {
+  const rep = state.report;
+  const why = a.fallback
+    ? L('Este paso compara el backtest de la configuración elegida con lo que ya demostró su meseta. En este análisis no hay ninguna meseta, así que no hay nada con lo que comparar, tampoco la sugerencia orientativa: no es una zona estable.',
+      'This step compares the backtest of the chosen configuration with what its plateau already showed. This analysis has no plateau, so there is nothing to compare with, not even the tentative suggestion: it is not a stable zone.')
+    : L('Este paso compara el backtest de la configuración elegida con lo que ya demostró su meseta. En este análisis no hay ninguna meseta ni ninguna configuración elegida, así que no hay nada con lo que comparar.',
+      'This step compares the backtest of the chosen configuration with what its plateau already showed. This analysis has no plateau and no chosen configuration, so there is nothing to compare with.');
+  const loaded = rep
+    ? `<p>${esc(L(`El informe que has cargado (${rep.meta.file || rep.meta.expert || 'backtest'}) se ha leído, pero no se compara con nada.`,
+      `The report you loaded (${rep.meta.file || rep.meta.expert || 'backtest'}) was read, but it is not compared with anything.`))}</p>`
+    : '';
+  return `<div class="detail-head">
+      <h2>${L('La prueba de fuego', 'The acid test')}</h2>
+    </div>
+    <section class="panel">
+      <p>${esc(why)}</p>
+      ${loaded}
+      <p class="muted">${L('Lo que puedes hacer ahora está en el', 'What you can do now is in the')} <button class="text-btn" data-goto="verdict">${L('veredicto', 'verdict')}</button>.</p>
+    </section>`;
 }
 
 export function readUnseenForm() {

@@ -93,6 +93,19 @@ export function forwardHoldHtml(p, critical = 0.65) {
   const share = pct(v.passFrac, 0);
   return `${v.passFrac < critical ? `<span class="badge warn">${share}</span>` : share} <small class="muted">${of}</small>`;
 }
+/**
+ * ¿Ninguna configuración de la meseta llegó al forward? Pasa cuando MT5 lleva al forward
+ * solo las mejores del periodo optimizado (FWD-1 en docs/MT5_ASSUMPTIONS.md): la meseta
+ * existe, pero solo se midió en el periodo optimizado, como si no hubiera archivo forward.
+ */
+export const forwardUntested = (a, p) => Boolean(a && a.meta.hasForward && p && p.oosValidation && p.oosValidation.withForward === 0);
+
+/**
+ * ¿Se ofrece el .set de despliegue de esta meseta? Hace falta forward y que alguna de sus
+ * configuraciones llegara a él. Si no, solo el rango de refinamiento, igual que sin forward.
+ */
+export const deployableSet = (a, p) => Boolean(a && a.meta.hasForward && p && !forwardUntested(a, p));
+
 export const money = (v) => (Number.isFinite(v) ? new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 0 }).format(v) : '—');
 /** Valor tal como lo escribe MT5: punto decimal y sin separador de millares. */
 export const rawValue = (v) => {

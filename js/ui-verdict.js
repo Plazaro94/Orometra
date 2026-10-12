@@ -7,7 +7,7 @@ import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag, pctSign, shareText } from './i18n.js';
-import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, forwardHoldHtml } from './ui-state.js';
+import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, forwardHoldHtml, deployableSet, forwardUntested } from './ui-state.js';
 import { gloss } from './glossary.js';
 
 /*
@@ -185,8 +185,8 @@ export function fallbackNote(a) {
     : L(' Ninguna configuración cumple tus mínimos en los dos periodos: esta solo los cumple en el periodo optimizado.',
       ' No configuration meets your minimums in both periods: this one only meets them on the optimized period.');
   return L(
-    `Sin meseta. Es la que mejor combina el periodo optimizado y el forward junto con sus vecinas (${params}).${gates} No la uses sin probarla antes en un periodo no visto.`,
-    `No plateau. It is the one that best combines the optimized period and the forward together with its neighbors (${params}).${gates} Do not use it without first testing it on an unseen period.`,
+    `Sin meseta. Es la que mejor combina el periodo optimizado y el forward junto con sus vecinas (${params}).${gates} No es una zona estable, y Orometra no puede contrastarla en un periodo no visto porque no hay meseta con la que comparar: tómala solo como punto de partida para volver a optimizar.`,
+    `No plateau. It is the one that best combines the optimized period and the forward together with its neighbors (${params}).${gates} It is not a stable zone, and Orometra cannot check it on an unseen period because there is no plateau to compare it with: take it only as a starting point to optimize again.`,
   );
 }
 
@@ -298,7 +298,7 @@ export function compactSummary(a) {
 /** La acción principal de la cabecera compacta: la misma que el botón lima del veredicto. */
 export function compactAction(a) {
   if (!a.plateaus[0]) return null;
-  return a.meta.hasForward
+  return deployableSet(a, a.plateaus[0])
     ? { kind: 'set', label: L('Descargar .set', 'Download .set') }
     : { kind: 'refine', label: L('Descargar rango', 'Download range') };
 }
@@ -375,7 +375,19 @@ function nextSteps(a, best, hold) {
     <div><strong>${title}</strong><p>${body}</p>${extra}</div>
   </li>`;
   let steps;
-  if (best && hasF && !hold.done) {
+  if (best && forwardUntested(a, best)) {
+    // Hay forward, pero MT5 no llevó ahí ninguna configuración de esta meseta: está tan
+    // sin validar como sin archivo forward, y su .set de despliegue no se ofrece.
+    steps = [
+      step(1, esc(L('Ninguna configuración de esta meseta llegó al forward', 'No configuration in this plateau reached the forward')),
+        esc(L('MT5 no pasó ninguna al forward (cuando no las pasa todas, pasa solo las mejores del periodo optimizado), así que de momento solo se ha medido en el periodo optimizado.',
+          'MT5 sent none of them to the forward (when it does not send them all, it sends only the best of the optimized period), so for now it has only been measured on the optimized period.'))),
+      step(2, esc(L('Vuelve a optimizar este rango con forward', 'Re-optimize this range with a forward')),
+        esc(L('Descarga el rango para reoptimizar y lánzalo en MT5 con Forward activado.', 'Download the range to re-optimize and run it in MT5 with Forward enabled.'))),
+      step(3, esc(L('Suéltalo aquí', 'Drop it here')),
+        esc(L('Con forward en la meseta, se podrá medir si aguanta fuera del periodo optimizado.', 'With a forward on the plateau, it can be measured whether it holds beyond the optimized period.'))),
+    ];
+  } else if (best && hasF && !hold.done) {
     steps = [
       step(1, esc(L('Descarga el .set', 'Download the .set')),
         esc(L(`Lleva ${setCountEs(a, best)} de la pasada ${best.record.id}. En el probador de MT5, pestaña de parámetros de entrada («Inputs»): clic derecho sobre la tabla → «Cargar» («Load») y elige el archivo.`,
@@ -438,10 +450,12 @@ function renderDecision(a, dv, best, hold) {
   const hasF = a.meta.hasForward;
   let pick;
   if (best) {
-    // Sin forward no hay .set de despliegue (ver doExport): se ofrece el rango de
+    // Sin forward en la meseta (no hay archivo, o MT5 no pasó ahí ninguna de sus
+    // configuraciones) no hay .set de despliegue (ver doExport): se ofrece el rango de
     // refinamiento, que sí tiene sentido.
+    const deploy = deployableSet(a, best);
     const actions = `<div class="vx-actions">
-      ${hasF
+      ${deploy
     ? `<button class="primary-btn" data-export="set" data-plateau-index="${best.rank - 1}">${L('Descargar .set', 'Download .set')}</button>`
     : `<button class="primary-btn" data-export="refine" data-plateau-index="${best.rank - 1}">${L('Descargar rango para reoptimizar', 'Download range to re-optimize')}</button>`}
       <button class="ghost-btn" data-copy="${best.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
@@ -449,7 +463,7 @@ function renderDecision(a, dv, best, hold) {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass">${L('Pasada', 'Pass')} <b>${esc(best.record.id)}</b></div>
       ${findInMt5Html(best.record, hasF)}
-      <p class="vx-pass-note">${esc(hasF
+      <p class="vx-pass-note">${esc(deploy
     ? L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado y en el forward (promediado con sus vecinas).`,
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on both the optimized period and the forward (averaged with its neighbors).`)
     : L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado (promediado con sus vecinas).`,
@@ -458,7 +472,7 @@ function renderDecision(a, dv, best, hold) {
         ${a.meta.paramNames.map((n, j) => `<span>${esc(n)} <b>${paramHtml(best.record.params[j])}</b></span>`).join('')}
       </div>
       ${actions}
-      ${hasF ? `<p class="vx-fine">${esc(setCoverageNote(a, best, state.searchSet))}</p>` : ''}`;
+      ${deploy ? `<p class="vx-fine">${esc(setCoverageNote(a, best, state.searchSet))}</p>` : ''}`;
   } else if (a.fallback) {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass vx-pass-risk">${esc(L('Ninguna con garantías', 'None you can rely on'))}</div>
@@ -844,7 +858,10 @@ export function renderTop3(a) {
     if (hasF && p.record.failsOos && p.record.failsOos.length) {
       flags.push(`<span class="badge warn" title="${esc(L('Esta configuración no cumple tus mínimos en el forward', 'This configuration does not meet your minimums on the forward'))}">${L('falla al validar', 'fails on validation')}</span>`);
     }
-    if (p.oosValidation && p.oosValidation.passFrac < 0.5) {
+    // Sin ninguna configuración en el forward no hay nada «frágil»: no se pudo validar.
+    if (forwardUntested(a, p)) {
+      flags.push(`<span class="badge warn" title="${esc(L('MT5 no pasó al forward ninguna configuración de esta meseta: solo se ha medido en el periodo optimizado', 'MT5 sent no configuration of this plateau to the forward: it has only been measured on the optimized period'))}">${L('sin forward', 'no forward')}</span>`);
+    } else if (p.oosValidation && p.oosValidation.passFrac < 0.5) {
       flags.push(`<span class="badge warn" title="${esc(L('Menos de la mitad de la meseta cumple tus mínimos en el forward', 'Less than half of the plateau meets your minimums on the forward'))}">${L('frágil al validar', 'fragile on validation')}</span>`);
     }
     return flags.join(' ') || `<span class="badge ok">${L('sin avisos', 'no warnings')}</span>`;
@@ -858,7 +875,7 @@ export function renderTop3(a) {
       <div class="t3-flags">${flagBadges(p)}</div>
       <p class="t3-alt-meta">${int(p.size)} ${L('configuraciones', 'configurations')} · ${int(p.stability.support)} ${L('vecinas', 'neighbors')}${hasF && p.oosValidation && p.oosValidation.withForward ? ` · ${L(`el ${pct(p.oosValidation.passFrac, 0)} cumple en el forward`, `${pct(p.oosValidation.passFrac, 0)} pass on the forward`)}` : ''}</p>
       <div class="t3-alt-actions">
-        ${a.meta.hasForward ? `<button class="ghost-btn t3-btn-inline" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
+        ${deployableSet(a, p) ? `<button class="ghost-btn t3-btn-inline" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
         <button class="text-btn t3-btn-inline" data-plateau="${p.rank - 1}">${L('Detalle →', 'Detail →')}</button>
       </div>
     </article>`).join('')}
