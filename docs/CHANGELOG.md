@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-12 — «Qué hacer ahora» tras el periodo no visto: débil no lleva a real, y en contra hay opciones
+
+Dos ramas en las que la app aconsejaba de más o dejaba al usuario sin salida (auditoría del recorrido).
+
+- **Débil y el periodo no visto no la contradice**: antes, el mismo paso que con buena o sólida
+  («pruébala en demo o en real con riesgo reducido»). Ahora dice que esa prueba detecta poco y no
+  compensa lo que la deja en débil, remite a la limitación de «Por qué este nivel», limita a demo sin
+  dinero real y avisa de que para más evidencia hace falta un tramo nuevo. Sin forward, pide
+  reoptimizar con Forward en fechas no usadas (tampoco las de ese tramo). Moderada, buena y sólida,
+  como antes.
+- **El periodo no visto va en contra**: antes, «revisa en esa pestaña qué métrica falla antes de dar
+  ningún paso más», sin ningún paso. Ahora, cuatro opciones: no reoptimizar sobre ese tramo ni buscar
+  otro hasta que uno salga bien; mirar qué falla y cuánto (la prueba también da falsas alarmas); si
+  se sigue, en demo sin dinero real; o volver a empezar reservando antes un tramo final. El resumen
+  de «Por qué este nivel» y el resumen exportado remiten a ellas.
+- **Un informe que no cuenta** (otra configuración, otra meseta, un periodo ya usado) ya no se trata
+  como un fallo: se dice por qué no cuenta y que hay que lanzar el backtest de la propuesta.
+- Con cuatro pasos, la rejilla es 2 x 2 en escritorio (antes, tres y uno suelto).
+- Prueba: `tests/recorrido-2026-10.test.js` (R4, R5).
+
 ## 2026-10-12 — Cada backtest del periodo no visto queda apuntado, no solo el último
 
 La prueba final vale si se hace una vez. Antes se podía soltar un informe tras otro hasta que uno

@@ -717,6 +717,8 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-next{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
 .vx-next .vx-label{margin-bottom:14px}
 .vx-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+/* Cuatro opciones (periodo no visto en contra): 2 x 2, no tres y una suelta. */
+.vx-steps:has(> .vx-step:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}
 .vx-step{display:flex;gap:12px;align-items:flex-start;min-width:0}
 .vx-step-n{
   flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
@@ -755,7 +757,7 @@ details.panel > .panel-body{padding:0 20px 20px}
   .vx-stat{padding:10px 10px}
   .vx-stat > strong{font-size:var(--fs-xl)}
   .vx-stat-note{display:none}
-  .vx-steps{grid-template-columns:1fr;gap:16px}
+  .vx-steps,.vx-steps:has(> .vx-step:nth-child(4)){grid-template-columns:1fr;gap:16px}
   .vx-actions button{flex:1 1 auto}
 }
 

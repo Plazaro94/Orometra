@@ -7,6 +7,10 @@
 //       pestaña del periodo no visto contestaba «no hay ninguna configuración que validar».
 //   R3  Validando una meseta alternativa, la ficha del informe decía «coinciden con la
 //       configuración propuesta».
+//   R4  Con evidencia débil y el periodo no visto aprobado, el siguiente paso era el mismo que
+//       con buena: «pruébala en demo o en real con riesgo reducido».
+//   R5  Con el periodo no visto en contra, solo «revisa qué métrica falla antes de dar ningún
+//       paso más», sin ningún paso.
 //
 //   node tests/recorrido-2026-10.test.js
 
@@ -15,7 +19,7 @@ import { runAnalysis } from '../core/analysis.js';
 import { DEFAULT_POLICY } from '../core/metrics.js';
 import { generateCase } from '../bench/sim.js';
 import { state, deployableSet, forwardUntested } from '../js/ui-state.js';
-import { renderTop3, renderVerdict, fallbackNote, compactAction } from '../js/ui-verdict.js';
+import { renderTop3, renderVerdict, fallbackNote, compactAction, nextStepText, holdoutFact, displayVerdictLevel } from '../js/ui-verdict.js';
 import { renderRepCard } from '../js/ui-plateaus.js';
 import { renderUnseen, renderReportCard } from '../js/ui-unseen.js';
 
@@ -104,6 +108,59 @@ section('R3: validando una alternativa, la ficha nombra esa meseta');
   state.report.params = paramsOf(m1);
   check('con la recomendada sigue diciendo «la propuesta»', /coinciden con la configuración propuesta/.test(renderReportCard(multi, m1)));
   state.report = null;
+}
+
+section('R4: débil con el periodo no visto aprobado no lleva a «real»');
+{
+  const weak = analyze('S5', 1);
+  check('el caso es débil y tiene meseta', weak.verdict.level === 'weak' && weak.plateaus.length > 0, weak.verdict.level);
+  state.report = null;
+  state.unseen.plateauIndex = 0;
+  state.unseen.result = { level: 'normal', headline: '' };
+  const hold = holdoutFact(weak);
+  check('el periodo no visto cuenta y no contradice', hold.ok && displayVerdictLevel(weak) === 'weak');
+  const text = nextStepText(weak, hold);
+  check('ya no dice «en real con riesgo reducido»', !/en real con riesgo reducido/.test(text), text);
+  check('dice que no compensa lo que la deja en débil, y solo demo', /no compensa lo que la deja en débil/.test(text) && /en demo, sin dinero real/.test(text), text);
+  check('y que hace falta un tramo nuevo', /hace falta un tramo nuevo/.test(text));
+
+  const good = analyze('S7', 1);
+  check('con buena se mantiene el paso a demo o real con riesgo reducido', /en real con riesgo reducido/.test(nextStepText(good, holdoutFact(good))));
+
+  const isOnly = (() => { const c = generateCase('S8', 3); return runAnalysis({ isTable: c.isTable, oosTable: null, policy: DEFAULT_POLICY }); })();
+  const t2 = nextStepText(isOnly, holdoutFact(isOnly));
+  check('sin forward: reoptimizar con forward en fechas no usadas, tampoco este tramo', /vuelve a optimizar con Forward en fechas que no hayas usado/.test(t2) && /tampoco las de este tramo/.test(t2), t2);
+  state.unseen.result = null;
+}
+
+section('R5: el periodo no visto en contra da opciones');
+{
+  const good = analyze('S7', 1);
+  state.report = null;
+  state.unseen.plateauIndex = 0;
+  state.unseen.result = { level: 'outside', headline: '' };
+  const hold = holdoutFact(good);
+  check('va en contra y baja a moderada', hold.against && displayVerdictLevel(good) === 'moderate');
+  const html = renderVerdict(good);
+  const next = html.split('class="vx-next"')[1] || '';
+  check('ni en los pasos ni en el resumen queda «antes de dar ningún paso más»', !/antes de dar ningún paso más/.test(html));
+  check('el resumen remite a «Qué hacer ahora»', /está en «Qué hacer ahora»/.test(html));
+  check('primero, no reoptimizar sobre ese tramo', /<strong>No la reoptimices sobre este tramo<\/strong>/.test(next), next.slice(0, 300));
+  check('cuatro opciones numeradas', (next.match(/class="vx-step"/g) || []).length === 4);
+  check('con enlace a la pestaña del periodo no visto', /data-goto="unseen"/.test(next));
+  check('dice que la prueba también da falsas alarmas', /falsas alarmas/.test(next));
+  const text = nextStepText(good, hold);
+  check('el resumen exportado lleva las mismas opciones', /1\) No la reoptimices sobre este tramo\./.test(text) && /4\) O vuelve a empezar\./.test(text), text);
+
+  // Un informe de otra configuración no es «en contra»: dice que no valida y qué hacer.
+  const [m1] = good.plateaus;
+  const params = Object.fromEntries(good.meta.paramNames.map((n, j) => [n, String(j === 0 ? Number(m1.record.params[0]) + 1 : m1.record.params[j])]));
+  state.report = { meta: { file: 'otro.html' }, params, metrics: {}, deals: [] };
+  const other = holdoutFact(good);
+  const t3 = nextStepText(good, other);
+  check('informe de otra configuración: no se toma por un fallo', !other.against && /otra configuración/.test(t3) && /Lanza en MT5 el backtest de la configuración propuesta/.test(t3), t3);
+  state.report = null;
+  state.unseen.result = null;
 }
 
 console.log(`\n${checks - failures}/${checks} comprobaciones correctas`);

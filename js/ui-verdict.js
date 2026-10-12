@@ -167,8 +167,8 @@ export function displayVerdictCopy(a) {
     level,
     headline: L('Evidencia moderada: el periodo no visto no la confirma', 'Moderate evidence: the unseen period does not confirm it'),
     summary: L(
-      'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y pasó el forward, pero en el periodo no visto su resultado se sale de lo habitual. Revisa esa pestaña antes de dar ningún paso más.',
-      'The proposed plateau rests on neighbors that also clear your minimums and passed the forward, but on the unseen period its result falls outside the usual range. Check that tab before taking any further step.',
+      'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y pasó el forward, pero en el periodo no visto su resultado se sale de lo habitual. Lo que puedes hacer ahora, y lo que no conviene, está en «Qué hacer ahora».',
+      'The proposed plateau rests on neighbors that also clear your minimums and passed the forward, but on the unseen period its result falls outside the usual range. What you can do now, and what is best avoided, is under “What to do now”.',
     ),
   };
 }
@@ -197,15 +197,56 @@ export function fallbackNote(a) {
 export function nextStepText(a, hold) {
   if (!hold || !hold.done || !a.plateaus.length) return a.verdict.nextStep;
   if (hold.ok) {
+    // Aprobar el periodo no visto no sube el nivel (detecta poco): con evidencia débil, lo
+    // que la deja en débil sigue ahí, y el siguiente paso no puede ser el mismo que con buena.
+    if (displayVerdictLevel(a) === 'weak') {
+      return a.meta.hasForward
+        ? L(
+          'El periodo no visto no la contradice, pero eso no compensa lo que la deja en débil: esta prueba detecta poco, y aprobarla no la confirma. Lee la limitación seria en «Por qué este nivel». Si sigues con ella, que sea en demo, sin dinero real, comparando con el rango habitual de la meseta. Para tener más evidencia hace falta un tramo nuevo: el periodo optimizado, el forward y este ya están usados.',
+          'The unseen period does not contradict it, but that does not make up for what keeps it weak: this check detects little, and passing it does not confirm it. Read the serious limitation in “Why this level”. If you go on with it, do so on demo, without real money, comparing with the plateau\'s usual range. More evidence needs a new segment: the optimized period, the forward and this one are already used.',
+        )
+        : L(
+          'El periodo no visto no la contradice, pero sin forward la evidencia no pasa de débil y esta prueba no la sube. Para medir más, vuelve a optimizar con Forward en fechas que no hayas usado (tampoco las de este tramo) y analiza de nuevo. Si sigues con ella mientras tanto, que sea en demo, sin dinero real.',
+          'The unseen period does not contradict it, but without a forward the evidence does not go above weak and this check does not raise it. To measure more, re-optimize with Forward on dates you have not used (not this segment\'s either) and analyze again. If you go on with it meanwhile, do so on demo, without real money.',
+        );
+    }
     return L(
       'El periodo no visto no la contradice (esta prueba detecta poco: aprobarla no la confirma). Siguiente paso: pruébala en demo o en real con riesgo reducido, y compara sus resultados en vivo con el rango habitual de la meseta, no con las mejores cifras.',
       'The unseen period does not contradict it (this check detects little: passing it does not confirm it). Next step: run it on demo or live with reduced risk, and compare its live results with the plateau\'s usual range, not with the best figures.',
     );
   }
+  if (hold.against) {
+    return againstOptions().map(([title, body], i) => `${i + 1}) ${title}. ${body}`).join(' ');
+  }
+  // El informe no cuenta (otra configuración, otra meseta, un periodo ya usado): no es que
+  // haya fallado, es que no se ha probado la propuesta.
   return L(
-    'El periodo no visto no la confirma. Revisa en esa pestaña qué métrica falla (o si el informe es de otra configuración) antes de dar ningún paso más.',
-    'The unseen period does not confirm it. Check in that tab which metric fails (or whether the report is from another configuration) before taking any further step.',
+    `${hold.note} Lanza en MT5 el backtest de la configuración propuesta (con su .set) sobre un tramo que no hayas usado ni para optimizar ni para validar, y suelta aquí el informe.`,
+    `${hold.note} Run the backtest of the proposed configuration in MT5 (with its .set) on a segment you have used neither to optimize nor to validate, and drop the report here.`,
   );
+}
+
+/**
+ * Qué hacer cuando el periodo no visto va en contra de la configuración propuesta. Antes solo
+ * se decía «revisa qué métrica falla antes de dar ningún paso más», sin ningún paso. Lo que no
+ * conviene va primero: es el error fácil (reoptimizar con ese tramo dentro, o buscar otro hasta
+ * que uno salga bien). Pares [título, cuerpo] en texto plano.
+ */
+export function againstOptions() {
+  return [
+    [L('No la reoptimices sobre este tramo', 'Do not re-optimize over this segment'),
+      L('Ni lo metas en una nueva optimización ni busques otro tramo hasta que uno salga bien: este resultado ya forma parte de lo que sabes de esta configuración.',
+        'Do not put it into a new optimization or look for another segment until one comes out well: this result is now part of what you know about this configuration.')],
+    [L('Mira qué falla y cuánto', 'See what fails and by how much'),
+      L('En la pestaña del periodo no visto, qué cifras se salen. Esta prueba también da falsas alarmas (lo dice su nota de alcance), sobre todo con tramos cortos: una sola métrica en la cola pesa menos que varias fuera de rango.',
+        'In the unseen-period tab, which figures fall outside. This check also gives false alarms (its scope note says so), above all with short segments: a single metric in the tail weighs less than several out of range.')],
+    [L('Si sigues con ella, sin dinero real', 'If you go on with it, without real money'),
+      L('Déjala en demo y compárala con el rango habitual de la meseta. Para volver a confiar en ella hace falta un tramo nuevo que no hayas mirado, no repetir este.',
+        'Keep it on demo and compare it with the plateau\'s usual range. Trusting it again needs a new segment you have not looked at, not repeating this one.')],
+    [L('O vuelve a empezar', 'Or start over'),
+      L('Con la idea revisada o con más histórico, reservando antes de optimizar un tramo final que no vayas a mirar hasta el final.',
+        'With the idea revised or with more history, setting aside before optimizing a final segment you will not look at until the end.')],
+  ];
 }
 
 const LEVEL_ORDER = ['insufficient', 'weak', 'moderate', 'good', 'strong'];
@@ -375,7 +416,11 @@ function nextSteps(a, best, hold) {
     <div><strong>${title}</strong><p>${body}</p>${extra}</div>
   </li>`;
   let steps;
-  if (best && forwardUntested(a, best)) {
+  if (best && hold.done && hold.against) {
+    // El periodo no visto va en contra: opciones, no un «revisa antes de dar ningún paso más».
+    steps = againstOptions().map(([title, body], i) => step(i + 1, esc(title), esc(body),
+      i === 1 ? `<button class="text-btn vx-step-cta" data-goto="unseen">${L('Ir al periodo no visto &rarr;', 'Go to unseen period &rarr;')}</button>` : ''));
+  } else if (best && forwardUntested(a, best)) {
     // Hay forward, pero MT5 no llevó ahí ninguna configuración de esta meseta: está tan
     // sin validar como sin archivo forward, y su .set de despliegue no se ofrece.
     steps = [
