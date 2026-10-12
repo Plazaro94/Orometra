@@ -8,7 +8,8 @@ sobreoptimización sí lo decía («divide tu histórico en tres»), la app no.
 
 - «Cómo conseguir los archivos» (pantalla inicial de la app) empieza con un paso 0, **opcional, pero
   muy recomendable**: dejar fuera de las fechas del probador un tramo final que no se mire hasta el
-  final, con la salida si ya se optimizó hasta hoy (un tramo anterior al optimizado). Opcional porque
+  final, lo bastante largo para que el EA opere en él con normalidad (sin plazos ni cifras: cada
+  estrategia opera a su ritmo, y no hay un porcentaje publicado que valga para todas), con la salida si ya se optimizó hasta hoy (un tramo anterior al optimizado). Opcional porque
   la evidencia puede llegar a buena o sólida sin él (enmienda del 2026-10-09 del banco).
 - «Por qué →» lleva a la sección «Cómo tenerla bajo control en MT5, paso a paso» de la guía, que
   estrena ancla (`#workflow`, en las dos versiones).

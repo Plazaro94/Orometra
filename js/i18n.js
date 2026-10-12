@@ -429,7 +429,7 @@ const STRINGS = {
     'drop.overlay.body': 'Anywhere on the page. The app detects which file is the optimization and which is the forward.',
 
     'empty.h2': 'How to get the files',
-    'empty.s0': '<strong>Before optimizing (optional, but highly recommended):</strong> leave a final segment, a few months, out of the tester’s dates and do not look at it until the end. It will be your unseen period: the only test you will not have used to choose. If you already optimized up to today, a segment before the one you optimized also works. <a href="/guides/mt5-overfitting/#workflow">Why →</a>',
+    'empty.s0': '<strong>Before optimizing (optional, but highly recommended):</strong> leave a final segment out of the tester’s dates and do not look at it until the end. It will be your unseen period: the only test you will not have used to choose. Make it long enough for your EA to trade in it as it normally does. If you already optimized up to today, a segment before the one you optimized also works. <a href="/guides/mt5-overfitting/#workflow">Why →</a>',
     'empty.s1': 'In MT5, Optimization results tab: right-click → <em>export to XML</em>. If you used Forward, export that tab too. <a href="/guides/export-mt5-optimization-xml/">Step-by-step guide →</a>',
     'empty.s2': 'Drop them in the box above: the optimization export and, if you have it, the forward. Both from the <em>same</em> optimization.',
     'empty.s3': 'Press <em>Analyze</em>. In seconds you get the recommended configuration and its .set.',
@@ -1185,7 +1185,7 @@ const STRINGS = {
     'drop.overlay.body': 'Da igual en qué parte de la página. La app reconoce cuál es la optimización y cuál el forward.',
 
     'empty.h2': 'Cómo conseguir los archivos',
-    'empty.s0': '<strong>Antes de optimizar (opcional, pero muy recomendable):</strong> deja fuera de las fechas del probador un tramo final, unos meses, y no lo mires hasta el final. Será tu periodo no visto: la única prueba que no habrás usado para elegir. Si ya optimizaste hasta hoy, también sirve un tramo anterior al que optimizaste. <a href="/es/guias/sobreoptimizacion-mt5/#workflow">Por qué →</a>',
+    'empty.s0': '<strong>Antes de optimizar (opcional, pero muy recomendable):</strong> deja fuera de las fechas del probador un tramo final y no lo mires hasta el final. Será tu periodo no visto: la única prueba que no habrás usado para elegir. Que sea lo bastante largo para que tu EA opere en él con normalidad. Si ya optimizaste hasta hoy, también sirve un tramo anterior al que optimizaste. <a href="/es/guias/sobreoptimizacion-mt5/#workflow">Por qué →</a>',
     'empty.s1': 'En MT5, pestaña de resultados de la optimización: clic derecho → <em>exportar a XML</em>. Si usaste forward, exporta también esa pestaña. <a href="/es/guias/exportar-optimizacion-mt5-xml/">Guía paso a paso →</a>',
     'empty.s2': 'Suéltalos en el recuadro de arriba: el export de la optimización y, si lo tienes, el del forward. Los dos de la <em>misma</em> optimización.',
     'empty.s3': 'Pulsa <em>Analizar</em>. En segundos tendrás la configuración recomendada y su .set.',
