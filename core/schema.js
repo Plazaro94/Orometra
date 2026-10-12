@@ -118,6 +118,47 @@ export function damageReport(table) {
  * @param {'is'|'oos'} which
  * @returns {{ table: object, dropped: number }}
  */
+/**
+ * Pasadas que MT5 ocultó en la tabla de la optimización (FWD-4 en docs/MT5_ASSUMPTIONS.md).
+ *
+ * Con la opción del probador que omite los resultados inútiles, el export de la optimización
+ * no trae ninguna pasada con pérdidas, y el del forward sí las trae, pero con la celda de la
+ * pasada vacía. No es un export dañado: esas filas están completas y sanas. Se reconocen por
+ * su firma, y solo si se cumple entera (si no, siguen siendo «dañadas»):
+ *   - en el forward, las filas sin pasada no tienen ningún valor imposible;
+ *   - ninguna de sus configuraciones está en el export de la optimización;
+ *   - el export de la optimización no trae ninguna pasada con beneficio ≤ 0.
+ * Se apartan (no se pueden emparejar) y se cuentan, para avisar de que sin ellas las
+ * vecinas que perdieron dinero salen como «no probadas».
+ *
+ * @returns {{ table: object, hidden: number }}
+ */
+export function screenHiddenLosers(isTable, oosTable) {
+  const none = { table: oosTable, hidden: 0 };
+  if (!isTable || !oosTable) return none;
+  const idOf = (t) => t.headers.findIndex((h) => ID_PATTERN.test(String(h).trim()));
+  const idOos = idOf(oosTable);
+  if (idOos < 0) return none;
+  const empty = (v) => v === null || v === undefined || String(v).trim() === '';
+  const unnumbered = oosTable.rows.filter((r) => empty(r[idOos]));
+  if (!unnumbered.length || unnumbered.some((r) => r.some(isImpossibleNumber))) return none;
+  const profitIs = isTable.headers.findIndex((h) => metricRole(h) === 'profit');
+  if (profitIs < 0) return none;
+  const isProfits = isTable.rows.map((r) => toNumber(r[profitIs]));
+  if (!isProfits.length || isProfits.some((p) => !Number.isFinite(p) || p <= 0)) return none;
+  // Parámetros: columnas que están en los dos archivos y no son métricas ni la pasada.
+  const shared = isTable.headers
+    .map((h, i) => ({ h: String(h).trim(), i }))
+    .filter(({ h }) => !ID_PATTERN.test(h) && !metricRole(h))
+    .map(({ h, i }) => ({ is: i, oos: oosTable.headers.findIndex((x) => String(x).trim() === h) }))
+    .filter((c) => c.oos >= 0);
+  if (!shared.length) return none;
+  const key = (r, side) => shared.map((c) => String(r[c[side]] ?? '').trim()).join('\u0000');
+  const inIs = new Set(isTable.rows.map((r) => key(r, 'is')));
+  if (unnumbered.some((r) => inIs.has(key(r, 'oos')))) return none;
+  return { table: { ...oosTable, rows: oosTable.rows.filter((r) => !empty(r[idOos])) }, hidden: unnumbered.length };
+}
+
 export function screenDamaged(table, which) {
   const r = damageReport(table);
   if (!r.rows || r.damaged === 0) return { table, dropped: 0 };

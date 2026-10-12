@@ -711,7 +711,8 @@ export function whyGradeHighlights(a) {
   // Primero lo que pesa en el nivel (críticos y avisos sobre la meseta) y después los
   // avisos sobre el orden de la tabla, que no lo bajan: con una «sólida» no puede parecer
   // que lo de arriba de «En contra» la contradice.
-  const weight = (f) => (f.severity === 'critical' ? 0 : f.scope === 'table' ? 2 : 1);
+  // Los avisos fijados (faltan datos de entrada, core/verdict.js#pinned) van justo tras los críticos.
+  const weight = (f) => (f.severity === 'critical' ? 0 : f.pinned ? 0.5 : f.scope === 'table' ? 2 : 1);
   const cons = findings.filter((f) => f.severity === 'warn' || f.severity === 'critical')
     .map((f, i) => ({ f, i })).sort((x, y) => weight(x.f) - weight(y.f) || x.i - y.i).map((x) => x.f).slice(0, 4);
   return { pros, cons };

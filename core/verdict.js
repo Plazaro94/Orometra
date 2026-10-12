@@ -55,6 +55,9 @@ export function buildVerdict(ctx) {
   // preselección del forward sale en todo export real de MT5 (solo reexporta las mejores),
   // y mientras bloqueaba, con archivos reales nunca se pasaba de «moderada».
   const tableOnly = () => { findings[findings.length - 1].scope = 'table'; };
+  // Avisos que cambian cómo leer todo lo demás (faltan datos de entrada): la interfaz los pone
+  // entre los primeros de «En contra», aunque el motor los añada al final.
+  const pinned = () => { findings[findings.length - 1].pinned = true; };
 
   const { gatePassCount, total, plateaus, fragility, fragilityQuality, fragilityFolds, fragilityAsymmetry,
     fragilityWorstDirection, sharpeTest, spearman, coverage, searchCoverage, medianSupport,
@@ -600,6 +603,17 @@ export function buildVerdict(ctx) {
       add(SEV.WARN, L(`${n} ${pl(n, 'fila dañada descartada', 'filas dañadas descartadas')}`, `${n} damaged ${pl(n, 'row', 'rows')} discarded`),
         L(`${where}: sin número de pasada o con valores que MT5 no genera en una pasada normal. Son menos del 1 % y se han quitado para que no entren en el análisis; si quieres el export completo, vuelve a exportarlo.`,
           `${where}: no pass number, or values MT5 does not produce in a normal pass. They are under 1% and were removed so they do not enter the analysis; for the full export, export it again.`), 'integrity');
+    }
+    // FWD-4: el export de la optimización vino sin las pasadas con pérdidas (opción del probador
+    // que omite los resultados inútiles) y el forward las trae sin número de pasada. Afecta a la
+    // meseta, no solo al orden de la tabla: sus vecinas que perdieron salen como no probadas.
+    if (integrity.hiddenLosers > 0) {
+      const n = integrity.hiddenLosers;
+      const nn = n.toLocaleString(localeTag());
+      add(SEV.WARN, L(`Tu export de la optimización no trae las pasadas que perdieron dinero (${nn})`, `Your optimization export leaves out the passes that lost money (${nn})`),
+        L(`El forward trae ${nn} ${pl(n, 'pasada', 'pasadas')} sin número de pasada que no ${pl(n, 'está', 'están')} en el export de la optimización, y ese export no trae ninguna con pérdidas: MT5 las oculta cuando, en la tabla de resultados de la optimización, está activada la opción de omitir los resultados inútiles (clic derecho). No es un archivo dañado; esas filas se han apartado porque no se pueden emparejar. Pero sin ellas Orometra no sabe que esas configuraciones perdieron y las trata como no probadas, así que las vecinas de cada meseta salen mejor de lo que son. Para un análisis completo, desactiva esa opción y vuelve a exportar los dos archivos.`,
+          `The forward has ${nn} ${pl(n, 'pass', 'passes')} with no pass number that ${pl(n, 'is', 'are')} not in the optimization export, and that export has no losing pass at all: MT5 hides them when, in the optimization results table, the option to skip useless results is on (right-click). The file is not damaged; those rows were set aside because they cannot be paired. But without them Orometra does not know those configurations lost money and treats them as untested, so each plateau's neighbors look better than they are. For a complete analysis, turn that option off and export both files again.`), 'integrity');
+      pinned();
     }
     if (integrity.passSource && integrity.passSource !== 'pass') {
       const why = {

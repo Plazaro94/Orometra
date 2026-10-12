@@ -23,10 +23,12 @@ import { buildDemoTables } from '../js/demo.js';
 import { runAnalysis } from '../core/analysis.js';
 import { refinementRange } from '../core/engine.js';
 import { parseSetText } from '../core/setfile.js';
+import { screenHiddenLosers } from '../core/schema.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { buildCsv } from '../js/export.js';
 import { degradationChart } from '../js/charts.js';
 import { forwardHoldHtml } from '../js/ui-state.js';
+import { whyGradeHighlights } from '../js/ui-verdict.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let failures = 0;
@@ -220,6 +222,55 @@ section('M2, M3, M4 y M7: textos que se contradecían o no decían de qué es la
   const usrc = fs.readFileSync(path.join(ROOT, 'js/ui-verdict.js'), 'utf8');
   check('M2: la tarjeta «Se mantiene al validar» dice que es la mediana de la meseta',
     /conservan en el forward las configuraciones de su meseta \(la mediana\)/.test(usrc));
+}
+
+section('FWD-4: pasadas que MT5 ocultó en la optimización no son un forward dañado');
+{
+  // Como el export real del 12-10: la optimización sin ninguna pasada con pérdidas (opción de
+  // omitir los resultados inútiles) y el forward con todas, las perdedoras sin número de pasada.
+  const t = demo.isTable;
+  const pc = t.headers.indexOf('Pass');
+  const prof = t.headers.indexOf('Profit');
+  const res = t.headers.indexOf('Result');
+  // Las que MT5 oculta son todas las que pierden en el periodo optimizado. El ejemplo tiene
+  // pocas (44), así que se tratan como perdedoras también 1 de cada 3, como en el export real
+  // (1839 de 5423): lo que importa es que en la optimización no quede ninguna con pérdidas.
+  const losers = new Set(t.rows.filter((r, i) => r[prof] <= 0 || i % 3 === 0).map((r) => r[pc]));
+  const isRows = t.rows.filter((r) => !losers.has(r[pc]));
+  const o = demo.oosTable;
+  const opc = o.headers.indexOf('Pass');
+  const oosRows = o.rows.map((r) => (losers.has(r[opc]) ? ['', ...r.slice(1)] : r));
+  const isT = { ...t, rows: isRows };
+  const oosT = { ...o, rows: oosRows };
+  const hidden = oosRows.filter((r) => r[opc] === '').length;
+  check('el caso de prueba: más del 1 % del forward sin pasada', hidden / oosRows.length > 0.01, `${hidden} de ${oosRows.length}`);
+  check('se reconoce la firma y se apartan las filas sin pasada', screenHiddenLosers(isT, oosT).hidden === hidden);
+  let a = null;
+  let err = null;
+  try { a = runAnalysis({ isTable: isT, oosTable: oosT }); } catch (e) { err = e.message; }
+  check('el análisis sigue (antes: «El export del forward está dañado»)', a && !err, err);
+  const f = a && a.verdict.findings.find((x) => /no trae las pasadas que perdieron dinero/.test(x.title));
+  check('y avisa de que faltan las perdedoras, con cuántas', f && f.title.includes(`(${hidden.toLocaleString('es-ES')})`) && /omitir los resultados inútiles/.test(f.detail), f && f.title);
+  check('el aviso es de la meseta (cuenta para el nivel), no solo de la tabla', f && f.severity === 'warn' && f.scope !== 'table', f && `${f.severity}/${f.scope}`);
+  // Se ve en el veredicto, no solo en Diagnóstico: cambia cómo leer todo lo demás.
+  const cons = a ? whyGradeHighlights(a).cons : [];
+  check('sale entre los «En contra» del veredicto', cons.some((x) => /perdieron dinero/.test(x.title)), cons.map((x) => x.title).join(' | '));
+  check('nada se cuenta como dañado', a && a.integrity.damagedDropped.oos === 0 && a.integrity.hiddenLosers === hidden, a && JSON.stringify(a.integrity.damagedDropped));
+  setLocale('en');
+  const fen = rebuildLocalizedCopy(a).verdict.findings.find((x) => /leaves out the passes that lost money/.test(x.title));
+  check('en inglés también', Boolean(fen), '');
+  setLocale('es');
+
+  // Si la firma no se cumple entera, sigue siendo un export dañado.
+  const withLoserInIs = { ...isT, rows: [...isT.rows, (() => { const r = t.rows[0].slice(); r[pc] = 999999; r[prof] = -5; r[res] = -5; return r; })()] };
+  check('si la optimización trae alguna pasada con pérdidas, no se reconoce', screenHiddenLosers(withLoserInIs, oosT).hidden === 0);
+  const withImpossible = { ...oosT, rows: oosT.rows.map((r, i) => (r[opc] === '' && i === oosT.rows.findIndex((x) => x[opc] === '') ? [...r.slice(0, -1), 9.88e-324] : r)) };
+  check('si una fila sin pasada trae un valor imposible, no se reconoce', screenHiddenLosers(isT, withImpossible).hidden === 0);
+  const inIsAlready = { ...oosT, rows: oosT.rows.map((r) => (r === oosT.rows.find((x) => x[opc] !== '') ? ['', ...r.slice(1)] : r)) };
+  check('si una fila sin pasada es una configuración que sí está en la optimización, no se reconoce', screenHiddenLosers(isT, inIsAlready).hidden === 0);
+  let err2 = null;
+  try { runAnalysis({ isTable: withLoserInIs, oosTable: oosT }); } catch (e) { err2 = e.message; }
+  check('y entonces el análisis para como antes, con el aviso de export dañado', /está dañado/.test(err2 || ''), err2);
 }
 
 section('E6 y E7: textos de Mesetas y Descartes');

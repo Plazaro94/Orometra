@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-10-12 — Un forward con las pasadas perdedoras sin número ya no es «un export dañado»
+
+Lo destapó un export real del autor: Orometra decía «El export del forward está dañado: en 1839
+de 5423 filas falta el número de pasada…» y paraba. No lo estaba.
+
+- **Qué pasaba** (FWD-4 en `docs/MT5_ASSUMPTIONS.md`): el export de la optimización traía solo
+  las 3584 pasadas con beneficio (el del día anterior traía 1550 con pérdidas), y el del forward
+  las 5423, con las 1839 perdedoras sin número de pasada. Esas filas están completas y sanas;
+  las otras 3584 emparejan perfectamente. Cuadra con la opción del probador que omite los
+  resultados inútiles; el nombre exacto y la causa, sin confirmar.
+- **Ahora** (`core/schema.js#screenHiddenLosers`): si las filas sin pasada del forward no tienen
+  ningún valor imposible, ninguna de sus configuraciones está en la optimización y la
+  optimización no trae ninguna pasada con pérdidas, se apartan y el análisis sigue. Si la firma
+  no se cumple entera, sigue siendo un export dañado, como antes.
+- **Aviso nuevo**, entre los primeros de «En contra» del veredicto: el export de la optimización
+  no trae las pasadas que perdieron dinero, sin ellas las vecinas que perdieron salen como no
+  probadas (el análisis sale optimista) y cómo exportarlas. Cuenta para el nivel como aviso
+  sobre la meseta.
+- Con el export real: 18 mesetas, «débil», recomendada con beneficio 152569.21 · 534
+  operaciones · Resultado 252569.21. El export del día anterior no cambia.
+- Pruebas: 12 más en `tests/audit-2026-10b.test.js` (59), con datos sintéticos: el caso que se
+  reconoce y los tres que siguen siendo un export dañado.
+
 ## 2026-10-11 — «La regla "primera de Result" falla» deja de bajar el nivel, medido en el banco
 
 - **Motor** (`core/verdict.js`): el aviso era **crítico** cuando el orden de la columna Result
