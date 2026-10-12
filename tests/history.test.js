@@ -7,6 +7,7 @@ import { runAnalysis } from '../core/analysis.js';
 import {
   fingerprint, summarize, emptyStore, parseStore, addEntry, previousFor, attempts,
   insideSpan, compare, dataSignature, HISTORY_MAX, HISTORY_VERSION,
+  addUnseenTry, earlierCountedTries, UNSEEN_TRIES_MAX,
 } from '../core/history.js';
 
 let failures = 0;
@@ -140,6 +141,30 @@ section('Lista: añadir, no duplicar la misma ejecución, límite e intentos');
   let big = [];
   for (let i = 0; i < HISTORY_MAX + 7; i++) big = addEntry(big, { ...e1, id: `n${i}`, total: i, sig: `d${i}` });
   check(`se conservan los ${HISTORY_MAX} más recientes`, big.length === HISTORY_MAX && big[0].id === 'n7' && big[big.length - 1].id === `n${HISTORY_MAX + 6}`);
+}
+
+section('Periodo no visto: cada backtest comparado queda apuntado');
+{
+  const ok1 = { key: '2025-01-02|2025-07-01|88|4178.46', at: 't1', level: 'normal', counts: true, against: false };
+  const bad = { key: '2025-01-02|2025-07-01|88|-3300.1', at: 't2', level: 'outside', counts: true, against: true };
+  let tries = addUnseenTry([], ok1);
+  tries = addUnseenTry(tries, bad);
+  tries = addUnseenTry(tries, { ...ok1, at: 't3' });
+  check('bueno → malo → bueno: quedan los dos backtests, no solo el último', tries.length === 2 && tries[0].level === 'outside', JSON.stringify(tries));
+  check('el mismo backtest otra vez no es otro intento: conserva su fecha y pasa al final', tries[1].key === ok1.key && tries[1].at === 't1');
+  const moved = addUnseenTry(tries, { ...ok1, at: 't4', counts: false, plateau: 2 });
+  check('compararlo con otra meseta actualiza su resultado', moved.length === 2 && moved[1].counts === false && moved[1].plateau === 2);
+  check('los anteriores que contaron: el malo, visto desde el bueno', earlierCountedTries(tries, ok1.key).map((t) => t.key).join() === bad.key);
+  const wrongFirst = addUnseenTry([{ key: 'otro-set', at: 't0', level: 'normal', counts: false }], ok1);
+  check('uno de otro .set corregido después no cuenta como prueba anterior', earlierCountedTries(wrongFirst, ok1.key).length === 0);
+  check('sin intentos no hay nada que avisar', earlierCountedTries(undefined, 'x').length === 0);
+  let many = [];
+  for (let i = 0; i < UNSEEN_TRIES_MAX + 3; i++) many = addUnseenTry(many, { key: `k${i}`, at: `t${i}`, level: 'normal', counts: true });
+  check(`como mucho ${UNSEEN_TRIES_MAX} por análisis`, many.length === UNSEEN_TRIES_MAX && many[0].key === 'k3');
+
+  const withTries = addEntry([{ ...e1, unseen: { level: 'normal' }, unseenTries: tries }], { ...e1, id: 'a1d', unseenTries: [] });
+  check('al volver a analizar los mismos datos, los intentos no se pierden', withTries.length === 1 && withTries[0].unseenTries.length === 2);
+  check('un análisis nuevo empieza sin intentos', Array.isArray(summarize(runAnalysis({ isTable: demo.isTable, oosTable: demo.oosTable }), { id: 'x', at: 'y', level: 'good', files: { is: 'a' } }).unseenTries));
 }
 
 section('Almacén: tolera datos rotos');

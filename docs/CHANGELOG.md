@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-12 — Cada backtest del periodo no visto queda apuntado, no solo el último
+
+La prueba final vale si se hace una vez. Antes se podía soltar un informe tras otro hasta que uno
+saliera bien: el nivel volvía a subir y el historial solo guardaba el último («no contradice»).
+Lo reprodujo la auditoría del recorrido: informe bueno → malo → bueno, y no quedaba rastro del malo.
+
+- **Cada backtest comparado** queda apuntado como intento del análisis (`core/history.js#addUnseenTry`),
+  en la sesión aunque el historial esté apagado, y en el historial si está encendido. Lo identifican
+  sus fechas, operaciones y beneficio: el mismo, comparado otra vez (con otra meseta o corrigiendo
+  otra cifra), no es otro intento. Recargar la página y volver a soltar los mismos archivos no los
+  borra.
+- **Aviso** en la pestaña del periodo no visto, en «Qué hacer ahora» y en el resumen exportado
+  cuando antes se comparó otro backtest que contaba (de la configuración propuesta y de un periodo
+  no usado): cuál, con qué resultado, que el nivel solo tiene en cuenta el último y, si alguno fue en
+  contra, que buscar otro tramo hasta que uno salga bien no es más evidencia. Un informe de otro
+  .set corregido después no cuenta: es una corrección, no otra prueba.
+- **No cambia cómo se calcula el nivel**: sigue saliendo del backtest en pantalla. Solo se hace visible
+  lo anterior.
+- **Historial**: la columna «Periodo no visto» enseña todos los backtests en orden («2 backtests: fuera
+  de rango → no contradice»), con los que no valían marcados.
+- Pruebas: `tests/history.test.js` (respuesta conocida) y `tests/e2e.mjs` (5c).
+
 ## 2026-10-12 — Tres contradicciones del recorrido, corregidas
 
 De la auditoría del recorrido completo (exports del banco recorridos en el navegador como un

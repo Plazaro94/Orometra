@@ -87,6 +87,7 @@ export function resetSession() {
   state.analyzedFrom = null; state.pendingDrop = null; state.analysisRejected = null;
   state.selectedPlateau = 0; state.selectedParam = 0;
   state.surfaceDimA = null; state.surfaceDimB = null;
+  state.unseenTries = [];
   state.unseen = {
     plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: null,
   };

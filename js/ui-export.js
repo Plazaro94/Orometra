@@ -92,6 +92,8 @@ export function buildPlainSummary(a) {
 
   lines.push(L('PERIODO NO VISTO (HOLDOUT)', 'UNSEEN PERIOD (HOLDOUT)'));
   lines.push(`${plain(hold.value)}${hold.note ? ' — ' + plain(hold.note) : ''}`);
+  const tries = api.unseenTriesNote ? api.unseenTriesNote() : '';
+  if (tries) lines.push(tries);
   lines.push('');
 
   lines.push(L('QUÉ HACER AHORA', 'WHAT TO DO NOW'));

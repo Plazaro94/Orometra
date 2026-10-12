@@ -21,6 +21,8 @@ export const HISTORY_MAX = 50;
 /** A partir de este intento sobre el mismo EA se avisa de que probar más veces no es evidencia. */
 export const ATTEMPT_WARN = 3;
 export const LEVEL_ORDER = ['insufficient', 'weak', 'moderate', 'good', 'strong'];
+/** Como mucho tantos backtests del periodo no visto se guardan por análisis. */
+export const UNSEEN_TRIES_MAX = 20;
 
 /** Hash FNV-1a de 32 bits: se puede ir alimentando por trozos. */
 function fnvAdd(h, text) {
@@ -125,6 +127,7 @@ export function summarize(analysis, ctx) {
     } : null,
     fallback: !best && fb ? { pass: fb.record.id, values: fb.record.params.map(jsonSafe) } : null,
     unseen: null,
+    unseenTries: [],
   };
 }
 
@@ -179,8 +182,13 @@ export function addEntry(entries, entry, max = HISTORY_MAX) {
     const same = sameData(e, entry) && sameGates(e.gates, entry.gates);
     if (same) {
       list.splice(i, 1);
-      // Si al anterior ya se le había añadido el periodo no visto, no se pierde.
+      // Si al anterior ya se le había añadido el periodo no visto, no se pierde: ni el
+      // último resultado ni los backtests que se compararon antes (recargar la página y
+      // volver a soltar los archivos no borra los intentos).
       if (e.unseen && !entry.unseen) entry = { ...entry, unseen: e.unseen };
+      if (Array.isArray(e.unseenTries) && e.unseenTries.length && !(entry.unseenTries || []).length) {
+        entry = { ...entry, unseenTries: e.unseenTries };
+      }
     }
     break;
   }
@@ -280,4 +288,30 @@ export function compare(prev, cur) {
     robustBefore: prev.pick ? prev.pick.robust : null,
     robustNow: cur.pick ? cur.pick.robust : null,
   };
+}
+
+/**
+ * Apunta un backtest del periodo no visto en la lista de intentos de un análisis.
+ *
+ * La prueba final vale si se hace una vez: soltar un informe tras otro hasta que uno salga
+ * bien no es más evidencia, y antes solo quedaba el último. `t.key` identifica el backtest
+ * (fechas, operaciones y beneficio): el mismo, comparado otra vez (con otra meseta o
+ * corrigiendo a mano otra cifra), no es otro intento: actualiza su resultado, conserva la
+ * fecha en que se comparó por primera vez y pasa al final, para que el último de la lista
+ * sea siempre el que está en pantalla. No modifica `tries`.
+ */
+export function addUnseenTry(tries, t, max = UNSEEN_TRIES_MAX) {
+  const list = Array.isArray(tries) ? tries.filter((x) => x && x.key !== t.key) : [];
+  const prev = Array.isArray(tries) ? tries.find((x) => x && x.key === t.key) : null;
+  list.push(prev && prev.at ? { ...t, at: prev.at } : t);
+  return list.slice(-max);
+}
+
+/**
+ * Los backtests comparados ANTES del actual que contaron para el nivel (eran de la
+ * configuración propuesta y de un periodo no usado). Los que no contaban (otro .set, otra
+ * meseta, un periodo repetido) son correcciones, no otra prueba.
+ */
+export function earlierCountedTries(tries, currentKey) {
+  return (Array.isArray(tries) ? tries : []).filter((x) => x && x.key !== currentKey && x.counts);
 }

@@ -428,8 +428,12 @@ function nextSteps(a, best, hold) {
   const body = steps
     ? `<ol class="vx-steps">${steps.join('')}</ol>`
     : `<p class="vx-next-text">${esc(nextStepText(a, hold))}</p>`;
+  // Si antes se comparó otro backtest del periodo no visto, se dice aquí: el nivel solo
+  // refleja el último (js/ui-history.js#unseenTriesNote).
+  const tries = api.unseenTriesNote ? api.unseenTriesNote() : '';
   return `<div class="vx-next">
     <h3 class="vx-label">${esc(L('Qué hacer ahora', 'What to do now'))}</h3>
+    ${tries ? `<div class="inline-warn vx-tries">${esc(tries)}</div>` : ''}
     ${body}
   </div>`;
 }

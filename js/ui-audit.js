@@ -390,6 +390,9 @@ export async function runAudit() {
     state.unseen = {
       plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: state.unseen.tradesAudit,
     };
+    // Los intentos del periodo no visto son de cada análisis. recordAnalysis recupera los
+    // que ya tuviera guardados si son los mismos datos y los mismos mínimos.
+    state.unseenTries = [];
     // Historial local: un resumen de este análisis en el navegador (no del ejemplo).
     if (api.recordAnalysis) api.recordAnalysis(analysis, { isDemo: run.isDemo });
     state.selectedParam = api.mostSensitiveIndex(analysis);

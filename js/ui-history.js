@@ -7,7 +7,7 @@
 
 import {
   summarize, parseStore, emptyStore, addEntry, previousFor, attempts, compare,
-  ATTEMPT_WARN, LEVEL_ORDER,
+  addUnseenTry, earlierCountedTries, ATTEMPT_WARN, LEVEL_ORDER,
 } from '../core/history.js';
 import { L, localeTag, pctSign } from './i18n.js';
 import { state, api, esc, num, int, paramHtml } from './ui-state.js';
@@ -52,23 +52,100 @@ export function recordAnalysis(analysis, { isDemo = state.isDemo } = {}) {
   if (saveStore(store)) {
     state.historyId = saved.id;
     state.historyFirst = !store.seen;
+    // Mismos datos y mismos mínimos que un análisis ya guardado: sus backtests del periodo
+    // no visto siguen contando (recargar la página no los borra).
+    state.unseenTries = Array.isArray(saved.unseenTries) ? saved.unseenTries.slice() : [];
   }
 }
 
-/** Tras comprobar el periodo no visto: lo apunta en el análisis actual. */
+/** Fecha (AAAA-MM-DD) de un Date del informe, o null. */
+const day = (d) => (d instanceof Date && !Number.isNaN(d.valueOf()) ? d.toISOString().slice(0, 10) : null);
+
+/**
+ * El backtest que se acaba de comparar, como intento del periodo no visto. Lo identifican
+ * sus fechas (si hay informe), sus operaciones y su beneficio: volver a compararlo con otra
+ * meseta, o corregir a mano otra cifra, no es otro intento.
+ */
+function currentTry(analysis) {
+  const res = state.unseen.result;
+  const o = state.unseen.observed || {};
+  const rep = state.report;
+  const from = rep ? day(rep.meta.from) : null;
+  const to = rep ? day(rep.meta.to) : null;
+  const num0 = (v) => (Number.isFinite(v) ? v : null);
+  const hold = holdoutFact(analysis);
+  return {
+    key: currentKeyOf(),
+    at: new Date().toISOString(),
+    file: rep ? (rep.meta.file || null) : null,
+    from,
+    to,
+    trades: num0(o.trades),
+    profit: num0(o.profit),
+    level: res.level,
+    // Contó para el nivel: era de la configuración propuesta y de un periodo no usado.
+    counts: Boolean(hold.ok || hold.against),
+    against: Boolean(hold.against),
+    plateau: Math.min(state.unseen.plateauIndex || 0, Math.max(0, analysis.plateaus.length - 1)) + 1,
+  };
+}
+
+/**
+ * Tras comprobar el periodo no visto: lo apunta como intento del análisis en pantalla
+ * (también con el historial apagado, solo para esta sesión) y, si hay historial, en él.
+ */
 export function updateHistoryUnseen(analysis) {
-  if (!state.historyId || !analysis) return;
-  const store = loadStore();
-  const e = store.entries.find((x) => x.id === state.historyId);
-  if (!e) return;
+  if (!analysis) return;
   const res = state.unseen && state.unseen.result;
   // Un intento que no llega a resultado (falta un dato, el formulario se ha limpiado) no
   // borra la comprobación que ya estaba guardada.
   if (!res) return;
+  state.unseenTries = addUnseenTry(state.unseenTries, currentTry(analysis));
+  if (!state.historyId) return;
+  const store = loadStore();
+  const e = store.entries.find((x) => x.id === state.historyId);
+  if (!e) return;
   const hold = holdoutFact(analysis);
   e.unseen = { level: res.level, validates: hold.ok, against: Boolean(hold.against) };
+  e.unseenTries = state.unseenTries;
   e.level = displayVerdictLevel(analysis);
   saveStore(store);
+}
+
+const tryLevel = (lv) => (lv === 'normal' ? L('no contradice', 'not contradicted') : lv === 'tail' ? L('en la cola', 'in the tail') : L('fuera de rango', 'out of range'));
+const tryDates = (t) => {
+  const f = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString(localeTag(), { timeZone: 'UTC' });
+  return t.from && t.to ? `${f(t.from)} – ${f(t.to)}` : '';
+};
+
+/**
+ * Aviso cuando el backtest en pantalla no es el primero que se compara con este análisis.
+ * Solo cuentan los anteriores que valían (de la configuración propuesta y de un periodo no
+ * usado): uno de otro .set que después se corrige no es otra prueba. Texto plano; '' si no
+ * hay nada que avisar.
+ */
+export function unseenTriesNote() {
+  const res = state.unseen && state.unseen.result;
+  if (!res) return '';
+  const earlier = earlierCountedTries(state.unseenTries, currentKeyOf());
+  if (!earlier.length) return '';
+  const list = earlier.map((t) => {
+    const where = [t.file || L('cifras a mano', 'figures typed in'), tryDates(t)].filter(Boolean).join(', ');
+    return `«${tryLevel(t.level)}» (${where})`;
+  }).join('; ');
+  const against = earlier.some((t) => t.against);
+  return L(
+    `No es el primer backtest del periodo no visto que comparas con este análisis. Antes: ${list}. El nivel solo tiene en cuenta el último.${against ? ' Buscar otro tramo u otro informe hasta que uno salga bien no es más evidencia: el que fue en contra cuenta igual que este.' : ''}`,
+    `This is not the first unseen-period backtest you compare with this analysis. Before: ${list}. The level only takes the latest into account.${against ? ' Looking for another segment or report until one comes out well is not more evidence: the one that went against counts as much as this one.' : ''}`,
+  );
+}
+
+/** Clave del backtest en pantalla, la misma que currentTry. */
+function currentKeyOf() {
+  const o = state.unseen.observed || {};
+  const rep = state.report;
+  const num0 = (v) => (Number.isFinite(v) ? v : null);
+  return [rep ? day(rep.meta.from) || '' : '', rep ? day(rep.meta.to) || '' : '', num0(o.trades), num0(o.profit)].join('|');
 }
 
 // ------------------------------------------------------------------ formato
@@ -89,6 +166,17 @@ const unseenText = (u) => {
   if (!u) return L('sin comprobar', 'not checked');
   const v = u.level === 'normal' ? L('no contradice', 'not contradicted') : u.level === 'tail' ? L('en la cola', 'in the tail') : L('fuera de rango', 'out of range');
   return u.validates || u.against ? v : L(`${v} · no valida`, `${v} · does not validate`);
+};
+/**
+ * Columna «Periodo no visto»: con más de un backtest comparado, todos en orden, para que
+ * no quede solo el último. Los que no valían (otro .set, otra meseta, periodo repetido),
+ * marcados.
+ */
+const unseenCell = (e) => {
+  const tries = Array.isArray(e.unseenTries) ? e.unseenTries : [];
+  if (tries.length < 2) return esc(unseenText(e.unseen));
+  const steps = tries.map((t) => esc(t.counts ? tryLevel(t.level) : L(`${tryLevel(t.level)} (no valida)`, `${tryLevel(t.level)} (does not validate)`)));
+  return `${esc(L(`${tries.length} backtests`, `${tries.length} backtests`))}: ${steps.join(' → ')}`;
 };
 
 // ------------------------------------------------------------------ en el veredicto
@@ -227,7 +315,7 @@ export function renderHistoryView() {
           <td data-label="${L('Recomendada', 'Recommended')}">${e.pick
     ? `<span class="hist-pick">${e.params.map((p, j) => `<span>${esc(p)} <b>${paramHtml(e.pick.values[j])}</b></span>`).join('')}</span>`
     : esc(e.fallback ? L('ninguna con garantías', 'none you can rely on') : '—')}</td>
-          <td data-label="${L('Periodo no visto', 'Unseen period')}">${esc(unseenText(e.unseen))}</td>
+          <td data-label="${L('Periodo no visto', 'Unseen period')}">${unseenCell(e)}</td>
           <td class="hist-actions"><button class="text-btn" type="button" data-hist="delete" data-id="${esc(e.id)}" aria-label="${esc(L(`Borrar el análisis del ${when(e.at)}`, `Delete the analysis from ${when(e.at)}`))}">${L('Borrar', 'Delete')}</button></td>
         </tr>`).join('')}</tbody>
       </table></div>

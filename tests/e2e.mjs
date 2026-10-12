@@ -674,6 +674,18 @@ try {
     const u2 = (await stored()).entries[0].unseen;
     check('el periodo no visto se apunta en el historial', Boolean(u1 && u1.level), JSON.stringify(u1));
     check('y un intento fallido no lo borra', Boolean(u2) && JSON.stringify(u2) === JSON.stringify(u1), JSON.stringify(u2));
+    // Otro backtest distinto: el anterior no se pierde, y se avisa en la pestaña y en el veredicto.
+    await page.fill('#u_trades', '400');
+    await page.fill('#u_profit', '-20000');
+    await page.fill('#u_profitFactor', '0.6');
+    await page.fill('#u_drawdown', '40');
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.u-result .vx-tries', { timeout: 15000 }).catch(() => {});
+    const tries = (await stored()).entries[0].unseenTries || [];
+    check('el historial guarda los dos backtests del periodo no visto, no solo el último', tries.length === 2, JSON.stringify(tries));
+    check('la pestaña avisa de que no es el primer backtest', /not the first unseen-period backtest/.test(await page.$eval('.u-result .vx-tries', (e) => e.textContent).catch(() => '')));
+    await page.click('.nav-item[data-tab="verdict"]');
+    check('y el veredicto también', Boolean(await page.$('.vx-next .vx-tries')));
     await page.click('.nav-item[data-tab="verdict"]');
     // Segundo análisis del mismo EA con otros mínimos: compara y avisa de que no son comparables.
     await page.click('#intakeExpandBtn').catch(() => {});

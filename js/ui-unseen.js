@@ -615,6 +615,7 @@ export function renderUnseen(a) {
       <h2 class="u-result-title">${esc(headline)}</h2>
       <p class="vx-pass-note">${esc(subline)}</p>
       ${levelLine ? `<p class="vx-pass-note u-level-line">${esc(levelLine)}</p>` : ''}
+      ${api.unseenTriesNote && api.unseenTriesNote() ? `<div class="inline-warn vx-tries">${esc(api.unseenTriesNote())}</div>` : ''}
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>
@@ -714,6 +715,8 @@ export function runUnseenCheck({ fromState = false } = {}) {
     const n = looseNumber(raw[f.key]);
     if (Number.isFinite(n)) observed[f.key] = n;
   });
+  // Lo que identifica este backtest en la lista de intentos (js/ui-history.js).
+  state.unseen.observed = observed;
   try {
     state.unseen.result = evaluateUnseen(a, a.plateaus[idx], observed);
   } catch (err) {

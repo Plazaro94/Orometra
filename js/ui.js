@@ -46,7 +46,7 @@ import {
 
 import { setReport, runUnseenCheck, readUnseenForm, renderUnseen } from './ui-unseen.js';
 import { renderVerdict } from './ui-verdict.js';
-import { recordAnalysis, updateHistoryUnseen, renderHistoryCompare, renderHistoryView, initHistory } from './ui-history.js';
+import { recordAnalysis, updateHistoryUnseen, renderHistoryCompare, renderHistoryView, initHistory, unseenTriesNote } from './ui-history.js';
 import {
   renderPlateaus,
   renderRejected,
@@ -108,6 +108,7 @@ Object.assign(api, {
   disposePlateauSurface,
   recordAnalysis,
   updateHistoryUnseen,
+  unseenTriesNote,
   renderHistoryCompare,
   renderHistoryView,
 });

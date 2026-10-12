@@ -854,6 +854,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .rep-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .inline-warn{border:1px solid var(--line-strong);background:var(--warn-bg);border-radius:9px;padding:10px 12px;font-size:var(--fs-sm);color:var(--warn)}
 .inline-warn code{background:var(--warn-bg);color:var(--warn-text)}
+/* Aviso de que hubo otros backtests del periodo no visto (js/ui-history.js#unseenTriesNote). */
+.vx-next .vx-tries{margin:0 0 14px}
+.u-result .vx-tries{margin-top:12px}
 
 /* 140 px y no 150: a 375 px la rejilla mide 299 y dos columnas de 150 no cabían, así que
  * los parámetros iban de uno en uno (393 px de alto con seis). Desde 360 px, a dos columnas. */

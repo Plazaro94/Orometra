@@ -47,6 +47,10 @@ export const state = {
   pendingDrop: null,
   // Archivos que el motor rechazó por sus datos (no encajan, muy pocas filas…).
   analysisRejected: null,
+  // Backtests del periodo no visto comparados en el análisis en pantalla, en orden
+  // (core/history.js#addUnseenTry). Fuera de `unseen` a propósito: «Limpiar» el formulario
+  // no borra lo que ya se comparó.
+  unseenTries: [],
 };
 
 /** Cableado tardío entre módulos UI para evitar imports circulares. */
