@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-13 — Monte Carlo: reglas del banco congeladas
+
+`bench/PREREGISTRO-MONTECARLO.md`, escrito antes de implementar nada: nueve procesos con verdad
+conocida (siete exigidos; cambio de régimen y sesgo de selección solo se informan), muestras de
+63 a 1.008 días, horizontes de 3, 6 y 12 meses, cuatro métodos (el retirado como referencia),
+bandas de aprobado cerradas y **criterio de descarte**: si ningún método prevé bien seis meses
+con un año de datos, el Monte Carlo no vuelve a la app. Umbral aceptado por el autor de forma
+provisional.
+
 ## 2026-10-13 — Periodo no visto: fuera el Monte Carlo y el intervalo de la media
 
 Decisión D1 de `docs/MONTECARLO.md`. En la sección «Desde tus operaciones» ya no salen el

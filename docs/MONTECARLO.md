@@ -487,8 +487,9 @@ preguntas de 4.4 van debajo, una cada vez.
 
 ## 10. Borrador de prerregistro del banco
 
-Se congelará en `bench/PREREGISTRO-MONTECARLO.md`, con fecha y antes de ejecutarlo, cuando
-el autor dé el visto bueno a este diseño. Mismas reglas que `bench/PREREGISTRO.md`:
+**Congelado el 2026-10-13 en `bench/PREREGISTRO-MONTECARLO.md`, que concreta los procesos,
+las semillas y los métodos. Si este borrador y el prerregistro difieren, manda el
+prerregistro.** Mismas reglas que `bench/PREREGISTRO.md`:
 criterios cerrados, enmiendas fechadas, calibración y examen con semillas distintas, examen
 una sola vez.
 
