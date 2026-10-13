@@ -1,5 +1,5 @@
 // Pruebas de core/trades/from-deals.js: de la lista de operaciones del informe HTML
-// de backtest a la serie diaria, y de ahí a Monte Carlo / muestra / costes / swap.
+// de backtest a la serie diaria, y de ahí a muestra / costes / swap.
 
 import { dailySeriesFromDeals, auditUnseenTrades } from '../core/trades/from-deals.js';
 
@@ -70,8 +70,8 @@ section('auditUnseenTrades — con ventaja clara');
   const a = auditUnseenTrades(deals, { nTrials: 1 });
   check('usable', a.usable);
   check('60 días', a.days === 60, String(a.days));
-  check('bootstrap usable', a.bootstrap.usable);
-  check('bootstrap: media positiva', a.bootstrap.meanOfSeries > 0, String(a.bootstrap.meanOfSeries));
+  check('ya no calcula el Monte Carlo retirado', !('bootstrap' in a));
+  check('muestra: media positiva', a.sample.sharpe > 0, String(a.sample.sharpe));
   check('sample: veredicto ok con ventaja clara y estable', a.sample.verdictHint === 'sample_ok', a.sample.verdictHint);
   check('costes: escenario severo definido', a.costs.severe.usable !== false && Number.isFinite(a.costs.severe.stressedNet));
   check('costes: severo degrada el neto frente a base', a.costs.severe.stressedNet < a.costs.base.stressedNet);

@@ -7,7 +7,7 @@ https://orometra.com.
 
 Antes de cambiar algo de fondo, lee lo que aplique:
 `README.md` (qué hace y por qué) · `docs/SPEC.md` (principios y normas) ·
-`docs/CHANGELOG.md` (historia y decisiones) · `docs/MT5_ASSUMPTIONS.md` (qué se sabe de MT5
+`docs/CHANGELOG.md` (historia y decisiones) · `docs/MONTECARLO.md` (Monte Carlo en rediseño) · `docs/MT5_ASSUMPTIONS.md` (qué se sabe de MT5
 y qué no) · `bench/PREREGISTRO.md` (cómo se valida el motor) · `DEPLOY.md` (publicación).
 
 ## Cómo trabajar con el autor
@@ -38,7 +38,7 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
 - `core/` — motor puro, sin DOM: `analysis.js` (orquesta), `engine.js` (vecindad, mesetas),
   `metrics.js` (calidad y mínimos), `verdict.js` (nivel de evidencia y hallazgos),
   `unseen.js` (periodo no visto), `report.js` (informe HTML de backtest), `trades/`
-  (Monte Carlo, muestra y costes sobre las operaciones del informe), `setfile.js`.
+  (muestra y costes sobre las operaciones del informe), `setfile.js`.
 - `js/` — interfaz por secciones (`ui-*.js`), exportación (`export.js`), textos (`i18n.js`).
 - `es/` — **generado** por `tools/build-es.js`: no se edita a mano.
 - `tests/` — cualquier `*.test.js` entra solo en `npm test`; `tests/e2e.mjs` es el navegador.

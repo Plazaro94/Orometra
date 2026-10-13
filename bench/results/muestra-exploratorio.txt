@@ -1,0 +1,20 @@
+TABLA C — intervalo del 90 % del resultado diario medio: % de casos que dejan fuera la media verdadera (ideal 10 %). 400 casos, 1.000 simulaciones, media 0,05.
+iid normal | n=63: 16.5 % | n=126: 15.0 % | n=252: 13.8 % | n=504: 12.3 %
+t3 | n=63: 19.0 % | n=126: 14.8 % | n=252: 18.8 % | n=504: 16.8 %
+AR(1) 0,3 | n=63: 22.0 % | n=126: 13.8 % | n=252: 12.5 % | n=504: 9.5 %
+GARCH | n=63: 20.3 % | n=126: 15.3 % | n=252: 14.8 % | n=504: 15.0 %
+EA disperso | n=63: 18.3 % | n=126: 11.5 % | n=252: 15.3 % | n=504: 12.5 %
+
+TABLA D — «se distingue de cero» (2.000 casos por celda).
+media 0 (% = falsos positivos)
+iid normal | n=63: 1.3 % | n=126: 1.1 % | n=252: 1.1 % | n=504: 1.1 %
+t3 | n=63: 0.9 % | n=126: 1.6 % | n=252: 1.3 % | n=504: 1.4 %
+AR(1) 0,3 | n=63: 7.3 % | n=126: 6.1 % | n=252: 6.9 % | n=504: 6.9 %
+GARCH | n=63: 1.1 % | n=126: 1.3 % | n=252: 1.2 % | n=504: 0.8 %
+EA disperso | n=63: 0.8 % | n=126: 1.4 % | n=252: 0.7 % | n=504: 1.2 %
+media 0,1 (% = aciertos)
+iid normal | n=63: 5.7 % | n=126: 9.9 % | n=252: 18.0 % | n=504: 39.6 %
+t3 | n=63: 6.5 % | n=126: 9.8 % | n=252: 20.3 % | n=504: 45.4 %
+AR(1) 0,3 | n=63: 12.2 % | n=126: 16.9 % | n=252: 25.9 % | n=504: 42.0 %
+GARCH | n=63: 5.1 % | n=126: 8.8 % | n=252: 19.9 % | n=504: 41.5 %
+EA disperso | n=63: 5.0 % | n=126: 8.6 % | n=252: 18.0 % | n=504: 42.6 %

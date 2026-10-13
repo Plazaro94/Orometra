@@ -49,7 +49,7 @@ export async function setReport(file) {
     state.unseen.error = null;
     state.unseen.reportError = null;
     // A partir de la lista de operaciones (no de los seis campos agregados), y solo si
-    // el informe trae suficientes: Monte Carlo, tamaño de muestra y stress de costes.
+    // el informe trae suficientes: tamaño de muestra y stress de costes.
     // Ver core/trades/from-deals.js.
     state.unseen.tradesAudit = report.deals && report.deals.length
       ? auditUnseenTrades(report.deals)
@@ -155,13 +155,11 @@ export function renderReportCard(a, plateau) {
       <p class="panel-intro">
         ${L(
           `Ese mismo informe trae algo que el export de optimización nunca tiene: la lista de
-        operaciones una a una. Con ella, debajo aparecerán un <strong>Monte Carlo</strong> sobre tus
-        operaciones reales, un aviso de si la <strong>muestra alcanza</strong>, y una tabla de
-        <strong>stress de costes</strong> — sin instalar nada más.`,
+        operaciones una a una. Con ella, debajo aparecerán un aviso de si la <strong>muestra
+        alcanza</strong> y una tabla de <strong>stress de costes</strong>, sin instalar nada más.`,
           `That same report carries something the optimization export never has: the trade-by-trade
-        list. With it, a <strong>Monte Carlo</strong> over your real trades, a
-        <strong>sample-size</strong> check, and a <strong>cost-stress</strong> table will appear
-        below — nothing else to install.`,
+        list. With it, a <strong>sample-size</strong> check and a <strong>cost-stress</strong>
+        table will appear below, with nothing else to install.`,
         )}
       </p>
       </div>
@@ -253,10 +251,10 @@ export function renderTradesAudit() {
     const reason = aud.reason === 'pocos_dias'
       ? L(
         `Solo ${int(aud.days)} días de mercado entre el primer y el último cierre: hacen falta al menos 5 para
-        simular algo. No es un fallo, es que el tramo es demasiado corto para esto en concreto (la comparación
+        calcular esto. No es un fallo, es que el tramo es demasiado corto para esto en concreto (la comparación
         métrica a métrica sigue siendo válida).`,
         `Only ${int(aud.days)} market days between the first and the last close: at least 5 are needed to
-        simulate anything. It's not a failure, this particular check just needs a longer segment (the
+        compute this. It's not a failure, this particular check just needs a longer segment (the
         metric-by-metric comparison still stands).`,
       )
       : L(
@@ -266,37 +264,19 @@ export function renderTradesAudit() {
     return `<section class="panel"><div class="panel-head compact"><div><h2>${L('Desde tus operaciones', 'From your trades')}</h2></div></div><p class="muted">${esc(reason)}</p></section>`;
   }
 
-  const { bootstrap: bs, sample: sa, costs, breakEven, warnings, contract } = aud;
+  const { sample: sa, costs, breakEven, warnings, contract } = aud;
 
-  // El bootstrap acorta cada horizonte a los días que de verdad hay (core/trades/
-  // bootstrap.js: h = min(dias, 63|126|252)). Con menos de 63 días los tres horizontes
-  // se calculan sobre el mismo tramo y darian el mismo numero con etiquetas distintas:
-  // eso es peor que no mostrarlo. Solo se enseña el horizonte que el tramo cubre entero.
-  const horizon = (days, threshold, value) => (days >= threshold ? pct(value) : '—');
-  const shortHorizons = bs.usable && aud.days < 252;
-
-  const mc = bs.usable
-    ? `<div class="evidence-list">
-        <div><span>${L('Resultado si repites un tramo así (mediana de 10.000 simulaciones)', 'Result if you repeat a segment like this (median of 10,000 simulations)')}</span><strong>${num(bs.returnCi.p50, 2)}</strong></div>
-        <div><span>${L('Rango habitual (P05–P95)', 'Typical range (P05–P95)')}</span><strong>${num(bs.returnCi.p05, 2)} &ndash; ${num(bs.returnCi.p95, 2)}</strong></div>
-        <div><span>${L('Caída máxima esperada, en dinero (mediana)', 'Expected maximum drop, in money (median)')}</span><strong title="${esc(L('En la moneda de la cuenta y sobre el resultado de las operaciones cerradas: es menor que el «Equity DD» de MT5, que también cuenta las pérdidas abiertas.', 'In account currency and based on closed-trade results: it is lower than MT5\'s “Equity DD”, which also counts open losses.'))}">${num(bs.maxDdCi.p50, 2)}</strong></div>
-        <div><span>${L('Probabilidad de pérdida a 3 meses (~63 días)', 'Probability of a loss at 3 months (~63 days)')}</span><strong>${horizon(aud.days, 63, bs.probLoss.m3)}</strong></div>
-        <div><span>${L('a 6 meses (~126 días)', 'at 6 months (~126 days)')}</span><strong>${horizon(aud.days, 126, bs.probLoss.m6)}</strong></div>
-        <div><span>${L('a 12 meses (~252 días)', 'at 12 months (~252 days)')}</span><strong>${horizon(aud.days, 252, bs.probLoss.m12)}</strong></div>
-      </div>
-      <p class="chart-note">${L(
-        `Remuestrea al azar tus días de mercado 10.000 veces, por bloques de días seguidos para no romper
-        las rachas (bootstrap estacionario, Politis &amp; Romano 1994). No inventa una distribución: solo
-        recombina lo que ya pasó.
-        ${shortHorizons ? `Con ${int(aud.days)} días de histórico, algún horizonte queda por encima de lo que el
-        tramo cubre y se marca con «—» en vez de repetir el mismo número con otra etiqueta.` : ''}`,
-        `Your market days resampled at random 10,000 times, in blocks of consecutive days so streaks are
-        not broken (stationary bootstrap, Politis &amp; Romano 1994). It doesn't invent a distribution: it
-        only recombines what already happened.
-        ${shortHorizons ? `With ${int(aud.days)} days of history, some horizon is longer than what the
-        segment covers and is marked "—" instead of repeating the same number under another label.` : ''}`,
-      )}</p>`
-    : `<p class="muted">${L('Muy pocos días para simular con garantías.', 'Too few days to simulate reliably.')}</p>`;
+  // El Monte Carlo (core/trades/bootstrap.js) se retiró de la pantalla el 2026-10-13: frente
+  // a un futuro del mismo proceso, sus rangos se quedaban cortos (docs/MONTECARLO.md,
+  // sección 2). Hasta que un método apruebe el banco, se dice en vez de enseñar cifras.
+  const mc = `<p class="muted">${L(
+    `Retirado mientras lo rehacemos. En nuestras pruebas, sus rangos salían más estrechos de lo que
+    debían: el drawdown superaba su «peor caso habitual» entre 1 de cada 10 y 1 de cada 4 veces, cuando
+    debía ser 1 de cada 20. Volverá cuando apruebe unas pruebas fijadas de antemano.`,
+    `Withdrawn while we rebuild it. In our tests its ranges came out narrower than they should: the
+    drawdown exceeded its "usual worst case" between 1 in 10 and 1 in 4 times, when it should be 1 in 20.
+    It will come back once it passes tests set in advance.`,
+  )}</p>`;
 
   const sufficient = sa.verdictHint === 'sample_ok';
   // "Se distingue de cero" también vale para una serie que pierde: entonces no es verde.
@@ -304,7 +284,6 @@ export function renderTradesAudit() {
   const sampleRow = `<div class="evidence-list">
       <div><span>${L('Días de datos', 'Days of data')}</span><strong>${int(sa.n)}</strong></div>
       <div><span>${L('¿Se distingue de cero? (potencia)', 'Distinguishable from zero? (power)')}</span><strong class="big ${losing ? 'bad' : sufficient ? 'ok' : 'warn'}">${sa.power.usable && sa.reason !== 'few_days' ? pct(sa.power.power) : '—'}</strong></div>
-      <div><span>${L('Resultado diario medio (intervalo del 90&nbsp;%)', 'Average daily result (90% interval)')}</span><strong>${sa.meanCi.usable ? `${num(sa.meanCi.ci.p05, 2)} &ndash; ${num(sa.meanCi.ci.p95, 2)}` : '—'}</strong></div>
     </div>
     <p class="chart-note">${sa.reason === 'few_days'
       ? L(
@@ -644,7 +623,7 @@ export function renderUnseen(a) {
     </section>`;
 
   // El resultado va justo después del informe: es lo que se viene a ver. Antes iba detrás
-  // del Monte Carlo y del formulario, a ~5.500 px en el móvil.
+  // del análisis de las operaciones y del formulario, a ~5.500 px en el móvil.
   return `${head}${reportCard}${result}${form}${tradesAudit}${params}`;
 }
 

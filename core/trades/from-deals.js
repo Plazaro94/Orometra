@@ -1,6 +1,7 @@
 // Convierte la lista de operaciones del informe HTML de backtest (core/report.js) en
-// una serie DIARIA de PnL/volumen/operaciones, y con ella corre Monte Carlo, tamaño de
-// muestra y stress de costes sobre el periodo no visto.
+// una serie DIARIA de PnL/volumen/operaciones, y con ella calcula tamaño de muestra y
+// stress de costes sobre el periodo no visto. El Monte Carlo (bootstrap.js) ya no se
+// calcula aquí: sus rangos se quedaban cortos (docs/MONTECARLO.md, sección 2).
 //
 // El export de optimización de MT5 solo trae métricas agregadas por pasada: nunca se
 // podría hacer esto con él. El informe de backtest de UNA configuración sí trae la
@@ -11,7 +12,6 @@
 // (63/126/252): mezclar granularidades les haría decir una cosa por otra.
 
 import { applyCostStress, costScenarios, breakEvenExtraCostPerTrade, contractValues } from './costs.js';
-import { stationaryBootstrap } from './bootstrap.js';
 import { sampleAudit } from './sample.js';
 import { dataWarnings } from './risk.js';
 
@@ -105,9 +105,8 @@ export function dailySeriesFromDeals(deals, contracts = null) {
 }
 
 /**
- * Auditoría completa del periodo no visto a partir de la lista de operaciones:
- * Monte Carlo (bootstrap estacionario), tamaño de muestra / potencia, stress de costes
- * y aviso de dominancia del swap.
+ * Auditoría del periodo no visto a partir de la lista de operaciones: tamaño de
+ * muestra / potencia, stress de costes y aviso de dominancia del swap.
  *
  * @param deals    `report.deals` de core/report.js
  * @param opts.nTrials  nº de configuraciones probadas en la optimización, para el
@@ -119,7 +118,6 @@ export function auditUnseenTrades(deals, opts = {}) {
   if (!series.usable) return { usable: false, reason: series.reason };
   if (series.days < 5) return { usable: false, reason: 'pocos_dias', days: series.days };
 
-  const bootstrap = stationaryBootstrap(series.dailyPnl, { seed: opts.seed });
   const sample = sampleAudit(series.dailyPnl, { nTrials: opts.nTrials ?? 1 });
   // Con un solo símbolo, los escenarios y el punto de equilibrio se pueden dar también en
   // puntos del instrumento, que es la unidad en la que se lee el spread en MT5.
@@ -147,7 +145,6 @@ export function auditUnseenTrades(deals, opts = {}) {
     usable: true,
     days: series.days,
     trades: series.totalTrades,
-    bootstrap,
     sample,
     costs,
     contract: contract ? { symbol: symbols[0], ...contract } : null,

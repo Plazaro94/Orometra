@@ -126,6 +126,18 @@ y el drawdown futuro supera el p95 en un 10-23 % en vez del 5 %. La
 probabilidad de pérdida no se ha medido con el rigor necesario (solo su media, y eso no
 mide la calibración). Decisión D1 en la sección 13.
 
+**Las otras cifras de las operaciones** (`bench/muestra-exploratorio.js`, resultados en
+`bench/results/muestra-exploratorio.txt`):
+
+- El **intervalo del 90 % del resultado diario medio** usa el mismo bootstrap, esta vez como
+  intervalo de confianza de la media (que es lo correcto para esa pregunta). Aun así deja
+  fuera la media verdadera entre un 12 % y un 22 % de las veces, en vez del 10 %.
+- **«¿Se distingue de cero?»** es conservador: sin ventaja real dice que sí en torno a un 1 %
+  de las veces con datos independientes, colas gruesas, GARCH o un EA disperso. Con rachas
+  (AR(1) 0,3) sube a un 6-7 %, porque la fórmula no tiene en cuenta la dependencia entre días.
+  A cambio detecta poco: con una ventaja real de 0,1 desviaciones típicas al día, acierta un
+  18-26 % de las veces con un año de datos. Se queda en la app, con ese punto débil anotado.
+
 *Esto es un estudio exploratorio, no el banco prerregistrado:* ha servido para elegir los
 candidatos de la sección 5 y se declara en el prerregistro.
 
@@ -596,16 +608,18 @@ La decisión D1 (qué hacer ya con lo que enseña la app) no espera a ninguna fa
 
 ## 13. Decisiones que tiene que tomar el autor
 
-- **D1. El Monte Carlo que la app enseña hoy.** Sus rangos son más estrechos de lo que
-  deberían (sección 2). Recomendación: **retirar ya** el rango P05–P95, la caída máxima y la
-  probabilidad de pérdida de la sección del periodo no visto hasta que el banco apruebe un
-  método; se quedan la muestra, la potencia y los costes, que no dependen de esto.
-  Alternativa más débil: dejarlos con un aviso. No se recomienda: un aviso no arregla una
-  cifra mala.
+- **D1. El Monte Carlo que la app enseña hoy. Decidido (2026-10-13): se retira.** Sus
+  rangos son más estrechos de lo que deberían (sección 2). Se quitan de la sección del
+  periodo no visto el rango P05–P95, la caída máxima y la probabilidad de pérdida, y también
+  el intervalo del resultado diario medio, que se mide después y tampoco cubre lo que dice.
+  En su lugar, una línea que dice por qué. Se quedan «¿se distingue de cero?», los días de
+  datos y los costes.
 - **D2. Cifras sobre el tramo que se usó para elegir.** Depende de lo que mida G9 (6.2).
 - **D3. Nombre y entrada.** Propuesta: «Monte Carlo» como sección de la app y una página
   `/montecarlo/` (`/es/montecarlo/`) que explique el mapa y lleve a la app.
-- **D4. Umbral de descarte.** Propuesta: *H* = 126 con *n_min* ≤ 252 (10.5).
+- **D4. Umbral de descarte.** *H* = 126 con *n_min* ≤ 252 (10.5). Aceptado por el autor de
+  forma provisional (2026-10-13); si cambia, será antes de ejecutar el examen y como enmienda
+  fechada.
 - **D5. La permutación «¿fue suerte el orden?».** Dentro o fuera de la primera versión (5.6).
 
 ---
@@ -614,8 +628,10 @@ La decisión D1 (qué hacer ya con lo que enseña la app) no espera a ninguna fa
 
 **Comprobado**
 
-- Lo que hoy calcula y enseña la app: `core/trades/bootstrap.js`, `core/trades/from-deals.js`
-  y `js/ui-unseen.js:269-297`.
+- Lo que calculaba y enseñaba la app hasta la retirada (D1): `core/trades/bootstrap.js`,
+  `core/trades/from-deals.js` y `js/ui-unseen.js`.
+- La cobertura del intervalo del resultado diario medio (12-22 % fuera en vez de 10 %) y el
+  comportamiento de «¿se distingue de cero?» (sección 2).
 - La falta de cobertura del método actual frente a un futuro del mismo proceso, con cinco
   procesos y cuatro tamaños (tabla A), y su explicación teórica (24,5 % frente a 22-29 %
   observado).

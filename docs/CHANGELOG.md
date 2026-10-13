@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-10-13 — Periodo no visto: fuera el Monte Carlo y el intervalo de la media
+
+Decisión D1 de `docs/MONTECARLO.md`. En la sección «Desde tus operaciones» ya no salen el
+resultado mediano y su rango P05–P95, la caída máxima esperada ni la probabilidad de pérdida a
+3/6/12 meses: frente a un futuro del mismo proceso, el drawdown superaba su p95 entre un 10 % y
+un 23 % de las veces (debía ser un 5 %). En su lugar, una línea que lo dice y que avisa de que
+volverá cuando apruebe unas pruebas fijadas de antemano.
+
+También sale el **intervalo del 90 % del resultado diario medio**: medido contra la media
+verdadera, la dejaba fuera entre un 12 % y un 22 % de las veces en vez del 10 %
+(`bench/muestra-exploratorio.js`). Se quedan los días de datos, «¿se distingue de cero?»
+(sin ventaja real dice que sí en torno a un 1 % de las veces; con rachas, un 6-7 %) y el
+stress de costes.
+
+- `core/trades/from-deals.js` ya no calcula el bootstrap; `meanConfidenceInterval` sigue en
+  `core/` (lo usan sus pruebas), con una nota de que no se enseña.
+- Textos ES/EN: la guía de sobreoptimización, la del informe del probador y la metodología ya
+  no prometen un Monte Carlo; en el diagrama del paso 9, «Monte Carlo» pasa a «Frente a su
+  meseta», que es la comprobación principal de ese paso y no salía.
+- README y CLAUDE.md, al día.
+
 ## 2026-10-13 — Monte Carlo: diseño de un módulo propio y un hallazgo sobre el actual
 
 Propuesta de diseño en `docs/MONTECARLO.md`, sin código de producto: un módulo de Monte Carlo

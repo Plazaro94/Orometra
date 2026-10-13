@@ -231,7 +231,7 @@
       <div class="lp-method-step-text">
         <h2 data-i18n="doc.method.s9.title">The acid test: your backtest on unseen data</h2>
         <p data-i18n="doc.method.s9.body">The cleanest check is to test the configuration on a period you used neither to optimize nor to validate. Drop that backtest report into the app: it checks that the parameters are those of the proposed configuration and compares each metric with what is usual for its plateau, adjusted to the length of the period. The result is within the usual range, in the tail or out of range.</p>
-        <p data-i18n="doc.method.s9.body2">That check can only keep the level or lower it, never raise it, because it detects little: in our benchmark, when the edge is gone it warns in 35–45% of cases depending on the length of the period, and with the edge intact it raises a false alarm in 24–30%. On the trades of that report it also runs a Monte Carlo that respects streaks (it resamples your trading days in blocks), warns you if there are too few trading days to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
+        <p data-i18n="doc.method.s9.body2">That check can only keep the level or lower it, never raise it, because it detects little: in our benchmark, when the edge is gone it warns in 35–45% of cases depending on the length of the period, and with the edge intact it raises a false alarm in 24–30%. On the trades of that report it also warns you if there are too few trading days to conclude anything, and shows what happens if spread or slippage get worse than in the optimization.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -247,9 +247,9 @@
           <rect x="15" y="215" width="140" height="85" rx="10" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
           <circle cx="85" cy="240" r="13" fill="var(--ok)" opacity=".18" stroke="var(--ok-line)" stroke-width="1.3"/>
           <path d="M 79 240 L 84 245 L 92 231" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <text class="bt-two" x="85" y="268" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)">Monte</text>
-          <text class="bt-two" x="85" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)">Carlo</text>
-          <text class="bt-one" x="85" y="281" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ok-text)">Monte Carlo</text>
+          <text class="bt-two" x="85" y="268" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.bt.plateau1">Against</text>
+          <text class="bt-two" x="85" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.bt.plateau2">its plateau</text>
+          <text class="bt-one" x="85" y="281" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ok-text)" data-i18n="doc.method.bt.plateau">Against its plateau</text>
           <rect x="170" y="215" width="140" height="85" rx="10" fill="var(--ok-bg)" stroke="var(--ok-line)"/>
           <circle cx="240" cy="240" r="13" fill="var(--ok)" opacity=".18" stroke="var(--ok-line)" stroke-width="1.3"/>
           <path d="M 234 240 L 239 245 L 247 231" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

@@ -112,13 +112,12 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   validar, y se comprueba si son *normales para ese EA* comparándolos con el recorrido
   que la meseta entera demostró. Si las operaciones y el beneficio coinciden con los de un
   periodo ya usado (el optimizado, el forward o los dos juntos), se dice y no cuenta.
-- **A partir de las operaciones una a una del informe** (agrupadas por día): Monte Carlo
-  por bootstrap estacionario (Politis & Romano 1994) sobre el periodo no visto —
-  distribución de resultado, drawdown esperado y probabilidad de pérdida a 3/6/12 meses,
-  solo cuando el tramo cubre ese horizonte entero—, tamaño de muestra y potencia
-  estadística, stress de costes (coste extra por operación en puntos básicos del precio,
+- **A partir de las operaciones una a una del informe** (agrupadas por día): tamaño de
+  muestra y potencia estadística, stress de costes (coste extra por operación en puntos básicos del precio,
   con el valor del contrato deducido de las propias operaciones, así que no depende del
   instrumento ni del lote; con punto de equilibrio en puntos del instrumento) y aviso si el swap pesa una parte grande del resultado neto.
+  El Monte Carlo que había aquí se retiró el 2026-10-13 porque sus rangos se quedaban cortos;
+  se está rehaciendo con validación previa (`docs/MONTECARLO.md`).
 - Exportación: `.set` de la configuración propuesta, `.set` de **rango de refinamiento**
   acotado a un número de combinaciones ejecutable, informe JSON (con el nivel de evidencia que
   se muestra en pantalla y, aparte, el del motor) y CSV completo en el formato numérico del
@@ -225,7 +224,7 @@ MT5_SAMPLES=/ruta/a/tus/exportaciones node tests/engine.test.js
 - La rejilla de optimización solo trae métricas agregadas por pasada, no la curva de
   capital de cada una. Por eso la **fragilidad de la selección** es un remuestreo de
   configuraciones y no el CSCV original sobre series temporales (no se llama PBO), y por
-  eso el Monte Carlo y el stress de costes solo existen para la **configuración elegida**,
+  eso el stress de costes (y el Monte Carlo, cuando vuelva) solo existe para la **configuración elegida**,
   sobre las operaciones una a una del periodo no visto — no para la rejilla entera.
 - No conoce las fechas de los periodos de la rejilla: la duración relativa del forward se
   estima con el número de operaciones (el periodo no visto sí trae fechas reales, del

@@ -8,6 +8,10 @@ import { normCdf, normInv } from '../stats.js';
 
 /**
  * Intervalo de confianza por bootstrap estacionario sobre una métrica = media.
+ *
+ * NO SE ENSEÑA en la app desde el 2026-10-13: medido contra la media verdadera, el
+ * intervalo del 90 % la deja fuera entre un 12 % y un 22 % de las veces según el proceso y
+ * la muestra (docs/MONTECARLO.md). No volver a pintarlo sin pasar por el banco.
  */
 export function meanConfidenceInterval(returns, opts = {}) {
   const boot = stationaryBootstrap(returns, {
