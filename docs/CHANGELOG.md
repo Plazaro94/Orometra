@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-10-13 — Fotos de la portada en tema claro: sin el velo blanco que las lavaba
+
+En tema claro, las fotos de la portada y del cierre se veían blanqueadas. El velo que deja leer el
+texto era blanco, y el blanco no oscurece: sube las sombras hacia el gris. En el móvil cubría toda
+la foto con un 40 % de blanco como mínimo (y casi un 90 % abajo); en el cierre, una foto de cielo
+negro, la dejaba gris. Medido en la foto ya pintada, el contraste (desviación típica de la luminosidad) y la
+saturación media pasan:
+
+| Tema claro | Antes | Ahora |
+|---|---|---|
+| Portada, móvil 390 px | contraste 18, saturación 8 % | 51 y 32 % |
+| Portada, tableta 820 px | 25 y 6 % | 32 y 10 % |
+| Portada, escritorio 1440 px | 37 y 10 % | 40 y 12 % |
+| Cierre, escritorio | 27 y 4 % | 21 y 24 % (la foto oscura, como en el tema oscuro) |
+
+- **Móvil:** el texto va sobre el cielo y la cumbre asoma debajo, sin velo. Encima de la foto
+  sigue el cielo con su mismo color. La tarjeta crece (de 466 a 646 px a 390 px de ancho).
+- **Tableta y escritorio:** velo más corto y ligero, más un refuerzo solo detrás de «Solo
+  necesitas el XML»; al titular y la entrada, un halo del color del fondo. En escritorio la mejora
+  es pequeña: la foto es de luz de atardecer y ya es suave de por sí.
+- **Cierre:** la misma banda oscura en los dos temas, con sus colores de texto y botón.
+- El tema oscuro no cambia (mismas cifras). El texto sigue por encima de 4,5:1 contra lo que
+  tiene detrás en todos los casos (percentil 10 del contraste en cada línea: 7,7 o más).
+
 ## 2026-10-13 — «Cómo conseguir los archivos»: pasos del 1 al 4, en 2 × 2
 
 La pantalla de la app antes de subir nada numeraba los pasos del 0 al 3, con el 0 (reservar el

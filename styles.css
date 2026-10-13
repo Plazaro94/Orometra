@@ -2365,21 +2365,49 @@ html{zoom:var(--z)}
   }
 }
 
-/* Velos: oscuro a la izquierda (donde va el texto) y transparente donde está la cumbre */
+/* Velos: oscuro a la izquierda (donde va el texto) y transparente donde está la cumbre.
+   En claro el velo es blanco, y el blanco no oscurece: sube las sombras hacia el gris y la
+   foto se ve lavada. Por eso el claro lleva el velo justo para leer el texto (y un halo en
+   las letras), no más; y el cierre, cuya foto es de cielo negro, usa el oscuro en los dos temas. */
 :root{
   --hero-veil:linear-gradient(90deg,rgba(10,15,26,.82) 0%,rgba(10,15,26,.46) 38%,rgba(10,15,26,0) 66%);
   --final-veil:radial-gradient(ellipse 52% 62% at 50% 48%,rgba(10,15,26,.8) 0%,rgba(10,15,26,.54) 60%,rgba(10,15,26,.3) 100%);
 }
 :root[data-theme="light"]{
-  --hero-veil:linear-gradient(90deg,rgba(244,246,250,.86) 0%,rgba(244,246,250,.5) 40%,rgba(244,246,250,0) 70%);
-  --final-veil:radial-gradient(ellipse 52% 62% at 50% 48%,rgba(236,239,246,.9) 0%,rgba(236,239,246,.64) 60%,rgba(236,239,246,.4) 100%);
+  --hero-veil:linear-gradient(90deg,rgba(244,246,250,.62) 0%,rgba(244,246,250,.3) 32%,rgba(244,246,250,0) 50%),radial-gradient(ellipse 46% 30% at 20% 90%,rgba(244,246,250,.7) 0%,rgba(244,246,250,0) 100%);
 }
+:root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead){text-shadow:0 0 1px rgba(244,246,250,.95),0 0 4px rgba(244,246,250,.9),0 0 10px rgba(244,246,250,.8),0 0 24px rgba(244,246,250,.6)}
 @media (max-width:720px){
   :root{--hero-veil:linear-gradient(180deg,rgba(10,15,26,.5) 0%,rgba(10,15,26,.36) 45%,rgba(10,15,26,.55) 100%)}
   .hm-hero.has-photo :is(h1,.hm-lead){text-shadow:0 1px 14px rgba(8,12,20,.55)}
-  :root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead){text-shadow:0 1px 14px rgba(244,246,250,.7)}
-  :root[data-theme="light"]{--hero-veil:linear-gradient(180deg,rgba(244,246,250,.6) 0%,rgba(244,246,250,.4) 42%,rgba(244,246,250,.86) 78%,rgba(244,246,250,.92) 100%)}
   .hm-hero.has-photo{min-height:0}
+  /* Claro en el móvil: el texto ocupa casi toda la tarjeta, así que no hay velo que deje la
+     foto entera. En su lugar, el texto va sobre el cielo y la cumbre asoma debajo, sin velo.
+     --w es el ancho de la tarjeta (.lp-main deja 16 px a cada lado); la foto (3:4) baja
+     un 34 % de ese ancho por debajo del borde (se corta la base de roca), la cumbre queda a
+     0,49 anchos del borde inferior y el relleno de abajo le hace sitio. Encima de la foto
+     sigue el cielo con su mismo color (#8cb0de, el de su primera fila), fundido para que no
+     se note el borde. */
+  :root[data-theme="light"] .hm-hero.has-photo{
+    --w:calc(100vw - 32px);
+    padding-bottom:calc(48% + 36px);
+    background:
+      linear-gradient(180deg,#8cb0de calc(100% - 0.993 * var(--w)),rgba(140,176,222,0) calc(100% - 0.89 * var(--w))),
+      var(--hero-img) left 0 bottom calc(-0.34 * var(--w))/100% auto no-repeat,
+      #8cb0de;
+  }
+  :root[data-theme="light"] .hm-hero.has-photo :is(h1,.hm-lead){text-shadow:none}
+}
+/* Tableta: la frase va más ancha y pisa más ladera, así que el velo llega más lejos. */
+@media (min-width:721px) and (max-width:1000px){
+  :root[data-theme="light"]{--hero-veil:linear-gradient(90deg,rgba(244,246,250,.66) 0%,rgba(244,246,250,.36) 50%,rgba(244,246,250,0) 80%),radial-gradient(ellipse 60% 30% at 25% 90%,rgba(244,246,250,.6) 0%,rgba(244,246,250,0) 100%)}
+}
+/* Cierre en claro: la misma banda oscura que en el oscuro, con sus colores de texto. */
+:root[data-theme="light"] .hm-final.has-photo{
+  --text:#f1f3f8; --text-2:#dbe0eb; --text-hi:#ffffff; --ok:#a9b8da; --info:#a9b8da;
+  --navy:#0b1019; --navy-line:#1f2638;
+  --cta-bg:#d4f25c; --cta-line:#e6fa9a; --cta-text:#141a08; --cta-hover:#e0f87e;
+  color:var(--text);
 }
 
 /* Portada: la foto ocupa la tarjeta; el relieve 3D pasa a la sección siguiente */
@@ -2428,7 +2456,7 @@ html,body{overflow-x:clip}
 .photo-head .lp-doc-cta{margin-top:16px}
 .photo-head .ghost-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28);color:#e7ebf3}
 @media (max-width:640px){.photo-head{border-radius:24px;min-height:360px}}
-:root:not([data-theme="light"]) .hm-final.has-photo :is(h2,p,li){text-shadow:0 1px 12px rgba(8,12,20,.6)}
+.hm-final.has-photo :is(h2,p,li){text-shadow:0 1px 12px rgba(8,12,20,.6)}
 
 /* ======================================================================
    Portada corta (2026-10): «Lo que hay detrás del resultado» en pestañas.
@@ -2525,7 +2553,6 @@ svg.brand-mark .bm-top{fill:var(--lime-fill)}
 /* Tableta: la frase no pisa la cumbre y la tarjeta no deja aire vacío arriba. */
 @media (min-width:721px) and (max-width:1000px){
   :root{--hero-veil:linear-gradient(90deg,rgba(10,15,26,.86) 0%,rgba(10,15,26,.66) 55%,rgba(10,15,26,.1) 92%)}
-  :root[data-theme="light"]{--hero-veil:linear-gradient(90deg,rgba(244,246,250,.9) 0%,rgba(244,246,250,.7) 55%,rgba(244,246,250,.1) 92%)}
   .hm-hero.has-photo{min-height:0;padding:56px 48px}
   .hm-hero.has-photo .hm-hero-copy{max-width:440px}
   .hm-hero .hm-lead{max-width:none}
