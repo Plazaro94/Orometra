@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-13 — «Cómo conseguir los archivos»: pasos del 1 al 4, en 2 × 2
+
+La pantalla de la app antes de subir nada numeraba los pasos del 0 al 3, con el 0 (reservar el
+periodo no visto) en una fila entera y los otros tres debajo. Ahora van del 1 al 4 en una rejilla
+de dos columnas: el 1 y el 2 arriba, el 3 y el 4 abajo. En el móvil, una columna, como antes.
+
 ## 2026-10-12 — Privacidad, metodología e historial, como páginas propias; pie de portada en el móvil
 
 Al pulsar «Privacidad» en la app, el texto legal salía debajo del titular y de la carga de
