@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-13 — Monte Carlo: diseño de un módulo propio y un hallazgo sobre el actual
+
+Propuesta de diseño en `docs/MONTECARLO.md`, sin código de producto: un módulo de Monte Carlo
+dentro de Orometra (no una herramienta aparte), usable con o sin las mesetas, que toma **un**
+backtest de la configuración sobre todo el histórico y las fechas de corte, y separa lo que se
+usó para elegir (sesgado a favor) de lo que no (la prueba limpia). Candidato: bootstrap
+predictivo en dos etapas con bloques elegidos con los datos (Politis-White con la corrección
+de 2009). Lleva un borrador de prerregistro del banco con **criterio de descarte**: si con un
+año de datos no se alcanza la calibración exigida, no se construye.
+
+**Hallazgo** (estudio exploratorio, no prerregistrado: `bench/montecarlo-exploratorio.js`,
+`bench/results/montecarlo-exploratorio.txt`): los rangos del Monte Carlo que enseña hoy la
+sección del periodo no visto son más estrechos de lo que deberían. Frente a un futuro del
+mismo proceso, sin sesgo de selección, el resultado cae fuera del P05–P95 en un 26-38 % de los
+casos (ideal, 10 %) y el drawdown supera el p95 en un 10-23 % (ideal, 5 %). Causa principal:
+el bootstrap es *plug-in* y no cuenta lo que no se sabe de la media; con datos independientes
+la teoría da un 24,5 % fuera del P05–P95 y el estudio, un 22-29 %. La app no cambia todavía:
+qué hacer con esas cifras es la decisión D1 del documento.
+
 ## 2026-10-13 — Pie: por orden de importancia, «Analizar» y «GitHub»
 
 Los enlaces del pie van ahora de lo más usado a lo menos: Analizar · Guías · Metodología ·

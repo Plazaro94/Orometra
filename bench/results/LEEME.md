@@ -17,3 +17,4 @@ Cada `.jsonl` tiene una línea por caso; cada `REPORT-*.md` es su informe (`node
 | `exam4`, `exam4-motor-1be66b1` | `22b4b3d` / anterior | 4001-4100 | **Cuarto examen, ciego**; el anterior, para comparar |
 | `calib-v4` | `36be999` | 1-100 | Calibración tras corregir el tope de 0,82 de la estabilidad frente a los umbrales |
 | `exam5`, `exam5-motor-22b4b3d` | `36be999` / anterior | 5001-5100 | **Quinto examen, ciego**, motor publicado; el anterior, para comparar (mismos tres suspensos). Cifras que cita la portada |
+| `montecarlo-exploratorio.txt` | `core/trades/bootstrap.js` de `dbcc488` | propias del estudio | **Exploratorio, no prerregistrado**: calibración del Monte Carlo actual frente al predictivo en dos etapas (`node bench/montecarlo-exploratorio.js 300 1000`; ver `docs/MONTECARLO.md`, sección 2) |

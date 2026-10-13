@@ -1,0 +1,59 @@
+Casos por celda: 300 · simulaciones por caso: 1000 · media diaria 0.05 sd
+
+TABLA A — app actual (plug-in, bloque √n) frente a dos etapas (bloque √n). Horizonte H = n.
+proceso | n | app: DD > p95 | app: total fuera P05–P95 | dos etapas: DD > p95 | dos etapas: total fuera
+iid normal | 63 | 14.7 % | 33.0 % | 10.3 % | 19.3 %
+iid normal | 126 | 15.7 % | 29.7 % | 10.3 % | 14.0 %
+iid normal | 252 | 16.7 % | 36.7 % | 10.0 % | 16.7 %
+iid normal | 504 | 13.3 % | 29.7 % | 9.0 % | 11.7 %
+t3 (colas gruesas) | 63 | 18.7 % | 31.3 % | 13.7 % | 20.7 %
+t3 (colas gruesas) | 126 | 19.3 % | 30.3 % | 11.7 % | 17.3 %
+t3 (colas gruesas) | 252 | 21.3 % | 33.3 % | 11.7 % | 18.3 %
+t3 (colas gruesas) | 504 | 12.7 % | 26.3 % | 7.7 % | 11.0 %
+AR(1) 0,3 | 63 | 20.7 % | 34.3 % | 12.7 % | 21.3 %
+AR(1) 0,3 | 126 | 21.0 % | 38.3 % | 14.3 % | 24.7 %
+AR(1) 0,3 | 252 | 16.3 % | 34.0 % | 9.7 % | 17.3 %
+AR(1) 0,3 | 504 | 10.3 % | 29.3 % | 5.0 % | 13.7 %
+GARCH(1,1) | 63 | 22.3 % | 34.7 % | 13.7 % | 19.3 %
+GARCH(1,1) | 126 | 17.3 % | 30.7 % | 10.7 % | 17.0 %
+GARCH(1,1) | 252 | 13.3 % | 30.3 % | 9.3 % | 14.7 %
+GARCH(1,1) | 504 | 19.7 % | 30.7 % | 11.3 % | 17.3 %
+EA disperso (70 % de días a 0) | 63 | 23.0 % | 34.0 % | 14.0 % | 22.3 %
+EA disperso (70 % de días a 0) | 126 | 20.3 % | 35.0 % | 11.7 % | 21.7 %
+EA disperso (70 % de días a 0) | 252 | 13.3 % | 30.0 % | 7.0 % | 13.7 %
+EA disperso (70 % de días a 0) | 504 | 17.0 % | 35.0 % | 9.7 % | 18.0 %
+
+TABLA B — variantes. Horizonte H = n.
+proceso | n | variante | DD > p95 | total fuera P05–P95
+iid normal | 63 | plug-in, bloque 1 | 9.0 % | 29.0 %
+iid normal | 63 | plug-in, bloque √n | 19.0 % | 36.7 %
+iid normal | 63 | dos etapas, bloque 1 | 4.0 % | 11.0 %
+iid normal | 63 | dos etapas, bloque √n | 9.3 % | 19.3 %
+iid normal | 63 | dos etapas, bloque 2√n | 15.0 % | 26.0 %
+iid normal | 63 | dos etapas, bloque 3 | 5.3 % | 13.7 %
+iid normal | 63 | dos etapas, bloque 4 | 6.7 % | 13.7 %
+iid normal | 63 | dos etapas, bloque 6 | 7.7 % | 14.7 %
+iid normal | 252 | plug-in, bloque 1 | 7.3 % | 22.3 %
+iid normal | 252 | plug-in, bloque √n | 12.3 % | 27.0 %
+iid normal | 252 | dos etapas, bloque 1 | 3.7 % | 9.3 %
+iid normal | 252 | dos etapas, bloque √n | 7.0 % | 13.0 %
+iid normal | 252 | dos etapas, bloque 2√n | 9.7 % | 16.0 %
+iid normal | 252 | dos etapas, bloque 3 | 4.0 % | 9.0 %
+iid normal | 252 | dos etapas, bloque 4 | 4.3 % | 10.3 %
+iid normal | 252 | dos etapas, bloque 6 | 4.7 % | 10.0 %
+AR(1) 0,3 | 63 | plug-in, bloque 1 | 25.0 % | 36.7 %
+AR(1) 0,3 | 63 | plug-in, bloque √n | 22.3 % | 31.7 %
+AR(1) 0,3 | 63 | dos etapas, bloque 1 | 16.7 % | 22.0 %
+AR(1) 0,3 | 63 | dos etapas, bloque √n | 15.3 % | 19.0 %
+AR(1) 0,3 | 63 | dos etapas, bloque 2√n | 20.3 % | 24.7 %
+AR(1) 0,3 | 63 | dos etapas, bloque 3 | 14.3 % | 16.3 %
+AR(1) 0,3 | 63 | dos etapas, bloque 4 | 13.3 % | 16.7 %
+AR(1) 0,3 | 63 | dos etapas, bloque 6 | 15.0 % | 17.7 %
+AR(1) 0,3 | 252 | plug-in, bloque 1 | 28.3 % | 38.3 %
+AR(1) 0,3 | 252 | plug-in, bloque √n | 14.3 % | 27.0 %
+AR(1) 0,3 | 252 | dos etapas, bloque 1 | 17.7 % | 18.7 %
+AR(1) 0,3 | 252 | dos etapas, bloque √n | 9.0 % | 13.0 %
+AR(1) 0,3 | 252 | dos etapas, bloque 2√n | 11.7 % | 15.0 %
+AR(1) 0,3 | 252 | dos etapas, bloque 3 | 9.3 % | 13.7 %
+AR(1) 0,3 | 252 | dos etapas, bloque 4 | 8.7 % | 13.0 %
+AR(1) 0,3 | 252 | dos etapas, bloque 6 | 7.7 % | 13.0 %
