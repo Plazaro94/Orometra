@@ -10,8 +10,10 @@ más completa. Dos textos legales a mano acaban contradiciéndose.
 - **Un solo texto legal: la página de privacidad.** Recibe lo que solo tenía la app: el descargo
   ampliado (un backtest no predice, la calidad depende de tus datos, el apalancamiento, «tal cual»)
   y las condiciones de uso. La pestaña legal de la app desaparece; `/app/#legal` lleva a la página.
-- **Desde la app, las páginas se abren en otra pestaña** (privacidad y los enlaces del pie del
-  móvil): los archivos solo están en memoria, y salir de la app perdía el análisis cargado.
+- **Desde la app, las páginas se abren en otra pestaña** (privacidad, «Ayuda» de la barra lateral
+  y del menú del móvil, los «Leer →» de la metodología y los enlaces del pie del móvil): los
+  archivos solo están en memoria, y salir de la app perdía el análisis cargado. «Inicio», en el
+  menú del móvil, sigue en la misma pestaña: es salir de la app a propósito.
 - **Metodología e historial, sin titular ni carga de archivos encima** (`body.page-view`): empiezan
   arriba, como una página. La carga sigue en el veredicto.
 - **Fuera «Motor v2»** de la barra lateral: era un texto fijo que no está en los exports ni en el

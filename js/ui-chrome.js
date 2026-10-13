@@ -644,7 +644,8 @@ const methodLimits = () => {
   for (let i = 1; t(`doc.method.lim.${i}`) !== `doc.method.lim.${i}`; i++) out.push(t(`doc.method.lim.${i}`));
   return out;
 };
-// La pagina publica tiene una version por idioma (/methodology/ y /es/methodology/).
+// La pagina publica tiene una version por idioma (/methodology/ y /es/methodology/). Se abre
+// en otra pestana, como todas las paginas desde la app: salir perderia el analisis cargado.
 const methodologyHref = () => (getLocale() === 'es' ? '../es/methodology/' : '../methodology/');
 
 export function renderMethod() {
@@ -658,10 +659,10 @@ export function renderMethod() {
         ${METHOD_STEPS.map((id, i) => `<li>
           <span class="method-num">${String(i + 1).padStart(2, '0')}</span>
           <div><h3>${esc(t(`doc.method.s${i + 1}.title`))}</h3><p>${esc(t(`doc.method.s${i + 1}.short`))}</p></div>
-          <a class="text-btn method-more" href="${methodologyHref()}#${id}">${L('Leer', 'Read')} &rarr;<span class="sr-only"> ${esc(t(`doc.method.s${i + 1}.title`))}</span></a>
+          <a class="text-btn method-more" href="${methodologyHref()}#${id}" target="_blank" rel="noopener">${L('Leer', 'Read')} &rarr;<span class="sr-only"> ${esc(t(`doc.method.s${i + 1}.title`))}</span></a>
         </li>`).join('')}
       </ol>
-      <p class="method-full"><a href="${methodologyHref()}">${esc(t('doc.method.app.full'))}</a></p>
+      <p class="method-full"><a href="${methodologyHref()}" target="_blank" rel="noopener">${esc(t('doc.method.app.full'))}</a></p>
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${esc(t('doc.method.lim.title'))}</h2></div></div>
