@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-13 — Pie: por orden de importancia, «Analizar» y «GitHub»
+
+Los enlaces del pie van ahora de lo más usado a lo menos: Analizar · Guías · Metodología ·
+Quiénes somos · GitHub · Privacidad · correo (en las páginas interiores, «Orometra», el inicio,
+sigue delante). «App» pasa a «Analizar» («Analyze»): «App» era un nombre nuestro, interno, y no
+decía adónde llevaba. «Código en GitHub» queda en «GitHub». El menú del móvil, que copia el pie,
+hereda el orden.
+
 ## 2026-10-13 — Fotos de la portada en tema claro: sin el velo blanco que las lavaba
 
 En tema claro, las fotos de la portada y del cierre se veían blanqueadas. El velo que deja leer el
