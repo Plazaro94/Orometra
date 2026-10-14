@@ -212,6 +212,27 @@ que diga la herramienta es condicional a eso, y la pantalla lo dice.
 | Lote fijo o % del balance (con lo que deducimos, para confirmar) | Cambia la unidad del remuestreo (5.2) | Se usa lo deducido y se dice |
 | Drawdown que no aguantarías (opcional) | Para la probabilidad de tocarlo | No se enseña esa fila |
 
+### 4.5 El primer informe real (2026-10-14)
+
+Un backtest del autor: EA TPS 3.0 en NDX M15, Darwinex, terminal en español, guardado como
+.xlsx, del 2018-03-01 al 2026-10-14. Los archivos no están en el repositorio. Lo que enseña:
+
+- **El lector funciona con él.** 1.303 operaciones (las del resumen); la suma de sus netos es
+  204.413,43, el beneficio neto del informe; comisión (−17.864,98) y swap (−2.253,00)
+  cuadran con los totales; las 1.303 se emparejan con su apertura; el valor del contrato sale
+  10 por punto y lote con acuerdo total entre 1.240 parejas. Los parámetros del informe
+  coinciden con el .set de la configuración elegida en 90 de 92 (los dos distintos son de
+  registro: nombre del archivo de log y modo detallado).
+- **El dimensionado no es ni fijo ni proporcional:** riesgo fijo en dinero (5.2).
+- **El drawdown por días esconde un 6 %** frente al de operación a operación (5.1).
+- **Cómo es su serie diaria** (2.247 días laborables): un 52 % de días sin cierres,
+  asimetría positiva fuerte (2,4: muchas pérdidas pequeñas y pocas ganancias grandes),
+  colas gruesas (curtosis 13-18 según el tramo) y **sin dependencia** entre días
+  (autocorrelaciones entre −0,06 y 0,04, y nada en los cuadrados). Se parece a G5 y G6 del
+  banco y no a G3 o G4: para un EA así, el caso difícil (rachas) no aparece.
+- **El informe no trae el modelado** («cada tick basado en ticks reales»…); sí la calidad
+  del historial (97 %), las barras y los ticks.
+
 ---
 
 ## 5. Método
@@ -229,10 +250,19 @@ El remuestreo se hace por **días laborables**, con ceros los días sin cierres,
 Una operación que dura varios días cuenta entera el día de su cierre. Es otra razón por la
 que el drawdown es de balance (4.3).
 
+**El drawdown se mide operación a operación, no día a día.** Se remuestrean días, pero cada
+día conserva sus operaciones en su orden, y el drawdown se calcula recorriéndolas. Sumar el
+día entero esconde las caídas dentro del día: con el primer informe real (sección 4.5) el
+drawdown por días era 15.974 y operación a operación 17.015, un 6 % más, que es lo que da el
+propio informe (17.020).
+
 ### 5.2 Unidad de medida: dinero o rendimiento
 
-- **Lote fijo:** el resultado diario en dinero es aditivo. Drawdown en dinero y, como
-  referencia, en % del depósito del backtest.
+- **Lote fijo, o riesgo fijo en dinero:** el resultado diario en dinero es aditivo.
+  Drawdown en dinero y, como referencia, en % del depósito del backtest. Incluye el EA que
+  calcula el lote para arriesgar siempre la misma cantidad (un % de un capital fijo): su lote
+  cambia con la distancia al stop y con el precio, pero lo que arriesga no cambia con el
+  balance.
 - **Lote proporcional al balance:** el dinero no es aditivo, porque cada operación depende
   del balance de ese momento. Se trabaja en log-rendimiento diario
   *xₜ = ln(1 + PnLₜ / Bₜ₋₁)*, con *Bₜ₋₁* el balance al cierre del día anterior (el informe
@@ -247,12 +277,18 @@ que el drawdown es de balance (4.3).
 | Señal en las operaciones | Lectura |
 |---|---|
 | Lote constante (salvo redondeo al paso del lote) | Fijo |
-| Lote / balance estable y correlación alta entre log-lote y log-balance | Proporcional |
+| Pérdida de las operaciones cerradas por stop estable **en dinero** a lo largo del tiempo, aunque el lote cambie | Riesgo fijo en dinero (aditivo) |
+| Esa pérdida estable **en % del balance** | Proporcional |
 | Lote mayor tras una pérdida que tras una ganancia, de forma sistemática | Martingala: no se calcula |
 | Otra cosa | Se pregunta, y si el usuario dice «fijo» con lotes que varían, se avisa |
 
 Los umbrales de esa tabla se fijan con informes sintéticos de cada tipo en la fase 1, y se
 revisan con informes reales en la fase 2.
+
+La señal buena es lo que se pierde cuando salta el stop, no el lote: el comentario del cierre
+dice si fue por stop («sl …»). Con el lote se habría fallado el primer informe real (4.5):
+el lote baja de 4,13 a 0,86 a lo largo de los años porque el precio del índice sube, pero la
+pérdida mediana en stop es de 994 a 1.005 todos los años mientras el balance se triplica.
 
 ### 5.3 Bloques: longitud elegida con los datos
 
@@ -644,8 +680,11 @@ La decisión D1 (qué hacer ya con lo que enseña la app) no espera a ninguna fa
 
 **No comprobado**
 
-- Ningún informe real de MT5 en todo esto: ni el lector con cuentas de cobertura y terminal
-  en español, ni que el informe traiga de forma legible el modelado y el tipo de cuenta.
+- El lector con una cuenta de cobertura y varias posiciones abiertas a la vez, y con el
+  informe en HTML (el primer informe real es un .xlsx de terminal en español y se lee bien,
+  sección 4.5).
+- Que el informe traiga de forma legible el tipo de cuenta (el modelado no aparece en el
+  primer informe real; la calidad del historial sí).
 - Que el estimador PPW y la calibración por doble bootstrap basten con dependencia: lo dirá
   el banco.
 - Que la calibración por doble bootstrap quepa en tiempo en un móvil.

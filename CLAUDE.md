@@ -81,10 +81,10 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
 
 ## Pendiente conocido
 
-- **Probar con un informe HTML real de MT5.** El stress de costes deduce el valor del
-  contrato emparejando cada cierre con su apertura (`core/report.js`,
-  `core/trades/costs.js`); solo se ha probado con informes sintéticos. Lo más arriesgado:
-  cuentas de cobertura con varias posiciones abiertas a la vez y terminales en español.
+- **Informes reales de MT5.** Probado con uno (2026-10-14, `docs/MONTECARLO.md` 4.5):
+  .xlsx de terminal en español, una posición abierta cada vez; el lector, el emparejamiento
+  de cierres con aperturas y el valor del contrato cuadran con el resumen del informe. Falta:
+  el formato HTML y una cuenta de cobertura con varias posiciones abiertas a la vez.
 - Sin confirmar con MT5: si el `.set` acepta enums escritos como texto y si las cabeceras
   del terminal en español coinciden con los patrones de `core/schema.js`.
 - Aceptado a propósito: `collapseToTopology` (`core/engine.js`) se queda con la mejor fila

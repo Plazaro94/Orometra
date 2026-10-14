@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-14 — Primer informe real de MT5: se lee bien y corrige el diseño del Monte Carlo
+
+Con un backtest real del autor (NDX M15, terminal en español, .xlsx, 1.303 operaciones de
+2018 a 2026; los archivos no se guardan en el repositorio), el lector de la app cuadra al
+céntimo con el resumen del informe: beneficio neto, comisiones, swap, emparejamiento de las
+1.303 operaciones con su apertura y valor del contrato. Los parámetros coinciden con el .set
+de la configuración elegida.
+
+Dos correcciones al diseño (`docs/MONTECARLO.md`, 4.5, 5.1 y 5.2):
+
+- El EA arriesga una cantidad fija en dinero (≈ 1.000 por stop todos los años) con un lote
+  que cambia con el precio. Deducir el dimensionado por el lote habría fallado; se hará por lo
+  que se pierde cuando salta el stop.
+- Sumar el día entero escondía un 6 % del drawdown (15.974 frente a 17.015 operación a
+  operación, y 17.020 en el informe): se remuestrearán días, pero el drawdown se medirá
+  recorriendo sus operaciones en orden.
+
 ## 2026-10-13 — Monte Carlo: reglas del banco congeladas
 
 `bench/PREREGISTRO-MONTECARLO.md`, escrito antes de implementar nada: nueve procesos con verdad
