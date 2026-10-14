@@ -154,6 +154,8 @@ function quantileSorted(sorted, p) {
  *   seed      semilla (determinismo)
  *   log       true si los incrementos son log-rendimientos (drawdown relativo)
  *   ddLevels  niveles de drawdown para P(drawdown ≥ nivel)
+ *   observe   { total, dd }: lo que de verdad pasó (banco); devuelve su PIT, u = F̂(y)
+ *   keepSamples  devuelve las simulaciones ordenadas (las usa calibratedMonteCarlo)
  */
 export function predictiveMonteCarlo(packed, opts = {}) {
   const { n, inc, start } = packed;
@@ -203,8 +205,8 @@ export function predictiveMonteCarlo(packed, opts = {}) {
     for (let t = 0; t < H; t++) {
       if (t > 0 && rng() < p) wpos = Math.floor(rng() * n);
       const d = world[wpos];
-      for (let k = start[d]; k < start[d + 1]; k++) {
-        cum += inc[k];
+      for (let m = start[d]; m < start[d + 1]; m++) {
+        cum += inc[m];
         if (cum > peak) peak = cum;
         else if (peak - cum > dd) dd = peak - cum;
       }
@@ -218,7 +220,7 @@ export function predictiveMonteCarlo(packed, opts = {}) {
   }
   totals.sort();
   dds.sort();
-  return {
+  const out = {
     usable: true,
     method: method === 'bayes' ? 'bayesian_block_bootstrap_predictive' : 'two_stage_block_bootstrap_predictive',
     adaptation: 'Fushiki, Komaki & Aihara (2005) predictive bootstrap, made block-wise (Politis & Romano 1994)',
@@ -233,4 +235,172 @@ export function predictiveMonteCarlo(packed, opts = {}) {
     probLoss: losses / sims,
     probDd: levels.map((level, j) => ({ level, p: ddHits[j] / sims })),
   };
+  if (opts.observe) {
+    out.pit = { total: pitSorted(totals, opts.observe.total, rng()), dd: pitSorted(dds, opts.observe.dd, rng()) };
+  }
+  if (opts.keepSamples) out.samples = { totals, dds };
+  return out;
+}
+
+/** Cuántos valores de un array ordenado son < y (strict) o ≤ y. */
+function countBelow(sorted, y, strict) {
+  let lo = 0; let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (strict ? sorted[mid] < y : sorted[mid] <= y) lo = mid + 1; else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * PIT aleatorizado (Gneiting, Balabdaoui y Raftery, 2007): u = F̂(y⁻) + V·(F̂(y) − F̂(y⁻)), con
+ * V uniforme. Si la predicción está bien calibrada, u es uniforme entre 0 y 1. Lo de V reparte
+ * los empates (un drawdown 0 que aparece en muchas simulaciones, por ejemplo).
+ */
+export function pitSorted(sorted, y, v) {
+  const n = sorted.length;
+  const below = countBelow(sorted, y, true);
+  const upTo = countBelow(sorted, y, false);
+  return (below + v * (upTo - below)) / n;
+}
+
+// ------------------------------------------------------------------ detector de rachas
+
+function lnGamma(z) {
+  // Lanczos (g = 7, n = 9): error relativo < 1e-13 para z > 0.
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+    -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+  const x = z - 1;
+  let a = c[0];
+  const t = x + 7.5;
+  for (let i = 1; i < 9; i++) a += c[i] / (x + i);
+  return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+}
+
+/** Gamma incompleta regularizada inferior P(a, x): serie si x < a + 1, fracción continua si no. */
+export function gammaP(a, x) {
+  if (!(x > 0)) return 0;
+  const gln = lnGamma(a);
+  if (x < a + 1) {
+    let sum = 1 / a; let del = sum; let ap = a;
+    for (let i = 0; i < 1000; i++) { ap += 1; del *= x / ap; sum += del; if (Math.abs(del) < Math.abs(sum) * 1e-15) break; }
+    return sum * Math.exp(-x + a * Math.log(x) - gln);
+  }
+  const tiny = 1e-300;
+  let b = x + 1 - a; let c = 1 / tiny; let d = 1 / b; let h = d;
+  for (let i = 1; i < 1000; i++) {
+    const an = -i * (i - a); b += 2;
+    d = an * d + b; if (Math.abs(d) < tiny) d = tiny;
+    c = b + an / c; if (Math.abs(c) < tiny) c = tiny;
+    d = 1 / d; const del = d * c; h *= del;
+    if (Math.abs(del - 1) < 1e-15) break;
+  }
+  return 1 - Math.exp(-x + a * Math.log(x) - gln) * h;
+}
+
+/** Función de distribución de una chi-cuadrado con k grados de libertad. */
+export function chi2Cdf(x, k) { return gammaP(k / 2, x / 2); }
+
+/**
+ * Contraste de Ljung y Box (1978): Q = n(n+2) Σ ρ̂ₖ² / (n − k), k = 1..m; bajo independencia,
+ * Q ~ χ²(m). Con p < 0,05 la serie va en rachas (o revierte) más de lo que el método puede
+ * representar, y la app no da cifras (bench/PREREGISTRO-MONTECARLO.md, enmienda 2).
+ */
+export function ljungBox(series, lags = 10) {
+  const x = Array.from(series).filter(Number.isFinite);
+  const n = x.length;
+  const m = Math.min(lags, n - 2);
+  if (m < 1) return { usable: false };
+  const mean = x.reduce((a, v) => a + v, 0) / n;
+  let g0 = 0; for (const v of x) g0 += (v - mean) ** 2;
+  if (!(g0 > 0)) return { usable: true, q: 0, lags: m, p: 1 };
+  let q = 0;
+  for (let k = 1; k <= m; k++) {
+    let s = 0; for (let i = k; i < n; i++) s += (x[i] - mean) * (x[i - k] - mean);
+    const rho = s / g0;
+    q += (rho * rho) / (n - k);
+  }
+  q *= n * (n + 2);
+  return { usable: true, q, lags: m, p: 1 - chi2Cdf(q, m) };
+}
+
+// ------------------------------------------------------------------ M2c: nivel calibrado
+
+/** Días remuestreados por índice, en el formato compacto. */
+function packedFromIndices(packed, idx) {
+  const days = Array.from(idx, (d) => Array.from(packed.inc.subarray(packed.start[d], packed.start[d + 1])));
+  return packDays(days);
+}
+
+function stationaryIndices(rng, n, len, p) {
+  const out = new Int32Array(len);
+  let pos = Math.floor(rng() * n);
+  for (let i = 0; i < len; i++) {
+    if (i > 0 && rng() < p) pos = Math.floor(rng() * n);
+    out[i] = pos;
+    pos = pos + 1 === n ? 0 : pos + 1;
+  }
+  return out;
+}
+
+/**
+ * M2 con el nivel calibrado por doble bootstrap (Beran, 1987, «prepivoting»). Se pregunta a
+ * los propios datos cómo de bien calibra M2 con ellos: B veces se sacan de x unos datos x* y un
+ * futuro y* (x hace de verdad), se aplica M2 a x* y se mira el PIT de y*. La distribución de
+ * esos PIT (G) dice qué nivel nominal da de verdad cada nivel: el cuantil q pasa a ser
+ * F̂⁻¹(G⁻¹(q)) y una probabilidad F̂(c), G(F̂(c)). Por separado para el resultado y el drawdown.
+ */
+export function calibratedMonteCarlo(packed, opts = {}) {
+  const { n } = packed;
+  const H = Math.round(opts.horizon ?? n);
+  const outer = opts.outer ?? 200;
+  const inner = opts.inner ?? 500;
+  const seed = opts.seed ?? 20261014;
+  const block = opts.block ?? blockLengthPPW(packed.total);
+  const p = 1 / Math.max(1, block);
+  const rng = makeRng(seed ^ 0x5bd1e995);
+  const log = Boolean(opts.log);
+  const gTot = new Float64Array(outer);
+  const gDd = new Float64Array(outer);
+  for (let b = 0; b < outer; b++) {
+    const xs = packedFromIndices(packed, stationaryIndices(rng, n, n, p));
+    const ys = stationaryIndices(rng, n, H, p);
+    let cum = 0; let peak = 0; let dd = 0;
+    for (const d of ys) {
+      for (let m = packed.start[d]; m < packed.start[d + 1]; m++) {
+        cum += packed.inc[m];
+        if (cum > peak) peak = cum; else if (peak - cum > dd) dd = peak - cum;
+      }
+    }
+    const obs = { total: log ? Math.exp(cum) - 1 : cum, dd: log ? 1 - Math.exp(-dd) : dd };
+    const r = predictiveMonteCarlo(xs, { horizon: H, sims: inner, seed: (seed + 7919 * (b + 1)) >>> 0, method: 'bayes', log, observe: obs });
+    gTot[b] = r.pit.total; gDd[b] = r.pit.dd;
+  }
+  gTot.sort(); gDd.sort();
+  const main = predictiveMonteCarlo(packed, { ...opts, method: 'bayes', block, keepSamples: true, observe: undefined });
+  const { totals, dds } = main.samples;
+  const S = totals.length;
+  const G = (g, u) => countBelow(g, u, false) / g.length;
+  const Ginv = (g, q) => quantileSorted(g, q);
+  const qCal = (samples, g, q) => quantileSorted(samples, Ginv(g, q));
+  const levels = opts.ddLevels || [];
+  const out = {
+    ...main,
+    method: 'bayesian_block_bootstrap_predictive_calibrated',
+    calibration: { outer, inner, citation: 'Beran (1987) prepivoting' },
+    total: { p05: qCal(totals, gTot, 0.05), p50: qCal(totals, gTot, 0.5), p95: qCal(totals, gTot, 0.95) },
+    maxDd: { p50: qCal(dds, gDd, 0.5), p95: qCal(dds, gDd, 0.95) },
+    // F̂(0⁻) en log-rendimiento ≡ resultado relativo < 0: los totales ya están en esa escala.
+    probLoss: G(gTot, countBelow(totals, 0, true) / S),
+    probDd: levels.map((level) => ({ level, p: 1 - G(gDd, countBelow(dds, level, true) / S) })),
+  };
+  delete out.samples;
+  if (opts.observe) {
+    const v = rng();
+    const uT = pitSorted(totals, opts.observe.total, v);
+    const uD = pitSorted(dds, opts.observe.dd, v);
+    out.pit = { total: pitSorted(gTot, uT, rng()), dd: pitSorted(gDd, uD, rng()) };
+  }
+  return out;
 }

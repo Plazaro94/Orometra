@@ -195,3 +195,12 @@ es; por debajo de *n_min* dice que no hay muestra.
   completa y al examen solo si mejora a M2 y su tiempo es razonable.
   **Calibración 2:** casos 1-1.000 otra vez, con todo lo anterior. Examen: casos
   1.000.001-1.001.000, que siguen sin generarse.
+- **Enmienda 3 — 2026-10-14, antes de la calibración 2.** Detalle de interpretación de la
+  enmienda 2 (b), fijado al programarla y antes de generar ningún caso: si en una celda el
+  detector deja pasar menos de 100 casos, sus fracciones no se evalúan (el error típico pasa
+  de 2 puntos) y la celda no suspende por ellas; se informa. Pasa, sobre todo, en G3a con
+  muestras largas, donde el detector rechaza casi todo: ahí la app no daría cifras. El
+  criterio de rechazo (≤ 15 % en G1, G2, G4, G5, G6 y G7) sí se evalúa siempre.
+  Orden de las tandas: calibración 2 completa con M0, M1 y M2; después M2c en su subconjunto.
+  Implementación: `bench/montecarlo.js` y `core/trades/montecarlo.js` en el commit de esta
+  enmienda.

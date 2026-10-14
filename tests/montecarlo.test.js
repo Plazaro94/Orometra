@@ -1,7 +1,7 @@
 // Pruebas de respuesta conocida para core/trades/montecarlo.js (Monte Carlo predictivo).
 // El banco que decide si se enseña en la app es otro: bench/PREREGISTRO-MONTECARLO.md.
 
-import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo } from '../core/trades/montecarlo.js';
+import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo, pitSorted, chi2Cdf, ljungBox, calibratedMonteCarlo } from '../core/trades/montecarlo.js';
 import { makeRng } from '../core/rng.js';
 
 let failures = 0;
@@ -113,6 +113,53 @@ section('Días a partir de las operaciones del informe');
   check('modo log: ln(1 − 50 / 10.100)', Math.abs(l.days[0][1] - Math.log(1 - 50 / 10100)) < 1e-12);
   check('sin fecha reconocible: no usable', !daysFromDeals([{ time: 'x', net: 1 }]).usable);
   check('modo log sin balance: no usable', !daysFromDeals([{ time: '2025.01.03', net: 1 }], 'log').usable);
+}
+
+section('PIT (calibración probabilística)');
+{
+  const s = Float64Array.from([1, 2, 3, 4]);
+  check('PIT entre valores: 2,5 → 0,5', pitSorted(s, 2.5, 0.3) === 0.5);
+  check('PIT con empate: y = 2, V = 0,5 → 0,375', pitSorted(s, 2, 0.5) === 0.375);
+  check('PIT por debajo de todo: 0; por encima: 1', pitSorted(s, 0, 0.9) === 0 && pitSorted(s, 9, 0.1) === 1);
+  // Con datos normales independientes y sin bloques, el PIT del resultado futuro bajo M2 debe
+  // repartirse por igual entre los diez décimos.
+  const dec = new Array(10).fill(0); const cases = 400; const n = 100; const H = 50;
+  for (let c = 0; c < cases; c++) {
+    const r = makeRng(9001 + c * 17);
+    const x = Array.from({ length: n + H }, () => 0.05 + gauss(r));
+    let tot = 0; let pk = 0; let dd = 0;
+    for (let i = n; i < n + H; i++) { tot += x[i]; if (tot > pk) pk = tot; else if (pk - tot > dd) dd = pk - tot; }
+    const mc = predictiveMonteCarlo(packDays(x.slice(0, n).map((v) => [v])), { horizon: H, sims: 1000, seed: c + 3, block: 1, method: 'bayes', observe: { total: tot, dd } });
+    dec[Math.min(9, Math.floor(mc.pit.total * 10))]++;
+  }
+  check('PIT del resultado repartido (cada décimo entre un 6 % y un 14 %)', dec.every((k) => k / cases >= 0.06 && k / cases <= 0.14), dec.join(','));
+}
+
+section('Detector de rachas (Ljung-Box)');
+{
+  check('χ²(10): P(≤ 18,307) = 0,95', Math.abs(chi2Cdf(18.307, 10) - 0.95) < 1e-4, String(chi2Cdf(18.307, 10)));
+  check('χ²(1): P(≤ 3,841) = 0,95', Math.abs(chi2Cdf(3.8415, 1) - 0.95) < 1e-4, String(chi2Cdf(3.8415, 1)));
+  check('χ²(2): P(≤ 2) = 1 − e⁻¹', Math.abs(chi2Cdf(2, 2) - (1 - Math.exp(-1))) < 1e-12);
+  check('χ²(30): P(≤ 43,773) = 0,95', Math.abs(chi2Cdf(43.773, 30) - 0.95) < 1e-4, String(chi2Cdf(43.773, 30)));
+  let rejIid = 0; let rejAr = 0;
+  for (let c = 0; c < 400; c++) {
+    if (ljungBox(ar1(0, 252, 300 + c), 10).p < 0.05) rejIid++;
+    if (ljungBox(ar1(0.3, 252, 900 + c), 10).p < 0.05) rejAr++;
+  }
+  check('independientes: rechaza en torno a un 5 % (entre 2 % y 9 %)', rejIid / 400 >= 0.02 && rejIid / 400 <= 0.09, `${(100 * rejIid / 400).toFixed(1)} %`);
+  check('AR(1) φ = 0,3 con un año: rechaza casi siempre (> 90 %)', rejAr / 400 > 0.9, `${(100 * rejAr / 400).toFixed(1)} %`);
+}
+
+section('M2c: nivel calibrado por doble bootstrap');
+{
+  const x = packDays(ar1(0, 120, 4242).map((v) => [0.05 + v]));
+  const o = { horizon: 60, sims: 2000, seed: 5, outer: 40, inner: 200, ddLevels: [5, 10] };
+  const a = calibratedMonteCarlo(x, o);
+  const b = calibratedMonteCarlo(x, o);
+  check('misma semilla, mismo resultado', JSON.stringify(a) === JSON.stringify(b));
+  check('cuantiles ordenados', a.total.p05 <= a.total.p50 && a.total.p50 <= a.total.p95 && a.maxDd.p50 <= a.maxDd.p95);
+  check('probabilidades entre 0 y 1', a.probLoss >= 0 && a.probLoss <= 1 && a.probDd.every((d) => d.p >= 0 && d.p <= 1));
+  check('P(drawdown ≥ 10) ≤ P(drawdown ≥ 5)', a.probDd[1].p <= a.probDd[0].p);
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks}`);
