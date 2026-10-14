@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { makeRng } from '../core/rng.js';
-import { packDays, daysFromDeals, predictiveMonteCarlo, calibratedMonteCarlo, robustPortmanteau, pitSorted, chi2Cdf } from '../core/trades/montecarlo.js';
+import { packDays, daysFromDeals, predictiveMonteCarlo, calibratedMonteCarlo, robustPortmanteau, volatilityClustering, pitSorted, chi2Cdf } from '../core/trades/montecarlo.js';
 import { hashSeed } from './sim.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -28,8 +28,11 @@ const MUS = [0, 0.05, 0.1];
 const PAIRS = [[126, 63], [252, 63], [252, 126], [504, 63], [504, 126], [504, 252], [1008, 63], [1008, 126], [1008, 252]];
 const REQUIRED = ['G1', 'G2', 'G3a', 'G3b', 'G4', 'G5', 'G5b', 'G6', 'G6b', 'G7', 'G11', 'G12'];
 const INFORMED = ['G8', 'G9', 'G10'];
-// Sin dependencia en el nivel: el detector de rachas no debe rechazar más de un 15 % de sus casos.
-const NO_LEVEL_DEPENDENCE = REQUIRED.filter((g) => g !== 'G3a' && g !== 'G3b');
+// Sin rachas ni volatilidad agrupada: los dos detectores juntos no deben rechazar más de un 20 %
+// de sus casos (enmienda 5).
+const NO_DEPENDENCE = REQUIRED.filter((g) => g !== 'G3a' && g !== 'G3b' && g !== 'G4');
+// M2bc se evalúa con los 500 primeros casos de cada celda (enmienda 5: su coste).
+const CALIBRATED_CASES = 500;
 const K_GRID = [0, 20, 30, 40, 60, 80, 100, 150];
 const DD_K = [1, 2, 3];
 const MIN_ACCEPTED = 100;
@@ -125,6 +128,8 @@ function methodM0(x, n, H, sims, seed, levels, observe) {
   };
 }
 
+const firstCaseOf = (caseId) => (caseId >= 1000001 ? 1000001 + Math.floor((caseId - 1000001) / 1000000) * 1000000 : 1);
+
 // ------------------------------------------------------------------ un caso
 function runCase(g, mu, n, H, caseId, sims, sd, methods) {
   const key = `${g}|${mu}|${n}|${H}|${caseId}`;
@@ -176,17 +181,20 @@ function runCase(g, mu, n, H, caseId, sims, sd, methods) {
     m0Totals = packedM.total; m0Future = future;
   }
   const tradingDays = g === 'G7' ? n : days.slice(0, n).reduce((a, d) => a + (d.length > 0 ? 1 : 0), 0);
-  // Puerta 1 (enmienda 4 b): con rachas detectadas, la app no da cifras.
+  // Puertas 1 y 3 (enmiendas 4 b y 5): con rachas o con volatilidad agrupada, la app no da cifras.
   const pt = robustPortmanteau(packedM.total, 10);
-  if (pt.usable && pt.p < 0.05) return { refused: true, tradingDays };
+  if (pt.usable && pt.p < 0.05) return { refused: 'rachas', tradingDays };
+  const vc = volatilityClustering(packedM.total, 10);
+  if (vc.usable && vc.p < 0.05) return { refused: 'volatilidad', tradingDays };
   const obs = { total: future.total, dd: future.dd };
   const out = {};
   for (const m of methods) {
+    if (m === 'M2bc' && caseId - firstCaseOf(caseId) >= CALIBRATED_CASES) continue;
     const seed = hashSeed(`${key}|${m}`);
     if (m === 'M0') out.M0 = { res: methodM0(m0Totals, n, H, sims, seed, m0Levels, { total: m0Future.total, dd: m0Future.dd }), fut: m0Future, levels: m0Levels };
     else if (m === 'M1') out.M1 = { res: predictiveMonteCarlo(packedM, { horizon: H, sims, seed, log: logMode, ddLevels: levels, method: 'two-stage', observe: obs }), fut: future, levels };
-    else if (m === 'M2') out.M2 = { res: predictiveMonteCarlo(packedM, { horizon: H, sims, seed, log: logMode, ddLevels: levels, method: 'bayes', observe: obs }), fut: future, levels };
-    else if (m === 'M2c') out.M2c = { res: calibratedMonteCarlo(packedM, { horizon: H, sims, seed, log: logMode, ddLevels: levels, outer: 200, inner: 500, observe: obs }), fut: future, levels };
+    else if (m === 'M2b') out.M2b = { res: predictiveMonteCarlo(packedM, { horizon: H, sims, seed, log: logMode, ddLevels: levels, method: 'bayes-direct', observe: obs }), fut: future, levels };
+    else if (m === 'M2bc') out.M2bc = { res: calibratedMonteCarlo(packedM, { horizon: H, sims, seed, log: logMode, ddLevels: levels, outer: 200, inner: 500, observe: obs }), fut: future, levels };
   }
   return { refused: false, tradingDays, out };
 }
@@ -199,12 +207,14 @@ function runCell({ g, mu, n, H, cases, sims, firstCase, methods }) {
   const byK = {};
   for (const k of K_GRID) { byK[k] = {}; for (const m of methods) byK[k][m] = newCounts(); }
   const rel = {}; for (const m of methods) rel[m] = { preds: {}, outs: {} };
-  let refusedRachas = 0; const tdays = [];
+  let refusedRachas = 0; let refusedVol = 0; const tdays = [];
   for (let c = 0; c < cases; c++) {
     const res = runCase(g, mu, n, H, firstCase + c, sims, sd, methods);
     tdays.push(res.tradingDays);
-    if (res.refused) { refusedRachas++; continue; }
+    if (res.refused === 'rachas') { refusedRachas++; continue; }
+    if (res.refused === 'volatilidad') { refusedVol++; continue; }
     for (const m of methods) {
+      if (!res.out[m]) continue;
       const { res: rr, fut, levels } = res.out[m];
       const hit95 = fut.dd > rr.maxDd.p95; const hit50 = fut.dd > rr.maxDd.p50; const out = fut.total < rr.total.p05 || fut.total > rr.total.p95;
       const iT = Math.min(9, Math.floor(rr.pit.total * 10)); const iD = Math.min(9, Math.floor(rr.pit.dd * 10));
@@ -225,7 +235,7 @@ function runCell({ g, mu, n, H, cases, sims, firstCase, methods }) {
     for (const [name, preds] of Object.entries(rel[m].preds)) brier[m][name] = preds.reduce((s, p, i) => s + (p - rel[m].outs[name][i]) ** 2, 0) / preds.length;
   }
   tdays.sort((a, b) => a - b);
-  return { g, mu, n, H, cases, sims, sd, refusedRachas, tradingDaysMedian: tdays[Math.floor(tdays.length / 2)], byK, brier };
+  return { g, mu, n, H, cases, sims, sd, refusedRachas, refusedVol, tradingDaysMedian: tdays[Math.floor(tdays.length / 2)], byK, brier };
 }
 
 // ------------------------------------------------------------------ reglas (enmienda 4 a)
@@ -281,7 +291,7 @@ function evaluate(cells, m, k) {
     if (tests[i].outside) failing.push(tests[i]);
   }
   const failCell = new Set(failing.filter((t) => t.kind === 'celda').map((t) => t.c));
-  const overRefusal = req.filter((c) => NO_LEVEL_DEPENDENCE.includes(c.g) && c.refusedRachas / c.cases > 0.15);
+  const overRefusal = req.filter((c) => NO_DEPENDENCE.includes(c.g) && ((c.refusedRachas || 0) + (c.refusedVol || 0)) / c.cases > 0.2);
   const nmin = {};
   for (const H of [63, 126, 252]) {
     nmin[H] = null;
@@ -306,7 +316,7 @@ function chooseK(cells, m) {
 
 function report(cells, label, timing) {
   const pct = (v) => (Number.isFinite(v) ? `${(100 * v).toFixed(1)}` : '—');
-  const methods = ['M0', 'M1', 'M2', 'M2c'].filter((m) => cells.some((c) => c.byK[0][m]));
+  const methods = ['M0', 'M1', 'M2', 'M2c', 'M2b', 'M2bc'].filter((m) => cells.some((c) => c.byK[0][m]));
   const L = [];
   L.push(`# Banco del Monte Carlo: ${label}`, '', `Generado por \`node bench/montecarlo.js\` el ${new Date().toISOString().slice(0, 10)}. Prerregistro: \`bench/PREREGISTRO-MONTECARLO.md\` con las enmiendas 1 a 4. Casos por celda: ${cells[0].cases}; simulaciones por caso: ${cells[0].sims}. Solo pares con H ≤ n/2.`, '');
   const full = REQUIRED.every((g) => cells.some((c) => c.g === g && c.H === 126));
@@ -322,9 +332,9 @@ function report(cells, label, timing) {
   const kill = Object.values(chosen).some((b) => b.score <= 252);
   L.push('', `**Criterio de descarte** (algún método apto para H = 126 con n_min ≤ 252): ${!full ? 'no se puede evaluar con esta tanda (faltan procesos)' : kill ? 'se cumple' : '**no se cumple**'}.`);
   for (const [m, b] of Object.entries(chosen)) L.push(`- ${m}: k elegido = ${b.k} (el menor que da el mejor n_min con H = 126).`);
-  L.push('', '## Puertas: casos sin cifras', '', 'Detector de rachas (contraste robusto), en % de casos; entre paréntesis, la mediana de días con operaciones de la muestra.', '', '| Proceso | μ | ' + PAIRS.map(([n, H]) => `${n}/${H}`).join(' | ') + ' |', '|---|---|' + PAIRS.map(() => '---|').join(''));
+  L.push('', '## Puertas: casos sin cifras', '', 'Detectores de rachas y de volatilidad agrupada juntos, en % de casos; entre paréntesis, la mediana de días con operaciones de la muestra.', '', '| Proceso | μ | ' + PAIRS.map(([n, H]) => `${n}/${H}`).join(' | ') + ' |', '|---|---|' + PAIRS.map(() => '---|').join(''));
   for (const g of [...REQUIRED, ...INFORMED.filter((x) => x !== 'G9')]) for (const mu of (g === 'G12' ? ['real', 0] : MUS)) {
-    const row = PAIRS.map(([n, H]) => { const c = cells.find((x) => x.g === g && x.mu === mu && x.n === n && x.H === H); return c ? `${pct(c.refusedRachas / c.cases)} (${c.tradingDaysMedian})` : ''; });
+    const row = PAIRS.map(([n, H]) => { const c = cells.find((x) => x.g === g && x.mu === mu && x.n === n && x.H === H); return c ? `${pct(((c.refusedRachas || 0) + (c.refusedVol || 0)) / c.cases)} (${c.tradingDaysMedian})` : ''; });
     if (row.some(Boolean)) L.push(`| ${g} | ${mu} | ${row.join(' | ')} |`);
   }
   for (const [m, b] of Object.entries(chosen)) {
@@ -347,7 +357,7 @@ function report(cells, label, timing) {
       const where = t.kind === 'celda' ? `Celda ${t.c.g} μ ${t.c.mu} n ${t.c.n} H ${t.c.H}` : `Conjunto ${t.g}, H = ${t.H}, n ≥ ${t.n0} (${t.N} casos)`;
       L.push(`- ${where}: ${t.name} ${fmt(t)} (p = ${t.p.toExponential(2)})`);
     }
-    for (const c of v.overRefusal) L.push(`- Detector: ${c.g} μ ${c.mu} n ${c.n} H ${c.H} rechaza un ${pct(c.refusedRachas / c.cases)} %`);
+    for (const c of v.overRefusal) L.push(`- Detectores: ${c.g} μ ${c.mu} n ${c.n} H ${c.H} rechazan un ${pct(((c.refusedRachas || 0) + (c.refusedVol || 0)) / c.cases)} %`);
   }
   const informed = cells.filter((x) => INFORMED.includes(x.g));
   if (informed.length) {
@@ -357,7 +367,7 @@ function report(cells, label, timing) {
       L.push(`| ${c.g} | ${c.mu} | ${c.n} | ${c.H} | ${c.byK[0][methods[0]].N} | ${methods.map(t).join(' | ')} |`);
     }
   }
-  if (timing) L.push('', '## Tiempo (orientativo, Node, 10.000 simulaciones)', '', ...timing.map((t) => `- n = ${t.n}, H = ${t.H}: M1 ${t.m1} ms, M2 ${t.m2} ms, M2c ${t.m2c} ms`));
+  if (timing) L.push('', '## Tiempo (orientativo, Node, 10.000 simulaciones)', '', ...timing.map((t) => `- n = ${t.n}, H = ${t.H}: M1 ${t.m1} ms, M2b ${t.m2} ms, M2bc ${t.m2c} ms`));
   return L.join('\n') + '\n';
 }
 
@@ -396,7 +406,7 @@ if (!isMainThread) {
   const timingNow = () => [[252, 126], [1008, 252]].map(([n, H]) => {
     const x = packDays(genDays('G1', 0.05, n, makeRng(5)));
     let t = Date.now(); predictiveMonteCarlo(x, { horizon: H, sims: 10000, seed: 1 }); const m1 = Date.now() - t;
-    t = Date.now(); predictiveMonteCarlo(x, { horizon: H, sims: 10000, seed: 1, method: 'bayes' }); const m2 = Date.now() - t;
+    t = Date.now(); predictiveMonteCarlo(x, { horizon: H, sims: 10000, seed: 1, method: 'bayes-direct' }); const m2 = Date.now() - t;
     t = Date.now(); calibratedMonteCarlo(x, { horizon: H, sims: 10000, seed: 1, outer: 200, inner: 500 }); const m2c = Date.now() - t;
     return { n, H, m1, m2, m2c };
   });
@@ -426,9 +436,9 @@ if (!isMainThread) {
   }
   const cases = Number(opt('cases', 1000));
   const sims = Number(opt('sims', 2000));
-  const out = opt('out', mode === 'calib' ? 'MC-calib3' : 'MC-exam1');
+  const out = opt('out', mode === 'calib' ? 'MC-calib4' : 'MC-exam1');
   const only = opt('only', null)?.split(',');
-  const methods = opt('methods', 'M0,M1,M2').split(',');
+  const methods = opt('methods', 'M0,M1,M2b,M2bc').split(',');
   const pairsOnly = opt('pairs', null)?.split(',').map((s) => s.split('x').map(Number));
   const firstCase = mode === 'calib' ? 1 : Number(opt('first', 1000001));
   const tasks = [];

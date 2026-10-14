@@ -248,3 +248,29 @@ es; por debajo de *n_min* dice que no hay muestra.
   (e) Fiabilidad y Brier se siguen calculando y se guardan; no se exigen.
   **Calibración 3:** casos 1-1.000 con M0, M1 y M2; después M2c en el subconjunto de la
   enmienda 2 más G3b, G5b, G6b, G11 y G12. Examen: casos 1.000.001-1.001.000, sin generar.
+- **Enmienda 5 — 2026-10-14, tras la calibración 3 y antes de la calibración 4. Aprobada por
+  el autor.** La calibración 3 (`REPORT-MC-calib3-exigidos.md`, M2c en `MC-calib3-m2c-*.jsonl`)
+  se conserva tal cual. Hallazgos que motivan los cambios:
+  (a) **M2, tal como se definió en el §4, cuenta dos veces la incertidumbre:** sortea pesos de
+  Dirichlet y además un mundo de n días con ellos. Con datos normales, n = 252 y H = 126, deja
+  fuera del P05–P95 un 5,9 % de los futuros (la teoría para ese error da un 5,7 %), frente a un
+  9,8 % de M1 y un 9,4 % del bootstrap bayesiano bien hecho. Lo que parecía ventaja de M2 en
+  colas gruesas era ese exceso de anchura. Se sustituye por **M2b**: los pesos de Dirichlet y el
+  futuro sacado directamente de la muestra con ellos (Rubin, 1981, por bloques; urna de Pólya),
+  sin mundo intermedio. M2 y M2c dejan de ser candidatos; M0 y M1 siguen de referencia.
+  (b) **M2bc:** M2b con el nivel calibrado por doble bootstrap (como M2c: B = 200, S′ = 500).
+  Por su coste (0,5-1 s por caso), en las calibraciones y el examen se evalúa con los **500
+  primeros casos** de cada celda; las reglas con 500 casos están comprobadas en el oráculo (un
+  método perfecto no es apto en el 2-4 % de los bancos).
+  (c) **Tercera puerta, detector de volatilidad agrupada:** Ljung-Box sobre los cuadrados de las
+  desviaciones (McLeod y Li, 1983), 10 retardos, p < 0,05. M2c fallaba solo en G4 (drawdown sobre
+  el p95 un 6,7 % en conjunto, un 7,9 % en el peor caso) y alargar los bloques con la
+  autocorrelación de |x| no lo arreglaba (bloque mediano 2,3; DD > p95 7,0 %). Medido antes de
+  la calibración 4 (1.000 series por fila): detecta G4 en un 67 % con 252 días y en un 99,9 % con
+  1.008; en el resto de procesos, incluido G12, rechaza un 4-9 %.
+  (d) **Límite de rechazo:** los dos detectores juntos no deben rechazar más de un **20 %** de los
+  casos en los procesos sin rachas ni volatilidad agrupada (G1, G2, G5, G5b, G6, G6b, G7, G11 y
+  G12). Sustituye al límite del 15 % de la enmienda 4 (b).
+  (e) Las reglas, los procesos, el mínimo de días con operaciones y el criterio de descarte no
+  cambian. **Calibración 4:** casos 1-1.000 (M2bc, 1-500) con M0, M1, M2b y M2bc. Examen: casos
+  1.000.001-1.001.000 (M2bc, 1.000.001-1.000.500), sin generar.

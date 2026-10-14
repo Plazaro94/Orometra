@@ -1,7 +1,7 @@
 // Pruebas de respuesta conocida para core/trades/montecarlo.js (Monte Carlo predictivo).
 // El banco que decide si se enseña en la app es otro: bench/PREREGISTRO-MONTECARLO.md.
 
-import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo, pitSorted, chi2Cdf, ljungBox, robustPortmanteau, calibratedMonteCarlo } from '../core/trades/montecarlo.js';
+import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo, pitSorted, chi2Cdf, ljungBox, robustPortmanteau, volatilityClustering, calibratedMonteCarlo } from '../core/trades/montecarlo.js';
 import { makeRng } from '../core/rng.js';
 
 let failures = 0;
@@ -72,8 +72,8 @@ section('Determinismo');
   check('misma semilla, mismo resultado', JSON.stringify(a) === JSON.stringify(b));
   const c = predictiveMonteCarlo(x, { horizon: 126, sims: 2000, seed: 43, ddLevels: [10] });
   check('otra semilla, otro resultado', JSON.stringify(a) !== JSON.stringify(c));
-  const bayes1 = predictiveMonteCarlo(x, { horizon: 126, sims: 1000, seed: 42, method: 'bayes' });
-  const bayes2 = predictiveMonteCarlo(x, { horizon: 126, sims: 1000, seed: 42, method: 'bayes' });
+  const bayes1 = predictiveMonteCarlo(x, { horizon: 126, sims: 1000, seed: 42, method: 'bayes-direct' });
+  const bayes2 = predictiveMonteCarlo(x, { horizon: 126, sims: 1000, seed: 42, method: 'bayes-direct' });
   check('bayesiano: misma semilla, mismo resultado', JSON.stringify(bayes1) === JSON.stringify(bayes2));
 }
 
@@ -129,7 +129,7 @@ section('PIT (calibración probabilística)');
     const x = Array.from({ length: n + H }, () => 0.05 + gauss(r));
     let tot = 0; let pk = 0; let dd = 0;
     for (let i = n; i < n + H; i++) { tot += x[i]; if (tot > pk) pk = tot; else if (pk - tot > dd) dd = pk - tot; }
-    const mc = predictiveMonteCarlo(packDays(x.slice(0, n).map((v) => [v])), { horizon: H, sims: 1000, seed: c + 3, block: 1, method: 'bayes', observe: { total: tot, dd } });
+    const mc = predictiveMonteCarlo(packDays(x.slice(0, n).map((v) => [v])), { horizon: H, sims: 1000, seed: c + 3, block: 1, method: 'bayes-direct', observe: { total: tot, dd } });
     dec[Math.min(9, Math.floor(mc.pit.total * 10))]++;
   }
   check('PIT del resultado repartido (cada décimo entre un 6 % y un 14 %)', dec.every((k) => k / cases >= 0.06 && k / cases <= 0.14), dec.join(','));
@@ -168,7 +168,36 @@ section('Detector de rachas robusto (Dalla, Giraitis y Phillips, 2020)');
   check('AR(1) φ = 0,3 con un año: el robusto rechaza casi siempre (> 85 %)', robAr / 400 > 0.85, `${(100 * robAr / 400).toFixed(1)} %`);
 }
 
-section('M2c: nivel calibrado por doble bootstrap');
+section('M2b: bootstrap bayesiano sin contar dos veces la incertidumbre');
+{
+  // Datos normales independientes, n = 252, H = 126, sin bloques: el resultado futuro debe caer
+  // fuera del P05–P95 un ~10 % de las veces. La versión anterior (M2) daba un 5,9 %: contaba dos
+  // veces la incertidumbre (enmienda 5). La teoría para ese error, con H = n/2, da un 5,7 %.
+  let out = 0; const C = 400; const n = 252; const H = 126;
+  for (let c = 0; c < C; c++) {
+    const r = makeRng(5000 + c * 13);
+    const x = Array.from({ length: n + H }, () => 0.05 + gauss(r));
+    const fut = x.slice(n).reduce((a, v) => a + v, 0);
+    const t = predictiveMonteCarlo(packDays(x.slice(0, n).map((v) => [v])), { horizon: H, sims: 1000, seed: c + 1, block: 1, method: 'bayes-direct' }).total;
+    if (fut < t.p05 || fut > t.p95) out++;
+  }
+  check('resultado fuera del P05–P95 entre un 7 % y un 13 %', out / C >= 0.07 && out / C <= 0.13, `${(100 * out / C).toFixed(1)} %`);
+  check('método desconocido: error claro', (() => { try { predictiveMonteCarlo(packDays([[1], [2]]), { method: 'bayes' }); return false; } catch { return true; } })());
+}
+
+section('Detector de volatilidad agrupada (McLeod y Li, 1983)');
+{
+  const garch = (seed, n) => { const r = makeRng(seed); const o = []; let h = 1; let e = 0; for (let i = 0; i < 300 + n; i++) { h = 0.05 + 0.1 * e * e + 0.85 * h; e = Math.sqrt(h) * gauss(r); if (i >= 300) o.push(e); } return o; };
+  let g = 0; let iid = 0;
+  for (let c = 0; c < 300; c++) {
+    if (volatilityClustering(garch(8000 + c, 1008), 10).p < 0.05) g++;
+    if (volatilityClustering(ar1(0, 1008, 9000 + c), 10).p < 0.05) iid++;
+  }
+  check('GARCH con cuatro años: lo detecta casi siempre (> 95 %)', g / 300 > 0.95, `${(100 * g / 300).toFixed(1)} %`);
+  check('independientes: rechaza entre un 2 % y un 9 %', iid / 300 >= 0.02 && iid / 300 <= 0.09, `${(100 * iid / 300).toFixed(1)} %`);
+}
+
+section('M2bc: nivel calibrado por doble bootstrap');
 {
   const x = packDays(ar1(0, 120, 4242).map((v) => [0.05 + v]));
   const o = { horizon: 60, sims: 2000, seed: 5, outer: 40, inner: 200, ddLevels: [5, 10] };

@@ -144,11 +144,20 @@ function quantileSorted(sorted, p) {
 /**
  * Distribución predictiva del resultado y del drawdown en los próximos H días.
  *
+ * Dos métodos (bench/PREREGISTRO-MONTECARLO.md):
+ *   'two-stage' (M1): cada simulación saca primero un «mundo» de n días por bootstrap
+ *     estacionario de la muestra y después el futuro, del mismo modo, de ese mundo (Fushiki,
+ *     Komaki y Aihara, 2005, hecho por bloques).
+ *   'bayes-direct' (M2b): cada simulación sortea unos pesos de Dirichlet(1, …, 1) para los n
+ *     días (el bootstrap bayesiano de Rubin, 1981) y saca el futuro directamente de la muestra,
+ *     con los inicios de bloque elegidos según esos pesos. La versión anterior (M2, hasta el
+ *     commit 7ef8ce1) sorteaba los pesos y ADEMÁS un mundo de n días con ellos: contaba dos
+ *     veces la incertidumbre y sus rangos salían demasiado anchos (enmienda 5).
+ *
  * @param {{n:number, inc:Float64Array, start:Int32Array, total:Float64Array}} packed  packDays()
  * @param {object} opts
  *   horizon   H en días laborables (H ≤ n; más allá habría que inventar)
- *   method    'two-stage' (M1) | 'bayes' (M2: etapa 1 con pesos de Dirichlet sobre los inicios
- *             de bloque, el bootstrap bayesiano de Rubin, 1981, hecho por bloques)
+ *   method    'two-stage' | 'bayes-direct'
  *   block     longitud media de bloque; por defecto blockLengthPPW de los totales diarios
  *   sims      simulaciones (por defecto 10.000)
  *   seed      semilla (determinismo)
@@ -159,10 +168,13 @@ function quantileSorted(sorted, p) {
  */
 export function predictiveMonteCarlo(packed, opts = {}) {
   const { n, inc, start } = packed;
+  // Una vista (packedView) trae el final de cada día aparte; un packDays normal, no.
+  const end = packed.end || start.subarray(1);
   const H = Math.round(opts.horizon ?? n);
   if (!(n >= 2) || !(H >= 1)) return { usable: false, reason: 'insuficiente' };
   if (H > n) return { usable: false, reason: 'horizonte_mayor_que_muestra' };
   const method = opts.method || 'two-stage';
+  if (method !== 'two-stage' && method !== 'bayes-direct') throw new Error(`método desconocido: ${method}`);
   const sims = opts.sims ?? 10000;
   const seed = opts.seed ?? 20261014;
   const block = opts.block ?? blockLengthPPW(packed.total);
@@ -173,44 +185,56 @@ export function predictiveMonteCarlo(packed, opts = {}) {
   const dds = new Float64Array(sims);
   const ddHits = new Float64Array(levels.length);
   let losses = 0;
-  const world = new Int32Array(n);
-  // M2: los inicios de bloque salen de una categórica con pesos Dirichlet(1, …, 1) sobre los n
-  // días, sorteados de nuevo en cada simulación. No hace falta calcular los pesos: sacar inicios
-  // sucesivos de esa categórica equivale exactamente a la urna de Pólya (Blackwell y MacQueen,
-  // 1973): el inicio k-ésimo es un día nuevo al azar con probabilidad n / (n + k) o repite uno
-  // de los k ya sacados, cada uno con probabilidad 1 / (n + k).
-  const drawn = method === 'bayes' ? new Int32Array(n) : null;
+  const bayes = method === 'bayes-direct';
+  const world = bayes ? null : new Int32Array(n);
+  // M2b: sacar inicios sucesivos de una categórica con pesos Dirichlet(1, …, 1) equivale
+  // exactamente a la urna de Pólya (Blackwell y MacQueen, 1973): el inicio k-ésimo es un día al
+  // azar con probabilidad n / (n + k) o repite uno de los k ya sacados, cada uno con probabilidad
+  // 1 / (n + k). La urna se vacía en cada simulación (pesos nuevos).
+  const drawn = bayes ? new Int32Array(H) : null;
   let k = 0;
-  const drawStart = method === 'bayes'
-    ? () => {
-      const u = rng() * (n + k);
-      const j = u < n ? Math.floor(u) : drawn[Math.floor(u - n)];
-      drawn[k++] = j;
-      return j;
-    }
-    : () => Math.floor(rng() * n);
+  const urnStart = () => {
+    const u = rng() * (n + k);
+    const j = u < n ? Math.floor(u) : drawn[Math.floor(u - n)];
+    drawn[k++] = j;
+    return j;
+  };
 
   for (let s = 0; s < sims; s++) {
-    // Etapa 1: un mundo plausible de n días.
-    k = 0;
-    let pos = drawStart();
-    for (let i = 0; i < n; i++) {
-      if (i > 0 && rng() < p) pos = drawStart();
-      world[i] = pos;
-      pos = pos + 1 === n ? 0 : pos + 1;
-    }
-    // Etapa 2: el futuro de H días, sacado de ese mundo.
-    let wpos = Math.floor(rng() * n);
     let cum = 0; let peak = 0; let dd = 0;
-    for (let t = 0; t < H; t++) {
-      if (t > 0 && rng() < p) wpos = Math.floor(rng() * n);
-      const d = world[wpos];
-      for (let m = start[d]; m < start[d + 1]; m++) {
-        cum += inc[m];
-        if (cum > peak) peak = cum;
-        else if (peak - cum > dd) dd = peak - cum;
+    if (bayes) {
+      // El futuro, directamente de la muestra con los pesos de esta simulación.
+      k = 0;
+      let pos = urnStart();
+      for (let t = 0; t < H; t++) {
+        if (t > 0 && rng() < p) pos = urnStart();
+        for (let m = start[pos]; m < end[pos]; m++) {
+          cum += inc[m];
+          if (cum > peak) peak = cum;
+          else if (peak - cum > dd) dd = peak - cum;
+        }
+        pos = pos + 1 === n ? 0 : pos + 1;
       }
-      wpos = wpos + 1 === n ? 0 : wpos + 1;
+    } else {
+      // Etapa 1: un mundo plausible de n días.
+      let pos = Math.floor(rng() * n);
+      for (let i = 0; i < n; i++) {
+        if (i > 0 && rng() < p) pos = Math.floor(rng() * n);
+        world[i] = pos;
+        pos = pos + 1 === n ? 0 : pos + 1;
+      }
+      // Etapa 2: el futuro de H días, sacado de ese mundo.
+      let wpos = Math.floor(rng() * n);
+      for (let t = 0; t < H; t++) {
+        if (t > 0 && rng() < p) wpos = Math.floor(rng() * n);
+        const d = world[wpos];
+        for (let m = start[d]; m < end[d]; m++) {
+          cum += inc[m];
+          if (cum > peak) peak = cum;
+          else if (peak - cum > dd) dd = peak - cum;
+        }
+        wpos = wpos + 1 === n ? 0 : wpos + 1;
+      }
     }
     const ddOut = opts.log ? 1 - Math.exp(-dd) : dd;
     totals[s] = opts.log ? Math.exp(cum) - 1 : cum;
@@ -222,8 +246,10 @@ export function predictiveMonteCarlo(packed, opts = {}) {
   dds.sort();
   const out = {
     usable: true,
-    method: method === 'bayes' ? 'bayesian_block_bootstrap_predictive' : 'two_stage_block_bootstrap_predictive',
-    adaptation: 'Fushiki, Komaki & Aihara (2005) predictive bootstrap, made block-wise (Politis & Romano 1994)',
+    method: bayes ? 'bayesian_block_bootstrap_predictive' : 'two_stage_block_bootstrap_predictive',
+    adaptation: bayes
+      ? 'Rubin (1981) Bayesian bootstrap predictive, made block-wise (Politis & Romano 1994)'
+      : 'Fushiki, Komaki & Aihara (2005) predictive bootstrap, made block-wise (Politis & Romano 1994)',
     seed,
     sims,
     horizon: H,
@@ -348,12 +374,28 @@ export function robustPortmanteau(series, lags = 10) {
   return { usable: true, q, lags: m, p: 1 - chi2Cdf(q, m) };
 }
 
-// ------------------------------------------------------------------ M2c: nivel calibrado
+/**
+ * Detector de volatilidad agrupada: Ljung-Box sobre los cuadrados de las desviaciones (McLeod y
+ * Li, 1983). Con p < 0,05, la volatilidad va por rachas más de lo que el método puede representar
+ * con la muestra y la app no da cifras (bench/PREREGISTRO-MONTECARLO.md, enmienda 5).
+ */
+export function volatilityClustering(series, lags = 10) {
+  const x = Array.from(series).filter(Number.isFinite);
+  const mean = x.reduce((a, v) => a + v, 0) / (x.length || 1);
+  return ljungBox(x.map((v) => (v - mean) ** 2), lags);
+}
 
-/** Días remuestreados por índice, en el formato compacto. */
-function packedFromIndices(packed, idx) {
-  const days = Array.from(idx, (d) => Array.from(packed.inc.subarray(packed.start[d], packed.start[d + 1])));
-  return packDays(days);
+// ------------------------------------------------------------------ M2bc: nivel calibrado
+
+/**
+ * Días remuestreados por índice, sin copiar las operaciones: una vista con el inicio y el final
+ * de cada día dentro de los datos originales.
+ */
+function packedView(packed, idx) {
+  const n = idx.length;
+  const start = new Int32Array(n); const end = new Int32Array(n); const total = new Float64Array(n);
+  for (let i = 0; i < n; i++) { const d = idx[i]; start[i] = packed.start[d]; end[i] = packed.start[d + 1]; total[i] = packed.total[d]; }
+  return { n, inc: packed.inc, start, end, total };
 }
 
 function stationaryIndices(rng, n, len, p) {
@@ -368,9 +410,9 @@ function stationaryIndices(rng, n, len, p) {
 }
 
 /**
- * M2 con el nivel calibrado por doble bootstrap (Beran, 1987, «prepivoting»). Se pregunta a
- * los propios datos cómo de bien calibra M2 con ellos: B veces se sacan de x unos datos x* y un
- * futuro y* (x hace de verdad), se aplica M2 a x* y se mira el PIT de y*. La distribución de
+ * M2b con el nivel calibrado por doble bootstrap (Beran, 1987, «prepivoting»): M2bc. Se pregunta
+ * a los propios datos cómo de bien calibra M2b con ellos: B veces se sacan de x unos datos x* y
+ * un futuro y* (x hace de verdad), se aplica M2b a x* y se mira el PIT de y*. La distribución de
  * esos PIT (G) dice qué nivel nominal da de verdad cada nivel: el cuantil q pasa a ser
  * F̂⁻¹(G⁻¹(q)) y una probabilidad F̂(c), G(F̂(c)). Por separado para el resultado y el drawdown.
  */
@@ -387,7 +429,7 @@ export function calibratedMonteCarlo(packed, opts = {}) {
   const gTot = new Float64Array(outer);
   const gDd = new Float64Array(outer);
   for (let b = 0; b < outer; b++) {
-    const xs = packedFromIndices(packed, stationaryIndices(rng, n, n, p));
+    const xs = packedView(packed, stationaryIndices(rng, n, n, p));
     const ys = stationaryIndices(rng, n, H, p);
     let cum = 0; let peak = 0; let dd = 0;
     for (const d of ys) {
@@ -397,11 +439,11 @@ export function calibratedMonteCarlo(packed, opts = {}) {
       }
     }
     const obs = { total: log ? Math.exp(cum) - 1 : cum, dd: log ? 1 - Math.exp(-dd) : dd };
-    const r = predictiveMonteCarlo(xs, { horizon: H, sims: inner, seed: (seed + 7919 * (b + 1)) >>> 0, method: 'bayes', log, observe: obs });
+    const r = predictiveMonteCarlo(xs, { horizon: H, sims: inner, seed: (seed + 7919 * (b + 1)) >>> 0, method: 'bayes-direct', log, observe: obs });
     gTot[b] = r.pit.total; gDd[b] = r.pit.dd;
   }
   gTot.sort(); gDd.sort();
-  const main = predictiveMonteCarlo(packed, { ...opts, method: 'bayes', block, keepSamples: true, observe: undefined });
+  const main = predictiveMonteCarlo(packed, { ...opts, method: 'bayes-direct', block, keepSamples: true, observe: undefined });
   const { totals, dds } = main.samples;
   const S = totals.length;
   const G = (g, u) => countBelow(g, u, false) / g.length;
