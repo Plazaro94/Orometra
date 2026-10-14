@@ -224,8 +224,10 @@ section('3. Rechazo de ficheros que no son informes');
 }
 
 section('4. Informe real de MT5');
+// Un informe HTML real, si lo hay: MT5_REPORT=/ruta/al/informe.html, o en el Escritorio con
+// el nombre ReportTester.html (MT5 añade el número de cuenta al nombre: quítaselo al copiarlo).
 const real = process.env.MT5_REPORT
-  || path.join(process.env.USERPROFILE || process.env.HOME || '.', 'Desktop', 'ReportTester-4000098256.html');
+  || path.join(process.env.USERPROFILE || process.env.HOME || '.', 'Desktop', 'ReportTester.html');
 if (fs.existsSync(real)) {
   const buf = fs.readFileSync(real);
   const text = new TextDecoder('utf-16le').decode(buf);
