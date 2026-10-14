@@ -29,12 +29,12 @@ const COPY = {
 // Fuentes e icono incrustados: la tarjeta se monta en una página en blanco, y desde ahí el
 // navegador no carga fuentes de otro origen.
 const inline = (file, type) => `data:${type};base64,${fs.readFileSync(path.join(ROOT, file)).toString('base64')}`;
-const font = (w) => `@font-face{font-family:Plex;font-weight:${w};src:url(${inline(`fonts/source-sans-3-${w}.woff2`, 'font/woff2')})}`;
+const font = (w) => `@font-face{font-family:Sans;font-weight:${w};src:url(${inline(`fonts/source-sans-3-${w}.woff2`, 'font/woff2')})}`;
 
 const card = (c) => `<!doctype html><html><head><meta charset="utf-8"><style>
 ${font(400)}${font(600)}${font(700)}@font-face{font-family:Serif;font-style:italic;font-weight:600;src:url(${inline('fonts/source-serif-4-600-italic.woff2', 'font/woff2')})}
 *{box-sizing:border-box;margin:0}
-body{width:1200px;height:630px;overflow:hidden;font-family:Plex,sans-serif;color:#e7ebf3;
+body{width:1200px;height:630px;overflow:hidden;font-family:Sans,sans-serif;color:#e7ebf3;
   display:flex;flex-direction:column;justify-content:center;padding:0 72px;
   background:linear-gradient(90deg,rgba(12,16,26,.92) 0%,rgba(12,16,26,.66) 42%,rgba(12,16,26,.08) 74%,rgba(12,16,26,0) 100%),
     url(${inline('img/fotos/portada-oscuro-esc-1400.webp', 'image/webp')}) center 40%/cover no-repeat,#0f1625}

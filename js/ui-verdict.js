@@ -6,8 +6,8 @@ import { setCoverageNote } from './export.js';
 import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
-import { t, L, localeTag } from './i18n.js';
-import { state, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding } from './ui-state.js';
+import { t, L, localeTag, pctSign, shareText } from './i18n.js';
+import { state, api, num, int, pct, esc, rich, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, forwardHoldHtml, deployableSet, forwardUntested } from './ui-state.js';
 import { gloss } from './glossary.js';
 
 /*
@@ -46,6 +46,25 @@ export function verdictCopy(level) {
   return { label: t('verdict.strong'), cls: 'v-go' };
 }
 
+/**
+ * Textos de un «periodo no visto» que repite uno ya usado (core/unseen.js#repeatedPeriod):
+ * 'is', 'oos' o 'both'. `body` necesita la pasada comparada.
+ */
+export function repeatedPeriodText(kind, passId = '') {
+  const where = kind === 'is'
+    ? L('el periodo optimizado', 'the optimized period')
+    : kind === 'oos' ? L('el forward', 'the forward') : L('el periodo optimizado y el forward', 'the optimized period and the forward');
+  return {
+    headline: L(`Este backtest repite ${where}`, `This backtest repeats ${where}`),
+    short: L(`El backtest repite ${where}: no es un periodo no visto.`, `The backtest repeats ${where}: it is not an unseen period.`),
+    body: kind === 'both'
+      ? L(`Sus operaciones y su beneficio coinciden con la suma de los dos periodos de la pasada ${passId}: es el rango entero que ya usaste para optimizar y validar, así que estas cifras no prueban nada nuevo. Lanza el backtest en MT5 sobre un tramo que no hayas usado y vuelve a cargar el informe.`,
+        `Its trades and profit match the sum of both periods of pass ${passId}: it is the whole range you already used to optimize and validate, so these figures prove nothing new. Run the backtest in MT5 on a period you have not used and load the report again.`)
+      : L(`Sus operaciones y su beneficio coinciden con los de la pasada ${passId} en ${where}: son las mismas fechas, así que estas cifras ya formaban parte de lo que la meseta había mostrado y no prueban nada nuevo. Lanza el backtest en MT5 sobre un tramo que no hayas usado y vuelve a cargar el informe.`,
+        `Its trades and profit match those of pass ${passId} on ${where}: same dates, so these figures were already part of what the plateau had shown and prove nothing new. Run the backtest in MT5 on a period you have not used and load the report again.`),
+  };
+}
+
 /** Estado del holdout para sello / hoja de evidencia (forward ≠ periodo no visto). */
 export function holdoutFact(a) {
   const res = state.unseen && state.unseen.result;
@@ -69,8 +88,8 @@ export function holdoutFact(a) {
    * Un resultado "normal" solo confirma la recomendación si el backtest es de ESA
    * configuración: la meseta recomendada (M1) y, si hay informe, con sus mismos
    * parámetros y al menos uno leído. Si no, el contraste es aritméticamente correcto
-   * pero no valida nada, y no puede subir el nivel de evidencia. "En la cola" tampoco:
-   * es un resultado raro para esa configuración, no una confirmación.
+   * pero no valida nada: ni mantiene el nivel con la mención del periodo no visto ni lo
+   * baja. "En la cola" o "fuera de rango" sobre la configuración propuesta sí lo bajan.
    */
   const plateaus = (a && a.plateaus) || [];
   const idx = plateaus.length ? Math.min(state.unseen.plateauIndex || 0, plateaus.length - 1) : -1;
@@ -86,6 +105,8 @@ export function holdoutFact(a) {
   } else if (cmp && cmp.missing.length) {
     problem = L(`Al informe le faltan parámetros optimizados (${cmp.missing.slice(0, 4).join(', ')}${cmp.missing.length > 4 ? '…' : ''}), así que no consta que sea de la configuración propuesta.`,
       `The report is missing optimized parameters (${cmp.missing.slice(0, 4).join(', ')}${cmp.missing.length > 4 ? '…' : ''}), so it is not confirmed that it comes from the proposed configuration.`);
+  } else if (res.repeated) {
+    problem = repeatedPeriodText(res.repeated).short;
   } else if (idx > 0) {
     problem = L(`Se evaluó la meseta ${idx + 1}, no la recomendada (la 1).`, `Plateau ${idx + 1} was evaluated, not the recommended one (plateau 1).`);
   }
@@ -104,49 +125,50 @@ export function holdoutFact(a) {
 }
 
 /**
- * El motor solo ve el forward, que ya se usó para validar y ordenar las mesetas. Su
- * "sólida" se muestra como "buena" hasta que un periodo no visto no la contradice, y baja a
- * "moderada" si ese periodo va en contra.
+ * El motor califica con el periodo optimizado y el forward, y desde la enmienda del
+ * 2026-10-09 (bench/PREREGISTRO.md) puede dar «buena» y «sólida» sin periodo no visto.
+ * Ese periodo, si se aporta, solo puede mantener el nivel o bajarlo: si va en contra de la
+ * configuración propuesta, «buena» y «sólida» bajan a «moderada»; si no la contradice, el
+ * nivel se queda como está (su contraste detecta poco, core/unseen.js: no sube a nadie).
  */
 export function displayVerdictLevel(a) {
-  let level = a.verdict.level;
-  if (level === 'strong' && a.meta.hasForward) {
-    const h = holdoutFact(a);
-    if (h.against) level = 'moderate';
-    else if (!h.ok) level = 'good';
-  }
+  const level = a.verdict.level;
+  if ((level === 'strong' || level === 'good') && a.meta.hasForward && holdoutFact(a).against) return 'moderate';
   return level;
 }
 
 /**
- * Titular y resumen coherentes con el nivel MOSTRADO, no con el que calculó el
- * motor. displayVerdictLevel() deja la "sólida" del motor en "buena" (o "moderada"),
- * pero a.verdict.headline/summary siguen siendo el texto que el motor generó para
- * "sólida" -- usarlos tal cual contradice al medidor.
+ * Titular y resumen coherentes con el nivel MOSTRADO y con el periodo no visto. Si el
+ * periodo no visto baja el nivel, a.verdict.headline/summary siguen siendo el texto que
+ * el motor generó para «buena» o «sólida»: usarlos tal cual contradice al medidor.
  */
 export function displayVerdictCopy(a) {
   const level = displayVerdictLevel(a);
   const v = a.verdict;
-  if (level === v.level) return { level, headline: v.headline, summary: v.summary };
-  // El titular empieza siempre por el nivel MOSTRADO: la frase más leída no puede
-  // admitir dos lecturas.
-  if (level === 'good') {
-    return {
-      level,
-      headline: L('Evidencia buena: meseta validada en el forward, falta el periodo no visto', 'Good evidence: plateau validated on the forward, unseen period still missing'),
-      summary: L(
-        'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y aguanta al mover los umbrales. Se queda en buena porque el forward ya se usó para validar y ordenar las mesetas: para llegar a sólida falta probarla en un periodo que no hayas tocado.',
-        'The proposed plateau rests on neighbors that also clear your minimums and holds when thresholds are moved. It stays at good because the forward was already used to validate and rank the plateaus: to reach strong it still needs testing on a period you have not touched.',
-      ),
-    };
+  const hold = holdoutFact(a);
+  if (level === v.level) {
+    if ((level === 'strong' || level === 'good') && hold.done && hold.ok) {
+      return {
+        level,
+        headline: level === 'strong'
+          ? L('Evidencia sólida, y el periodo no visto no la contradice', 'Strong evidence, and the unseen period does not contradict it')
+          : L('Evidencia buena, y el periodo no visto no la contradice', 'Good evidence, and the unseen period does not contradict it'),
+        summary: level === 'strong'
+          ? L('La meseta propuesta se apoya en vecinas que también cumplen tus mínimos, aguanta en el forward y la recomendación se mantiene al mover los umbrales. Además, en un periodo que no se usó ni para optimizar ni para validar, su resultado entra en lo habitual de la meseta.',
+            'The proposed plateau rests on neighbors that also clear your minimums, holds on the forward, and the recommendation holds when thresholds are moved. On top of that, on a period used neither to optimize nor to validate, its result falls within the plateau\'s usual range.')
+          : L('La meseta propuesta aguanta en el forward y al mover los umbrales, con un aviso que conviene leer. En un periodo que no se usó ni para optimizar ni para validar, su resultado entra en lo habitual de la meseta; eso no la sube de nivel, porque esa prueba detecta poco.',
+            'The proposed plateau holds on the forward and when thresholds are moved, with one warning worth reading. On a period used neither to optimize nor to validate, its result falls within the plateau\'s usual range; that does not raise its level, because that check detects little.'),
+      };
+    }
+    return { level, headline: v.headline, summary: v.summary };
   }
-  // sólida -> moderada: el periodo no visto va en contra de la configuración propuesta.
+  // buena o sólida -> moderada: el periodo no visto va en contra de la configuración propuesta.
   return {
     level,
     headline: L('Evidencia moderada: el periodo no visto no la confirma', 'Moderate evidence: the unseen period does not confirm it'),
     summary: L(
-      'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y pasó el forward, pero en el periodo no visto su resultado se sale de lo habitual. Revisa esa pestaña antes de dar ningún paso más.',
-      'The proposed plateau rests on neighbors that also clear your minimums and passed the forward, but on the unseen period its result falls outside the usual range. Check that tab before taking any further step.',
+      'La meseta propuesta se apoya en vecinas que también cumplen tus mínimos y pasó el forward, pero en el periodo no visto su resultado se sale de lo habitual. Lo que puedes hacer ahora, y lo que no conviene, está en «Qué hacer ahora».',
+      'The proposed plateau rests on neighbors that also clear your minimums and passed the forward, but on the unseen period its result falls outside the usual range. What you can do now, and what is best avoided, is under “What to do now”.',
     ),
   };
 }
@@ -163,8 +185,8 @@ export function fallbackNote(a) {
     : L(' Ninguna configuración cumple tus mínimos en los dos periodos: esta solo los cumple en el periodo optimizado.',
       ' No configuration meets your minimums in both periods: this one only meets them on the optimized period.');
   return L(
-    `Sin meseta. Es la que mejor combina el periodo optimizado y el forward junto con sus vecinas (${params}).${gates} No la uses sin probarla antes en un periodo no visto.`,
-    `No plateau. It is the one that best combines the optimized period and the forward together with its neighbors (${params}).${gates} Do not use it without first testing it on an unseen period.`,
+    `Sin meseta. Es la que mejor combina el periodo optimizado y el forward junto con sus vecinas (${params}).${gates} No es una zona estable, y Orometra no puede contrastarla en un periodo no visto porque no hay meseta con la que comparar: tómala solo como punto de partida para volver a optimizar.`,
+    `No plateau. It is the one that best combines the optimized period and the forward together with its neighbors (${params}).${gates} It is not a stable zone, and Orometra cannot check it on an unseen period because there is no plateau to compare it with: take it only as a starting point to optimize again.`,
   );
 }
 
@@ -175,15 +197,56 @@ export function fallbackNote(a) {
 export function nextStepText(a, hold) {
   if (!hold || !hold.done || !a.plateaus.length) return a.verdict.nextStep;
   if (hold.ok) {
+    // Aprobar el periodo no visto no sube el nivel (detecta poco): con evidencia débil, lo
+    // que la deja en débil sigue ahí, y el siguiente paso no puede ser el mismo que con buena.
+    if (displayVerdictLevel(a) === 'weak') {
+      return a.meta.hasForward
+        ? L(
+          'El periodo no visto no la contradice, pero eso no compensa lo que la deja en débil: esta prueba detecta poco, y aprobarla no la confirma. Lee en «Por qué este nivel» qué la deja ahí. Si sigues con ella, que sea en demo, sin dinero real, comparando con el rango habitual de la meseta. Para tener más evidencia hace falta un tramo nuevo: el periodo optimizado, el forward y este ya están usados.',
+          'The unseen period does not contradict it, but that does not make up for what keeps it weak: this check detects little, and passing it does not confirm it. Read in “Why this level” what keeps it there. If you go on with it, do so on demo, without real money, comparing with the plateau\'s usual range. More evidence needs a new segment: the optimized period, the forward and this one are already used.',
+        )
+        : L(
+          'El periodo no visto no la contradice, pero sin forward la evidencia no pasa de débil y esta prueba no la sube. Para medir más, vuelve a optimizar con Forward en fechas que no hayas usado (tampoco las de este tramo) y analiza de nuevo. Si sigues con ella mientras tanto, que sea en demo, sin dinero real.',
+          'The unseen period does not contradict it, but without a forward the evidence does not go above weak and this check does not raise it. To measure more, re-optimize with Forward on dates you have not used (not this segment\'s either) and analyze again. If you go on with it meanwhile, do so on demo, without real money.',
+        );
+    }
     return L(
       'El periodo no visto no la contradice (esta prueba detecta poco: aprobarla no la confirma). Siguiente paso: pruébala en demo o en real con riesgo reducido, y compara sus resultados en vivo con el rango habitual de la meseta, no con las mejores cifras.',
       'The unseen period does not contradict it (this check detects little: passing it does not confirm it). Next step: run it on demo or live with reduced risk, and compare its live results with the plateau\'s usual range, not with the best figures.',
     );
   }
+  if (hold.against) {
+    return againstOptions().map(([title, body], i) => `${i + 1}) ${title}. ${body}`).join(' ');
+  }
+  // El informe no cuenta (otra configuración, otra meseta, un periodo ya usado): no es que
+  // haya fallado, es que no se ha probado la propuesta.
   return L(
-    'El periodo no visto no la confirma. Revisa en esa pestaña qué métrica falla (o si el informe es de otra configuración) antes de dar ningún paso más.',
-    'The unseen period does not confirm it. Check in that tab which metric fails (or whether the report is from another configuration) before taking any further step.',
+    `${hold.note} Lanza en MT5 el backtest de la configuración propuesta (con su .set) sobre un tramo que no hayas usado ni para optimizar ni para validar, y suelta aquí el informe.`,
+    `${hold.note} Run the backtest of the proposed configuration in MT5 (with its .set) on a segment you have used neither to optimize nor to validate, and drop the report here.`,
   );
+}
+
+/**
+ * Qué hacer cuando el periodo no visto va en contra de la configuración propuesta. Antes solo
+ * se decía «revisa qué métrica falla antes de dar ningún paso más», sin ningún paso. Lo que no
+ * conviene va primero: es el error fácil (reoptimizar con ese tramo dentro, o buscar otro hasta
+ * que uno salga bien). Pares [título, cuerpo] en texto plano.
+ */
+export function againstOptions() {
+  return [
+    [L('No la reoptimices sobre este tramo', 'Do not re-optimize over this segment'),
+      L('Ni lo metas en una nueva optimización ni busques otro tramo hasta que uno salga bien: este resultado ya forma parte de lo que sabes de esta configuración.',
+        'Do not put it into a new optimization or look for another segment until one comes out well: this result is now part of what you know about this configuration.')],
+    [L('Mira qué falla y cuánto', 'See what fails and by how much'),
+      L('En la pestaña del periodo no visto, qué cifras se salen. Esta prueba también da falsas alarmas (lo dice su nota de alcance), sobre todo con tramos cortos: una sola métrica en la cola pesa menos que varias fuera de rango.',
+        'In the unseen-period tab, which figures fall outside. This check also gives false alarms (its scope note says so), above all with short segments: a single metric in the tail weighs less than several out of range.')],
+    [L('Si sigues con ella, sin dinero real', 'If you go on with it, without real money'),
+      L('Déjala en demo y compárala con el rango habitual de la meseta. Para volver a confiar en ella hace falta un tramo nuevo que no hayas mirado, no repetir este.',
+        'Keep it on demo and compare it with the plateau\'s usual range. Trusting it again needs a new segment you have not looked at, not repeating this one.')],
+    [L('O vuelve a empezar', 'Or start over'),
+      L('Con la idea revisada o con más histórico, reservando antes de optimizar un tramo final que no vayas a mirar hasta el final.',
+        'With the idea revised or with more history, setting aside before optimizing a final segment you will not look at until the end.')],
+  ];
 }
 
 const LEVEL_ORDER = ['insufficient', 'weak', 'moderate', 'good', 'strong'];
@@ -228,12 +291,17 @@ export function trustLine(a, level) {
       : L(`Hay una meseta, pero con ${critical} limitaciones serias que conviene leer antes de usarla.`,
         `There is a plateau, but with ${critical} serious limitations worth reading before using it.`);
   }
+  const hold = holdoutFact(a);
+  const unseenOk = hold.done && hold.ok;
   if (level === 'good') {
-    return L('Meseta validada en el forward. Para llegar a sólida, falta probarla en un periodo no visto.',
-      'A plateau validated on the forward. To reach strong, it still needs testing on an unseen period.');
+    return unseenOk
+      ? L('Meseta validada en el forward, con un aviso que conviene leer. El periodo no visto no la contradice.',
+        'A plateau validated on the forward, with one warning worth reading. The unseen period does not contradict it.')
+      : L('Meseta validada en el forward y estable al mover los umbrales, con un aviso que conviene leer.',
+        'A plateau validated on the forward and stable when thresholds are moved, with one warning worth reading.');
   }
   if (level === 'moderate') {
-    if (a.verdict.level === 'strong') {
+    if (a.verdict.level === 'strong' || a.verdict.level === 'good') {
       return L('Meseta validada en el forward, pero el periodo no visto no la confirma.',
         'A plateau validated on the forward, but the unseen period does not confirm it.');
     }
@@ -243,8 +311,37 @@ export function trustLine(a, level) {
   }
   // «Sin contradicción», no «confirmada»: la prueba del periodo no visto detecta poco
   // (core/unseen.js) y el siguiente paso lo dice; aquí no se puede decir lo contrario.
-  return L('Lo máximo que estos datos pueden respaldar: una meseta validada en el forward a la que el periodo no visto no contradice.',
-    'The most these data can support: a plateau validated on the forward and not contradicted by the unseen period.');
+  return unseenOk
+    ? L('Lo máximo que estos datos pueden respaldar: una meseta validada en el forward, sin avisos sobre ella, a la que el periodo no visto no contradice.',
+      'The most these data can support: a plateau validated on the forward, with no warnings about it, and not contradicted by the unseen period.')
+    : L('Lo máximo que el periodo optimizado y el forward pueden respaldar: una meseta validada, estable y sin avisos sobre ella. Un periodo no visto puede mantenerla o bajarla.',
+      'The most the optimized period and the forward can support: a validated, stable plateau with no warnings about it. An unseen period can keep it there or lower it.');
+}
+
+/**
+ * Cabecera compacta de las pestañas que no son el veredicto: el nivel y la pasada en una
+ * línea, en vez del titular de tres líneas que empujaba cada pestaña ~285 px hacia abajo.
+ * El titular completo sigue en el h1 (oculto a la vista, no al lector de pantalla).
+ */
+export function compactSummary(a) {
+  const level = displayVerdictLevel(a);
+  const name = levelName(level);
+  const pill = `<span class="rc-level" style="--s:var(--lv-${LEVEL_ORDER.indexOf(level) + 1})"><span class="rc-dot" aria-hidden="true"></span>${esc(L(`Evidencia ${name.toLowerCase()}`, `${name} evidence`))}</span>`;
+  const best = a.plateaus[0];
+  const pick = best
+    ? `<span class="rc-pass">${L('Pasada', 'Pass')} <b>${esc(best.record.id)}</b></span>`
+    : a.fallback
+      ? `<span class="rc-pass">${L('Orientativa: pasada', 'Tentative: pass')} <b>${esc(a.fallback.record.id)}</b></span>`
+      : `<span class="rc-pass">${esc(L('Ninguna configuración con garantías', 'No configuration you can rely on'))}</span>`;
+  return pill + pick;
+}
+
+/** La acción principal de la cabecera compacta: la misma que el botón lima del veredicto. */
+export function compactAction(a) {
+  if (!a.plateaus[0]) return null;
+  return deployableSet(a, a.plateaus[0])
+    ? { kind: 'set', label: L('Descargar .set', 'Download .set') }
+    : { kind: 'refine', label: L('Descargar rango', 'Download range') };
 }
 
 /** Medidor de cinco tramos: dónde está este análisis y cuánto le falta. */
@@ -281,7 +378,7 @@ function keyFigures(a, best) {
     ${hasF
     ? tile(Number.isFinite(keep) ? pct(keep, 0) : '—',
       gloss('retention', esc(L('Se mantiene al validar', 'Holds on validation'))),
-      esc(L('Qué parte de su calidad conserva en el periodo de validación (forward).', 'How much of its quality it keeps on the validation period (forward).')))
+      esc(L(Number.isFinite(best.medianRetention) ? 'Qué parte de su calidad conservan en el forward las configuraciones de su meseta (la mediana).' : 'Qué parte de su calidad conserva en el periodo de validación (forward).', Number.isFinite(best.medianRetention) ? 'How much of their quality the configurations of its plateau keep on the forward (the median).' : 'How much of its quality it keeps on the validation period (forward).')))
     : tile('—',
       esc(L('Sin validar', 'Not validated')),
       esc(L('No hay periodo de validación (forward): añádelo para poder medirlo.', 'No validation period (forward): add one to measure this.')))}
@@ -319,7 +416,23 @@ function nextSteps(a, best, hold) {
     <div><strong>${title}</strong><p>${body}</p>${extra}</div>
   </li>`;
   let steps;
-  if (best && hasF && !hold.done) {
+  if (best && hold.done && hold.against) {
+    // El periodo no visto va en contra: opciones, no un «revisa antes de dar ningún paso más».
+    steps = againstOptions().map(([title, body], i) => step(i + 1, esc(title), esc(body),
+      i === 1 ? `<button class="text-btn vx-step-cta" data-goto="unseen">${L('Ir al periodo no visto &rarr;', 'Go to unseen period &rarr;')}</button>` : ''));
+  } else if (best && forwardUntested(a, best)) {
+    // Hay forward, pero MT5 no llevó ahí ninguna configuración de esta meseta: está tan
+    // sin validar como sin archivo forward, y su .set de despliegue no se ofrece.
+    steps = [
+      step(1, esc(L('Ninguna configuración de esta meseta llegó al forward', 'No configuration in this plateau reached the forward')),
+        esc(L('MT5 no pasó ninguna al forward (cuando no las pasa todas, pasa solo las mejores del periodo optimizado), así que de momento solo se ha medido en el periodo optimizado.',
+          'MT5 sent none of them to the forward (when it does not send them all, it sends only the best of the optimized period), so for now it has only been measured on the optimized period.'))),
+      step(2, esc(L('Vuelve a optimizar este rango con forward', 'Re-optimize this range with a forward')),
+        esc(L('Descarga el rango para reoptimizar y lánzalo en MT5 con Forward activado.', 'Download the range to re-optimize and run it in MT5 with Forward enabled.'))),
+      step(3, esc(L('Suéltalo aquí', 'Drop it here')),
+        esc(L('Con forward en la meseta, se podrá medir si aguanta fuera del periodo optimizado.', 'With a forward on the plateau, it can be measured whether it holds beyond the optimized period.'))),
+    ];
+  } else if (best && hasF && !hold.done) {
     steps = [
       step(1, esc(L('Descarga el .set', 'Download the .set')),
         esc(L(`Lleva ${setCountEs(a, best)} de la pasada ${best.record.id}. En el probador de MT5, pestaña de parámetros de entrada («Inputs»): clic derecho sobre la tabla → «Cargar» («Load») y elige el archivo.`,
@@ -360,42 +473,80 @@ function nextSteps(a, best, hold) {
   const body = steps
     ? `<ol class="vx-steps">${steps.join('')}</ol>`
     : `<p class="vx-next-text">${esc(nextStepText(a, hold))}</p>`;
+  // Si antes se comparó otro backtest del periodo no visto, se dice aquí: el nivel solo
+  // refleja el último (js/ui-history.js#unseenTriesNote).
+  const tries = api.unseenTriesNote ? api.unseenTriesNote() : '';
   return `<div class="vx-next">
     <h3 class="vx-label">${esc(L('Qué hacer ahora', 'What to do now'))}</h3>
+    ${tries ? `<div class="inline-warn vx-tries">${esc(tries)}</div>` : ''}
     ${body}
   </div>`;
 }
 
+/**
+ * Al cruzar el ancho de móvil (girar la pantalla, redimensionar), vuelve a dibujar solo los
+ * dos gráficos SVG del veredicto con el formato que toca, sin repintar la pestaña: así el
+ * desplegable donde están no se cierra.
+ */
+export function refreshCompactCharts(a) {
+  document.querySelectorAll('[data-chart="scatter"]').forEach((el) => { el.innerHTML = scatterIsOos(a); });
+  document.querySelectorAll('[data-chart="degradation"]').forEach((el) => { el.innerHTML = degradationChart(a); });
+}
+
 /** La tarjeta principal: qué configuración usar, su fiabilidad y qué hacer ahora. */
+/**
+ * «Qué esperar»: el beneficio por operación de la recomendada descontada la selección
+ * (core/shrink.js), junto a la cifra cruda del forward con la que se suele planificar.
+ */
+export function expectationHtml(a, best) {
+  const s = a.stats && a.stats.shrinkage;
+  if (!best || !s || !s.usable) return '';
+  const pr = (s.predictions || []).find((p) => p.index === best.representative);
+  if (!pr || !Number.isFinite(pr.expected)) return '';
+  const raw = Number.isFinite(pr.observedOos)
+    ? L(`, no los ${num(pr.observedOos, 2)} del forward`, `, not the ${num(pr.observedOos, 2)} of the forward`)
+    : '';
+  return `<p class="vx-expect"><span class="vx-label">${gloss('expectation', esc(L('Qué esperar', 'What to expect')))}</span>
+    ${L('Unos', 'About')} <b>${num(pr.expected, 2)}</b> ${esc(L('por operación', 'per trade'))}${esc(raw)}.
+    ${esc(pr.ownLo > 0
+    ? L('Se distingue de una configuración cualquiera de las que cumplen tus mínimos.', 'It stands out from any configuration that meets your minimums.')
+    : L('No se distingue de una configuración cualquiera de las que cumplen tus mínimos.', 'It does not stand out from any configuration that meets your minimums.'))}</p>`;
+}
+
 function renderDecision(a, dv, best, hold) {
   const c = verdictCopy(dv.level);
   const hasF = a.meta.hasForward;
   let pick;
   if (best) {
-    // Sin forward no hay .set de despliegue (ver doExport): se ofrece el rango de
+    // Sin forward en la meseta (no hay archivo, o MT5 no pasó ahí ninguna de sus
+    // configuraciones) no hay .set de despliegue (ver doExport): se ofrece el rango de
     // refinamiento, que sí tiene sentido.
+    const deploy = deployableSet(a, best);
     const actions = `<div class="vx-actions">
-      ${hasF
+      ${deploy
     ? `<button class="primary-btn" data-export="set" data-plateau-index="${best.rank - 1}">${L('Descargar .set', 'Download .set')}</button>`
     : `<button class="primary-btn" data-export="refine" data-plateau-index="${best.rank - 1}">${L('Descargar rango para reoptimizar', 'Download range to re-optimize')}</button>`}
       <button class="ghost-btn" data-copy="${best.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
     </div>`;
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass">${L('Pasada', 'Pass')} <b>${esc(best.record.id)}</b></div>
-      <p class="vx-pass-note">${esc(hasF
+      ${findInMt5Html(best.record, hasF)}
+      <p class="vx-pass-note">${esc(deploy
     ? L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado y en el forward (promediado con sus vecinas).`,
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on both the optimized period and the forward (averaged with its neighbors).`)
     : L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado (promediado con sus vecinas).`,
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on the optimized period (averaged with its neighbors).`))}</p>
-      <div class="t3-param-chips vx-params" aria-label="${esc(L('Valores recomendados', 'Recommended values'))}">
+      ${expectationHtml(a, best)}
+      <div class="t3-param-chips vx-params" role="group" aria-label="${esc(L('Valores recomendados', 'Recommended values'))}">
         ${a.meta.paramNames.map((n, j) => `<span>${esc(n)} <b>${paramHtml(best.record.params[j])}</b></span>`).join('')}
       </div>
       ${actions}
-      ${hasF ? `<p class="vx-fine">${esc(setCoverageNote(a, best, state.searchSet))}</p>` : ''}`;
+      ${deploy ? `<p class="vx-fine">${esc(setCoverageNote(a, best, state.searchSet))}</p>` : ''}`;
   } else if (a.fallback) {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass vx-pass-risk">${esc(L('Ninguna con garantías', 'None you can rely on'))}</div>
-      <p class="vx-pass-note">${L('Sugerencia orientativa:', 'Tentative suggestion:')} <b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>`;
+      <p class="vx-pass-note">${L('Sugerencia orientativa:', 'Tentative suggestion:')} <b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>
+      ${findInMt5Html(a.fallback.record, hasF)}`;
   } else {
     pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
       <div class="vx-pass vx-pass-risk">${esc(t('verdict.nopick'))}</div>
@@ -421,12 +572,19 @@ export function renderVerdict(a) {
   const dv = displayVerdictCopy(a);
   const best = a.plateaus[0];
   const hold = holdoutFact(a);
-  const demoNote = state.isDemo
-    ? `<div class="demo-note">${L(
-      `Estos datos son <strong>sintéticos</strong>, generados por la aplicación para que puedas ver el flujo completo. La meseta real está plantada en: ${esc(Object.entries(state.demoTruth.center).map(([k, val]) => `${k}=${val}`).join(', '))}.`,
-      `These data are <strong>synthetic</strong>, generated by the app so you can see the full flow. The real plateau is planted at: ${esc(Object.entries(state.demoTruth.center).map(([k, val]) => `${k}=${val}`).join(', '))}.`,
-    )}</div>`
-    : '';
+  // Dos ejemplos sintéticos (js/demo.js): uno con una meseta real y otro sin ninguna ventaja.
+  // Cada uno enlaza con el otro.
+  const noEdgeDemo = Boolean(state.demoTruth && state.demoTruth.kind === 'noedge');
+  const demoNote = !state.isDemo ? ''
+    : noEdgeDemo
+      ? `<div class="demo-note">${L(
+        'Estos datos son <strong>sintéticos</strong> y aquí <strong>no hay ninguna ventaja real</strong>: cada operación es puro ruido, y lo que destaca en la tabla de MT5 es suerte del periodo optimizado. Así se ve el informe cuando no hay nada que respaldar.',
+        'These data are <strong>synthetic</strong> and there is <strong>no real edge</strong> here: every trade is pure noise, and what stands out in the MT5 table is luck in the optimized period. This is what the report looks like when there is nothing to back.',
+      )} <button class="text-btn" type="button" data-demo="good">${L('Ver el ejemplo con una meseta real →', 'See the example with a real plateau →')}</button></div>`
+      : `<div class="demo-note">${L(
+        `Estos datos son <strong>sintéticos</strong>, generados por la aplicación para que puedas ver el flujo completo. La meseta real está plantada en: ${esc(Object.entries(state.demoTruth.center).map(([k, val]) => `${k}=${val}`).join(', '))}.`,
+        `These data are <strong>synthetic</strong>, generated by the app so you can see the full flow. The real plateau is planted at: ${esc(Object.entries(state.demoTruth.center).map(([k, val]) => `${k}=${val}`).join(', '))}.`,
+      )} <button class="text-btn" type="button" data-demo="noedge">${L('¿Y cuando no hay nada? Ver un ejemplo sin ventaja real →', 'And when there is nothing? See an example with no real edge →')}</button></div>`;
 
   const src = state.source;
   const stamp = src
@@ -436,7 +594,7 @@ export function renderVerdict(a) {
         <span class="run-sep">·</span>
         <span>${esc(L('analizado', 'analyzed'))} ${esc(src.at.toLocaleString(localeTag(), { dateStyle: 'short', timeStyle: 'short' }))}</span>
         <span class="run-sep">·</span>
-        <span title="${esc(L('Mínimos exigidos en este análisis: factor de beneficio, drawdown máximo y operaciones', 'Minimums required in this analysis: profit factor, maximum drawdown and trades'))}">${esc(L('Mínimos', 'Minimums'))}: PF ≥ ${num(a.meta.policy.gates.minProfitFactor, 2)} · ${esc(L('drawdown', 'drawdown'))} ≤ ${num(a.meta.policy.gates.maxDrawdownPct, 0)} % · ${int(a.meta.minTradesIs)} ${esc(L('operaciones', 'trades'))}</span>
+        <span title="${esc(L('Mínimos exigidos en este análisis: factor de beneficio, drawdown máximo y operaciones', 'Minimums required in this analysis: profit factor, maximum drawdown and trades'))}">${esc(L('Mínimos', 'Minimums'))}: PF ≥ ${num(a.meta.policy.gates.minProfitFactor, 2)} · ${esc(L('drawdown', 'drawdown'))} ≤ ${num(a.meta.policy.gates.maxDrawdownPct, 0)}${pctSign()} · ${int(a.meta.minTradesIs)} ${esc(L('operaciones', 'trades'))}${a.meta.hasForward ? ` (${int(a.meta.minTradesOos)} ${esc(L('en el forward', 'on the forward'))})` : ''}</span>
         <span class="run-sep">·</span>
         <span class="run-holdout" title="${esc(hold.note)}">${esc(hold.short)}</span>
       </div>`
@@ -474,17 +632,17 @@ export function renderVerdict(a) {
       `<div class="grid-secondary chart-pair">
         <div>
           <h3>${L('Calidad en la optimización frente a la validación', 'Quality in optimization vs validation')}</h3>
-          ${scatterIsOos(a)}
+          <div data-chart="scatter">${scatterIsOos(a)}</div>
           <p class="chart-note">${L(
-            'Cada punto es una configuración. La diagonal marca &laquo;no se degrada&raquo;. Los puntos por debajo pierden calidad fuera de la muestra. En lavanda, las que forman meseta.',
-            'Each point is a configuration. The diagonal marks &ldquo;no degradation&rdquo;. Points below lose quality out of sample. In lavender, those that form a plateau.',
+            'Cada punto es una configuración. La diagonal marca &laquo;no se degrada&raquo;. Los puntos por debajo pierden calidad fuera de la muestra. Cuanto más intenso el tono, mejor: las que forman meseta van en el más intenso.',
+            'Each point is a configuration. The diagonal marks &ldquo;no degradation&rdquo;. Points below lose quality out of sample. The stronger the shade, the better: those that form a plateau get the strongest.',
           )}</p>
         </div>
         <div>
           <h3>${L('Qué les pasa a tus mejores', 'What happens to your best ones')}</h3>
-          ${degradationChart(a)}
+          <div data-chart="degradation">${degradationChart(a)}</div>
           <p class="chart-note">${L(
-            'Las configuraciones, en diez grupos según su puesto en la optimización (D10 = tu 10 % mejor). Si D10 no destaca en la validación, el orden de MT5 no predice nada.',
+            'Las configuraciones, en diez grupos según su puesto en la optimización (D10 = tu 10\u00A0% mejor). Si D10 no destaca en la validación, el orden de MT5 no predice nada.',
             'Configurations in ten groups by their optimization rank (D10 = your best 10%). If D10 does not stand out on validation, the MT5 order predicts nothing.',
           )}</p>
         </div>
@@ -497,6 +655,7 @@ export function renderVerdict(a) {
   ${renderDecision(a, dv, best, hold)}
   ${stamp}
   ${demoNote}
+  ${api.renderHistoryCompare ? api.renderHistoryCompare(a) : ''}
   ${renderWhyGrade(a, highlights, dv.summary)}
   ${renderTop3(a)}
   ${details ? `<h2 class="vx-section-title">${L('Detalle técnico', 'Technical detail')}</h2>${details}` : ''}`;
@@ -538,13 +697,10 @@ export function renderEvidenceSheet(a, best) {
   const cov = a.meta.coverage;
   const sc = a.meta.searchCoverage;
   let covTxt = Number.isFinite(cov)
-    ? `${nf(cov >= 0.1 ? 1 : 4).format(cov * 100)} % · ${samplingLabel(a.meta.sampling)}`
+    ? `${shareText(cov)} · ${samplingLabel(a.meta.sampling)}`
     : '—';
   if (sc && sc.usable && Number.isFinite(sc.coverageSearch)) {
-    covTxt += L(
-      ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)} %`,
-      ` · .set ${nf(sc.coverageSearch >= 0.1 ? 1 : 2).format(sc.coverageSearch * 100)} %`,
-    );
+    covTxt += ` · .set ${shareText(sc.coverageSearch)}`;
   }
 
   const covNote = sc && sc.usable && Number.isFinite(sc.coverageSearch)
@@ -632,8 +788,15 @@ export function renderEvidenceSheet(a, best) {
  * veces en la misma pestana. */
 export function whyGradeHighlights(a) {
   const findings = a.verdict.findings || [];
-  const pros = findings.filter((f) => f.severity === 'ok' || f.severity === 'info').slice(0, 4);
-  const cons = findings.filter((f) => f.severity === 'warn' || f.severity === 'critical').slice(0, 4);
+  // Solo lo que de verdad juega a favor: las notas informativas («la meseta se busca en el
+  // periodo optimizado…») no son un punto a favor y se quedan en la lista de hallazgos.
+  const pros = findings.filter((f) => f.severity === 'ok').slice(0, 4);
+  // Primero lo que pesa en el nivel (críticos y avisos sobre la meseta) y después los
+  // avisos sobre el orden de la tabla, que no lo bajan: con una «sólida» no puede parecer
+  // que lo de arriba de «En contra» la contradice.
+  const weight = (f) => (f.severity === 'critical' ? 0 : f.scope === 'table' ? 2 : 1);
+  const cons = findings.filter((f) => f.severity === 'warn' || f.severity === 'critical')
+    .map((f, i) => ({ f, i })).sort((x, y) => weight(x.f) - weight(y.f) || x.i - y.i).map((x) => x.f).slice(0, 4);
   return { pros, cons };
 }
 
@@ -754,7 +917,7 @@ export function renderTop3(a) {
   const flagBadges = (p) => {
     const flags = [];
     if (p.invertedRisk && p.invertedRisk.length) {
-      flags.push(`<span class="badge warn" title="${esc(L('Se apoya en un valor que el forward castiga', 'It relies on a value the forward punishes'))}">${L('valor castigado', 'punished value')}</span>`);
+      flags.push(`<span class="badge warn" title="${esc(L('Usa un valor que gana en el periodo optimizado, pero no en el forward', 'It uses a value that wins on the optimized period, but not on the forward'))}">${L('valor que cambia', 'value that shifts')}</span>`);
     }
     if (p.boundary.length) {
       flags.push(`<span class="badge warn" title="${esc(L('Pegada al borde del rango probado', 'Stuck to the edge of the tested range'))}">${L('borde', 'edge')}</span>`);
@@ -764,7 +927,10 @@ export function renderTop3(a) {
     if (hasF && p.record.failsOos && p.record.failsOos.length) {
       flags.push(`<span class="badge warn" title="${esc(L('Esta configuración no cumple tus mínimos en el forward', 'This configuration does not meet your minimums on the forward'))}">${L('falla al validar', 'fails on validation')}</span>`);
     }
-    if (p.oosValidation && p.oosValidation.passFrac < 0.5) {
+    // Sin ninguna configuración en el forward no hay nada «frágil»: no se pudo validar.
+    if (forwardUntested(a, p)) {
+      flags.push(`<span class="badge warn" title="${esc(L('MT5 no pasó al forward ninguna configuración de esta meseta: solo se ha medido en el periodo optimizado', 'MT5 sent no configuration of this plateau to the forward: it has only been measured on the optimized period'))}">${L('sin forward', 'no forward')}</span>`);
+    } else if (p.oosValidation && p.oosValidation.passFrac < 0.5) {
       flags.push(`<span class="badge warn" title="${esc(L('Menos de la mitad de la meseta cumple tus mínimos en el forward', 'Less than half of the plateau meets your minimums on the forward'))}">${L('frágil al validar', 'fragile on validation')}</span>`);
     }
     return flags.join(' ') || `<span class="badge ok">${L('sin avisos', 'no warnings')}</span>`;
@@ -776,9 +942,9 @@ export function renderTop3(a) {
       <div class="t3-pass">${L('Pasada', 'Pass')} ${esc(p.record.id)}</div>
       <div class="t3-score t3-score-sm">${num(p.robust, 0)}<small>${L('de 100 · robustez', 'of 100 · robustness')}</small></div>
       <div class="t3-flags">${flagBadges(p)}</div>
-      <p class="t3-alt-meta">${int(p.size)} ${L('configuraciones', 'configurations')} · ${int(p.stability.support)} ${L('vecinas', 'neighbors')}</p>
+      <p class="t3-alt-meta">${int(p.size)} ${L('configuraciones', 'configurations')} · ${int(p.stability.support)} ${L('vecinas', 'neighbors')}${hasF && p.oosValidation && p.oosValidation.withForward ? ` · ${L(`el ${pct(p.oosValidation.passFrac, 0)} cumple en el forward`, `${pct(p.oosValidation.passFrac, 0)} pass on the forward`)}` : ''}</p>
       <div class="t3-alt-actions">
-        ${a.meta.hasForward ? `<button class="ghost-btn t3-btn-inline" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
+        ${deployableSet(a, p) ? `<button class="ghost-btn t3-btn-inline" data-export="set" data-plateau-index="${p.rank - 1}">${L('Descargar .set', 'Download .set')}</button>` : ''}
         <button class="text-btn t3-btn-inline" data-plateau="${p.rank - 1}">${L('Detalle →', 'Detail →')}</button>
       </div>
     </article>`).join('')}
@@ -820,9 +986,11 @@ export function renderTop3(a) {
         <tbody>
           ${metricRow(L('Meseta', 'Plateau'), (p) => `${zone(p)} · ${int(p.size)}`)}
           ${metricRow(gloss('quality', L('Calidad al optimizar', 'Quality when optimizing')), (p) => `${num(p.record.qualityIs, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityIs))}</em>`)}
+          ${hasF ? metricRow(L('Cumplen tus mínimos en el forward', 'Clear your minimums on the forward'), (p) => forwardHoldHtml(p, a.meta.plateauForwardCritical)) : ''}
           ${hasF ? metricRow(L('Calidad al validar', 'Quality on validation'), (p) => `${num(p.record.qualityOos, 2)} <em class="t3-tag">${esc(qualityLabel(p.record.qualityOos))}</em>`) : ''}
-          ${hasF ? metricRow(L('Al validar · PF / drawdown / operaciones', 'On validation · PF / drawdown / trades'), (p) => `${num(p.record.oos.profitFactor, 2)} / ${num(p.record.oos.drawdown, 1)} % / ${int(p.record.oos.trades)}`) : ''}
-          ${metricRow(L('Al optimizar · PF / drawdown / operaciones', 'When optimizing · PF / drawdown / trades'), (p) => `${num(p.record.is.profitFactor, 2)} / ${num(p.record.is.drawdown, 1)} % / ${int(p.record.is.trades)}`)}
+          ${hasF ? metricRow(L('Al validar · PF / drawdown / operaciones', 'On validation · PF / drawdown / trades'), (p) => `${num(p.record.oos.profitFactor, 2)} / ${num(p.record.oos.drawdown, 1)}${pctSign()} / ${int(p.record.oos.trades)}`) : ''}
+          ${metricRow(L('Beneficio al optimizar (como en MT5)', 'Profit when optimizing (as in MT5)'), (p) => `<span class="mono">${mt5Figure(p.record.is.profit)}</span>`)}
+          ${metricRow(L('Al optimizar · PF / drawdown / operaciones', 'When optimizing · PF / drawdown / trades'), (p) => `${num(p.record.is.profitFactor, 2)} / ${num(p.record.is.drawdown, 1)}${pctSign()} / ${int(p.record.is.trades)}`)}
           <tr class="t3-params-head"><th class="t3-label" colspan="${top.length + 1}">${L('Parámetros de entrada', 'Input parameters')}</th></tr>
           ${paramRows}
         </tbody>

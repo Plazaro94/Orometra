@@ -39,10 +39,11 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
    mejor puesto en in-sample más su puesto en forward, ambos promediados con sus vecinas. Se
    midió en el banco de pruebas (`bench/`) frente a la regla maximin anterior y a métodos
    habituales. Sin meseta y con forward, se da una sugerencia **orientativa** con la misma
-   regla. Resultado honesto del examen ciego: gana a elegir la pasada que MT5 pone primera (mayor beneficio in-sample), la mejor del
-   forward, la suma de puestos y el azar; **pierde por poco contra «media con vecinas»** si
-   se cuenta como fallo cada caso en que Orometra no propone meseta (con la sugerencia
-   orientativa gana). Detalle en `bench/PREREGISTRO.md`.
+   regla. Resultado honesto del examen ciego (el sexto): gana a elegir la pasada que MT5 pone
+   primera (mayor beneficio in-sample), la mejor del forward y el azar; **pierde contra «media
+   con vecinas» y contra la suma de puestos** si se cuenta como fallo cada caso en que Orometra
+   no propone meseta (con la sugerencia orientativa, gana a las dos). Detalle en
+   `bench/PREREGISTRO.md` y `bench/results/REPORT-exam6.md`.
 6. **Solo se ignora lo demostrablemente plano, medido de dos formas.** La influencia de un
    parámetro se mide *aislada* (agrupando por su valor y promediando el resto) y *combinada*
    (dejando fijo todo lo demás), y manda la mayor de las dos. Un parámetro cuyo efecto se
@@ -72,7 +73,9 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   documentado y con estructura que cambia entre builds de MT5. Leerlo obligaría a adivinar el
   diseño de cada versión, y un fallo ahí no daría un error visible sino números equivocados.
 - Comprobación de integridad: emparejado por `Pass`, duplicados y **prueba de procedencia**
-  (el resultado del backtest del archivo forward debe reproducir el del in-sample). Aviso si
+  (el resultado del backtest del archivo forward debe reproducir el del in-sample; unas pocas
+  filas sueltas que no cuadran se nombran como anomalía de esas filas, sin dar por mezclados
+  los archivos). Aviso si
   el forward trae claramente menos filas que el in-sample (posible subconjunto de las mejores).
 - Detección del método de optimización por cobertura (`probadas / espacio cartesiano`):
   rejilla completa, parcial o muestreo disperso de algoritmo genético.
@@ -82,7 +85,7 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   que enumerarla no cabe en el presupuesto, se degrada a la aproximación anterior **avisando**.
 - Detección de **rejillas con saltos desiguales** (`10, 20, 30, 100, 500`): el motor cuenta
   posiciones, no distancias, así que ahí la continuidad de una meseta puede ser un espejismo.
-- El tamaño de una meseta se tope por el **volumen del espacio que abarca**, no por cuántas
+- El tamaño de una meseta se topa por el **volumen del espacio que abarca**, no por cuántas
   configuraciones se muestrearon: con algoritmo genético, la densidad mide dónde miró el
   optimizador tanto como dónde hay estabilidad.
 - Mesetas como componentes conexas con suelo de calidad absoluto, y su **núcleo**.
@@ -90,15 +93,27 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   la tabla» falla al remuestrear configuraciones (en ambos sentidos de la partición IS/OOS).
   No es el PBO publicado (CSCV); ese exige curvas de equity por pasada.
 - **Contraste de selección sobre el Sharpe (adaptación)**: compara el mejor Sharpe observado
-  con el máximo que cabría esperar por azar tras N pruebas, usando la dispersión de los
+  con el **percentil 95** del máximo de N pruebas sin ventaja (exacto bajo independencia:
+  Φ⁻¹(0,95^(1/N)); compararlo con el máximo *esperado* no daba ningún nivel de confianza,
+  porque el máximo de puro ruido lo supera el 43 % de las veces), usando la dispersión de los
   Sharpe observados entre pasadas (estilo Bailey y López de Prado) como nula — no el error
   de estimación de Lo (2002) por número de operaciones, retirado por partir de un supuesto
   falso sobre cómo MT5 calcula esa cifra (SR-1 en `docs/MT5_ASSUMPTIONS.md`). No es el
   Deflated Sharpe Ratio publicado.
+- **Expectativa ajustada por selección**: qué beneficio por operación cabe esperar de la
+  configuración recomendada, descontado lo que tenía de suerte. Modelo de efectos aleatorios
+  sobre el beneficio esperado por operación, estimado con la relación del forward
+  condicionada al in-sample (lo único que la selección por el in-sample —genético, tus
+  mínimos y la preselección del forward de MT5— no sesga), cada candidata medida con su
+  vecindad, que es con lo que Orometra elige. Intervalo del 95 % con la varianza a
+  posteriori más un bootstrap por bloques. Medida contra la verdad del banco
+  (`bench/shrink.js`). Supone que el próximo periodo se parece al forward: un cambio de
+  régimen no lo anticipa ningún dato pasado, y se dice.
 - **Calificación de la FUERZA DE LA EVIDENCIA** («Fiabilidad»), no de la estrategia, en cinco
-  niveles: insuficiente, débil, moderada, buena y sólida. «Buena» es el tope mientras falte
-  el periodo no visto, porque el forward ya se usó para elegir; solo un periodo no visto
-  que no lo contradiga lleva a «sólida». La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
+  niveles: insuficiente, débil, moderada, buena y sólida. «Sólida» es una meseta validada en
+  el forward, estable al mover los umbrales y sin avisos sobre ella; «buena», lo mismo con
+  un aviso. Como el forward ya se usó para elegir, un periodo no visto puede mantener el
+  nivel o bajarlo a «moderada», nunca subirlo (criterios medidos en `bench/`). La aplicación no emite GO ni NO-GO, y es deliberado: mide lo que
   contienen unos datos, no si un EA va a funcionar. Distingue «no hay región conexa»
   de «no hay datos suficientes para saberlo», que son hechos, y deja la decisión al usuario.
 - **Lectura del informe de backtest de MT5** (`Informe → HTML`): se suelta en la app y
@@ -109,7 +124,8 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
 - **Validación en periodo no visto**: se introducen los resultados del backtest de la
   configuración elegida sobre un tramo que no se haya usado ni para optimizar ni para
   validar, y se comprueba si son *normales para ese EA* comparándolos con el recorrido
-  que la meseta entera demostró.
+  que la meseta entera demostró. Si las operaciones y el beneficio coinciden con los de un
+  periodo ya usado (el optimizado, el forward o los dos juntos), se dice y no cuenta.
 - **A partir de las operaciones una a una del informe** (agrupadas por día): Monte Carlo
   por bootstrap estacionario (Politis & Romano 1994) sobre el periodo no visto —
   distribución de resultado, drawdown esperado y probabilidad de pérdida a 3/6/12 meses,
@@ -159,14 +175,18 @@ Después abre `http://localhost:3000`. Acepta otro puerto como argumento: `node 
 Las páginas públicas (portada, metodología, guías, privacidad y «Quiénes somos») tienen una
 versión por idioma: en inglés en la raíz (`/`, `/methodology/`, `/guides/…`) y en español bajo
 `/es/…`, enlazadas con `hreflang` para que Google indexe
-las dos. Las de `es/` **se generan**, no se editan a mano: cambia la página inglesa o
-`js/i18n.js` y ejecuta
+las dos. Las de `es/` **se generan**, no se editan a mano. Los textos con `data-i18n` se
+cambian en `js/i18n.js` (el script los reescribe también en la página inglesa); la estructura,
+en la página inglesa. Después ejecuta
 
 ```bash
 node tools/build-es.js
 ```
 
-`npm test` falla (`build-es.js --check`) si `es/` no está al día. El idioma de estas páginas lo
+El mismo script genera `js/i18n-site.js` (los pocos textos que pinta JavaScript en las páginas
+públicas) y pone en cada página la huella de `styles.css` (`styles.css?v=…`), para que nadie se
+quede con una hoja vieja en caché: ejecútalo también tras cambiar la hoja de estilos.
+`npm test` falla (`build-es.js --check`) si algo de esto no está al día. El idioma de estas páginas lo
 decide su dirección; `js/theme-init.js` lleva a `/es/` a quien tiene el navegador en español
 (o lo eligió antes) y los botones EN/ES cambian de dirección. La aplicación (`/app/`) sigue
 siendo una sola página que se traduce en el navegador.
@@ -199,7 +219,12 @@ Carga archivos XML como los de MT5, recorre el informe, cambia de idioma, descar
 prueba un archivo que no sirve, cancela un análisis y comprueba la navegación en el móvil.
 
 La imagen para redes (`og-image.jpg`, `og-image-es.jpg`) se genera con
-`node tools/og-image.mjs`, a partir del relieve de la portada.
+`node tools/og-image.mjs`, a partir de la tarjeta de la portada (la foto y el titular).
+
+Para revisar una optimización sin navegador, `node tools/audit.js IS.xml [OOS.xml]` (lee lo
+mismo que la app: XML, CSV y `.xlsx`). `node tools/sensitivity-study.js` repite el estudio que
+decidió no usar la «suavidad» para declarar planos los parámetros (2026-09-27; conclusiones en
+su cabecera).
 
 Para incluir archivos reales, colócalos como `IS(1).xls` y `OOS(1).xls` en tu carpeta de
 descargas, o indica la ruta:

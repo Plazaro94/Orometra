@@ -128,7 +128,7 @@ function scenario({ levels, center, seed = 1, width = 2.4, hasForward = true, om
 /** Invariantes que DEBEN cumplirse pase lo que pase. */
 function invariants(label, a, isT) {
   check(`${label}: emite un nivel de veredicto valido`,
-    ['strong', 'moderate', 'weak', 'insufficient'].includes(a.verdict.level), a.verdict.level);
+    ['strong', 'good', 'moderate', 'weak', 'insufficient'].includes(a.verdict.level), a.verdict.level);
   check(`${label}: el veredicto trae al menos un hallazgo`, a.verdict.findings.length > 0);
   check(`${label}: no pierde configuraciones sin contarlas`,
     a.meta.total + a.meta.droppedParams <= isT.rows.length && a.meta.total > 0,
@@ -214,7 +214,7 @@ run('Export sin Sharpe ni Recovery', () => scenario({ levels: [6, 6, 6], center:
   check('sin Sharpe: no ofrece contraste de Sharpe', a.stats.sharpeTest === null);
 });
 run('Export minimo: solo Profit y Trades', () => scenario({ levels: [6, 6, 6], center: [3, 3, 3], width: 2, omit: ['Sharpe Ratio', 'Recovery Factor', 'Profit Factor', 'Equity DD %', 'Expected Payoff'], seed: 14 }),
-  (a) => check('export minimo: sigue calificando la evidencia', ['strong', 'moderate', 'weak', 'insufficient'].includes(a.verdict.level)));
+  (a) => check('export minimo: sigue calificando la evidencia', ['strong', 'good', 'moderate', 'weak', 'insufficient'].includes(a.verdict.level)));
 
 console.log('\n================ CASOS DEGENERADOS ================');
 run('EA perdedor en todo el espacio', () => scenario({ levels: [6, 6, 6], center: [3, 3, 3], losing: true, seed: 16 }), (a) => {

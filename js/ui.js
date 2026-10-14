@@ -7,34 +7,33 @@ import {
   refreshAnalyzeButton,
   renderPreflight,
   bindDropzone,
-  hideDropOverlay,
   bindGlobalDrop,
   loadDemo,
   updateDropStatus,
   acceptFiles,
+  flushPendingDrop,
 } from './ui-files.js';
 
 import {
   clearError,
   showError,
   showProgress,
-  setBusy,
   inspectXlsx,
   runAudit,
   cancelAudit,
-  runInWorker,
   preflightFile,
+  analyzedCurrentFiles,
 } from './ui-audit.js';
 
 import {
   initChrome,
-  changeLanguage,
   loadPrefs,
   savePrefs,
   updatePolicyPreview,
   updatePolicySummary,
   togglePolicy,
   policyInputProblem,
+  policyInputField,
   readPolicy,
   setTab,
   render,
@@ -43,6 +42,7 @@ import {
 
 import { setReport, runUnseenCheck, readUnseenForm, renderUnseen } from './ui-unseen.js';
 import { renderVerdict } from './ui-verdict.js';
+import { recordAnalysis, updateHistoryUnseen, renderHistoryCompare, renderHistoryView, initHistory, unseenTriesNote } from './ui-history.js';
 import {
   renderPlateaus,
   renderRejected,
@@ -54,35 +54,27 @@ import {
 } from './ui-plateaus.js';
 import { copyParams, doExport, toggleExportMenu } from './ui-export.js';
 
-// Reexports mínimos para tests / depuración.
-export {
-  clearError,
-  showError,
-  runAudit,
-  changeLanguage,
-  refreshAnalyzeButton,
-  state,
-};
 
 Object.assign(api, {
+  loadDemo,
   clearError,
   showError,
   showProgress,
-  setBusy,
   inspectXlsx,
   runAudit,
-  runInWorker,
   preflightFile,
+  analyzedCurrentFiles,
+  flushPendingDrop,
   readPolicy,
   refreshAnalyzeButton,
   renderPreflight,
   updateDropStatus,
-  hideDropOverlay,
   setTab,
   render,
   updatePolicyPreview,
   policyInputProblem,
-  savePrefs,
+  policyInputField,
+  togglePolicy,
   runUnseenCheck,
   readUnseenForm,
   setReport,
@@ -97,7 +89,14 @@ Object.assign(api, {
   renderUnseen,
   mountPlateauSurfaceView,
   disposePlateauSurface,
+  recordAnalysis,
+  updateHistoryUnseen,
+  unseenTriesNote,
+  renderHistoryCompare,
+  renderHistoryView,
 });
+
+initHistory();
 
 initChrome();
 loadPrefs();
@@ -107,7 +106,7 @@ bindDropzone('#mainDrop', '#mainFile', null);
 bindGlobalDrop();
 $('#analyzeBtn').addEventListener('click', runAudit);
 $('#cancelBtn').addEventListener('click', cancelAudit);
-$('#demoBtn').addEventListener('click', loadDemo);
+$('#demoBtn').addEventListener('click', () => loadDemo('good'));
 $('#exportBtn').addEventListener('click', toggleExportMenu);
 $('#intakeExpandBtn').addEventListener('click', () => {
   document.body.classList.remove('intake-collapsed');
@@ -126,21 +125,19 @@ $('#policyRerun').addEventListener('click', () => {
 // Ancla inicial y botón de atrás del navegador.
 window.addEventListener('hashchange', () => {
   const tab = HASH_TAB[location.hash.replace('#', '')];
-  const noAnalysisNeeded = tab === 'method' || tab === 'legal' || tab === 'verdict';
+  const noAnalysisNeeded = tab === 'method' || tab === 'history' || tab === 'verdict';
   if (tab && tab !== state.tab && (state.analysis || noAnalysisNeeded)) setTab(tab, true);
 });
 {
+  // El texto legal era una pestaña (#legal); ahora es la página de privacidad. Los enlaces
+  // antiguos siguen llevando a él.
+  if (location.hash === '#legal') location.replace('/privacy/');
   const initial = HASH_TAB[location.hash.replace('#', '')];
-  if (initial === 'method' || initial === 'legal') setTab(initial, true);
+  if (initial === 'method' || initial === 'history') setTab(initial, true);
 }
 $$('.nav-item').forEach((b) => b.addEventListener('click', () => {
   if (!b.disabled) setTab(b.dataset.tab);
 }));
-// El enlace legal del pie no es una pestaña numerada, pero navega igual.
-$$('.legal-links [data-tab], .lp-menu [data-tab]').forEach((b) => b.addEventListener('click', () => {
-  setTab(b.dataset.tab);
-}));
-
 // Atajo del informe del backtest (pestaña Periodo no visto): además de soltarlo, se
 // puede elegir con un botón. Sin esto, en el móvil y con teclado no había forma.
 document.addEventListener('click', (e) => {
@@ -154,7 +151,7 @@ document.addEventListener('click', (e) => {
 
 render();
 
-// Enlace desde la landing: /app/?demo=1
-if (new URLSearchParams(location.search).get('demo') === '1') {
-  loadDemo();
-}
+// Enlaces desde la landing: /app/?demo=1 (el ejemplo con meseta) y /app/?demo=noedge (sin ventaja).
+const demoParam = new URLSearchParams(location.search).get('demo');
+if (demoParam === '1') loadDemo('good');
+else if (demoParam === 'noedge') loadDemo('noedge');

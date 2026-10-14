@@ -12,7 +12,7 @@
   "fragility": 0.183183183,
   "fragilityQuality": 0.219219219,
   "sharpeObservedMax": 3.283322,
-  "sharpeChanceMax": 1.685824805,
+  "sharpeChanceMax": 2.034893987,
   "sharpeSigma": 0.538664658,
   "verdictLevel": "strong",
   "sampling": "grid",

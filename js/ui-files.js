@@ -4,10 +4,10 @@ import { parseTable } from '../core/parse.js';
 import { metricColumns, inferParamsSingle, roleFromTable } from '../core/schema.js';
 import { looksLikeReport, mentionsReport } from '../core/report.js';
 import { looksLikeSetFile, parseSetText } from '../core/setfile.js';
-import { classifyError, CODE } from '../core/errors.js';
-import { buildDemoTables } from './demo.js';
+import { AnalysisError, classifyError, CODE } from '../core/errors.js';
+import { buildDemoTables, buildNoEdgeDemoTables } from './demo.js';
 import { t, L } from './i18n.js';
-import { state, api, $, $$, esc, int, decodeHead } from './ui-state.js';
+import { state, api, $, esc, int, decodeHead } from './ui-state.js';
 
 // ---------------------------------------------------------------- carga de archivos
 export const BINARY_HINT = /\.(xlsx|xlsm)$/i;
@@ -69,7 +69,10 @@ export async function setSearchSet(file) {
     const text = decodeHead(await file.arrayBuffer());
     const parsed = parseSetText(text);
     if (!parsed.params.length) {
-      api.showError(L('El .set no contiene parámetros legibles.', 'The .set contains no readable parameters.'), CODE.FILE_ERROR);
+      api.showError(L(
+        'El .set no contiene parámetros legibles. Guárdalo desde el probador: pestaña Parámetros, clic derecho → Guardar.',
+        'The .set contains no readable parameters. Save it from the tester: Inputs tab, right-click → Save.',
+      ), CODE.FILE_ERROR, { noHint: true });
       return;
     }
     state.searchSet = parsed;
@@ -77,10 +80,9 @@ export async function setSearchSet(file) {
     api.clearError();
     const status = $('#setStatus');
     if (status) status.textContent = `${file.name} · ${parsed.params.length} ${L('parámetros', 'parameters')}`;
-    if (state.isFile || state.isDemo) {
-      // Re-auditar con el contraste de cobertura cuando ya hay datos.
-      if (!state.busy && (state.isTable || state.isFile)) api.runAudit();
-    }
+    // Volver a analizar con el contraste de cobertura solo si lo cargado es lo que se
+    // analizó: con archivos nuevos (sin comprobar aún) se espera a que se pulse Analizar.
+    if (!state.busy && api.analyzedCurrentFiles && api.analyzedCurrentFiles()) await api.runAudit();
   } catch (err) {
     api.showError(err && err.message ? err.message : String(err));
   }
@@ -94,64 +96,92 @@ function sameFile(a, b) {
 }
 
 /** Reparte una tanda de archivos entre las dos cajas según lo que sean. */
-export async function acceptFiles(fileList, preferred, nested = false) {
-  // Hasta cuatro: IS, forward, informe unseen y .set de rangos.
+export async function acceptFiles(fileList, preferred) {
   const all = Array.from(fileList || []);
-  const files = all.slice(0, 4);
-  if (!files.length) return;
-  if (!nested) {
-    state.dropNote = all.length > files.length
-      ? L(
-        `Has soltado ${all.length} archivos y solo se leen 4 (optimización, forward, informe del backtest y .set). Los demás se han ignorado.`,
-        `You dropped ${all.length} files and only 4 are read (optimization, forward, backtest report and .set). The rest were ignored.`,
-      )
-      : '';
+  if (!all.length) return;
+  // Durante un análisis no se toca nada de lo cargado: el análisis en marcha leería a
+  // medias los archivos nuevos y el informe saldría con nombres que no son los suyos.
+  // Lo soltado espera y se coloca al terminar (o al cancelar).
+  if (state.busy) {
+    state.pendingDrop = { files: all, preferred };
+    api.showProgress(state.progressPct || 2, state.progressText || t('progress'));
+    return;
   }
-  if (files.length === 1) {
-    const role = await detectRole(files[0]);
-    // En la pestaña del periodo no visto, lo que se suelta es el informe del backtest
-    // (salvo que sea claramente otra cosa: un forward o un .set).
-    if (state.tab === 'unseen' && state.analysis && role !== 'oos' && role !== 'set') {
-      await api.setReport(files[0]);
-      return;
+  // Hasta cuatro: IS, forward, informe unseen y .set de rangos.
+  const files = all.slice(0, 4);
+  state.dropNote = all.length > files.length
+    ? L(
+      `Has soltado ${all.length} archivos y solo se leen 4 (optimización, forward, informe del backtest y .set). Los demás se han ignorado.`,
+      `You dropped ${all.length} files and only 4 are read (optimization, forward, backtest report and .set). The rest were ignored.`,
+    )
+    : '';
+  const roles = await Promise.all(files.map(detectRole));
+  // En la pestaña del periodo no visto, lo que se suelta es el informe del backtest
+  // (salvo que sea claramente otra cosa: un forward o un .set).
+  if (files.length === 1 && state.tab === 'unseen' && state.analysis && roles[0] !== 'oos' && roles[0] !== 'set') {
+    await api.setReport(files[0]);
+    return;
+  }
+  // Primero las tablas, después el .set y al final el informe. El .set solo vuelve a
+  // analizar si los archivos cargados son los del análisis que hay en pantalla: si se
+  // procesara antes que las tablas de su misma tanda, analizaría las anteriores.
+  const setIdx = roles.indexOf('set');
+  const reportIdx = roles.indexOf('report');
+  const data = files.filter((_, i) => roles[i] !== 'set' && roles[i] !== 'report');
+  const dataRoles = roles.filter((r) => r !== 'set' && r !== 'report');
+  if (data.length) placeTables(data, dataRoles, preferred);
+  if (setIdx >= 0) await setSearchSet(files[setIdx]);
+  if (reportIdx >= 0) await api.setReport(files[reportIdx]);
+}
+
+/** Lo soltado durante un análisis, al terminar. Llamada desde ui-audit.js. */
+export async function flushPendingDrop() {
+  const pending = state.pendingDrop;
+  state.pendingDrop = null;
+  if (pending) await acceptFiles(pending.files, pending.preferred);
+}
+
+/** Extensiones que pueden ser una tabla de optimización/forward (como en setFile). */
+const TABLE_EXT = /\.(xls|xlsx|xlsm|xml|csv|tsv|txt)$/i;
+
+const addDropNote = (text) => { state.dropNote = state.dropNote ? `${state.dropNote} ${text}` : text; };
+
+/** Coloca las tablas de optimización/forward de una tanda en su ranura. */
+function placeTables(allFiles, allRoles, preferred) {
+  // Lo que no puede ser una tabla (.opt, .pdf…) se aparta antes de repartir: si no, podía
+  // ocupar la ranura de la optimización, rechazarse y dejar fuera el XML bueno.
+  const keep = allFiles.map((_, i) => i).filter((i) => TABLE_EXT.test(allFiles[i].name) && !/\.opt$/i.test(allFiles[i].name));
+  if (!keep.length) {
+    setFile(allRoles[0] || preferred || 'is', allFiles[0]); // explica por qué no sirve
+    return;
+  }
+  const ignored = allFiles.filter((_, i) => !keep.includes(i));
+  const files = keep.map((i) => allFiles[i]);
+  const roles = keep.map((i) => allRoles[i]);
+  const noteIgnored = () => {
+    if (ignored.length) {
+      addDropNote(L(
+        `${ignored.map((f) => f.name).join(', ')}: no es una exportación de MT5 y se ha ignorado.`,
+        `${ignored.map((f) => f.name).join(', ')}: not an MT5 export, ignored.`,
+      ));
+      updateDropStatus();
     }
+  };
+  if (files.length === 1) {
     // Un segundo in-sample soltado solo sustituye al primero. Puede ser a propósito
     // (cambiar de archivo), pero si se quería añadir el forward, hay que decirlo.
-    const target = role || preferred || 'is';
-    if (target === 'is' && state.isFile && !state.oosFile && !sameFile(state.isFile, files[0])) {
-      state.dropNote = L(
+    const target = roles[0] || preferred || 'is';
+    if (target === 'is' && state.isFile && !state.oosFile && !state.isDemo && !sameFile(state.isFile, files[0])) {
+      addDropNote(L(
         `${state.isFile.name} se ha sustituido por ${files[0].name}: los dos son exportaciones de la optimización (ninguno trae Forward Result / Back Result). Si querías añadir el forward, exporta la tabla de la pestaña de resultados del forward.`,
         `${state.isFile.name} was replaced by ${files[0].name}: both are optimization exports (neither has Forward Result / Back Result). If you meant to add the forward, export the table from the forward results tab.`,
-      );
+      ));
     }
-    if (role === 'report') {
-      await api.setReport(files[0]);
-      return;
-    }
-    if (role === 'set') {
-      await setSearchSet(files[0]);
-      return;
-    }
-    setFile(role || preferred || 'is', files[0]);
+    setFile(target, files[0]);
+    noteIgnored();
     return;
   }
-  const roles = await Promise.all(files.map(detectRole));
-  const setIdx = roles.indexOf('set');
-  if (setIdx >= 0) {
-    await setSearchSet(files[setIdx]);
-    const rest = files.filter((_, i) => i !== setIdx);
-    if (rest.length) await acceptFiles(rest, preferred, true);
-    return;
-  }
-  const reportIdx = roles.indexOf('report');
-  if (reportIdx >= 0) {
-    await api.setReport(files[reportIdx]);
-    const rest = files.filter((_, i) => i !== reportIdx);
-    if (rest.length) await acceptFiles(rest, preferred, true);
-    return;
-  }
-  const pair = files.slice(0, 2);
-  if (pair.length === 2 && sameFile(pair[0], pair[1])) {
+  if (sameFile(files[0], files[1])) {
     api.showError(L(
       'Has soltado el mismo archivo dos veces. Hacen falta el export de la optimización y el del forward de la misma ejecución.',
       'You dropped the same file twice. The optimization export and the forward export of the same run are needed.',
@@ -159,7 +189,7 @@ export async function acceptFiles(fileList, preferred, nested = false) {
     return;
   }
   const oosIdx = roles.indexOf('oos');
-  if (oosIdx >= 0 && roles.filter((r) => r === 'oos').length >= 2) {
+  if (oosIdx >= 0 && roles.filter((r) => r === 'oos').length >= 2 && !roles.some((r) => r !== 'oos')) {
     // Dos exports forward: asignar uno como in-sample en silencio compararia el forward
     // consigo mismo y daria un veredicto limpio falso.
     api.showError(L(
@@ -168,19 +198,44 @@ export async function acceptFiles(fileList, preferred, nested = false) {
     ), CODE.SCHEMA_ERROR);
     return;
   }
+  const extraNote = (used) => {
+    const extra = files.filter((f) => !used.includes(f));
+    if (extra.length) {
+      addDropNote(L(
+        `${extra.map((f) => f.name).join(', ')}: sobra (ya hay una optimización y un forward) y se ha ignorado.`,
+        `${extra.map((f) => f.name).join(', ')}: extra (there is already an optimization and a forward), ignored.`,
+      ));
+      updateDropStatus();
+    }
+  };
   if (oosIdx >= 0) {
+    const isPick = files.find((f, i) => i !== oosIdx && roles[i] !== 'oos' && !sameFile(f, files[oosIdx]));
+    if (!isPick) {
+      api.showError(L(
+        'Los archivos son exportaciones forward (traen Forward Result / Back Result). Falta el export de la optimización: en MT5, pestaña de resultados de optimización → clic derecho → Exportar a XML.',
+        'The files are forward exports (they have Forward Result / Back Result). The optimization export is missing: in MT5, optimization results tab → right-click → Export to XML.',
+      ), CODE.SCHEMA_ERROR);
+      return;
+    }
     setFile('oos', files[oosIdx]);
-    setFile('is', files[1 - oosIdx] || files.find((_, i) => i !== oosIdx));
+    setFile('is', isPick);
+    noteIgnored();
+    extraNote([files[oosIdx], isPick]);
   } else if (roles[0] === 'is' && roles[1] === 'is') {
     // Ambos parecen in-sample: no asignar el segundo a forward en silencio.
+    // Un aviso, no un error: se puede seguir con el primero.
     setFile('is', files[0]);
-    api.showError(L(
-      'Los dos archivos parecen exports de la optimización (ninguno trae columnas Forward Result / Back Result). Se ha cargado solo el primero. Si tienes el export forward, suéltalo también; si no, puedes auditar solo la optimización.',
-      'Both files look like optimization exports (neither has Forward Result / Back Result columns). Only the first one was loaded. If you have the forward export, drop it too; if not, you can audit the optimization alone.',
-    ), CODE.SCHEMA_ERROR);
+    addDropNote(L(
+      `Los dos archivos parecen exports de la optimización (ninguno trae Forward Result / Back Result): se ha cargado solo ${files[0].name}. Si tienes el del forward, suéltalo también; si no, puedes analizar solo la optimización.`,
+      `Both files look like optimization exports (neither has Forward Result / Back Result): only ${files[0].name} was loaded. If you have the forward one, drop it too; if not, you can analyze the optimization alone.`,
+    ));
+    noteIgnored();
+    updateDropStatus();
   } else {
     setFile('is', files[0]);
     setFile('oos', files[1]);
+    noteIgnored();
+    extraNote([files[0], files[1]]);
   }
 }
 
@@ -201,16 +256,30 @@ export function updateDropStatus() {
   // Con archivos cargados, la ayuda de "como conseguir los archivos" ya no hace falta.
   document.body.classList.toggle('has-files', Boolean(isName || oosName));
   if (state.isDemo) { statusEl.textContent = t('demo.loaded'); return; }
-  if (!isName && !oosName) { statusEl.textContent = t('drop.main.status'); return; }
+  if (!isName && !oosName) {
+    statusEl.textContent = state.report ? reportNote().replace(/^ · /, '') : t('drop.main.status');
+    return;
+  }
   statusEl.textContent = [
     `${L('Optimización', 'Optimization')}: ${isName || L('falta', 'missing')}`,
     `${L('Forward', 'Forward')}: ${oosName || L('no cargado (opcional)', 'not loaded (optional)')}`,
-  ].join(' · ') + (state.dropNote ? ` · ${state.dropNote}` : '');
+  ].join(' · ') + reportNote() + (state.dropNote ? ` · ${state.dropNote}` : '');
+}
+
+/** El informe del backtest soltado antes de analizar: que se vea que se ha leído. */
+function reportNote() {
+  if (!state.report) return '';
+  const name = (state.report.meta && state.report.meta.file) || L('cargado', 'loaded');
+  return state.analysis
+    ? ` · ${L('Informe del backtest', 'Backtest report')}: ${name}`
+    : ` · ${L('Informe del backtest', 'Backtest report')}: ${name} (${L('se compara al analizar, en Periodo no visto', 'compared after the analysis, in Unseen period')})`;
 }
 
 function dropError(message) {
   const statusEl = $('#mainDropStatus');
   const boxEl = $('#mainDrop');
+  // Con la carga plegada (tras un análisis) la caja no se ve: el aviso se perdía.
+  document.body.classList.remove('intake-collapsed');
   if (statusEl) statusEl.textContent = message;
   if (boxEl) { boxEl.classList.add('error'); boxEl.classList.remove('ready'); }
 }
@@ -239,6 +308,14 @@ export function setFile(which, file) {
     ));
     return;
   }
+  if (state.isDemo) {
+    // Las ranuras del ejemplo no son archivos (solo llevan el nombre): un archivo propio
+    // junto a la otra mitad del ejemplo acababa en «Error interno» al analizar.
+    state.isFile = null; state.oosFile = null;
+    state.isTable = null; state.oosTable = null; state.demoTruth = null;
+    state.preflight = { is: null, oos: null };
+    preflightToken.is++; preflightToken.oos++;
+  }
   state[which === 'is' ? 'isFile' : 'oosFile'] = file;
   state.isDemo = false;
   document.body.classList.remove('intake-collapsed'); // cambiar de archivo reabre el detalle
@@ -255,7 +332,7 @@ export async function buildPreflightSummary(file) {
   return api.preflightFile(file);
 }
 
-export async function queuePreflight(which) {
+export async function queuePreflight(which, retried = false) {
   const key = which === 'is' ? 'is' : 'oos';
   const file = key === 'is' ? state.isFile : state.oosFile;
   const token = ++preflightToken[key];
@@ -266,20 +343,35 @@ export async function queuePreflight(which) {
   }
   state.preflight[key] = { ok: null, name: file.name, reading: true };
   renderPreflight();
+  refreshAnalyzeButton(); // sin esto, «Analizar» seguía activo mientras se leía
   try {
     const summary = await buildPreflightSummary(file);
     if (preflightToken[key] !== token) return;
+    // El motor pide al menos 10 configuraciones: mejor decirlo antes de pulsar Analizar.
+    if (key === 'is' && Number.isFinite(summary.rows) && summary.rows < 10) {
+      throw new AnalysisError(CODE.DATA_ERROR, L(
+        `Solo trae ${summary.rows} ${summary.rows === 1 ? 'configuración' : 'configuraciones'}; hacen falta al menos 10 para buscar una meseta.`,
+        `It has only ${summary.rows} ${summary.rows === 1 ? 'configuration' : 'configurations'}; at least 10 are needed to look for a plateau.`,
+      ));
+    }
     state.preflight[key] = summary;
   } catch (err) {
     if (preflightToken[key] !== token) return;
     const classified = classifyError(err);
+    // Cancelar un análisis (o un fallo del motor) corta también la lectura en curso: no
+    // es culpa del archivo. Se vuelve a leer una vez antes de marcarlo en rojo.
+    if (!retried && (classified.code === CODE.CANCELLED || classified.code === CODE.WORKER_ERROR)) {
+      queuePreflight(which, true);
+      return;
+    }
     state.preflight[key] = {
       ok: false,
       name: file.name,
       error: classified,
     };
     // Sin quitar 'ready' la caja seguia en verde junto al error.
-    dropError(L(
+    if (classified.code === CODE.DATA_ERROR) dropError(`${file.name}: ${classified.message}`);
+    else dropError(L(
       `${file.name}: no se puede leer como exportación de optimización de MT5 (detalle abajo). En el probador, pestaña Optimización, clic derecho sobre la tabla → Exportar a XML.`,
       `${file.name}: it cannot be read as an MT5 optimization export (details below). In the tester, Optimization tab, right-click the table → Export to XML.`,
     ));
@@ -349,19 +441,45 @@ export function renderPreflight() {
     </div>`;
   }).join('');
 
+  // Solo el forward: se lee bien, pero sin la optimización no hay nada que analizar.
+  const noIs = !state.preflight.is && !hasError && !reading;
+  // El motor ya rechazó estos mismos archivos (no encajan, muy pocas filas…): repetir daría
+  // el mismo error, y la ficha no puede seguir diciendo «Listo».
+  const rejected = !hasError && !reading && rejectedNow();
   const title = $('#preflightTitle');
   if (title) {
     title.textContent = hasError
       ? t('preflight.title.error')
       : reading
         ? t('preflight.title.reading')
-        : state.preflight.oos
-          ? t('preflight.title')
-          : t('preflight.title.isOnly');
+        : rejected
+          ? L('No se pueden analizar así', 'They cannot be analyzed like this')
+          : noIs
+            ? L('Falta la optimización', 'The optimization is missing')
+            : state.preflight.oos
+              ? t('preflight.title')
+              : t('preflight.title.isOnly');
   }
   if (note) {
     if (hasError) {
       note.textContent = t('preflight.note.warn');
+    } else if (rejected && state.analysisRejected.reason === 'damagedExport') {
+      // Un export dañado se abre, pero sus datos no valen: no decir «se lee bien».
+      note.textContent = state.analysisRejected.which === 'oos'
+        ? L('El archivo del forward se abre, pero sus datos están dañados: el detalle está en el aviso de abajo. Vuelve a exportarlo.',
+          'The forward file opens, but its data is damaged: the details are in the notice below. Export it again.')
+        : L('El archivo de la optimización se abre, pero sus datos están dañados: el detalle está en el aviso de abajo. Vuelve a exportarlo.',
+          'The optimization file opens, but its data is damaged: the details are in the notice below. Export it again.');
+    } else if (rejected) {
+      note.textContent = L(
+        'Cada archivo se lee bien, pero el análisis los ha rechazado: el motivo está en el aviso de abajo. Cambia el archivo que corresponda.',
+        'Each file reads fine, but the analysis rejected them: the reason is in the notice below. Replace the file it points to.',
+      );
+    } else if (noIs) {
+      note.textContent = L(
+        'El forward solo no basta: suelta también el export de la optimización (en MT5, pestaña de resultados de la optimización → clic derecho → Exportar a XML).',
+        'The forward alone is not enough: drop the optimization export too (in MT5, optimization results tab → right-click → Export to XML).',
+      );
     } else if (reading) {
       note.textContent = t('preflight.reading');
     } else if (!state.preflight.oos && !state.analysis) {
@@ -382,9 +500,15 @@ export function renderPreflight() {
     }
     // Un archivo que no se puede leer es un error (rojo, como su ficha); unas columnas
     // que faltan, un aviso (ámbar).
-    note.classList.toggle('is-danger', hasError);
-    note.classList.toggle('is-warn', !hasError && hasMissing);
+    note.classList.toggle('is-danger', hasError || rejected);
+    note.classList.toggle('is-warn', !hasError && !rejected && (hasMissing || noIs));
   }
+}
+
+/** El último análisis falló por los datos de estos mismos archivos (ui-audit.js). */
+function rejectedNow() {
+  const r = state.analysisRejected;
+  return Boolean(r && !state.isDemo && r.isFile === state.isFile && r.oosFile === state.oosFile);
 }
 
 export function refreshAnalyzeButton() {
@@ -397,13 +521,16 @@ export function refreshAnalyzeButton() {
     || (state.preflight.oos && state.preflight.oos.ok === false);
   // Mientras se lee un archivo no se puede auditar: se lanzaria con la lectura a medias.
   const reading = Boolean((state.preflight.is && state.preflight.is.reading) || (state.preflight.oos && state.preflight.oos.reading));
-  $('#analyzeBtn').disabled = !ready || state.busy || preflightBlocked || reading;
+  const rejected = rejectedNow();
+  $('#analyzeBtn').disabled = !ready || state.busy || preflightBlocked || reading || rejected;
   $('#analyzeSub').textContent = !hasIs
     ? t('analyze.needIs')
     : reading
       ? t('preflight.title.reading')
       : preflightBlocked
       ? t('analyze.blocked')
+      : rejected
+      ? L('Cambia los archivos: el motivo está en el aviso', 'Change the files: the reason is in the notice')
       : !hasOos
         ? t('analyze.needOos')
         : t('analyze.ready');
@@ -451,15 +578,20 @@ export function bindDropzone(zoneSel, inputSel, which) {
 }
 
 // ---------------------------------------------------------------- arranque
-export async function loadDemo() {
+/**
+ * Carga un ejemplo sintético: 'good' (un EA con una meseta real, el de siempre) o 'noedge'
+ * (un EA sin ninguna ventaja: lo que se ve cuando no hay nada).
+ */
+export async function loadDemo(kind = 'good') {
   if (state.busy) return;
+  if (kind !== 'noedge') kind = 'good';
   // Generar las 30.240 filas del ejemplo bloquea ~200 ms. Hacerlo dentro del clic
   // retrasaba la respuesta del boton (INP "mejorable" en Cloudflare): primero se pinta
   // el aviso de progreso y despues se genera.
   $('#demoBtn').disabled = true;
   api.showProgress(1, L('Generando el ejemplo…', 'Generating the example…'));
   await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
-  const demo = buildDemoTables();
+  const demo = kind === 'noedge' ? buildNoEdgeDemoTables() : buildDemoTables();
   state.isTable = demo.isTable;
   state.oosTable = demo.oosTable;
   state.demoTruth = demo.truth;

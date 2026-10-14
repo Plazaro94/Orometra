@@ -2,7 +2,9 @@
 //
 //   node tests/regression.test.js
 //
-// El fixture se generó con el motor previo al saneamiento Fase 0 (misma semilla demo).
+// El fixture es la demo con el motor actual: cuando un cambio del motor la mueve a propósito
+// (medido en bench/), se regenera y se dice en el CHANGELOG. La última vez, en 95ef28e
+// (umbral del contraste del Sharpe al percentil 95).
 
 import fs from 'node:fs';
 import path from 'node:path';

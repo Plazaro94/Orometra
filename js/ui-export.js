@@ -3,7 +3,7 @@
 import { track } from './track.js';
 import { buildSetFile, buildRefinementSetFile, buildReport, buildCsv, downloadText, formatSetValue } from './export.js';
 import { t, L, localeTag } from './i18n.js';
-import { state, api, $, esc, paramValue } from './ui-state.js';
+import { state, api, $, esc, paramValue, num, int, findInMt5Text, deployableSet, forwardUntested } from './ui-state.js';
 import { verdictCopy, displayVerdictCopy, holdoutFact, whyGradeHighlights, nextStepText } from './ui-verdict.js';
 
 const plain = (s) => String(s ?? '').replace(/<[^>]+>/g, '');
@@ -33,6 +33,24 @@ export function buildPlainSummary(a) {
   if (dv.summary) lines.push(plain(dv.summary));
   lines.push('');
 
+  // Con qué se ha calculado: sin esto, quien recibe el resumen no puede reproducirlo.
+  const g = a.meta.policy.gates;
+  lines.push(L('DATOS Y MÍNIMOS', 'DATA AND MINIMUMS'));
+  if (state.source && state.source.is) {
+    lines.push(`  ${L('Archivos', 'Files')}: ${state.source.is}${state.source.oos ? ` + ${state.source.oos}` : ''}`);
+  }
+  lines.push(`  ${L('Pasadas analizadas', 'Passes analyzed')}: ${int(a.meta.total)}${hasF ? '' : ` (${L('sin forward', 'no forward')})`}`);
+  lines.push(`  ${L('Mínimos', 'Minimums')}: ${[
+    g.requireProfit ? L('beneficio positivo', 'positive profit') : '',
+    `${L('factor de beneficio', 'profit factor')} ≥ ${num(g.minProfitFactor, 2)}`,
+    `drawdown ≤ ${num(g.maxDrawdownPct, 0)}${L('\u00A0%', '%')}`,
+    hasF
+      ? L(`${int(a.meta.minTradesIs)} operaciones en el periodo optimizado y ${int(a.meta.minTradesOos)} en el forward`,
+        `${int(a.meta.minTradesIs)} trades on the optimized period and ${int(a.meta.minTradesOos)} on the forward`)
+      : L(`${int(a.meta.minTradesIs)} operaciones`, `${int(a.meta.minTradesIs)} trades`),
+  ].filter(Boolean).join(' · ')}`);
+  lines.push('');
+
   // Top 3, no solo "la mejor": cual conviene tambien depende de criterios operativos
   // (ej. frecuencia de operacion) que la app no puede decidir por el usuario. Mismos
   // datos que la tabla comparativa de "Top 3" en Verdict.
@@ -40,11 +58,30 @@ export function buildPlainSummary(a) {
     lines.push(top.length === 1
       ? L('CONFIGURACIÓN GANADORA', 'WINNING CONFIGURATION')
       : L(`TOP ${top.length}: CONFIGURACIONES GANADORAS`, `TOP ${top.length}: WINNING CONFIGURATIONS`));
+    lines.push(L('El número de pasada es el de tu archivo exportado: MT5 no lo guarda al cerrarse y puede enseñar otro. Busca cada configuración por sus cifras.',
+      'The pass number is the one in your exported file: MT5 does not keep it after closing and may show a different one. Find each configuration by its figures.'));
     top.forEach((p, i) => {
       const role = i === 0 ? L('Recomendada', 'Recommended') : L(`Alternativa ${i}`, `Alternative ${i}`);
       lines.push('');
       lines.push(`${role} — ${L('Pasada', 'Pass')} ${p.record.id} (${L('meseta', 'plateau')} ${p.rank}, ${L('robustez', 'robustness')} ${p.robust.toFixed(0)}/100)`);
-      lines.push(`  ${L('Operaciones periodo optimizado / forward', 'Optimized-period / forward trades')}: ${p.record.is.trades}${hasF ? ` / ${p.record.oos.trades}` : ` / ${L('sin forward', 'no forward')}`}`);
+      const figures = findInMt5Text(p.record);
+      if (figures) lines.push(`  ${L('En MT5, búscala por', 'In MT5, find it by')}: ${figures}${p.record.twins ? L(` (${p.record.twins} más con esas cifras: usa sus parámetros)`, ` (${p.record.twins} more with those figures: use its parameters)`) : ''}`);
+      // Factor de beneficio, drawdown y operaciones de cada periodo. Una configuración que MT5
+      // no pasó al forward lo dice, en vez de escribir «undefined».
+      const per = (m) => `PF ${num(m.profitFactor, 2)} · DD ${num(m.drawdown, 1)}${L('\u00A0%', '%')} · ${int(m.trades)} ${L('operaciones', 'trades')}`;
+      lines.push(`  ${L('Periodo optimizado', 'Optimized period')}: ${per(p.record.is)}`);
+      if (hasF) {
+        lines.push(`  ${L('Forward', 'Forward')}: ${Number.isFinite(p.record.oos && p.record.oos.trades)
+          ? per(p.record.oos) : L('MT5 no pasó esta configuración al forward', 'MT5 did not send this configuration to the forward')}`);
+      }
+      // Qué esperar, descontada la selección (core/shrink.js), si se ha podido calcular.
+      const sh = a.stats && a.stats.shrinkage;
+      const pr = sh && sh.usable ? (sh.predictions || []).find((x) => x.index === p.representative) : null;
+      if (pr && Number.isFinite(pr.expected)) {
+        lines.push(`  ${L('Qué esperar (descontada la selección)', 'What to expect (net of selection)')}: ${L('unos', 'about')} ${num(pr.expected, 2)} ${L('por operación', 'per trade')} · ${pr.ownLo > 0
+          ? L('se distingue de una cualquiera de las que cumplen tus mínimos', 'stands out from any that meets your minimums')
+          : L('no se distingue de una cualquiera de las que cumplen tus mínimos', 'does not stand out from any that meets your minimums')}`);
+      }
       a.meta.paramNames.forEach((n, j) => lines.push(`  ${n} = ${paramValue(p.record.params[j])}`));
     });
     lines.push('');
@@ -52,17 +89,19 @@ export function buildPlainSummary(a) {
 
   if (pros.length) {
     lines.push(L('A FAVOR', 'IN FAVOR'));
-    pros.forEach((f) => lines.push(`- ${plain(f.title)}: ${plain(f.detail)}`));
+    pros.forEach((f) => lines.push(`- ${plain(f.title)}. ${plain(f.detail)}`));
     lines.push('');
   }
   if (cons.length) {
     lines.push(L('EN CONTRA / LÍMITES', 'AGAINST / LIMITS'));
-    cons.forEach((f) => lines.push(`- ${plain(f.title)}: ${plain(f.detail)}`));
+    cons.forEach((f) => lines.push(`- ${plain(f.title)}. ${plain(f.detail)}`));
     lines.push('');
   }
 
   lines.push(L('PERIODO NO VISTO (HOLDOUT)', 'UNSEEN PERIOD (HOLDOUT)'));
   lines.push(`${plain(hold.value)}${hold.note ? ' — ' + plain(hold.note) : ''}`);
+  const tries = api.unseenTriesNote ? api.unseenTriesNote() : '';
+  if (tries) lines.push(tries);
   lines.push('');
 
   lines.push(L('QUÉ HACER AHORA', 'WHAT TO DO NOW'));
@@ -75,7 +114,7 @@ export function buildPlainSummary(a) {
     `Generado por Orometra el ${new Date().toLocaleString(localeTag())}. Este resumen recoge solo lo esencial; el informe completo (JSON/CSV) tiene todo el detalle.`,
     `Generated by Orometra on ${new Date().toLocaleString(localeTag())}. This summary keeps only the essentials; the full report (JSON/CSV) has every detail.`,
   ));
-  return lines.join('\n');
+  return lines.join('\n') + '\n';
 }
 
 export async function copyParams(index, button) {
@@ -98,6 +137,8 @@ export async function copyParams(index, button) {
 }
 
 // ---------------------------------------------------------------- exportación
+// Los .set van en UTF-16 little-endian con BOM, como los guarda MT5 (js/export.js).
+const SET_MIME = 'application/octet-stream;charset=utf-16le';
 export function doExport(kind, plateauIndex) {
   const a = state.analysis;
   if (!a) return;
@@ -113,10 +154,16 @@ export function doExport(kind, plateauIndex) {
         'Without forward, a deployment .set is not exported: the plateau was only measured on the optimized period. Export the refinement range, or re-audit with the forward file.',
       ));
     }
-    downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best, state.searchSet));
+    if (forwardUntested(a, best)) {
+      return api.showError(L(
+        'MT5 no pasó al forward ninguna configuración de esta meseta: solo se ha medido en el periodo optimizado, así que no se exporta un .set de despliegue. Exporta su rango de refinamiento y vuelve a optimizarlo con forward.',
+        'MT5 sent no configuration of this plateau to the forward: it has only been measured on the optimized period, so a deployment .set is not exported. Export its refinement range and re-optimize it with a forward.',
+      ));
+    }
+    downloadText(`orometra-M${best.rank}-pass${best.record.id}.set`, buildSetFile(a, best, state.searchSet), SET_MIME);
   } else if (kind === 'refine') {
     if (!best) return api.showError(L('No hay ninguna meseta que refinar.', 'There is no plateau to refine.'));
-    downloadText(`orometra-M${best.rank}-${L('refinamiento', 'refinement')}.set`, buildRefinementSetFile(a, best, state.searchSet));
+    downloadText(`orometra-M${best.rank}-${L('refinamiento', 'refinement')}.set`, buildRefinementSetFile(a, best, state.searchSet), SET_MIME);
   } else if (kind === 'json') {
     downloadText(`orometra-${L('informe', 'report')}-${stamp}.json`, JSON.stringify(buildReport(a, {
       source: state.source ? { is: state.source.is, oos: state.source.oos || null, at: state.source.at } : null,
@@ -145,7 +192,7 @@ export function toggleExportMenu() {
     <button data-export="summary">${esc(t('export.summary'))}</button>
     <button data-export="json">${esc(t('export.json'))}</button>
     <button data-export="csv">${esc(t('export.csv'))}</button>
-    <button data-export="set" ${state.analysis && !state.analysis.meta.hasForward ? 'disabled title="' + esc(L('Requiere forward', 'Requires forward')) + '"' : ''}>${esc(t('export.set'))}</button>
+    <button data-export="set" ${state.analysis && (!state.analysis.meta.hasForward || (state.analysis.plateaus[0] && !deployableSet(state.analysis, state.analysis.plateaus[0]))) ? 'disabled title="' + esc(L('Requiere forward', 'Requires forward')) + '"' : ''}>${esc(t('export.set'))}</button>
     <button data-export="refine">${esc(t('export.refine'))}</button>`;
   $('.top-actions').appendChild(menu);
   menu.querySelectorAll('[data-export]').forEach((b) => b.addEventListener('click', () => {

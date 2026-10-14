@@ -1,11 +1,12 @@
-// Tema, idioma, prefs, policy preview, tabs, empty/legal/method.
+// Tema, idioma, prefs, policy preview, tabs, empty/method.
 
 import { DEFAULT_POLICY, gateFailures } from '../core/metrics.js';
 import { enhanceRadioGroups } from './radiogroup.js';
-import { t, L, getLocale, setLocale, applyStaticI18n } from './i18n.js';
+import { t, L, getLocale, setLocale, applyStaticI18n, pctSign } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
-import { displayVerdictCopy, displayVerdictLevel, levelName } from './ui-verdict.js';
+import { displayVerdictCopy, displayVerdictLevel, levelName, compactSummary, compactAction, refreshCompactCharts } from './ui-verdict.js';
+import { COMPACT_QUERY } from './charts.js';
 
 // ---------------------------------------------------------------- preferencias
 export const PREFS_KEY = 'orometra.gates';
@@ -31,10 +32,15 @@ export function setTheme(name, persist = true) {
 }
 
 export function initChrome() {
-  const guardado = (() => {
+  // Sin elección guardada, el tema del sistema, y se sigue si cambia (modo noche automático).
+  const guardado = () => {
     try { return localStorage.getItem(THEME_KEY); } catch { return null; }
-  })();
-  setTheme(guardado || 'dark', false);
+  };
+  const systemLight = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)') : null;
+  setTheme(guardado() || (systemLight && systemLight.matches ? 'light' : 'dark'), false);
+  if (systemLight) {
+    systemLight.addEventListener('change', (e) => { if (!guardado()) setTheme(e.matches ? 'light' : 'dark', false); });
+  }
   $$('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
 
   syncLangButtons();
@@ -48,6 +54,19 @@ export function initChrome() {
   // La marca es un enlace a la landing; no conviene interceptarlo.
   const reiniciar = $('#resetAll');
   if (reiniciar) reiniciar.addEventListener('click', resetSession);
+  // «Descargar .set» de la cabecera compacta: se enlaza una vez aquí, no en
+  // bindViewEvents(), que repasa [data-export] en todo el documento en cada pintado.
+  const topSet = $('#topSetBtn');
+  if (topSet) topSet.addEventListener('click', () => api.doExport(topSet.dataset.kind, 0));
+
+  // Gráficos SVG del veredicto: formato compacto en el móvil, normal en el resto.
+  if (typeof matchMedia === 'function') {
+    matchMedia(COMPACT_QUERY).addEventListener('change', () => {
+      if (!state.analysis) return;
+      refreshCompactCharts(state.analysis);
+      markScrollableTables();
+    });
+  }
 
   // Redimensionar puede hacer que una tabla deje de necesitar scroll, o empiece a necesitarlo.
   let resizeTimer = 0;
@@ -63,10 +82,12 @@ export function resetSession() {
     'This will discard the current analysis and loaded files. Continue?',
   ))) return;
   state.isFile = null; state.oosFile = null; state.isTable = null; state.oosTable = null;
-  state.analysis = null; state.isDemo = false; state.report = null;
+  state.analysis = null; state.isDemo = false; state.report = null; state.historyId = null; state.historyFirst = false;
   state.searchSet = null; state.searchSetName = null;
+  state.analyzedFrom = null; state.pendingDrop = null; state.analysisRejected = null;
   state.selectedPlateau = 0; state.selectedParam = 0;
   state.surfaceDimA = null; state.surfaceDimB = null;
+  state.unseenTries = [];
   state.unseen = {
     plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: null,
   };
@@ -111,8 +132,9 @@ function mountAppMenu() {
   };
   // detail === 0: el clic viene del teclado (Intro o Espacio), no de un toque o del ratón.
   btn.addEventListener('click', (e) => (panel.hidden ? open(e.detail === 0) : close()));
-  // Ir al aviso legal es una pestaña de la propia app: el menú se cierra al elegirla.
-  panel.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => close()));
+  // Lo que se abre en otra pestaña (privacidad) no saca de la app: al volver, el menú ya
+  // no debe seguir abierto.
+  panel.querySelectorAll('a[target="_blank"]').forEach((b) => b.addEventListener('click', () => close()));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(true); });
   document.addEventListener('click', (e) => { if (!panel.hidden && !panel.contains(e.target) && !btn.contains(e.target)) close(); });
   window.matchMedia('(min-width:721px)').addEventListener('change', (e) => { if (e.matches) close(); });
@@ -138,6 +160,23 @@ export function changeLanguage(lang) {
   render();
 }
 
+/**
+ * Los campos de mínimos son de texto (inputmode decimal): un <input type=number> convertía
+ * «1,5» en 15 en algunos navegadores, y el teclado del móvil en español escribe coma.
+ * Factor de beneficio y drawdown admiten coma o punto decimal; las operaciones, separador
+ * de miles («1.000»).
+ */
+export function decimalField(sel) {
+  const raw = String(($(sel) && $(sel).value) || '').trim().replace(/\s/g, '').replace(',', '.');
+  return raw === '' || !/^-?\d*\.?\d+$/.test(raw) ? NaN : Number(raw);
+}
+export function integerField(sel) {
+  let raw = String(($(sel) && $(sel).value) || '').trim().replace(/\s/g, '');
+  if (/^\d{1,3}([.,]\d{3})+$/.test(raw)) raw = raw.replace(/[.,]/g, '');
+  raw = raw.replace(',', '.');
+  return raw === '' || !/^-?\d*\.?\d+$/.test(raw) ? NaN : Number(raw);
+}
+
 export function loadPrefs() {
   try {
     const raw = localStorage.getItem(PREFS_KEY);
@@ -156,12 +195,12 @@ export function loadPrefs() {
 export function updatePolicySummary() {
   const el = $('#policySummary');
   if (!el) return;
-  const pf = parseFloat($('#gPf').value);
-  const dd = parseFloat($('#gDd').value);
-  const tr = parseFloat($('#gTrades').value);
+  const pf = decimalField('#gPf');
+  const dd = decimalField('#gDd');
+  const tr = integerField('#gTrades');
   const parts = [];
   if (Number.isFinite(pf)) parts.push(`PF ≥ ${num(pf, 2)}`);
-  if (Number.isFinite(dd)) parts.push(`DD ≤ ${num(dd, 0)} %`);
+  if (Number.isFinite(dd)) parts.push(`DD ≤ ${num(dd, 0)}${pctSign()}`);
   if (Number.isFinite(tr)) parts.push(`${int(tr)} ${L('ops', 'trades')}`);
   el.textContent = parts.join(' · ');
 }
@@ -176,9 +215,9 @@ export function togglePolicy(open) {
 export function savePrefs() {
   try {
     localStorage.setItem(PREFS_KEY, JSON.stringify({
-      pf: parseFloat($('#gPf').value),
-      dd: parseFloat($('#gDd').value),
-      trades: parseFloat($('#gTrades').value),
+      pf: decimalField('#gPf'),
+      dd: decimalField('#gDd'),
+      trades: integerField('#gTrades'),
       profit: $('#gProfit').checked,
     }));
   } catch {
@@ -188,9 +227,9 @@ export function savePrefs() {
 
 // ---------------------------------------------------------------- análisis
 export function readPolicy() {
-  const pf = parseFloat($('#gPf').value);
-  const dd = parseFloat($('#gDd').value);
-  const tr = parseFloat($('#gTrades').value);
+  const pf = decimalField('#gPf');
+  const dd = decimalField('#gDd');
+  const tr = integerField('#gTrades');
   return {
     ...DEFAULT_POLICY,
     gates: {
@@ -212,15 +251,27 @@ export function readPolicy() {
  * al momento si el resultado aguanta al apretar, que es la pregunta que todo el mundo se
  * hace y que hasta ahora exigía un análisis entero para responder.
  */
+/** El primer campo de mínimos no válido: { sel, text }, o null. */
+function policyCheck() {
+  const pf = decimalField('#gPf');
+  const dd = decimalField('#gDd');
+  const tr = integerField('#gTrades');
+  if (!Number.isFinite(pf) || pf < 0) return { sel: '#gPf', text: L('El factor de beneficio mínimo tiene que ser un número mayor o igual que 0 (por ejemplo, 1,2).', 'The minimum profit factor must be a number greater than or equal to 0 (for example, 1.2).') };
+  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return { sel: '#gDd', text: L('El drawdown máximo tiene que ser mayor que 0 y como mucho 100\u00A0%.', 'The maximum drawdown must be greater than 0 and at most 100%.') };
+  if (!Number.isFinite(tr) || tr < 0) return { sel: '#gTrades', text: L('Las operaciones mínimas tienen que ser un número mayor o igual que 0.', 'The minimum trades must be a number greater than or equal to 0.') };
+  return null;
+}
+
 /** Texto del problema de los campos de minimos, o null si son validos. */
 export function policyInputProblem() {
-  const pf = parseFloat($('#gPf').value);
-  const dd = parseFloat($('#gDd').value);
-  const tr = parseFloat($('#gTrades').value);
-  if (!Number.isFinite(pf) || pf < 0) return L('El factor de beneficio mínimo tiene que ser un número mayor o igual que 0.', 'The minimum profit factor must be a number greater than or equal to 0.');
-  if (!Number.isFinite(dd) || dd <= 0 || dd > 100) return L('El drawdown máximo tiene que estar entre 1 y 100 %.', 'The maximum drawdown must be between 1 and 100%.');
-  if (!Number.isFinite(tr) || tr < 0) return L('Las operaciones mínimas tienen que ser un número mayor o igual que 0.', 'The minimum trades must be a number greater than or equal to 0.');
-  return null;
+  const c = policyCheck();
+  return c ? c.text : null;
+}
+
+/** El campo que hay que corregir, para enfocarlo (ui-audit.js). */
+export function policyInputField() {
+  const c = policyCheck();
+  return c ? $(c.sel) : null;
 }
 
 export function updatePolicyPreview() {
@@ -281,7 +332,7 @@ export function updatePolicyPreview() {
 export const TAB_HASH = {
   verdict: 'veredicto', plateaus: 'mesetas', rejected: 'descartes', params: 'parametros',
   diagnostics: 'diagnostico', unseen: 'periodo-no-visto', method: 'metodologia',
-  legal: 'legal',
+  history: 'historial',
 };
 export const HASH_TAB = Object.fromEntries(Object.entries(TAB_HASH).map(([k, v]) => [v, k]));
 
@@ -313,11 +364,15 @@ const narrow = matchMedia('(max-width:720px)');
  * (en el móvil, 2.000 px por debajo de su título). En el móvil, las pestañas quedan fijas
  * arriba y el título tiene que caer justo debajo de ellas, no tapado.
  */
-function scrollToView() {
-  const view = $('#view');
+function scrollToView(target) {
+  const view = target || $('#view');
   if (!view) return;
   const strip = $('.sidebar-scroll');
-  const stuck = narrow.matches && strip ? strip.getBoundingClientRect().height : 0;
+  // En escritorio, lo fijo arriba es la cabecera compacta del informe (si la hay).
+  const bar = $('.topbar');
+  const stuck = narrow.matches
+    ? (strip ? strip.getBoundingClientRect().height : 0)
+    : (document.body.classList.contains('compact-top') && bar ? bar.getBoundingClientRect().height : 0);
   const top = view.getBoundingClientRect().top;
   if (top >= stuck && top < window.innerHeight * 0.6) return;
   const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -397,12 +452,30 @@ export function render() {
       document.title = `${L('Evidencia', 'Evidence')} ${levelName(displayVerdictLevel(state.analysis)).toLowerCase()} · ${state.source.is} · Orometra`;
     }
   }
+  // Fuera del veredicto, la cabecera se reduce a una línea (nivel, pasada y «Descargar
+  // .set») y en escritorio queda fija arriba: el titular completo ya se leyó en el veredicto.
+  const compact = hayAnalisis && state.tab !== 'verdict';
+  document.body.classList.toggle('compact-top', compact);
+  const rc = $('#reportCompact');
+  if (rc) {
+    rc.hidden = !compact;
+    rc.innerHTML = compact ? compactSummary(state.analysis) : '';
+  }
+  const topSet = $('#topSetBtn');
+  if (topSet) {
+    const act = compact ? compactAction(state.analysis) : null;
+    topSet.hidden = !act;
+    if (act) { topSet.textContent = act.label; topSet.dataset.kind = act.kind; }
+  }
 
   const view = $('#view');
-  // Metodologia y legal no necesitan analisis cargado: se pueden leer siempre.
-  if (state.tab === 'method' || state.tab === 'legal') {
+  // Metodologia e historial no necesitan analisis cargado: se pueden leer siempre. Son
+  // paginas propias, asi que no llevan encima la cabecera ni la carga de archivos.
+  const pageView = state.tab === 'method' || state.tab === 'history';
+  document.body.classList.toggle('page-view', pageView);
+  if (pageView) {
     api.disposePlateauSurface();
-    view.innerHTML = state.tab === 'legal' ? renderLegal() : renderMethod();
+    view.innerHTML = state.tab === 'history' ? api.renderHistoryView() : renderMethod();
     bindViewEvents();
     return;
   }
@@ -472,7 +545,7 @@ function positionGlossCards() {
 
 export function bindViewEvents() {
   $$('[data-goto]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.goto)));
-  $$('[data-demo]').forEach((b) => b.addEventListener('click', () => { const d = $('#demoBtn'); if (d && !d.disabled) d.click(); }));
+  $$('[data-demo]').forEach((b) => b.addEventListener('click', () => { if (api.loadDemo) api.loadDemo(b.dataset.demo || 'good'); }));
   $$('[data-scroll]').forEach((b) => b.addEventListener('click', () => {
     const target = document.getElementById(b.dataset.scroll);
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -517,10 +590,12 @@ export function bindViewEvents() {
     state.unseen.values = {};
     state.unseen.result = null;
     state.unseen.tradesAudit = null;
+    api.updateDropStatus();
     render();
   });
   const unseenBtn = $('#unseenCheck');
-  if (unseenBtn) unseenBtn.addEventListener('click', () => api.runUnseenCheck());
+  // El resultado va encima del formulario: al comparar a mano, se lleva la vista hasta él.
+  if (unseenBtn) unseenBtn.addEventListener('click', () => { api.runUnseenCheck(); scrollToView($('.u-result')); });
   const unseenClear = $('#unseenClear');
   if (unseenClear) unseenClear.addEventListener('click', () => {
     state.unseen = {
@@ -552,186 +627,25 @@ export function renderEmpty() {
       <li><span aria-hidden="true">1</span><p>${t('empty.s1')}</p></li>
       <li><span aria-hidden="true">2</span><p>${t('empty.s2')}</p></li>
       <li><span aria-hidden="true">3</span><p>${t('empty.s3')}</p></li>
+      <li><span aria-hidden="true">4</span><p>${t('empty.s4')}</p></li>
     </ol>
-    <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo>${esc(t('empty.demoBtn'))}</button></p>
+    <p class="empty-demo">${esc(t('empty.demo'))} <button class="text-btn" type="button" data-demo="noedge">${esc(t('empty.demoNoEdge'))}</button></p>
   </div>`;
-}
-
-/**
- * Textos legales.
- *
- * No van en la navegacion numerada porque no forman parte del analisis: se llega a
- * ellos desde el pie de la barra lateral, como en cualquier producto serio.
- *
- * AVISO: son borradores redactados con cuidado, no asesoramiento juridico. Antes de
- * cobrar un euro tienen que pasar por un gestor. En particular, el dia que haya
- * dimension economica -cobro, publicidad, recogida de correos- la LSSI obliga a
- * anadir nombre o razon social, NIF y domicilio, que hoy no hacen falta.
- */
-export function renderLegal() {
-  return `<div class="detail-head">
-      <div class="detail-kicker">${L('Legal', 'Legal')}</div>
-      <h2>${L('Condiciones, privacidad y descargo', 'Terms, privacy and disclaimer')}</h2>
-      <p>${L(
-        'Lee esto antes de tomar cualquier decisión con lo que te diga esta herramienta.',
-        'Read this before making any decision based on what this tool tells you.',
-      )}</p>
-    </div>
-
-    <section class="panel legal-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Lo más importante', 'Most important')}</div><h2>${L('Esto no es asesoramiento financiero', 'This is not financial advice')}</h2></div></div>
-      <p class="panel-intro">
-        ${L(
-          `Orometra es una <strong>herramienta de análisis estadístico</strong> que examina datos históricos que tú
-        le proporcionas. No es un asesor financiero, no es un servicio de inversión, no gestiona dinero y no
-        recomienda operar.`,
-          `Orometra is a <strong>statistical analysis tool</strong> that examines historical data you
-        provide. It is not a financial adviser, not an investment service, does not manage money and does not
-        recommend trading.`,
-        )}
-      </p>
-      <ul class="limits">
-        <li>${L(
-          `<strong>Un veredicto favorable no es una recomendación de compra ni de venta.</strong> Significa
-        únicamente que la configuración ha superado unos contrastes estadísticos sobre datos pasados. Nada más.`,
-          `<strong>A favorable verdict is not a buy or sell recommendation.</strong> It only means
-        the configuration passed some statistical tests on past data. Nothing more.`,
-        )}</li>
-        <li>${L(
-          `<strong>Los resultados de un backtest no predicen resultados futuros.</strong> Esta frase se repite
-        tanto que ha perdido fuerza, así que conviene decirla con precisión: todo lo que mide esta aplicación
-        ocurrió en el pasado, y el mercado no tiene ninguna obligación de repetirse.`,
-          `<strong>Backtest results do not predict future results.</strong> That sentence is repeated
-        so often it has lost force, so it is worth saying precisely: everything this app measures
-        happened in the past, and the market has no obligation to repeat itself.`,
-        )}</li>
-        <li>${L(
-          `<strong>La calidad de la salida depende por completo de la calidad de tus datos.</strong> Si tu
-        backtest usó un histórico pobre, un spread irreal o no contó las comisiones, el análisis heredará
-        esos defectos sin poder detectarlos.`,
-          `<strong>Output quality depends entirely on your data quality.</strong> If your
-        backtest used a poor history, an unrealistic spread or ignored commissions, the analysis will inherit
-        those defects without being able to detect them.`,
-        )}</li>
-        <li>${L(
-          `<strong>Operar con apalancamiento puede hacerte perder más de lo que inviertes.</strong> La
-        responsabilidad de cualquier decisión que tomes es enteramente tuya.`,
-          `<strong>Trading with leverage can make you lose more than you invest.</strong>
-        Responsibility for any decision you make is entirely yours.`,
-        )}</li>
-        <li>${L(
-          `La herramienta se ofrece <strong>tal cual</strong>, sin garantía de disponibilidad, de exactitud
-        ni de adecuación a ningún propósito concreto.`,
-          `The tool is offered <strong>as is</strong>, with no warranty of availability, accuracy
-        or fitness for any particular purpose.`,
-        )}</li>
-              <li>${L(
-          'Orometra no está afiliado a MetaQuotes. MetaTrader y MQL5 son marcas de MetaQuotes Ltd.',
-          'Orometra is not affiliated with MetaQuotes. MetaTrader and MQL5 are trademarks of MetaQuotes Ltd.',
-        )}</li>
-      </ul>
-    </section>
-
-    <section class="panel legal-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Privacidad', 'Privacy')}</div><h2>${L('Tus archivos no salen de tu ordenador', 'Your files never leave your computer')}</h2></div></div>
-      <p class="panel-intro">
-        ${L(
-          `No es una promesa de intenciones: es cómo está construida. Todo el análisis se ejecuta en el
-        JavaScript de tu navegador. <strong>No hay servidor que reciba tus datos porque no hay servidor.</strong>`,
-          `This is not a promise of intent: it is how it is built. The entire analysis runs in your
-        browser's JavaScript. <strong>There is no server that receives your data because there is no server.</strong>`,
-        )}
-      </p>
-      <ul class="limits">
-        <li>${L(
-          `<strong>No se sube ningún archivo.</strong> Los <code>.xml</code> de tu optimización y el informe
-        HTML de tu backtest se leen en memoria y se descartan al cerrar la pestaña.`,
-          `<strong>No file is uploaded.</strong> Your optimization <code>.xml</code> files and the
-        HTML backtest report are read in memory and discarded when you close the tab.`,
-        )}</li>
-        <li>${L(
-          `<strong>No hay cuentas ni registro.</strong> En esta app usamos solo GoatCounter, servido desde el propio
-        orometra.com, para contar visitas y cuántas veces se usa cada función (por ejemplo, «se hizo un análisis» o
-        «se descargó un .set»): sin cookies y sin nada de tus archivos, solo el nombre del evento. Nada de lo que
-        medimos se puede relacionar con lo que analizas.`,
-          `<strong>There are no accounts, no signup.</strong> In this app we only use GoatCounter, served from
-        orometra.com itself, to count visits and how often each feature is used (for example, “an analysis was
-        run” or “a .set was downloaded”): no cookies and nothing from your files, only the event name. Nothing we
-        measure can be tied to what you analyze.`,
-        )}</li>
-        <li>${L(
-          `<strong>Se guardan tres cosas en tu propio navegador</strong> (almacenamiento local, nunca enviado a
-        nadie): el tema de color, el idioma y los mínimos que configures, para no tener que repetirlos. Puedes
-        borrarlos vaciando los datos del sitio.`,
-          `<strong>Three things are stored in your own browser</strong> (local storage, never sent to
-        anyone): the color theme, the language and the minimums you set, so you do not have to repeat them. You can
-        clear them by wiping the site data.`,
-        )}</li>
-        <li>${L(
-          `<strong>Lo que no podemos evitar:</strong> el proveedor que aloja la página y el servicio de
-        analítica reciben, como en cualquier web, tu dirección IP y los datos básicos del navegador. No está
-        relacionado con el contenido de tus archivos. Responsable: Pol Lázaro
-        (<a href="mailto:hello@orometra.com">hello@orometra.com</a>). Tus derechos y el detalle, en la
-        <a href="../privacy/">página de privacidad</a>.`,
-          `<strong>What we cannot avoid:</strong> the provider that hosts the page and the analytics service
-        receive, as on any website, your IP address and basic browser data. That is unrelated to the content of
-        your files. Controller: Pol Lázaro (<a href="mailto:hello@orometra.com">hello@orometra.com</a>). Your
-        rights and the details are on the <a href="../privacy/">privacy page</a>.`,
-        )}</li>
-      </ul>
-    </section>
-
-    <section class="panel legal-panel">
-      <div class="panel-head compact"><div><div class="panel-kicker">${L('Condiciones de uso', 'Terms of use')}</div><h2>${L('Qué puedes esperar', 'What you can expect')}</h2></div></div>
-      <ul class="limits">
-        <li>${L(
-          `El uso no requiere registro. No se garantiza que la página esté siempre disponible ni que
-        se mantenga indefinidamente.`,
-          `Use requires no signup. There is no guarantee the page will always be available or
-        maintained indefinitely.`,
-        )}</li>
-        <li>${L(
-          'Puedes usar los resultados libremente, incluso con fines comerciales, bajo tu responsabilidad.',
-          'You may use the results freely, including commercially, under your own responsibility.',
-        )}</li>
-        <li>${L(
-          `El código de la aplicación y su metodología son propiedad de su autor, publicados bajo licencia
-        <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener">PolyForm Noncommercial</a>:
-        puedes verlo, usarlo y modificarlo para fines no comerciales; el uso comercial del código en sí
-        necesita permiso.`,
-          `The application code and its methodology are the property of its author, published under the
-        <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener">PolyForm Noncommercial</a>
-        license: you may view, use and modify it for noncommercial purposes; commercial use of the code
-        itself needs permission.`,
-        )}</li>
-        <li>${L(
-          `Si encuentras un error en los cálculos, comunícalo a <a href="mailto:hello@orometra.com">hello@orometra.com</a>: un fallo en
-        una herramienta como esta puede costarle dinero a alguien, y eso importa más que cualquier otra consideración.`,
-          `If you find an error in the calculations, report it to <a href="mailto:hello@orometra.com">hello@orometra.com</a>: a bug in a
-        tool like this can cost someone money, and that matters more than any other consideration.`,
-        )}</li>
-      </ul>
-      <p class="chart-note">
-        ${L(
-          `Estos textos son borradores cuidados, no asesoramiento jurídico. Si algún día esta herramienta pasa a
-        tener dimensión económica —cobro, publicidad o recogida de datos de contacto— la normativa española
-        exigirá además identificar al titular con nombre, NIF y domicilio, y estos textos tendrán que
-        revisarse con un profesional.`,
-          `These texts are careful drafts, not legal advice. If someday this tool acquires an
-        economic dimension — charging, advertising or collecting contact data — Spanish regulations
-        will also require identifying the owner with name, tax ID and address, and these texts will need
-        review by a professional.`,
-        )}
-      </p>
-    </section>`;
 }
 
 // Mismos pasos, numeracion y limites que la pagina publica /methodology/, leidos de las
 // mismas claves de i18n: antes la app tenia su propia lista de 8 pasos y la pagina otra,
 // y dos versiones del metodo acaban contradiciendose.
 const METHOD_STEPS = ['lectura', 'minimos', 'calidad', 'mesetas', 'forward', 'suerte', 'umbrales', 'niveles', 'backtest'];
-const METHOD_LIMITS = 6;
-// La pagina publica tiene una version por idioma (/methodology/ y /es/methodology/).
+// Tantos límites como claves doc.method.lim.N haya: con un número fijo, al añadir dos
+// límites a la página pública la app siguió enseñando solo los seis primeros.
+const methodLimits = () => {
+  const out = [];
+  for (let i = 1; t(`doc.method.lim.${i}`) !== `doc.method.lim.${i}`; i++) out.push(t(`doc.method.lim.${i}`));
+  return out;
+};
+// La pagina publica tiene una version por idioma (/methodology/ y /es/methodology/). Se abre
+// en otra pestana, como todas las paginas desde la app: salir perderia el analisis cargado.
 const methodologyHref = () => (getLocale() === 'es' ? '../es/methodology/' : '../methodology/');
 
 export function renderMethod() {
@@ -745,15 +659,15 @@ export function renderMethod() {
         ${METHOD_STEPS.map((id, i) => `<li>
           <span class="method-num">${String(i + 1).padStart(2, '0')}</span>
           <div><h3>${esc(t(`doc.method.s${i + 1}.title`))}</h3><p>${esc(t(`doc.method.s${i + 1}.short`))}</p></div>
-          <a class="text-btn method-more" href="${methodologyHref()}#${id}">${L('Leer', 'Read')} &rarr;<span class="sr-only"> ${esc(t(`doc.method.s${i + 1}.title`))}</span></a>
+          <a class="text-btn method-more" href="${methodologyHref()}#${id}" target="_blank" rel="noopener">${L('Leer', 'Read')} &rarr;<span class="sr-only"> ${esc(t(`doc.method.s${i + 1}.title`))}</span></a>
         </li>`).join('')}
       </ol>
-      <p class="method-full"><a href="${methodologyHref()}">${esc(t('doc.method.app.full'))}</a></p>
+      <p class="method-full"><a href="${methodologyHref()}" target="_blank" rel="noopener">${esc(t('doc.method.app.full'))}</a></p>
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Límites', 'Limits')}</div><h2>${esc(t('doc.method.lim.title'))}</h2></div></div>
       <ul class="limits">
-        ${Array.from({ length: METHOD_LIMITS }, (_, i) => `<li>${esc(t(`doc.method.lim.${i + 1}`))}</li>`).join('')}
+        ${methodLimits().map((x) => `<li>${esc(x)}</li>`).join('')}
       </ul>
     </section>`;
 }

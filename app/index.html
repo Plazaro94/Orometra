@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://plazaro94.goatcounter.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1019">
@@ -21,7 +21,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261007e">
+<link rel="stylesheet" href="../styles.css?v=9cf2c1a71f">
 <script src="../js/theme-init.js"></script>
 </head>
 <body>
@@ -45,11 +45,11 @@
       </div>
       <div class="lp-menu" id="appMenu" hidden>
         <nav class="lp-menu-nav" aria-label="Menu" data-i18n="nav.menu" data-i18n-attr="aria-label">
-          <a href="/guides/export-mt5-optimization-xml/" data-i18n="help.export.href" data-i18n-attr="href"><span data-i18n="help.export">How to export from MT5</span></a>
-          <a href="/guides/" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
+          <a href="/guides/export-mt5-optimization-xml/" target="_blank" rel="noopener" data-i18n="help.export.href" data-i18n-attr="href"><span data-i18n="help.export">How to export from MT5</span></a>
+          <a href="/guides/" target="_blank" rel="noopener" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
           <a href="/" data-i18n="help.home.href" data-i18n-attr="href"><span data-i18n="help.home">Home</span></a>
           <a href="mailto:hello@orometra.com?subject=Orometra"><span data-i18n="contact.feedback">Send feedback</span></a>
-          <button type="button" data-tab="legal"><span data-i18n="legal.link">Legal notice &amp; privacy</span></button>
+          <a href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a>
         </nav>
         <div class="lp-menu-theme">
           <div class="theme-row" role="radiogroup" aria-label="Color theme" data-i18n="theme.label" data-i18n-attr="aria-label">
@@ -80,14 +80,15 @@
       <button class="nav-item" data-tab="unseen" disabled><span>06</span> <span data-i18n="nav.unseen">Unseen period</span></button>
       <div class="sidebar-sep" aria-hidden="true"></div>
       <button class="nav-item" data-tab="method"><span>07</span> <span data-i18n="nav.method">Methodology</span></button>
+      <button class="nav-item" data-tab="history"><span>08</span> <span data-i18n="nav.history">History</span></button>
     </nav>
     </div>
 
     <div class="sidebar-bottom">
       <div class="sidebar-help">
         <div class="sidebar-help-k" data-i18n="help.title">Help</div>
-        <a href="/guides/export-mt5-optimization-xml/" data-i18n="help.export.href" data-i18n-attr="href"><span data-i18n="help.export">How to export from MT5</span></a>
-        <a href="/guides/" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
+        <a href="/guides/export-mt5-optimization-xml/" target="_blank" rel="noopener" data-i18n="help.export.href" data-i18n-attr="href"><span data-i18n="help.export">How to export from MT5</span></a>
+        <a href="/guides/" target="_blank" rel="noopener" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
       </div>
       <div class="lang-row" role="radiogroup" aria-label="Language" data-i18n="lang.label" data-i18n-attr="aria-label">
         <button class="lang-btn" data-lang-set="en" role="radio" aria-checked="true" type="button">EN</button>
@@ -101,11 +102,11 @@
           <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Light</span>
         </button>
       </div>
-      <div class="legal-links">
-        <button class="text-btn" data-tab="legal" type="button" data-i18n="legal.link">Legal notice &amp; privacy</button>
-        <a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" data-i18n="contact.feedback">Send feedback</a>
+      <!-- Enlaces a paginas aparte: se abren en otra pestana para no perder el analisis
+           cargado (los archivos solo estan en memoria). -->
+      <div class="legal-links foot-links">
+        <a class="text-btn" href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" aria-label="Send feedback" data-i18n="contact.feedback" data-i18n-attr="aria-label"><span data-i18n="contact.short">Feedback</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" aria-label="GitHub" data-i18n="nav.code" data-i18n-attr="aria-label">GitHub</a>
       </div>
-      <div class="version" data-i18n="version">Engine version 2</div>
     </div>
   </aside>
 
@@ -117,9 +118,12 @@
       </div>
       <div class="topbar-title topbar-report" hidden>
         <div class="eyebrow" data-i18n="top.report.eyebrow">Report</div>
+        <p class="print-brand" aria-hidden="true">Orometra · orometra.com</p>
         <h1 id="reportTitle">—</h1>
+        <p class="report-compact" id="reportCompact" hidden></p>
       </div>
       <div class="top-actions">
+        <button class="primary-btn" id="topSetBtn" type="button" hidden></button>
         <button class="ghost-btn" id="demoBtn" type="button" data-i18n="btn.demo">See a sample report</button>
         <button class="ghost-btn" id="resetAll" type="button" hidden data-i18n="hero.reset">Start over</button>
         <button class="ghost-btn" id="exportBtn" type="button" disabled data-i18n="btn.export">Export</button>
@@ -133,11 +137,11 @@
       </div>
       <div class="upload-grid">
         <div class="dropzone dropzone-main" id="mainDrop">
-          <input id="mainFile" type="file" accept=".xls,.xlsx,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
+          <input id="mainFile" type="file" accept=".xls,.xlsx,.xlsm,.xml,.csv,.tsv,.txt,.html,.htm,.set" multiple hidden>
           <div class="file-icon" aria-hidden="true">&#8593;</div>
           <div class="drop-copy">
             <strong data-i18n="drop.main.title">Drop your MT5 files here</strong>
-            <span id="mainDropStatus" data-i18n="drop.main.status">The in-sample export and, if you have it, the forward one. The app works out which is which.</span>
+            <span id="mainDropStatus" data-i18n="drop.main.status">The optimization export and, if you have it, the forward one. The app works out which is which.</span>
           </div>
           <div class="drop-action" data-i18n="drop.chooseFiles">Choose files</div>
         </div>
@@ -145,13 +149,13 @@
         <button class="analyze-card" id="analyzeBtn" type="button" disabled>
           <div>
             <strong id="analyzeLabel" data-i18n="analyze.label">Analyze</strong>
-            <span id="analyzeSub" data-i18n="analyze.sub">Load the in-sample (and the forward, if you have it)</span>
+            <span id="analyzeSub" data-i18n="analyze.sub">Turns on once the optimization export is loaded</span>
           </div>
           <div class="analyze-arrow" aria-hidden="true">&rarr;</div>
         </button>
       </div>
       <p class="set-hint" id="setHint">
-        <span data-i18n="drop.set.hint">Optional: drop the optimization .set (start||step||stop||Y) to contrast coverage vs the search range you asked MT5 for.</span>
+        <span data-i18n="drop.set.hint">Optional: add the optimization .set too. The report then knows which range you asked MT5 to test, and the .set you download carries all the parameters.</span>
         <span id="setStatus" class="set-status"></span>
       </p>
 
@@ -172,20 +176,20 @@
       <div class="policy-panel" id="policyPanel">
         <div class="policy-head">
           <h2 data-i18n="policy.h2">Minimums a configuration must meet</h2>
-          <p data-i18n-html="policy.p">The plateau is searched among configurations that meet these minimums <strong>in-sample</strong>. On the <strong>forward</strong> they are required again to validate it: if many of its configurations fail them, the plateau drops in rank and you are warned. Nothing gets in just for ranking high in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
+          <p data-i18n-html="policy.p">The plateau is searched among configurations that meet these minimums <strong>on the optimized period</strong>. On the <strong>forward</strong> they are required again to validate it: if many of its configurations fail them, the plateau drops in rank and you are warned. Nothing gets in just for ranking high in your MT5 table. The forward trade-count minimum is rescaled by estimated duration.</p>
         </div>
         <div class="policy-grid">
           <label class="field">
             <span data-i18n="policy.pf">Minimum profit factor</span>
-            <input type="number" id="gPf" step="0.01" min="0" value="1.20">
+            <input type="text" inputmode="decimal" autocomplete="off" id="gPf" value="1.20">
           </label>
           <label class="field">
             <span data-i18n="policy.dd">Maximum drawdown (%)</span>
-            <input type="number" id="gDd" step="1" min="1" max="100" value="20">
+            <input type="text" inputmode="decimal" autocomplete="off" id="gDd" value="20">
           </label>
           <label class="field">
-            <span data-i18n="policy.trades">Minimum trades (in-sample)</span>
-            <input type="number" id="gTrades" step="10" min="0" value="100">
+            <span data-i18n="policy.trades">Minimum trades (optimized period)</span>
+            <input type="text" inputmode="numeric" autocomplete="off" id="gTrades" value="100">
           </label>
           <label class="field checkbox">
             <span class="field-check-spacer" aria-hidden="true">&nbsp;</span>
@@ -198,9 +202,9 @@
         <div class="policy-preview" id="policyPreview" hidden>
           <div>
             <strong id="policyPreviewCount">—</strong>
-            <span id="policyPreviewNote" data-i18n="policy.previewNote">configurations would pass these gates</span>
+            <span id="policyPreviewNote" data-i18n="policy.previewNote">configurations would meet these minimums</span>
           </div>
-          <button class="primary-btn" id="policyRerun" type="button" data-i18n="policy.rerun">Recalculate with these gates</button>
+          <button class="primary-btn" id="policyRerun" type="button" data-i18n="policy.rerun">Recalculate with these minimums</button>
         </div>
       </div>
 
@@ -221,11 +225,21 @@
     <!-- Anuncio corto al cambiar de pestaña. Con aria-live en #view entero, el lector leia el informe completo. -->
     <div class="sr-only" id="viewStatus" role="status" aria-live="polite"></div>
 
+    <!-- Pie del movil: el mismo que el de las paginas publicas (sin «App»: ya estas en
+         ella). Las paginas se abren en otra pestana para no perder el analisis cargado. -->
     <footer class="app-footer">
-      <div class="legal-links">
-        <button class="text-btn" data-tab="legal" type="button" data-i18n="legal.link">Legal notice &amp; privacy</button>
-        <a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" data-i18n="contact.feedback">Send feedback</a>
+      <div class="lp-foot-brand">
+        <strong>Orometra</strong>
+        <span data-i18n="lp.foot.tagline">Separate the fragile from the stable</span>
       </div>
+      <nav class="lp-foot-nav" aria-label="Footer" data-i18n="nav.footer" data-i18n-attr="aria-label">
+        <a href="/guides/" target="_blank" rel="noopener" data-i18n="help.guides.href" data-i18n-attr="href"><span data-i18n="nav.guides">Guides</span></a>
+        <a href="/methodology/" target="_blank" rel="noopener" data-i18n="help.method.href" data-i18n-attr="href"><span data-i18n="nav.method">Methodology</span></a>
+        <a href="/about/" target="_blank" rel="noopener" data-i18n="help.about.href" data-i18n-attr="href"><span data-i18n="doc.about.nav">About us</span></a>
+        <a href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" data-i18n="nav.code">GitHub</a>
+        <a href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a>
+        <a href="mailto:hello@orometra.com" title="Contact" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
+      </nav>
     </footer>
   </main>
 </div>
@@ -234,7 +248,7 @@
   <div class="drop-overlay-card">
     <div class="drop-overlay-icon">&#8595;</div>
     <strong data-i18n="drop.overlay.title">Drop files here</strong>
-    <span data-i18n="drop.overlay.body">Anywhere on the page. The app detects which file is in-sample and which is forward.</span>
+    <span data-i18n="drop.overlay.body">Anywhere on the page. The app detects which file is the optimization and which is the forward.</span>
   </div>
 </div>
 

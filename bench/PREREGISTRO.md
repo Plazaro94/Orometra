@@ -152,3 +152,177 @@ M1. Si no propone meseta, se registra como «se abstiene».
   a 0,180 de B4 en esos mismos casos; cuando se abstiene (129), la sugerencia orientativa da
   0,317 frente a 0,405 de B4. La derrota agregada viene solo de contar la abstención como 1.
   No se cambia ese criterio.
+- **2026-10-09, tras la calibración y antes del tercer examen.** Con exports reales de MT5
+  el motor no podía pasar de «moderada»: «sólida» exigía cero avisos y el aviso de que MT5
+  solo reexporta al forward las mejores pasadas sale en todo export real. En el banco
+  tampoco salía nunca (0 casos en el segundo examen). Cambios, elegidos solo con la
+  calibración (semillas 1-100; `calib-warn.jsonl` y `calib-v3.jsonl`):
+  (1) los avisos que miden el **orden de la tabla** y no la meseta propuesta (ranking de
+  MT5, orden de la nota de Orometra entre periodos, transferencia del ranking, asimetría
+  entre periodos, valores que se invierten por parámetro, preselección del forward) se
+  siguen mostrando, pero no cuentan para los niveles altos;
+  (2) **«sólida»**: sin críticos, la meseta recomendada tiene configuraciones probadas en
+  el forward, se ha repetido la búsqueda moviendo los umbrales y no queda ningún aviso
+  sobre la meseta; **«buena»**: lo mismo con un solo aviso; el resto con meseta,
+  «moderada». Ya no hace falta el periodo no visto para «sólida»: si se aporta y va en
+  contra, la interfaz la baja a «moderada»; si no la contradice, se queda igual (nunca
+  sube de nivel).
+  La elección de la configuración no cambia. En calibración: «buena» o «sólida» en 0 de
+  300 casos sin ventaja; con ventaja, 90 «buena» y 22 «sólida» de 500; ventaja real media
+  de la elegida 0,190 (moderada), 0,228 (buena), 0,256 (sólida).
+  **Criterios añadidos** (más exigentes): «sólida» ≤ 1 % y «buena» o «sólida» ≤ 2 % en
+  **cada** escenario sin ventaja; coherencia insuficiente/débil < moderada ≤ buena ≤
+  sólida. Los anteriores no cambian («moderada o sólida» pasa a leerse «moderada o más»).
+  **Tercer examen:** semillas 3001-3100, nunca generadas ni vistas antes; se ejecuta una
+  sola vez con el motor congelado y se publica tal como salga.
+- **2026-10-09, tras el tercer examen y antes del cuarto.** El tercer examen (semillas
+  3001-3100, `REPORT-exam3.md`) se publica tal como salió. Aprueba «sólida» ≤ 1 % en cada
+  escenario sin ventaja (0 %), la potencia (97,2 % de 36), la elección frente a los cinco
+  métodos de referencia y la coherencia (moderada 0,181 < buena 0,218 < sólida 0,234).
+  **Suspende dos criterios**, los dos en S5: «buena o sólida» ≤ 2 % (3 %) y «moderada o
+  más» ≤ 5 % (7 %). El segundo no viene de este cambio: el motor anterior (`1be66b1`) da
+  el mismo 7 % con esas semillas (`REPORT-exam3-motor-1be66b1.md`). De los tres «buena»
+  falsos, dos tenían como único aviso que la recomendación solo aguanta el 50 % de las
+  variaciones de umbral. **Cambio, elegido mirando el tercer examen** (que deja de ser
+  ciego): «buena» exige además que la recomendación aguante al menos el 80 % de esas
+  variaciones, como ya exigía «sólida». En calibración, «buena» pasa de 90 a 62 casos con
+  ventaja y sigue en 0 sin ventaja (`calib-v3b`). Nada más cambia. **Cuarto examen:**
+  semillas 4001-4100, nunca generadas; una sola vez, motor congelado, se publica tal como
+  salga.
+- **2026-10-09, tras el cuarto examen y antes del quinto.** El cuarto examen (semillas
+  4001-4100, `REPORT-exam4.md`) aprueba los criterios nuevos y suspende dos que el motor
+  anterior también suspende con esas semillas («moderada o más» en S5, 7 %; elección frente
+  a la media con vecinas, 0,227 frente a 0,192). **Fallo encontrado al documentar el motor,
+  no al mirar resultados:** en la repetición con los umbrales internos movidos un ±20 %, la
+  fracción mínima de vecinas que cumplen (0,9) se multiplicaba por el factor y por encima
+  de 1,111 pedía más del 100 %; esas repeticiones (9 de 50) no podían encontrar meseta y la
+  estabilidad nunca pasaba de 0,82 (287 casos del cuarto examen en ese tope). Cambio: esa
+  fracción se mueve sobre lo que le falta para 1 (0,9 queda entre 0,88 y 0,92). Nada más
+  cambia. Calibración (`calib-v4`): sin falsos positivos en «buena» ni «sólida»; con
+  ventaja, 64 «buena» y 22 «sólida» de 500. **Quinto examen:** semillas 5001-5100, nunca
+  generadas; una sola vez, motor congelado, se publica tal como salga.
+- **2026-10-11, tras el quinto examen.** De la auditoría de uso: el aviso «La regla "primera
+  de Result" falla» era **crítico** cuando el orden de MT5 fallaba la mitad de las veces o más
+  y menos de 1 de cada 4 configuraciones cumplía en los dos periodos, aunque mide el orden de
+  la tabla y no la meseta (y Metodología dice que esos avisos no bajan el nivel). Medición, con
+  el motor actual, de cuántos niveles cambiaría pasarlo a aviso de tabla
+  (`bench/orden-tabla.js`, `REPORT-calib-orden-tabla.md`): en la calibración salta 218 veces de
+  800 (307 con un factor de beneficio mínimo de 1,40) y **nunca es el único crítico**; en el
+  quinto examen, ya publicado, 216 de 800 y tampoco. **Cambio:** pasa a aviso de tabla. No
+  cambia ningún nivel en el banco, así que los resultados publicados del quinto examen no
+  cambian y no hace falta otro examen. Los criterios no cambian.
+- **2026-10-14, auditoría estadística con un export real (un EA sobre un índice en M15, unas
+  10.000 pasadas genéticas, su forward y su .set).** Tres cambios y una medición, con el motor publicado
+  (`dbcc488`) como referencia (`calib-motor-dbcc488.jsonl`).
+  (1) **Contraste del Sharpe:** el umbral era el máximo *esperado* de N pruebas sin ventaja,
+  que el máximo de puro ruido supera en torno al 43 % de las veces (`tests/shrink.test.js`
+  lo mide por Monte Carlo); pasa a ser su **percentil 95**, exacto bajo independencia. Es un
+  cambio de método, no de ajuste: no se eligió mirando resultados. En calibración baja de
+  nivel 5 casos, todos con ventaja (4 «moderada» y 1 «buena» a «débil»); falsos positivos y
+  potencia no cambian (1,3 % y 92,7 %); coherencia weak 0,074 < moderate 0,198 < good 0,232 <
+  strong 0,256 (`REPORT-calib-2026-10-14.md`).
+  (2) **Expectativa ajustada por selección** (`core/shrink.js`): cifra nueva que no mueve el
+  nivel. Se midió contra la verdad del no visto con `bench/shrink.js`; las ocho variantes
+  probadas, todas sobre la calibración, están en `REPORT-shrink-variantes-2026-10-14.md`.
+  (3) La procedencia y dos textos, sin efecto en el banco.
+  **Orden entre mesetas, medido y sin cambiar:** se probó a quitar el peso del forward al
+  ordenar las mesetas y a darle el peso entero (`rankForward`, `calib-fw-none.jsonl`,
+  `calib-fw-strong.jsonl`). El banco no lo distingue: solo 34 de 800 casos tienen más de una
+  meseta, la elección cambia en 4 y en 1 casos, y el arrepentimiento queda en 0,251 y 0,244
+  frente a 0,247. Sin pruebas no se cambia. Decidirlo exige un escenario con varias mesetas
+  en muchas dimensiones y muestreo genético, que se prerregistrará aparte, antes de generarlo.
+  **Sexto examen:** semillas 6001-6100, nunca generadas; una sola vez, motor congelado, se
+  publica tal como salió (`REPORT-exam6.md`). Aprueba falsos positivos (1,3 %; «sólida» 0,3 %),
+  potencia (96,9 % de 32) y coherencia. **Suspende la elección frente a B3 (0,258 frente a
+  0,236) y frente a B4 (0,258 frente a 0,213).** No viene de estos cambios: el motor anterior
+  elige exactamente lo mismo en los 800 casos y suspende igual (`REPORT-exam6-motor-dbcc488.md`).
+  Frente a él, solo cambia el nivel de 9 casos con ventaja (a «débil» por el umbral del Sharpe).
+  Expectativa ajustada en el examen: RMSE 6,7 frente a 10,4 de la cifra del forward y 10,7 de la
+  del periodo optimizado en los casos con ventaja; sin ventaja, la ventaja propia sale distinta
+  de cero el 9 % de las veces (5 de 56), frente al 5 % de la calibración
+  (`REPORT-shrink-exam6.md`). Los criterios no cambian.
+- **2026-10-14 (b), prerregistro del orden entre mesetas, ANTES de generar ningún caso.**
+  *Pregunta:* con muchas dimensiones, muestreo genético y varias zonas buenas, ¿qué regla
+  para ordenar las mesetas elige mejor en el periodo no visto? *Conflicto declarado:* quien
+  escribe esto conoce un caso real (el export de la enmienda anterior) en el que
+  la regla actual pone primera una meseta grande que falla el forward por delante de una
+  pequeña que lo aguanta. Por eso las zonas del escenario se sortean, las reglas son pocas y
+  todo se fija aquí, antes de ver un solo resultado.
+  **Escenarios nuevos** (`bench/sim.js`; no entran en los criterios del §6, que siguen
+  midiendo S1-S8):
+  - **S9, varias zonas con ventaja.** Rejilla de 5 a 7 parámetros, de 5 a 8 niveles cada uno
+    (el espacio entero no se simula). Ventaja verdadera: K zonas, K al azar entre 2, 3 y 4;
+    cada zona con centro al azar (a un paso del borde como mínimo), anchura por parámetro
+    uniforme entre 0,8 y 2,5 pasos y altura uniforme entre 0,05 y 0,35 desviaciones por
+    operación; la ventaja de una configuración es la mayor de las zonas. Es la misma en el
+    in-sample, el forward y el no visto. Suerte del periodo y operaciones, como en S1-S8
+    (amplitud de 0,04 a 0,12; de 150 a 600 operaciones in-sample; forward del 25 % al 50 %).
+  - **Muestreo genético de S9:** de 1.500 a 4.000 configuraciones distintas. El 25 % al azar
+    uniforme; el resto, en tandas de 100 hijos: padre al azar entre el 20 % mejor por
+    beneficio in-sample de lo ya probado, hijo mutando 1 o 2 parámetros ±1 o ±2 pasos (dentro
+    de la rejilla); los repetidos se descartan. Forward: el 25 % mejor por beneficio
+    in-sample, como en S1-S8.
+  - **S10, su gemelo sin ventaja:** lo mismo, pero las zonas solo existen en el in-sample;
+    en el forward y en el no visto no hay ventaja.
+  **Reglas candidatas (lista cerrada):**
+  - **R0**, la actual: suelo × tamaño × evidencia × penalizaciones × (0,35 + 0,65 × fracción
+    validada en el forward).
+  - **R1, por lo que se espera:** cada meseta se ordena por su beneficio esperado por
+    operación en un periodo nuevo, con el modelo de `core/shrink.js` aplicado a la meseta
+    entera como una unidad (media de sus configuraciones en cada periodo; operaciones por
+    media armónica).
+  - **R2, por su límite inferior:** como R1, por esperado − 1,96 × su desviación a posteriori.
+  - Si el modelo no se puede estimar (sin forward, o con menos de 30 candidatas), R1 y R2
+    usan R0. La misma clave ordena las mesetas y la prueba de estabilidad.
+  **Métricas:** las del §5. Las reglas no cambian qué mesetas existen, solo su orden, así que
+  la abstención es la misma con las tres.
+  **Criterios (cerrados).** R1 o R2 se adopta solo si, en la calibración (semillas 1-100 de
+  S1-S10), cumple las cuatro:
+  (a) mediana del arrepentimiento en S9 al menos 0,02 por debajo de la de R0;
+  (b) en ningún escenario de S1 a S8 su mediana supera la de R0 en más de 0,01;
+  (c) «moderada o más» ≤ 5 % en S1, S2, S5 y S10, y en ninguno más de 1 punto por encima de R0;
+  (d) sigue aprobando los criterios del §6 que R0 aprueba en esa misma calibración.
+  Si las dos cumplen, la de menor mediana en S9. Si ninguna, se queda R0 y se dice.
+  **Examen:** semillas 7001-7100 de S1-S10, nunca generadas; una sola vez, con el motor
+  congelado, la regla elegida y R0 al lado. Se publica tal como salga. La adopción se
+  confirma si en el examen la mediana en S9 de la elegida no supera la de R0 y se cumple (c);
+  si no, se vuelve a R0 y se dice.
+  **Depurar el generador** solo con semillas de 900.000 en adelante, que no son de ningún
+  tramo, y mirando solo que funciona (tiempos, mesetas, forward), nunca arrepentimientos.
+  **El caso real** (el export del autor y su periodo no visto, cuando exista) se informa
+  aparte: es un caso, no decide.
+- **2026-10-14 (c), corrección del generador antes de la calibración.** Depurando con semillas
+  900.001-900.040, sin mirar arrepentimientos: en S9, 30 de 40 casos no tenían ninguna meseta y
+  solo 4 tenían dos o más. El escenario no podía responder a la pregunta. La causa es de
+  realismo: todos los parámetros movían la ventaja, y en un EA real solo unos pocos la mueven
+  (por eso los exports reales tienen mesetas grandes en muchas dimensiones). Cambio: de los 5
+  a 7 parámetros, solo de 2 a 4, sorteados, mueven las zonas; en el resto la zona no cambia.
+  Nada más cambia (alturas, anchuras en los relevantes, suerte, genético, reglas y criterios).
+  Con ello, en esas mismas semillas de depuración: S9 con dos o más mesetas en 20 de 40 y S10
+  en 27 de 40. Ahora se calibra.
+- **2026-10-14 (d), resultado de la calibración del orden entre mesetas** (semillas 1-100 de
+  S1-S10, `REPORT-orden-mesetas-calib.md`; criterios aplicados por `bench/orden-mesetas.js`).
+  Medianas del arrepentimiento en S9: R0 0,187, R1 0,193 y R2 0,173 (hacía falta ≤ 0,167).
+  En S6, R1 y R2 empeoran 0,019 (máximo permitido 0,010). Falsos positivos iguales en las tres.
+  R1 cambia la elegida en 16 de 100 casos de S9 y acierta en 8 y falla en 8; R2, en 15 (8
+  mejor, 7 peor). **Ninguna cumple (a) y (b): se queda R0.** Como no se adopta nada, no hay
+  examen que confirmar: las semillas 7001-7100 quedan sin generar para la próxima pregunta.
+- **2026-10-14 (e), de dónde viene el suspenso frente a B4 (y B3).** No es la elección dentro
+  de la meseta. Arrepentimiento mediano en los escenarios con ventaja (S3, S4, S6, S7 y S8):
+
+  | | Calibración | Quinto examen | Sexto examen |
+  |---|---|---|---|
+  | Cuando Orometra propone meseta: Orometra / B4 | 0,146 / 0,180 | 0,135 / 0,172 | 0,145 / 0,164 |
+  | Cuando no la propone: sugerencia orientativa / B4 | 0,317 / 0,405 | 0,324 / 0,323 | 0,346 / 0,412 |
+  | Lo que enseña la app (meseta o sugerencia): Orometra / B4 | 0,177 / 0,229 | 0,187 / 0,198 | 0,191 / 0,213 |
+  | Como cuenta el criterio (sin meseta = 1): Orometra / B4 | 0,247 / 0,229 | 0,228 / 0,198 | 0,258 / 0,213 |
+
+  El suspenso sale de contar cada caso sin meseta (del 21 % al 36 % según el escenario) como
+  el peor resultado, que se decidió así a propósito. Se mantiene el criterio, y no se relajan
+  los umbrales para abstenerse menos: subirían los falsos positivos, que es lo que más
+  protege al usuario. Metodología lo explica con las cifras del sexto examen, que es el que
+  cita la portada (antes del commit ae29999, las del quinto).
+
+  Nota del 2026-10-14, añadida después: la casilla del quinto examen «cuando no la propone»
+  estaba vacía; calculada sobre `exam5.jsonl` (121 casos sin meseta), 0,324 frente a 0,323.
+  Ahí la sugerencia no gana a B4; en lo que enseña la app, sí (0,187 frente a 0,198).

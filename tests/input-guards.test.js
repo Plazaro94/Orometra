@@ -97,7 +97,7 @@ section('AUD-03: nada del archivo llega al HTML sin escapar');
 section('AUD-07: CSP en <meta> en todas las paginas, igual que la cabecera de tools/serve.js');
 {
   const serve = fs.readFileSync(path.join(ROOT, 'tools/serve.js'), 'utf8');
-  const header = serve.match(/'Content-Security-Policy': "([^"]+)"/)[1];
+  const header = serve.match(/const CSP = "([^"]+)"/)[1];
   const expected = header.replace(" frame-ancestors 'none';", '');
   const pages = fs.readdirSync(ROOT, { recursive: true })
     .filter((f) => f.endsWith('.html') && !/^(node_modules|tests|bench|fotos-originales|\.git)[\\/]/.test(f))
@@ -119,18 +119,20 @@ section('AUD-07: CSP en <meta> en todas las paginas, igual que la cabecera de to
 }
 
 // ------------------------------------------------------------------ AUD-08
-section('AUD-08: el texto legal nombra todo lo que se guarda en el navegador');
+section('AUD-08: la página de privacidad nombra todo lo que se guarda en el navegador');
 {
   const keys = new Set();
   for (const f of fs.readdirSync(path.join(ROOT, 'js'))) {
     const src = fs.readFileSync(path.join(ROOT, 'js', f), 'utf8');
     for (const m of src.matchAll(/'(orometra\.[a-z]+)'/g)) keys.add(m[1]);
   }
-  const legal = fs.readFileSync(path.join(ROOT, 'js/ui-chrome.js'), 'utf8');
-  const words = { 'orometra.theme': /tema de color/, 'orometra.lang': /idioma/, 'orometra.gates': /mínimos que configures/ };
+  // El texto legal vive en la página de privacidad («Qué se queda solo en tu dispositivo»).
+  const i18n = fs.readFileSync(path.join(ROOT, 'js/i18n.js'), 'utf8');
+  const legal = (i18n.match(/'doc\.privacy\.s2\.body': '(El navegador[^']*)'/) || [])[1] || '';
+  const words = { 'orometra.theme': /tema de color/, 'orometra.lang': /idioma/, 'orometra.gates': /mínimos que configures/, 'orometra.history': /historial\s+de análisis/ };
   check('solo se usan claves conocidas', [...keys].every((k) => k in words), [...keys].join(', '));
-  check('el aviso legal dice "tres cosas"', /Se guardan tres cosas/.test(legal) && keys.size === 3, String(keys.size));
-  for (const k of keys) check(`el aviso legal menciona ${k}`, words[k] && words[k].test(legal));
+  check('la página de privacidad tiene el texto de lo que se guarda', legal.length > 0);
+  for (const k of keys) check(`la página de privacidad menciona ${k}`, words[k] && words[k].test(legal));
 }
 
 console.log(`\n${'='.repeat(70)}\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas\n${'='.repeat(70)}`);

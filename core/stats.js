@@ -156,6 +156,23 @@ export function expectedMaximum(mu, sigma, n) {
   return mu + sigma * expectedMaxZ(n);
 }
 
+/**
+ * Cuantil p del máximo de N normales estándar i.i.d.: P(max <= z) = Φ(z)^N, así que
+ * z = Φ⁻¹(p^(1/N)). Es exacto bajo independencia (no es una aproximación de Gumbel).
+ * Se calcula por la cola, -Φ⁻¹(1 - p^(1/N)), para no perder precisión cuando p^(1/N)
+ * queda pegado a 1.
+ *
+ * Por qué no basta el máximo ESPERADO (`expectedMaxZ`): sin ninguna ventaja, el máximo
+ * de N pruebas supera su propia media en torno al 43 % de las veces. Compararse con la
+ * media no da ningún nivel de confianza; con el cuantil 0,95, superarlo por azar pasa
+ * el 5 % de las veces.
+ */
+export function maxQuantileZ(n, p = 0.95) {
+  if (!(n >= 1) || !(p > 0 && p < 1)) return NaN;
+  const upper = -Math.expm1(Math.log(p) / n);
+  return -normInv(upper);
+}
+
 import { makeRng } from './rng.js';
 export { makeRng };
 

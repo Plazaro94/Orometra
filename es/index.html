@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1019">
@@ -22,6 +22,7 @@
 <link rel="alternate" hreflang="es" href="https://orometra.com/es/">
 <link rel="alternate" hreflang="x-default" href="https://orometra.com/">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://orometra.com/es/">
 <meta property="og:title" content="Orometra · Detecta la sobreoptimización de tu EA en MT5">
 <meta property="og:description" content="Separa lo frágil de lo estable en tu optimización de MT5: qué configuración de tu EA es estable y cuánta evidencia la respalda. Gratis y en tu navegador.">
 <meta property="og:locale" content="es_ES">
@@ -37,14 +38,14 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261007e">
+<link rel="stylesheet" href="/styles.css?v=9cf2c1a71f">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separa lo frágil de lo estable en tu optimización de MT5: qué configuración de tu EA es estable y cuánta evidencia la respalda. Gratis y en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js" data-hero-photo></script>
 </head>
 <body class="landing-page">
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
 
-<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
+<aside class="lp-strip"><p data-i18n-html="lp.strip"><b>100 % en tu navegador</b> <span class="lp-strip-long">Tus archivos no salen de tu ordenador · </span><span class="lp-strip-short">· </span>Gratis y sin registro</p></aside>
 <header class="lp-top">
   <div class="lp-shell">
     <a class="lp-brand" href="/es/">
@@ -66,7 +67,7 @@
           <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Claro</span>
         </button>
       </div>
-      <a class="ghost-btn lp-cta-top" href="/app/" data-track="cabecera-cta" data-i18n="lp.cta">Analizar mis resultados</a>
+      <a class="ghost-btn lp-cta-top" href="/app/?lang=es" data-track="cabecera-cta" data-i18n="lp.cta">Analizar mis resultados</a>
     </div>
   </div>
 </header>
@@ -78,18 +79,29 @@
       <h1 id="hm-title" data-i18n-html="home.h1">Separa lo frágil <em>de lo estable.</em></h1>
       <p class="hm-lead" data-i18n="home.lead">Orometra analiza tu optimización de MT5 y te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.</p>
       <div class="hm-actions">
-        <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="portada-cta" data-i18n="lp.cta">Analizar mis resultados</a><a class="hm-go" href="/app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
+        <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/?lang=es" data-track="portada-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
       </div>
       <p class="hm-need" data-i18n-html="home.need">Solo necesitas el XML que exporta MT5<span class="hm-need-sep"> · </span><a href="/es/guias/exportar-optimizacion-mt5-xml/" data-track="portada-guia-xml">Cómo exportarlo →</a></p>
     </div>
   </section>
 
-  <!-- 2. El problema y la solucion -->
+  <!-- 2. Cómo funciona: lo primero que necesita quien llega. Antes era una pestaña casi al final. -->
+  <section class="hm-section" aria-labelledby="hm-how-title">
+    <h2 id="hm-how-title" data-i18n="home.how.title">Cómo funciona</h2>
+    <ol class="hm-steps">
+      <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Exporta</h3><p data-i18n="home.how.1.body">Exporta a XML los resultados de tu optimización de MT5, y la pestaña forward si la usaste.</p></li>
+      <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Suéltalos aquí</h3><p data-i18n="home.how.2.body">Se analizan en tu navegador, en segundos.</p></li>
+      <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Llévate tu configuración</h3><p data-i18n="home.how.3.body">La recomendada con sus motivos, su fiabilidad, un .set listo para MT5 y el rango para volver a optimizar a su alrededor.</p></li>
+    </ol>
+  </section>
+
+  <!-- 3. El problema y la solucion -->
   <section class="hm-section" aria-labelledby="hm-problem-title">
     <h2 id="hm-problem-title" data-i18n="home.problem.title">En MT5, el n.º 1 suele ser el más frágil</h2>
     <div class="hm-compare">
       <article class="hm-card">
         <p class="hm-card-kicker" data-i18n="home.problem.mt5.kicker">Lo que te da MT5 (ejemplo)</p>
+        <p class="hm-pick hm-pick-mt5"><span data-i18n="home.problem.mt5.pick">La n.º 1 de MT5: pasada 1842</span><span class="hm-pick-note" data-i18n="home.problem.mt5.note">El Resultado más alto entre miles de pasadas</span></p>
         <table class="hm-table" aria-hidden="true">
           <thead><tr><th data-i18n="home.table.rank">Puesto</th><th data-i18n="home.table.pass">Pasada</th><th data-i18n="home.table.result">Resultado</th></tr></thead>
           <tbody>
@@ -103,40 +115,61 @@
       <article class="hm-card hm-card-ok">
         <p class="hm-card-kicker" data-i18n="home.problem.oro.kicker">Lo que hace Orometra</p>
         <p class="hm-pick"><span data-i18n="home.problem.oro.pick">Recomendada: pasada 4283</span><span class="hm-pick-note" data-i18n="home.problem.oro.note">La n.º 1, descartada: pico aislado</span></p>
+        <!-- Pico frente a meseta, con las pasadas de la tabla de al lado: el n.º 1 de MT5 es un pico solo; la elegida, el centro de una zona que pasa tus mínimos. -->
+        <svg class="hm-fig" viewBox="0 0 420 190" role="img" data-i18n="home.problem.fig.aria" data-i18n-attr="aria-label" aria-label="Ejemplo: la n.º 1 de MT5 es un pico aislado cuyas vecinas no pasan tus mínimos; Orometra elige el centro de una meseta donde todas los pasan.">
+          <polygon points="236,76 290,68 344,79 344,118 236,118" fill="var(--ok-bg)"/>
+          <line x1="8" y1="118" x2="412" y2="118" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <polyline points="28,160 78,150 128,44 178,156 236,76 290,68 344,79 396,158" fill="none" stroke="var(--line-strong)" stroke-width="1.5"/>
+          <text x="12" y="108" font-size="14" font-weight="700" letter-spacing="1" fill="var(--muted-2)" stroke="var(--surface)" stroke-width="5" stroke-linejoin="round" paint-order="stroke" data-i18n="home.problem.fig.floor">TUS MÍNIMOS</text>
+          <circle cx="28" cy="160" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="78" cy="150" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="178" cy="156" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="396" cy="158" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="236" cy="76" r="5.5" fill="var(--plateau)"/>
+          <circle cx="344" cy="79" r="5.5" fill="var(--plateau)"/>
+          <line x1="128" y1="32" x2="128" y2="37" stroke="var(--line-strong)" stroke-width="1.5"/>
+          <rect x="46" y="2" width="164" height="30" rx="15" fill="var(--surface-2)" stroke="var(--line)"/>
+          <text x="128" y="22.5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--peak-text)" data-i18n="home.problem.fig.peak">MT5 n.º 1 · 1842</text>
+          <circle cx="128" cy="44" r="7" fill="var(--peak)"/>
+          <line x1="290" y1="56" x2="290" y2="61" stroke="var(--lime-line)" stroke-width="1.5"/>
+          <rect x="222" y="26" width="136" height="30" rx="15" fill="var(--lime-bg)" stroke="var(--lime-line)"/>
+          <text x="290" y="46.5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--lime-text)" data-i18n="home.problem.fig.pick">Pasada 4283</text>
+          <circle cx="290" cy="68" r="8" fill="var(--lime-fill)" stroke="var(--surface)" stroke-width="2"/>
+        </svg>
         <p data-i18n="home.problem.oro.body">Busca zonas donde los valores vecinos también funcionan: una meseta. Eso es más difícil de conseguir por azar, así que tiende a aguantar mejor.</p>
       </article>
     </div>
   </section>
 
-  <!-- 2a. Una decisión, no una tabla: la misma tarjeta del informe -->
+  <!-- 4. Una decisión, no una tabla: la misma tarjeta del informe -->
   <section class="hm-section hm-take" aria-labelledby="hm-take-title">
     <h2 id="hm-take-title" data-i18n="home.take.title">Una decisión, no una tabla</h2>
-    <p class="hm-sub" data-i18n="home.take.sub">Es lo primero que muestra el informe: qué configuración elegir, qué fiabilidad tiene y qué hacer después (datos de ejemplo).</p>
+    <p class="hm-sub" data-i18n="home.take.sub">Es lo primero que muestra el informe de ejemplo: qué configuración elegir, qué fiabilidad tiene y qué hacer después.</p>
     <div class="hm-take-grid">
       <figure class="hm-take-card">
-        <div class="vx v-go" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Tarjeta de veredicto de ejemplo">
+        <div class="vx v-go" role="group" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Tarjeta de veredicto de ejemplo">
           <div class="vx-main">
             <div class="vx-pick">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">A</b><span data-i18n="home.take.pick.label">Qué configuración usar</span></span>
-              <div class="vx-pass"><span data-i18n="home.take.pick.pass">Pasada</span> <b>4283</b></div>
-              <p class="vx-pass-note" data-i18n="home.take.pick.note">El centro de una meseta de 412 configuraciones parecidas.</p>
-              <div class="t3-param-chips vx-params"><span>FastMA <b>14</b></span><span>SlowMA <b>70</b></span><span>ATR_SL <b>2</b></span><span>ATR_TP <b>4</b></span></div>
+              <div class="vx-pass"><span data-i18n="home.take.pick.pass">Pasada</span> <b>11445</b></div>
+              <p class="vx-pass-note" data-i18n="home.take.pick.note">Elegida dentro de una meseta de 5018 configuraciones parecidas.</p>
+              <div class="t3-param-chips vx-params"><span>InpFastMA <b>14</b></span><span>InpSlowMA <b>70</b></span><span>InpATR_SL <b>2</b></span><span>InpATR_TP <b>4</b></span><span>InpTrailStart <b>1.5</b></span><span>InpMinBodyPct <b>20</b></span></div>
               <div class="vx-actions"><span class="primary-btn is-static" data-i18n="home.take.pick.download">Descargar .set</span><span class="ghost-btn is-static" data-i18n="home.take.pick.copy">Copiar parámetros</span></div>
             </div>
             <div class="vx-trust">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">B</b><span data-i18n="home.take.trust.label">Fiabilidad</span></span>
-              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Fiabilidad: buena (4 de 5)">
+              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Fiabilidad: sólida (5 de 5)">
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.1">Insuficiente</span></div>
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.2">Débil</span></div>
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.3">Moderada</span></div>
-                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Buena</span></div>
-                <div class="vx-seg"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Sólida</span></div>
+                <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Buena</span></div>
+                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Sólida</span></div>
               </div>
-              <p class="vx-trust-line" data-i18n="home.take.trust.line">Meseta validada. Para llegar a sólida falta probarla en un periodo que no hayas usado.</p>
+              <p class="vx-trust-line" data-i18n="home.take.trust.line">Lo máximo que el periodo optimizado y el forward pueden respaldar: una meseta validada, estable y sin avisos sobre ella. Un periodo no visto puede mantenerla o bajarla.</p>
               <div class="vx-stats">
-                <div class="vx-stat"><strong>88<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustez</span></div>
-                <div class="vx-stat"><strong>12<small> / 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Vecinas que cumplen</span></div>
-                <div class="vx-stat"><strong data-i18n="home.take.stat.pct">94 %</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Se mantiene al validar</span></div>
+                <div class="vx-stat"><strong>93<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustez</span></div>
+                <div class="vx-stat"><strong>12<small data-i18n="home.take.stat.of"> de 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Vecinas que cumplen</span></div>
+                <div class="vx-stat"><strong data-i18n="home.take.stat.pct">90 %</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Se mantiene al validar</span></div>
               </div>
             </div>
           </div>
@@ -150,53 +183,57 @@
           </div>
         </div>
       </figure>
-      <p class="hm-more"><a href="/app/?demo=1" data-track="portada-informe-ejemplo" data-i18n="home.take.more">Ver el informe de ejemplo completo →</a></p>
+      <p class="hm-more"><a href="/app/?lang=es&amp;demo=1" data-track="portada-informe-ejemplo" data-i18n="home.take.more">Ver el informe de ejemplo completo →</a></p>
     </div>
+    <!-- Fuera de .hm-take-grid: allí el enlace se estira sobre toda la tarjeta. -->
+    <p class="hm-more hm-more-alt"><a href="/app/?lang=es&amp;demo=noedge" data-track="portada-ejemplo-sin-ventaja" data-i18n="home.take.noedge">¿Y cuando no hay nada? Ver un ejemplo sin ventaja real →</a></p>
   </section>
 
-  <!-- 2c. Respiro: la misma idea en la naturaleza. Texto a un lado y la foto en una tarjeta al
-       otro; en móvil, la foto arriba. -->
-  <section class="hm-section hm-nature" aria-labelledby="hm-nature-title">
-    <div class="hm-nature-copy">
-      <h2 id="hm-nature-title" data-i18n="home.nature.title">Ningún estornino vuela solo</h2>
-      <p data-i18n="home.nature.body">Cada uno se guía por sus vecinos más cercanos, y así se sostiene la bandada entera. Orometra juzga igual tus configuraciones: solo se fía de la que funciona junto a las de su alrededor.</p>
-    </div>
-    <!-- Una versión por tema (etalonadas en tools/fotos.mjs); la oculta no se descarga (loading="lazy"). -->
-    <figure class="hm-nature-photo">
-      <picture class="hm-nature-dark">
-        <source type="image/avif" srcset="/img/fotos/bandada-noche-esc-800.avif 800w, /img/fotos/bandada-noche-esc-1200.avif 1200w, /img/fotos/bandada-noche-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
-        <img src="/img/fotos/bandada-noche-esc-1200.webp" srcset="/img/fotos/bandada-noche-esc-800.webp 800w, /img/fotos/bandada-noche-esc-1200.webp 1200w, /img/fotos/bandada-noche-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Miles de siluetas en vuelo cruzan en diagonal un cielo azul grisáceo apagado">
-      </picture>
-      <picture class="hm-nature-light">
-        <source type="image/avif" srcset="/img/fotos/bandada-dia-esc-800.avif 800w, /img/fotos/bandada-dia-esc-1200.avif 1200w, /img/fotos/bandada-dia-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
-        <img src="/img/fotos/bandada-dia-esc-1200.webp" srcset="/img/fotos/bandada-dia-esc-800.webp 800w, /img/fotos/bandada-dia-esc-1200.webp 1200w, /img/fotos/bandada-dia-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Miles de siluetas en vuelo cruzan en diagonal un cielo azul grisáceo apagado">
-      </picture>
-    </figure>
+  <!-- 5. Banco de pruebas: cifras medidas en bench/ (sexto examen, ciego). Las comprueba tests/home-bench.test.js. -->
+  <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
+    <h2 id="hm-bench-title" data-i18n="home.bench.title">Lo probamos con casos de respuesta conocida</h2>
+    <p class="hm-sub" data-i18n="home.bench.sub">Pasamos el motor por 800 optimizaciones simuladas en las que sabíamos de antemano si había una ventaja real o no. Orometra califica la evidencia en cinco niveles, de «insuficiente» a «sólida».</p>
+    <ul class="hm-bench-grid">
+      <li>
+        <h3 class="hm-bench-k" data-i18n="home.bench.1.k">Falsas alarmas</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">1,3 %</p>
+        <!-- Un punto por optimización, en columnas de 10: las marcadas, primero. Mismo paso en las dos rejillas, para que se vea que una muestra es mucho mayor que la otra. Lo que dicen ya está en el texto de al lado. -->
+        <svg class="hm-dots" viewBox="0 0 30 10" aria-hidden="true" focusable="false">
+          <defs><pattern id="hm-dot-off" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="off" cx=".5" cy=".5" r=".3"/></pattern><pattern id="hm-dot-fa" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="fa" cx=".5" cy=".5" r=".3"/></pattern></defs>
+          <rect data-on x="0" y="0" width="1" height="4" fill="url(#hm-dot-fa)"/>
+          <rect x="0" y="4" width="1" height="6" fill="url(#hm-dot-off)"/>
+          <rect x="1" y="0" width="29" height="10" fill="url(#hm-dot-off)"/>
+        </svg>
+        <p data-i18n="home.bench.1.body">De 300 optimizaciones sin ninguna ventaja real, solo 4 recibieron «moderada» o más; una de ellas, «sólida».</p>
+      </li>
+      <li>
+        <h3 class="hm-bench-k" data-i18n="home.bench.2.k">Ventajas detectadas</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">97 %</p>
+        <svg class="hm-dots hm-dots-small" viewBox="0 0 8 4" preserveAspectRatio="xMinYMin meet" aria-hidden="true" focusable="false">
+          <defs><pattern id="hm-dot-ok" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="ok" cx=".5" cy=".5" r=".3"/></pattern></defs>
+          <rect data-on x="0" y="0" width="7" height="4" fill="url(#hm-dot-ok)"/>
+          <rect data-on x="7" y="0" width="1" height="3" fill="url(#hm-dot-ok)"/>
+          <rect x="7" y="3" width="1" height="1" fill="url(#hm-dot-off)"/>
+        </svg>
+        <p data-i18n="home.bench.2.body">De 32 optimizaciones con una ventaja real clara, 31 recibieron «moderada» o más.</p>
+      </li>
+    </ul>
+    <p class="hm-more hm-bench-links"><a href="/es/methodology/#banco" data-track="portada-banco-metodologia" data-i18n="home.bench.how">Cómo lo probamos →</a></p>
   </section>
 
-  <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->
+  <!-- 6. Lo que hay detrás: tres pestañas en el hueco de una sección. Sin JS se ven todas. -->
   <section class="hm-section hm-more-sec" aria-labelledby="hm-more-title">
     <h2 id="hm-more-title" data-i18n="home.more.title">Lo que hay detrás del resultado</h2>
     <div class="hm-tabs" data-tabs>
       <div class="hm-tablist" role="tablist" aria-labelledby="hm-more-title">
-        <button type="button" role="tab" id="hm-tab-how" data-track="pestana-como" aria-controls="hm-pane-how" aria-selected="true" data-i18n="home.tab.how">Cómo funciona</button>
-        <button type="button" role="tab" id="hm-tab-engine" data-track="pestana-motor" aria-controls="hm-pane-engine" aria-selected="false" tabindex="-1" data-i18n="home.tab.engine">El motor</button>
+        <button type="button" role="tab" id="hm-tab-engine" data-track="pestana-motor" aria-controls="hm-pane-engine" aria-selected="true" data-i18n="home.tab.engine">El motor</button>
         <button type="button" role="tab" id="hm-tab-proof" data-track="pestana-confianza" aria-controls="hm-pane-proof" aria-selected="false" tabindex="-1" data-i18n="home.tab.proof">Por qué fiarte</button>
         <button type="button" role="tab" id="hm-tab-ai" data-track="pestana-ia" aria-controls="hm-pane-ai" aria-selected="false" tabindex="-1" data-i18n="home.tab.ai">¿Y una IA?</button>
-      </div>
-      <div class="hm-pane" role="tabpanel" id="hm-pane-how" aria-labelledby="hm-tab-how" tabindex="0">
-        <ol class="hm-steps">
-          <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Exporta</h3><p data-i18n="home.how.1.body">Exporta a XML los resultados de tu optimización de MT5, y la pestaña forward si la usaste.</p></li>
-          <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Suéltalos aquí</h3><p data-i18n="home.how.2.body">Se analizan en tu navegador, en segundos.</p></li>
-          <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Llévate tu configuración</h3><p data-i18n="home.how.3.body">La recomendada con sus motivos, su fiabilidad, un .set listo para MT5 y el rango para volver a optimizar a su alrededor.</p></li>
-        </ol>
       </div>
       <div class="hm-pane" role="tabpanel" id="hm-pane-engine" aria-labelledby="hm-tab-engine" tabindex="0">
         <p class="hm-sub" data-i18n="home.engine.sub">Lo que te llevaría horas de Excel y mucho criterio, hecho en segundos y siempre de la misma forma.</p>
         <ol class="hm-engine">
           <li><span class="hm-engine-num" aria-hidden="true">01</span><h3 data-i18n="home.engine.1.title">Descarta lo que no vale</h3><p data-i18n="home.engine.1.body">Fuera las pasadas que no llegan a tus mínimos de beneficio, drawdown y operaciones.</p></li>
           <li><span class="hm-engine-num" aria-hidden="true">02</span><h3 data-i18n="home.engine.2.title">No se fía de la columna Result</h3><p data-i18n="home.engine.2.body">Mide la calidad con métricas objetivas, no con lo que optimizaste.</p></li>
-          <li><span class="hm-engine-num" aria-hidden="true">03</span><h3 data-i18n="home.engine.3.title">Mira a los vecinos</h3><p data-i18n="home.engine.3.body">Dentro de la meseta elige lo que aguanta en los dos periodos junto a sus vecinas, no el pico.</p></li>
+          <li><span class="hm-engine-num" aria-hidden="true">03</span><h3 data-i18n="home.engine.3.title">Mira a las vecinas</h3><p data-i18n="home.engine.3.body">Dentro de la meseta elige lo que aguanta en los dos periodos junto a sus vecinas, no el pico.</p></li>
           <li><span class="hm-engine-num" aria-hidden="true">04</span><h3 data-i18n="home.engine.4.title">Lo contrasta con el forward</h3><p data-i18n="home.engine.4.body">Lo que aguanta en el forward sube; lo que se cae, baja.</p></li>
           <li><span class="hm-engine-num" aria-hidden="true">05</span><h3 data-i18n="home.engine.5.title">Calcula cuánto pudo ser azar</h3><p data-i18n="home.engine.5.body">Te avisa si tu resultado no supera lo que daría el puro azar.</p></li>
           <li><span class="hm-engine-num" aria-hidden="true">06</span><h3 data-i18n="home.engine.6.title">Se examina a sí mismo</h3><p data-i18n="home.engine.6.body">Comprueba que la recomendación no depende de sus propios ajustes.</p></li>
@@ -230,13 +267,13 @@
     </div>
   </section>
 
-  <!-- 4. Preguntas frecuentes -->
+  <!-- 7. Preguntas frecuentes -->
   <section class="hm-section hm-faq-section" aria-labelledby="hm-faq-title">
     <div class="hm-faq-head">
       <h2 id="hm-faq-title" data-i18n="home.faq.title">Preguntas frecuentes</h2>
       <p data-i18n-html="home.faq.more">¿Otra duda? Escríbenos a <a href="mailto:hello@orometra.com">hello@orometra.com</a>.</p>
     </div>
-    <div class="hm-faq" aria-labelledby="hm-faq-title">
+    <div class="hm-faq">
       <details><summary data-i18n="home.faq.1.q">¿Qué archivos necesito?</summary><p data-i18n-html="home.faq.1.a">El XML que exporta MT5 con los resultados de tu optimización: clic derecho en la tabla y exportar a XML. Si activaste el forward, exporta también esa tabla. El archivo .opt no sirve. <a href="/es/guias/exportar-optimizacion-mt5-xml/">Guía paso a paso</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">¿Y si no activé el forward?</summary><p data-i18n="home.faq.2.a">Puedes analizarla igual, pero la evidencia no pasará de «débil»: sin datos que la optimización no haya visto, no se distingue una meseta robusta de una con suerte. Para la próxima, actívalo en los ajustes del probador (una cuarta o una tercera parte del periodo).</p></details>
       <details><summary data-i18n="home.faq.3.q">¿Sirve con optimización genética?</summary><p data-i18n="home.faq.3.a">Sí. Como la genética no prueba todas las combinaciones, las mesetas se miden con prudencia: el resultado puede quedarse corto, pero nunca se inventa respaldo. El informe te lo avisa.</p></details>
@@ -259,7 +296,7 @@
       <li data-i18n="home.final.c5">Optimizaciones completas y genéticas</li>
       <li data-i18n="home.final.c6">Comprueba tu backtest en un periodo no visto</li>
     </ul>
-    <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="cierre-cta" data-i18n="lp.cta">Analizar mis resultados</a><a class="hm-go" href="/app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
+    <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/?lang=es" data-track="cierre-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
   </section>
 </main>
 
@@ -270,11 +307,12 @@
       <span data-i18n="lp.foot.tagline">Separa lo frágil de lo estable</span>
     </div>
     <nav class="lp-foot-nav" aria-label="Pie de página" data-i18n="nav.footer" data-i18n-attr="aria-label">
-      <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
+      <a href="/app/?lang=es" data-i18n="lp.cta.footer">Analizar</a>
       <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
+      <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
       <a href="/es/about/" data-i18n="doc.about.nav">Quiénes somos</a>
+      <a href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" data-i18n="nav.code">GitHub</a>
       <a href="/es/privacy/" data-i18n="doc.privacy.nav">Privacidad</a>
-      <a href="/app/" data-i18n="lp.cta.footer">App</a>
       <a href="mailto:hello@orometra.com" title="Contacto" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>

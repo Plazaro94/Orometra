@@ -12,6 +12,7 @@ import {
   dataWarnings,
 } from '../core/trades/index.js';
 import { maxDrawdown } from '../core/trades/util.js';
+import { minBtl } from '../core/trades/sample.js';
 
 let failures = 0;
 let checks = 0;
@@ -86,6 +87,24 @@ section('Aviso de swap');
 
   const light = dataWarnings({ swapPctOfPnl: 0.01 });
   check('no avisa si el swap es marginal', !light.some((w) => w.code === 'SWAP_DOMINANCE'));
+}
+
+section('Días necesarios: respuesta conocida y coherencia con la potencia');
+{
+  // n = ceil(((z_0,80 + z_0,95) / SR)²) con un suelo de 30: SR 0,3 → ceil(68,7) = 69.
+  check('SR 0,3 por día → 69 días', minBtl({ srObserved: 0.3 }).minObservations === 69, String(minBtl({ srObserved: 0.3 }).minObservations));
+  check('SR 0,5 por día → 30 (suelo)', minBtl({ srObserved: 0.5 }).minObservations === 30);
+  // Con una sola prueba, potencia >= 80 % y al menos 30 días debe ser «suficiente»: la
+  // búsqueda de 10 en 10 dejaba franjas con «potencia 86 %» y «no se distingue de cero».
+  let incoherent = 0;
+  for (let n = 30; n <= 120; n++) {
+    for (const mu of [0.6, 0.9, 1.3, 2, 3]) {
+      const r = Array.from({ length: n }, (_, i) => mu + ((i * 7919) % 13) - 6);
+      const a = sampleAudit(r);
+      if (a.power.power >= 0.8 && a.verdictHint !== 'sample_ok') incoherent++;
+    }
+  }
+  check('potencia ≥ 80 % y ≥ 30 días ⇒ muestra suficiente', incoherent === 0, `${incoherent} casos incoherentes`);
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks}`);

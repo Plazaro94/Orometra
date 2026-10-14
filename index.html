@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1019">
@@ -21,6 +21,7 @@
 <link rel="alternate" hreflang="es" href="https://orometra.com/es/">
 <link rel="alternate" hreflang="x-default" href="https://orometra.com/">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://orometra.com/">
 <meta property="og:title" content="Orometra · Detect overfitting in your MT5 EA">
 <meta property="og:description" content="Separate the fragile from the stable in your MT5 optimization. Orometra tells you which configuration of your EA is stable — right in your browser.">
 <meta property="og:locale" content="en_US">
@@ -36,7 +37,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=20261007e">
+<link rel="stylesheet" href="styles.css?v=9cf2c1a71f">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separate the fragile from the stable in your MT5 optimization: which configuration of your EA is stable and how much evidence backs it. Free, in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js" data-hero-photo></script>
 </head>
@@ -77,18 +78,29 @@
       <h1 id="hm-title" data-i18n-html="home.h1">Separate the fragile <em>from the stable.</em></h1>
       <p class="hm-lead" data-i18n="home.lead">Orometra analyzes your MT5 optimization and tells you which configuration of your EA is stable and how much evidence backs it.</p>
       <div class="hm-actions">
-        <span class="hm-go-group"><a class="primary-btn hm-cta" href="app/" data-track="portada-cta" data-i18n="lp.cta">Analyze my results</a><a class="hm-go" href="app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
+        <span class="hm-go-group"><a class="primary-btn hm-cta" href="app/" data-track="portada-cta" data-i18n="lp.cta">Analyze my results</a></span>
       </div>
       <p class="hm-need" data-i18n-html="home.need">All you need is the XML file MT5 exports<span class="hm-need-sep"> · </span><a href="/guides/export-mt5-optimization-xml/" data-track="portada-guia-xml">How to export it →</a></p>
     </div>
   </section>
 
-  <!-- 2. El problema y la solucion -->
+  <!-- 2. Cómo funciona: lo primero que necesita quien llega. Antes era una pestaña casi al final. -->
+  <section class="hm-section" aria-labelledby="hm-how-title">
+    <h2 id="hm-how-title" data-i18n="home.how.title">How it works</h2>
+    <ol class="hm-steps">
+      <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Export</h3><p data-i18n="home.how.1.body">Export your MT5 optimization results to XML — and the forward tab, if you used it.</p></li>
+      <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Drop them here</h3><p data-i18n="home.how.2.body">They are analyzed in your browser, in seconds.</p></li>
+      <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Take away your configuration</h3><p data-i18n="home.how.3.body">The recommended one with its reasons, how reliable it is, a .set ready for MT5 and the range to re-optimize around it.</p></li>
+    </ol>
+  </section>
+
+  <!-- 3. El problema y la solucion -->
   <section class="hm-section" aria-labelledby="hm-problem-title">
     <h2 id="hm-problem-title" data-i18n="home.problem.title">In MT5, the #1 result is often the most fragile</h2>
     <div class="hm-compare">
       <article class="hm-card">
         <p class="hm-card-kicker" data-i18n="home.problem.mt5.kicker">What MT5 gives you (example)</p>
+        <p class="hm-pick hm-pick-mt5"><span data-i18n="home.problem.mt5.pick">MT5’s #1: Pass 1842</span><span class="hm-pick-note" data-i18n="home.problem.mt5.note">The highest Result among thousands of passes</span></p>
         <table class="hm-table" aria-hidden="true">
           <thead><tr><th data-i18n="home.table.rank">Rank</th><th data-i18n="home.table.pass">Pass</th><th data-i18n="home.table.result">Result</th></tr></thead>
           <tbody>
@@ -102,40 +114,61 @@
       <article class="hm-card hm-card-ok">
         <p class="hm-card-kicker" data-i18n="home.problem.oro.kicker">What Orometra does</p>
         <p class="hm-pick"><span data-i18n="home.problem.oro.pick">Recommended: Pass 4283</span><span class="hm-pick-note" data-i18n="home.problem.oro.note">#1 rejected: isolated peak</span></p>
+        <!-- Pico frente a meseta, con las pasadas de la tabla de al lado: el n.º 1 de MT5 es un pico solo; la elegida, el centro de una zona que pasa tus mínimos. -->
+        <svg class="hm-fig" viewBox="0 0 420 190" role="img" data-i18n="home.problem.fig.aria" data-i18n-attr="aria-label" aria-label="Example: MT5’s #1 is an isolated peak whose neighbors miss your minimums; Orometra picks the center of a plateau where they all clear them.">
+          <polygon points="236,76 290,68 344,79 344,118 236,118" fill="var(--ok-bg)"/>
+          <line x1="8" y1="118" x2="412" y2="118" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <polyline points="28,160 78,150 128,44 178,156 236,76 290,68 344,79 396,158" fill="none" stroke="var(--line-strong)" stroke-width="1.5"/>
+          <text x="12" y="108" font-size="14" font-weight="700" letter-spacing="1" fill="var(--muted-2)" stroke="var(--surface)" stroke-width="5" stroke-linejoin="round" paint-order="stroke" data-i18n="home.problem.fig.floor">YOUR MINIMUMS</text>
+          <circle cx="28" cy="160" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="78" cy="150" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="178" cy="156" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="396" cy="158" r="3.5" fill="var(--muted-3)" opacity=".55"/>
+          <circle cx="236" cy="76" r="5.5" fill="var(--plateau)"/>
+          <circle cx="344" cy="79" r="5.5" fill="var(--plateau)"/>
+          <line x1="128" y1="32" x2="128" y2="37" stroke="var(--line-strong)" stroke-width="1.5"/>
+          <rect x="46" y="2" width="164" height="30" rx="15" fill="var(--surface-2)" stroke="var(--line)"/>
+          <text x="128" y="22.5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--peak-text)" data-i18n="home.problem.fig.peak">MT5 #1 · 1842</text>
+          <circle cx="128" cy="44" r="7" fill="var(--peak)"/>
+          <line x1="290" y1="56" x2="290" y2="61" stroke="var(--lime-line)" stroke-width="1.5"/>
+          <rect x="222" y="26" width="136" height="30" rx="15" fill="var(--lime-bg)" stroke="var(--lime-line)"/>
+          <text x="290" y="46.5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--lime-text)" data-i18n="home.problem.fig.pick">Pass 4283</text>
+          <circle cx="290" cy="68" r="8" fill="var(--lime-fill)" stroke="var(--surface)" stroke-width="2"/>
+        </svg>
         <p data-i18n="home.problem.oro.body">It looks for zones where neighboring values also work — a plateau. That is harder to get by chance, so it tends to hold up better.</p>
       </article>
     </div>
   </section>
 
-  <!-- 2a. Una decisión, no una tabla: la misma tarjeta del informe -->
+  <!-- 4. Una decisión, no una tabla: la misma tarjeta del informe -->
   <section class="hm-section hm-take" aria-labelledby="hm-take-title">
     <h2 id="hm-take-title" data-i18n="home.take.title">A decision, not a table</h2>
-    <p class="hm-sub" data-i18n="home.take.sub">This is the first thing the report shows: which configuration to pick, how reliable it is and what to do next (example data).</p>
+    <p class="hm-sub" data-i18n="home.take.sub">This is the first thing the sample report shows: which configuration to pick, how reliable it is and what to do next.</p>
     <div class="hm-take-grid">
       <figure class="hm-take-card">
-        <div class="vx v-go" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Example verdict card">
+        <div class="vx v-go" role="group" data-i18n="home.take.aria.card" data-i18n-attr="aria-label" aria-label="Example verdict card">
           <div class="vx-main">
             <div class="vx-pick">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">A</b><span data-i18n="home.take.pick.label">Which configuration to use</span></span>
-              <div class="vx-pass"><span data-i18n="home.take.pick.pass">Pass</span> <b>4283</b></div>
-              <p class="vx-pass-note" data-i18n="home.take.pick.note">The center of a plateau of 412 similar configurations.</p>
-              <div class="t3-param-chips vx-params"><span>FastMA <b>14</b></span><span>SlowMA <b>70</b></span><span>ATR_SL <b>2</b></span><span>ATR_TP <b>4</b></span></div>
+              <div class="vx-pass"><span data-i18n="home.take.pick.pass">Pass</span> <b>11445</b></div>
+              <p class="vx-pass-note" data-i18n="home.take.pick.note">Chosen within a plateau of 5,018 similar configurations.</p>
+              <div class="t3-param-chips vx-params"><span>InpFastMA <b>14</b></span><span>InpSlowMA <b>70</b></span><span>InpATR_SL <b>2</b></span><span>InpATR_TP <b>4</b></span><span>InpTrailStart <b>1.5</b></span><span>InpMinBodyPct <b>20</b></span></div>
               <div class="vx-actions"><span class="primary-btn is-static" data-i18n="home.take.pick.download">Download .set</span><span class="ghost-btn is-static" data-i18n="home.take.pick.copy">Copy parameters</span></div>
             </div>
             <div class="vx-trust">
               <span class="vx-label"><b class="hm-take-n" aria-hidden="true">B</b><span data-i18n="home.take.trust.label">Reliability</span></span>
-              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Reliability: good (4 of 5)">
+              <div class="vx-meter" role="img" data-i18n="home.take.aria.meter" data-i18n-attr="aria-label" aria-label="Reliability: strong (5 of 5)">
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.1">Insufficient</span></div>
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.2">Weak</span></div>
                 <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.3">Moderate</span></div>
-                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Good</span></div>
-                <div class="vx-seg"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Strong</span></div>
+                <div class="vx-seg is-on"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.4">Good</span></div>
+                <div class="vx-seg is-on is-here"><span class="vx-seg-bar"></span><span class="vx-seg-name" data-i18n="home.take.lv.5">Strong</span></div>
               </div>
-              <p class="vx-trust-line" data-i18n="home.take.trust.line">A validated plateau. To reach strong it still needs a test on a period you have not used.</p>
+              <p class="vx-trust-line" data-i18n="home.take.trust.line">The most the optimized period and the forward can support: a validated, stable plateau with no warnings about it. An unseen period can keep it there or lower it.</p>
               <div class="vx-stats">
-                <div class="vx-stat"><strong>88<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustness</span></div>
-                <div class="vx-stat"><strong>12<small> / 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Neighbors that pass</span></div>
-                <div class="vx-stat"><strong data-i18n="home.take.stat.pct">94%</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Holds on validation</span></div>
+                <div class="vx-stat"><strong>93<small>/100</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.1">Robustness</span></div>
+                <div class="vx-stat"><strong>12<small data-i18n="home.take.stat.of"> of 12</small></strong><span class="vx-stat-label" data-i18n="home.take.stat.2">Neighbors that pass</span></div>
+                <div class="vx-stat"><strong data-i18n="home.take.stat.pct">90%</strong><span class="vx-stat-label" data-i18n="home.take.stat.3">Holds on validation</span></div>
               </div>
             </div>
           </div>
@@ -151,44 +184,48 @@
       </figure>
       <p class="hm-more"><a href="app/?demo=1" data-track="portada-informe-ejemplo" data-i18n="home.take.more">See the full sample report →</a></p>
     </div>
+    <!-- Fuera de .hm-take-grid: allí el enlace se estira sobre toda la tarjeta. -->
+    <p class="hm-more hm-more-alt"><a href="app/?demo=noedge" data-track="portada-ejemplo-sin-ventaja" data-i18n="home.take.noedge">And when there is nothing? See an example with no real edge →</a></p>
   </section>
 
-  <!-- 2c. Respiro: la misma idea en la naturaleza. Texto a un lado y la foto en una tarjeta al
-       otro; en móvil, la foto arriba. -->
-  <section class="hm-section hm-nature" aria-labelledby="hm-nature-title">
-    <div class="hm-nature-copy">
-      <h2 id="hm-nature-title" data-i18n="home.nature.title">No starling flies alone</h2>
-      <p data-i18n="home.nature.body">Each one steers by its nearest neighbors, and that is how the whole flock holds together. Orometra judges your configurations the same way: it only trusts one that works alongside those around it.</p>
-    </div>
-    <!-- Una versión por tema (etalonadas en tools/fotos.mjs); la oculta no se descarga (loading="lazy"). -->
-    <figure class="hm-nature-photo">
-      <picture class="hm-nature-dark">
-        <source type="image/avif" srcset="/img/fotos/bandada-noche-esc-800.avif 800w, /img/fotos/bandada-noche-esc-1200.avif 1200w, /img/fotos/bandada-noche-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
-        <img src="/img/fotos/bandada-noche-esc-1200.webp" srcset="/img/fotos/bandada-noche-esc-800.webp 800w, /img/fotos/bandada-noche-esc-1200.webp 1200w, /img/fotos/bandada-noche-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Thousands of silhouettes in flight crossing a muted blue-gray sky in a diagonal stream">
-      </picture>
-      <picture class="hm-nature-light">
-        <source type="image/avif" srcset="/img/fotos/bandada-dia-esc-800.avif 800w, /img/fotos/bandada-dia-esc-1200.avif 1200w, /img/fotos/bandada-dia-esc-1600.avif 1600w" sizes="(max-width:860px) 100vw, 600px">
-        <img src="/img/fotos/bandada-dia-esc-1200.webp" srcset="/img/fotos/bandada-dia-esc-800.webp 800w, /img/fotos/bandada-dia-esc-1200.webp 1200w, /img/fotos/bandada-dia-esc-1600.webp 1600w" sizes="(max-width:860px) 100vw, 600px" width="1600" height="1280" loading="lazy" decoding="async" data-i18n="home.nature.alt" data-i18n-attr="alt" alt="Thousands of silhouettes in flight crossing a muted blue-gray sky in a diagonal stream">
-      </picture>
-    </figure>
+  <!-- 5. Banco de pruebas: cifras medidas en bench/ (sexto examen, ciego). Las comprueba tests/home-bench.test.js. -->
+  <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
+    <h2 id="hm-bench-title" data-i18n="home.bench.title">Tested on cases with a known answer</h2>
+    <p class="hm-sub" data-i18n="home.bench.sub">We ran the engine on 800 simulated optimizations where we knew in advance whether there was a real edge or not. Orometra rates the evidence on five levels, from “insufficient” to “strong”.</p>
+    <ul class="hm-bench-grid">
+      <li>
+        <h3 class="hm-bench-k" data-i18n="home.bench.1.k">False alarms</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">1.3%</p>
+        <!-- Un punto por optimización, en columnas de 10: las marcadas, primero. Mismo paso en las dos rejillas, para que se vea que una muestra es mucho mayor que la otra. Lo que dicen ya está en el texto de al lado. -->
+        <svg class="hm-dots" viewBox="0 0 30 10" aria-hidden="true" focusable="false">
+          <defs><pattern id="hm-dot-off" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="off" cx=".5" cy=".5" r=".3"/></pattern><pattern id="hm-dot-fa" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="fa" cx=".5" cy=".5" r=".3"/></pattern></defs>
+          <rect data-on x="0" y="0" width="1" height="4" fill="url(#hm-dot-fa)"/>
+          <rect x="0" y="4" width="1" height="6" fill="url(#hm-dot-off)"/>
+          <rect x="1" y="0" width="29" height="10" fill="url(#hm-dot-off)"/>
+        </svg>
+        <p data-i18n="home.bench.1.body">Out of 300 optimizations with no real edge at all, only 4 got “moderate” or higher; one of them, “strong”.</p>
+      </li>
+      <li>
+        <h3 class="hm-bench-k" data-i18n="home.bench.2.k">Edges detected</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">97%</p>
+        <svg class="hm-dots hm-dots-small" viewBox="0 0 8 4" preserveAspectRatio="xMinYMin meet" aria-hidden="true" focusable="false">
+          <defs><pattern id="hm-dot-ok" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="ok" cx=".5" cy=".5" r=".3"/></pattern></defs>
+          <rect data-on x="0" y="0" width="7" height="4" fill="url(#hm-dot-ok)"/>
+          <rect data-on x="7" y="0" width="1" height="3" fill="url(#hm-dot-ok)"/>
+          <rect x="7" y="3" width="1" height="1" fill="url(#hm-dot-off)"/>
+        </svg>
+        <p data-i18n="home.bench.2.body">Out of 32 optimizations with a clear real edge, 31 got “moderate” or higher.</p>
+      </li>
+    </ul>
+    <p class="hm-more hm-bench-links"><a href="/methodology/#banco" data-track="portada-banco-metodologia" data-i18n="home.bench.how">How we tested it →</a></p>
   </section>
 
-  <!-- 3. Lo que hay detrás: cuatro pestañas en el hueco de una sección. Sin JS se ven todas. -->
+  <!-- 6. Lo que hay detrás: tres pestañas en el hueco de una sección. Sin JS se ven todas. -->
   <section class="hm-section hm-more-sec" aria-labelledby="hm-more-title">
     <h2 id="hm-more-title" data-i18n="home.more.title">What’s behind the result</h2>
     <div class="hm-tabs" data-tabs>
       <div class="hm-tablist" role="tablist" aria-labelledby="hm-more-title">
-        <button type="button" role="tab" id="hm-tab-how" data-track="pestana-como" aria-controls="hm-pane-how" aria-selected="true" data-i18n="home.tab.how">How it works</button>
-        <button type="button" role="tab" id="hm-tab-engine" data-track="pestana-motor" aria-controls="hm-pane-engine" aria-selected="false" tabindex="-1" data-i18n="home.tab.engine">The engine</button>
+        <button type="button" role="tab" id="hm-tab-engine" data-track="pestana-motor" aria-controls="hm-pane-engine" aria-selected="true" data-i18n="home.tab.engine">The engine</button>
         <button type="button" role="tab" id="hm-tab-proof" data-track="pestana-confianza" aria-controls="hm-pane-proof" aria-selected="false" tabindex="-1" data-i18n="home.tab.proof">Why trust it</button>
         <button type="button" role="tab" id="hm-tab-ai" data-track="pestana-ia" aria-controls="hm-pane-ai" aria-selected="false" tabindex="-1" data-i18n="home.tab.ai">And an AI?</button>
-      </div>
-      <div class="hm-pane" role="tabpanel" id="hm-pane-how" aria-labelledby="hm-tab-how" tabindex="0">
-        <ol class="hm-steps">
-          <li><span class="hm-num" aria-hidden="true">1</span><h3 data-i18n="home.how.1.title">Export</h3><p data-i18n="home.how.1.body">Export your MT5 optimization results to XML — and the forward tab, if you used it.</p></li>
-          <li><span class="hm-num" aria-hidden="true">2</span><h3 data-i18n="home.how.2.title">Drop them here</h3><p data-i18n="home.how.2.body">They are analyzed in your browser, in seconds.</p></li>
-          <li><span class="hm-num" aria-hidden="true">3</span><h3 data-i18n="home.how.3.title">Take away your configuration</h3><p data-i18n="home.how.3.body">The recommended one with its reasons, how reliable it is, a .set ready for MT5 and the range to re-optimize around it.</p></li>
-        </ol>
       </div>
       <div class="hm-pane" role="tabpanel" id="hm-pane-engine" aria-labelledby="hm-tab-engine" tabindex="0">
         <p class="hm-sub" data-i18n="home.engine.sub">What would take you hours in a spreadsheet and a lot of judgment — done in seconds, the same way every time.</p>
@@ -229,13 +266,13 @@
     </div>
   </section>
 
-  <!-- 4. Preguntas frecuentes -->
+  <!-- 7. Preguntas frecuentes -->
   <section class="hm-section hm-faq-section" aria-labelledby="hm-faq-title">
     <div class="hm-faq-head">
       <h2 id="hm-faq-title" data-i18n="home.faq.title">Frequently asked questions</h2>
       <p data-i18n-html="home.faq.more">Something else? Write to us at <a href="mailto:hello@orometra.com">hello@orometra.com</a>.</p>
     </div>
-    <div class="hm-faq" aria-labelledby="hm-faq-title">
+    <div class="hm-faq">
       <details><summary data-i18n="home.faq.1.q">Which files do I need?</summary><p data-i18n-html="home.faq.1.a">The XML that MT5 exports with your optimization results: right-click the table and export to XML. If you enabled forward, export that table too. The .opt file does not work. <a href="/guides/export-mt5-optimization-xml/">Step-by-step guide</a>.</p></details>
       <details><summary data-i18n="home.faq.2.q">What if I did not enable forward?</summary><p data-i18n="home.faq.2.a">You can still analyze it, but the evidence will not go beyond “weak”: without data the optimization never saw, a robust plateau cannot be told apart from a lucky one. Next time, enable it in the tester settings (a quarter or a third of the period).</p></details>
       <details><summary data-i18n="home.faq.3.q">Does it work with genetic optimization?</summary><p data-i18n="home.faq.3.a">Yes. Since the genetic algorithm does not test every combination, plateaus are measured conservatively: the result may fall short, but it never invents support. The report tells you.</p></details>
@@ -258,7 +295,7 @@
       <li data-i18n="home.final.c5">Complete and genetic optimizations</li>
       <li data-i18n="home.final.c6">Checks your backtest on an unseen period</li>
     </ul>
-    <span class="hm-go-group"><a class="primary-btn hm-cta" href="app/" data-track="cierre-cta" data-i18n="lp.cta">Analyze my results</a><a class="hm-go" href="app/" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></span>
+    <span class="hm-go-group"><a class="primary-btn hm-cta" href="app/" data-track="cierre-cta" data-i18n="lp.cta">Analyze my results</a></span>
   </section>
 </main>
 
@@ -269,11 +306,12 @@
       <span data-i18n="lp.foot.tagline">Separate the fragile from the stable</span>
     </div>
     <nav class="lp-foot-nav" aria-label="Footer" data-i18n="nav.footer" data-i18n-attr="aria-label">
-      <a href="methodology/" data-i18n="nav.method">Methodology</a>
+      <a href="app/" data-i18n="lp.cta.footer">Analyze</a>
       <a href="guides/" data-i18n="nav.guides">Guides</a>
+      <a href="methodology/" data-i18n="nav.method">Methodology</a>
       <a href="about/" data-i18n="doc.about.nav">About us</a>
+      <a href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" data-i18n="nav.code">GitHub</a>
       <a href="privacy/" data-i18n="doc.privacy.nav">Privacy</a>
-      <a href="app/" data-i18n="lp.cta.footer">App</a>
       <a href="mailto:hello@orometra.com" title="Contact" data-i18n="contact.title" data-i18n-attr="title">hello@orometra.com</a>
     </nav>
   </div>

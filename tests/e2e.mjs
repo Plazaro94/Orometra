@@ -51,6 +51,29 @@ const junk = path.join(tmp, 'notas.xml');
 fs.writeFileSync(isXml, toMt5Xml(demo.isTable));
 fs.writeFileSync(oosXml, toMt5Xml(demo.oosTable));
 fs.writeFileSync(junk, 'esto no es una exportación de MT5');
+const optFile = path.join(tmp, 'cache.opt');
+fs.writeFileSync(optFile, Buffer.from([1, 2, 3, 4, 0, 0, 9, 9]));
+// Pasadas desordenadas, como las exporta MT5 (sobre todo en genético): la fila n NO es la
+// pasada n. Sin forward, el informe numeraba por fila y recomendaba otra configuración.
+const shuffledXml = path.join(tmp, 'Desordenada.xml');
+const passColIs = demo.isTable.headers.findIndex((h) => /^pass$/i.test(h));
+const shuffledRows = demo.isTable.rows.map((r, i) => { const c = r.slice(); c[passColIs] = ((i * 7919) % demo.isTable.rows.length) + 50000; return c; }).reverse();
+fs.writeFileSync(shuffledXml, toMt5Xml({ ...demo.isTable, rows: shuffledRows }));
+const fewXml = path.join(tmp, 'Pocas.xml');
+fs.writeFileSync(fewXml, toMt5Xml({ ...demo.isTable, rows: demo.isTable.rows.slice(0, 6) }));
+// El forward de otra optimización: el Back Result no coincide con el Result.
+const backCol = demo.oosTable.headers.findIndex((h) => /back\s*result/i.test(h));
+const otherOosXml = path.join(tmp, 'Otra.forward.xml');
+fs.writeFileSync(otherOosXml, toMt5Xml({ ...demo.oosTable, rows: demo.oosTable.rows.map((r) => r.map((v, k) => (k === backCol ? v * 1.37 + 3 : v))) }));
+const reportHtml = path.join(tmp, 'Backtest.html');
+fs.writeFileSync(reportHtml, `<!DOCTYPE html><html><body><div>Strategy Tester Report</div><table>
+<tr><td>Expert:</td><td><b>Demo EA</b></td></tr><tr><td>Symbol:</td><td><b>EURUSD</b></td></tr>
+<tr><td>Period:</td><td><b>H1 (2025.01.01 - 2025.07.01)</b></td></tr>
+<tr><td>Inputs:</td><td><b>InpFastMA=16</b></td></tr>
+<tr><td>Results</td></tr><tr><td>Total Net Profit:</td><td>1200.00</td></tr><tr><td>Total Trades:</td><td>120</td></tr><tr><td>Profit Factor:</td><td>1.30</td></tr>
+</table></body></html>`);
+const setFile = path.join(tmp, 'DemoEA.set');
+fs.writeFileSync(setFile, 'InpFastMA=16||4||2||30||Y\nInpSlowMA=70||20||10||120||Y\n');
 // Lo mismo como libros de Excel (.xlsx), por si el usuario los guardó desde Excel.
 const toXlsx = (table) => Buffer.from(zip(libro({ filas: [table.headers, ...table.rows], compartidas: table.headers })));
 const isXlsx = path.join(tmp, 'ReportOptimizer.xlsx');
@@ -116,6 +139,17 @@ try {
     const loaded = (re) => page.evaluate((src) => performance.getEntriesByType('resource').some((e) => new RegExp(src).test(e.name)), re.source);
     check('la portada no descarga i18n.js', !(await loaded(/\/js\/i18n\.js/)));
     check('ni código de gráficos 3D', !(await loaded(/hero-surface|hero-terrain|plateau-surface/)));
+    // «Cómo funciona» va justo después del titular y a la vista; antes era una pestaña casi al final.
+    const how = await page.evaluate(() => {
+      const secs = [...document.querySelectorAll('main > section')];
+      const i = secs.findIndex((s) => s.querySelector('#hm-how-title'));
+      const steps = i < 0 ? [] : [...secs[i].querySelectorAll('.hm-steps > li')].filter((li) => li.getBoundingClientRect().height > 0);
+      return { i, steps: steps.length, tabs: document.querySelectorAll('.hm-tablist [role="tab"]').length };
+    });
+    check('«Cómo funciona» es la segunda sección y sus tres pasos se ven sin tocar nada', how.i === 1 && how.steps === 3, JSON.stringify(how));
+    check('«Lo que hay detrás» se queda con tres pestañas (motor, confianza e IA)', how.tabs === 3, JSON.stringify(how));
+    // El código es público y se dice en la portada: el enlace tiene que estar a la vista.
+    check('el pie enlaza con el código en GitHub', await page.$eval('footer', (f) => Boolean(f.querySelector('a[href="https://github.com/Plazaro94/Orometra"]'))));
     await page.goto(`${BASE}/es/guias/sobreoptimizacion-mt5/`);
     await page.waitForSelector('.guide-rail, .lp-menu-btn', { timeout: 10000 }).catch(() => {});
     check('una guía no descarga i18n.js', !(await loaded(/\/js\/i18n\.js/)));
@@ -138,9 +172,25 @@ try {
     await page.click('.lp-menu-btn');
     const links = await page.$$eval('#lpMenu a', (as) => as.map((a) => a.getAttribute('href')));
     check('móvil: el menú lleva a la app, la metodología, las guías y la privacidad',
-      ['/app/', '/es/methodology/', '/es/guias/', '/es/privacy/'].every((h) => links.includes(h)), links.join(' '));
+      ['/app/?lang=es', '/es/methodology/', '/es/guias/', '/es/privacy/'].every((h) => links.includes(h)), links.join(' '));
     await page.keyboard.press('Escape');
     check('móvil: Esc cierra el menú', await page.$eval('#lpMenu', (e) => e.hidden));
+    await ctx.close();
+  }
+  {
+    // La app no tiene dirección en español: desde /es/ se abre en español aunque el navegador
+    // esté en inglés (antes salía en inglés).
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'en-US' });
+    const page = await ctx.newPage();
+    watch(page);
+    await page.goto(`${BASE}/es/`);
+    await page.locator('a[href^="/app/"]:visible').first().click();
+    await page.waitForLoadState('domcontentloaded');
+    check('desde /es/ la app sale en español', await page.evaluate(() => document.documentElement.lang) === 'es');
+    // Una elección guardada manda sobre el enlace.
+    await page.evaluate(() => localStorage.setItem('orometra.lang', 'en'));
+    await page.reload();
+    check('con el inglés elegido, la app sigue en inglés aunque venga de /es/', await page.evaluate(() => document.documentElement.lang) === 'en');
     await ctx.close();
   }
 
@@ -152,6 +202,200 @@ try {
     await page.waitForFunction(() => document.querySelector('#mainDrop').classList.contains('error'), null, { timeout: 15000 }).catch(() => {});
     check('se marca como error', await page.$eval('#mainDrop', (e) => e.classList.contains('error')));
     check('y no se puede analizar', await page.$eval('#analyzeBtn', (b) => b.disabled));
+    check('la app también enlaza con el código en GitHub', (await page.$$('a[href="https://github.com/Plazaro94/Orometra"]')).length >= 1);
+    await page.context().close();
+  }
+
+  section('2b. Del ejemplo a tus archivos, y lo que se suelta mientras se analiza');
+  {
+    const ctx = await browser.newContext();
+    await ctx.addInitScript(() => { try { localStorage.setItem('orometra.lang', 'es'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    watch(page);
+    const stored = () => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('orometra.history')); } catch { return null; } });
+    const ready = () => page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    const analyzed = () => page.waitForFunction(() => !document.querySelector('#analyzeBtn').classList.contains('busy') && document.querySelector('.vx'), null, { timeout: 120000 });
+    // Tras el ejemplo, «Analizar» ya está activo: no dice si lo soltado se ha colocado. La app
+    // lee primero el principio de cada archivo para saber qué es; hasta que el nombre sale en
+    // la caja, la caja sigue diciendo «Ejemplo sintético cargado» (fallaba en máquinas lentas).
+    const placed = (name) => page.waitForFunction((n) => document.querySelector('#mainDropStatus').textContent.includes(n), name, { timeout: 60000 }).catch(() => {});
+    // Tras el ejemplo, un solo archivo propio no se mezcla con la otra mitad del ejemplo.
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.setInputFiles('#mainFile', [isXml]);
+    await placed('ReportOptimizer.xml');
+    await ready();
+    const drop = await page.textContent('#mainDropStatus');
+    check('tras el ejemplo, un archivo propio no se junta con el forward del ejemplo', drop.includes('ReportOptimizer.xml') && !/DEMO/i.test(drop), drop);
+    await page.click('#analyzeBtn');
+    await analyzed();
+    check('y se analiza sin error', await page.$eval('#errorBox', (e) => e.hidden), await page.textContent('#errorBox'));
+    check('solo con la optimización', !(await page.textContent('#intakeSummaryText')).includes('forward'), await page.textContent('#intakeSummaryText'));
+    // Los tres archivos de golpe (optimización, forward y .set) con un análisis en pantalla:
+    // el .set no lanza el análisis por su cuenta con los archivos a medio cargar.
+    await page.evaluate(() => localStorage.removeItem('orometra.history'));
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.setInputFiles('#mainFile', [setFile, isXml, oosXml]);
+    await placed('ReportOptimizer.forward.xml');
+    await ready();
+    // El .set va después de las tablas: hasta que no está cargado, no hay nada que comprobar.
+    await page.waitForFunction(() => document.querySelector('#setStatus').textContent.includes('DemoEA.set'), null, { timeout: 60000 }).catch(() => {});
+    await page.waitForTimeout(500);
+    check('el .set de la tanda no analiza solo', await page.$eval('#statusBar', (e) => e.hidden) && !(await stored()));
+    check('el .set queda cargado', (await page.textContent('#setStatus')).includes('DemoEA.set'));
+    // Durante un análisis, lo soltado espera y no se cuela en el informe.
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [isXml]);
+    await ready();
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('#analyzeBtn.busy');
+    await page.setInputFiles('#mainFile', [oosXml]);
+    const label = await page.textContent('#progressLabel');
+    check('lo soltado durante el análisis espera, y se dice', /al terminar/.test(label), label);
+    await analyzed();
+    await page.waitForFunction(() => /forward\.xml/.test(document.querySelector('#mainDropStatus').textContent), null, { timeout: 30000 });
+    const s2 = await stored();
+    check('el informe y el historial dicen lo que se analizó (sin el forward soltado después)',
+      !(await page.textContent('#intakeSummaryText')).includes('forward') && s2 && s2.entries.length === 1 && !s2.entries[0].files.oos,
+      JSON.stringify(s2 && s2.entries.map((e) => e.files)));
+    check('y al terminar el forward queda cargado para el siguiente análisis', (await page.textContent('#mainDropStatus')).includes('ReportOptimizer.forward.xml'));
+    await ctx.close();
+  }
+
+  section('2c. La ficha y el botón dicen lo que hay');
+  {
+    const page = await appPage('es');
+    const title = () => page.textContent('#preflightTitle');
+    const disabled = () => page.$eval('#analyzeBtn', (b) => b.disabled);
+    await page.goto(`${BASE}/app/`);
+    // «Analizar» no puede estar activo mientras la ficha dice «Leyendo…».
+    await page.evaluate(() => {
+      window.__readingEnabled = false;
+      new MutationObserver(() => {
+        const reading = document.querySelector('.preflight-reading');
+        if (reading && !document.querySelector('#analyzeBtn').disabled) window.__readingEnabled = true;
+      }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
+    });
+    await page.setInputFiles('#mainFile', [oosXml]);
+    await page.waitForFunction(() => !document.querySelector('.preflight-reading'), null, { timeout: 60000 });
+    check('solo el forward: la ficha dice que falta la optimización', /Falta la optimización/.test(await title()), await title());
+    check('y no se puede analizar', await disabled());
+    // Un .opt junto a los dos XML no se queda con la ranura de la optimización.
+    await page.setInputFiles('#mainFile', [optFile, isXml, oosXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    const drop = await page.textContent('#mainDropStatus');
+    check('con un .opt en la tanda, se cargan los dos XML', drop.includes('ReportOptimizer.xml') && drop.includes('ReportOptimizer.forward.xml'), drop);
+    check('y se dice que el .opt se ha ignorado', /cache\.opt: no es una exportación/.test(drop), drop);
+    check('«Analizar» nunca se activa mientras se lee', !(await page.evaluate(() => window.__readingEnabled)));
+    // El forward de otra optimización: tras el error, la ficha ya no dice «Listo».
+    await page.setInputFiles('#mainFile', [isXml, otherOosXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForFunction(() => !document.querySelector('#errorBox').hidden, null, { timeout: 120000 });
+    check('forward de otra optimización: la ficha dice que no se pueden analizar así', /No se pueden analizar/.test(await title()), await title());
+    check('y el botón no invita a repetir', await disabled());
+    check('el título del error no habla de «esquema»', /Los archivos no encajan/.test(await page.textContent('#errorTitle')), await page.textContent('#errorTitle'));
+    // Dos optimizaciones: se sigue con la primera, y es un aviso, no un error rojo.
+    await page.setInputFiles('#mainFile', [isXml, fewXml]);
+    await page.waitForFunction(() => /se ha cargado solo/.test(document.querySelector('#mainDropStatus').textContent), null, { timeout: 60000 }).catch(() => {});
+    check('dos optimizaciones: aviso en la caja, sin error rojo',
+      /se ha cargado solo ReportOptimizer\.xml/.test(await page.textContent('#mainDropStatus')) && await page.$eval('#errorBox', (e) => e.hidden),
+      await page.textContent('#mainDropStatus'));
+    // Menos de 10 configuraciones: se dice en la ficha, sin tener que pulsar.
+    await page.setInputFiles('#mainFile', [fewXml]);
+    await page.waitForFunction(() => document.querySelector('.preflight-bad'), null, { timeout: 60000 });
+    check('menos de 10 configuraciones: se avisa antes de analizar', /al menos 10/.test(await page.textContent('.preflight-bad')) && await disabled());
+    await page.context().close();
+  }
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [reportHtml]);
+    await page.waitForFunction(() => /Backtest\.html/.test(document.querySelector('#mainDropStatus').textContent), null, { timeout: 15000 }).catch(() => {});
+    check('el informe soltado antes de analizar se confirma', /Backtest\.html/.test(await page.textContent('#mainDropStatus')), await page.textContent('#mainDropStatus'));
+    await page.setInputFiles('#mainFile', [isXml, oosXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    const stamp = await page.textContent('#view');
+    check('y al analizar se compara: el veredicto no dice «no aportado»', !/Periodo no visto: no aportado/.test(stamp));
+    // Tras un análisis (carga plegada), un archivo que no sirve también se ve.
+    await page.setInputFiles('#mainFile', [optFile]);
+    await page.waitForFunction(() => document.querySelector('#mainDrop').classList.contains('error'), null, { timeout: 15000 }).catch(() => {});
+    check('tras analizar, un .opt rechazado se ve', await page.$eval('#mainDropStatus', (e) => e.offsetParent !== null && /\.opt/.test(e.textContent)));
+    await page.context().close();
+  }
+
+  section('2d. Los mínimos');
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.click('#policyToggle');
+    await page.fill('#gPf', '1,5');
+    await page.dispatchEvent('#gPf', 'input');
+    const summary = await page.textContent('#policySummary');
+    check('«1,5» en el factor de beneficio es 1,5 (no 15)', summary.includes('PF ≥ 1,50'), summary);
+    await page.fill('#gDd', '0');
+    await page.setInputFiles('#mainFile', [isXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    check('un mínimo inválido se dice como tal', /Revisa los mínimos/.test(await page.textContent('#errorTitle')) && await page.$eval('#errorHint', (e) => e.hidden), await page.textContent('#errorTitle'));
+    check('y se abren los ajustes con el campo enfocado', await page.evaluate(() => document.body.classList.contains('policy-open') && document.activeElement && document.activeElement.id === 'gDd'));
+    await page.context().close();
+  }
+
+  section('2e. Los dos ejemplos, y un «periodo no visto» que repite el optimizado');
+  {
+    const page = await appPage('es');
+    const verdictShown = () => page.waitForSelector('.vx', { timeout: 120000 });
+    // La tarjeta de la portada abre el ejemplo con meseta, y enseña su misma pasada.
+    await page.goto(`${BASE}/es/`);
+    const cardPass = (await page.textContent('.hm-take-card .vx-pass b')).trim();
+    // El enlace de debajo se estira sobre toda la tarjeta: se pulsa en su centro, como un usuario.
+    await page.$eval('.hm-take-card', (e) => e.scrollIntoView({ block: 'center' }));
+    const box = await (await page.$('.hm-take-card')).boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForURL(/demo=1/, { timeout: 10000 }).catch(() => {});
+    check('la tarjeta de la portada abre el ejemplo con meseta', /demo=1/.test(page.url()), page.url());
+    await verdictShown();
+    const appPass = (await page.textContent('.vx-pass b')).trim();
+    check('con la misma pasada que enseña la tarjeta', appPass === cardPass, `${cardPass} frente a ${appPass}`);
+    // Del ejemplo con meseta al ejemplo sin ventaja, y vuelta.
+    await page.click('.demo-note [data-demo="noedge"]');
+    await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
+    check('desde el ejemplo se llega al de sin ventaja', Boolean(await page.$('.demo-note [data-demo="good"]')));
+    check('que no propone ninguna configuración con garantías', Boolean(await page.$('.vx-pass-risk')));
+    check('y se queda en «débil»', /débil/i.test(await page.textContent('.vx-meter .is-here')), await page.textContent('.vx-meter .is-here'));
+    // El enlace de debajo de la tarjeta lleva a ese mismo ejemplo.
+    await page.goto(`${BASE}/es/`);
+    await page.click('.hm-more-alt a');
+    await page.waitForURL(/demo=noedge/, { timeout: 10000 }).catch(() => {});
+    await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
+    check('la portada enlaza con el ejemplo sin ventaja', /demo=noedge/.test(page.url()) && Boolean(await page.$('.vx-pass-risk')), page.url());
+    // Y la pantalla vacía de la app ofrece los dos.
+    await page.goto(`${BASE}/app/`);
+    await page.click('.empty-demo [data-demo="noedge"]');
+    await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
+    check('la app vacía ofrece el ejemplo sin ventaja', Boolean(await page.$('.vx-pass-risk')));
+    // Periodo no visto con las cifras del propio periodo optimizado de la pasada propuesta.
+    await page.goto(`${BASE}/app/?demo=1`);
+    await verdictShown();
+    const h = demo.isTable.headers;
+    const row = demo.isTable.rows.find((r) => String(r[0]) === appPass);
+    const col = (name) => row[h.indexOf(name)];
+    await page.click('.nav-item[data-tab="unseen"]');
+    await page.fill('#u_trades', String(col('Trades')));
+    await page.fill('#u_profit', String(col('Profit')));
+    await page.fill('#u_profitFactor', String(col('Profit Factor')));
+    await page.fill('#u_drawdown', String(col('Equity DD %')));
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.u-result', { timeout: 15000 }).catch(() => {});
+    const tag = await page.textContent('.u-result-tag').catch(() => '');
+    const title = await page.textContent('.u-result-title').catch(() => '');
+    check('un periodo no visto que repite el optimizado no valida', /No valida/.test(tag), tag);
+    check('y dice por qué', /repite el periodo optimizado/.test(title), title);
+    check('el nivel no cambia', /sólida/i.test(await page.textContent('.rc-level')), await page.textContent('.rc-level'));
     await page.context().close();
   }
 
@@ -172,8 +416,10 @@ try {
       page.waitForEvent('download', { timeout: 15000 }),
       page.click('.vx [data-export="set"]'),
     ]);
-    const setText = fs.readFileSync(await download.path(), 'utf8').replace(/\u0000/g, '');
+    const setBytes = fs.readFileSync(await download.path());
+    const setText = setBytes.toString('utf16le').replace(/^\uFEFF/, '');
     check('el .set se descarga', /\.set$/.test(download.suggestedFilename()), download.suggestedFilename());
+    check('en UTF-16 con BOM, como los de MT5', setBytes[0] === 0xFF && setBytes[1] === 0xFE, String(setBytes.slice(0, 4).toString('hex')));
     check('y trae los parámetros del EA', ['InpFastMA', 'InpSlowMA', 'InpATR_SL'].every((n) => new RegExp(`^${n}=`, 'm').test(setText)), setText.slice(0, 200));
 
     // Cambiar de idioma con el informe en pantalla: se traduce sin volver a analizar.
@@ -184,6 +430,14 @@ try {
 
     await page.click('.tab-next-btn');
     check('«Siguiente» lleva a las mesetas', await page.$eval('.nav-item[data-tab="plateaus"]', (b) => b.classList.contains('active')));
+
+    // La pestaña «Método» enseña los mismos límites que la página pública.
+    await page.click('.nav-item[data-tab="method"]');
+    const appLimits = await page.$$eval('.limits li', (l) => l.length);
+    const pub = await page.context().newPage();
+    await pub.goto(`${BASE}/es/methodology/`);
+    const pubLimits = await pub.$$eval('#limites li', (l) => l.length);
+    check('«Método» enseña todos los límites de la página pública', appLimits === pubLimits && appLimits >= 8, `${appLimits} frente a ${pubLimits}`);
     await page.context().close();
   }
 
@@ -200,6 +454,14 @@ try {
     check('hay una segunda meseta (alternativa)', await alt.count() === 1);
     const m2 = (await alt.locator('.t3-pass').textContent()).replace(/\D+/g, '');
     check('la alternativa es otra pasada', Boolean(m2) && m2 !== m1, `${m1} / ${m2}`);
+    // Lo que cumple cada meseta en el forward está a la vista: en la comparativa del
+    // veredicto y en la tabla de mesetas (antes solo salía en el aviso de la recomendada).
+    const holdRow = await page.$$eval('.t3-table tr', (trs) => {
+      const tr = trs.find((r) => /Cumplen tus mínimos en el forward/.test(r.textContent));
+      return tr ? [...tr.querySelectorAll('td')].map((td) => td.textContent.trim()) : null;
+    });
+    check('la comparativa dice qué parte de cada meseta cumple en el forward',
+      Array.isArray(holdRow) && holdRow.length === 2 && holdRow.every((t) => /\d+\s?%.*\d+ de \d+/.test(t)), JSON.stringify(holdRow));
 
     const save = async (click) => {
       const [d] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), click()]);
@@ -209,6 +471,14 @@ try {
     await alt.locator('[data-plateau]').click();
     await page.waitForSelector('.rep-card');
     check('la ficha muestra la meseta 2', (await page.textContent('.rep-card .rep-pass')).includes(m2));
+    const holdCol = await page.$$eval('#view table', (tables) => {
+      const t = tables.find((x) => /Cumplen en el forward/.test(x.querySelector('thead')?.textContent || ''));
+      if (!t) return null;
+      const k = [...t.querySelectorAll('thead th')].findIndex((th) => /Cumplen en el forward/.test(th.textContent));
+      return [...t.querySelectorAll('tbody tr')].map((tr) => tr.children[k].textContent.trim());
+    });
+    check('la tabla de mesetas tiene la columna «Cumplen en el forward», rellena',
+      Array.isArray(holdCol) && holdCol.length === 2 && holdCol.every((t) => /\d+\s?%/.test(t)), JSON.stringify(holdCol));
     const fichaSet = await save(() => page.click('.rep-card [data-export="set"]'));
     check('el .set de la ficha es el de la meseta 2', fichaSet.includes(`M2-pass${m2}`), fichaSet);
     await page.click('.rep-card [data-scroll="plateauSurfacePanel"]');
@@ -302,6 +572,167 @@ try {
       return parseFloat(getComputedStyle(t).fontSize) * svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
     })));
     check('el texto de los gráficos se lee en el móvil (≥ 10 px)', minText >= 10, `${minText.toFixed(1)} px`);
+    // El diagrama de cajas, el mapa de calor y la influencia son HTML: se adaptan al ancho en
+    // vez de deslizarse de lado, y su texto tampoco baja de 10 px.
+    const htmlCharts = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll('#view .bx-chart, #view .hm-grid, #view .sens-chart')];
+      const sizes = nodes.flatMap((c) => [...c.querySelectorAll('span, b, li')].filter((e) => e.textContent.trim()).map((e) => parseFloat(getComputedStyle(e).fontSize)));
+      const scrolls = nodes.filter((c) => { const w = c.closest('.chart-scroll'); return w && w.scrollWidth > w.clientWidth + 1; }).length;
+      return { n: nodes.length, min: Math.min(...sizes), scrolls };
+    });
+    check('los gráficos de Parámetros caben en el móvil sin deslizar', htmlCharts.n === 3 && htmlCharts.scrolls === 0, JSON.stringify(htmlCharts));
+    check('y su texto se lee (≥ 10 px)', htmlCharts.min >= 10, JSON.stringify(htmlCharts));
+    await ctx.close();
+  }
+
+  section('4b. Sin forward: la pasada es la de MT5, no la fila');
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [shuffledXml]);
+    await page.waitForFunction(() => !document.querySelector('#analyzeBtn').disabled, null, { timeout: 60000 });
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    const shown = (await page.textContent('.vx-pass b')).trim();
+    const chips = await page.$$eval('.vx-params span', (els) => els.map((e) => e.textContent.trim()));
+    const row = shuffledRows.find((r) => String(r[passColIs]) === shown);
+    const rowChips = row ? demo.isTable.headers.map((h, k) => [h, r => r[k]]).filter(([h]) => chips.some((c) => c.startsWith(`${h} `))).map(([h, f]) => `${h} ${f(row)}`) : [];
+    check('la pasada mostrada existe en el archivo', Boolean(row), shown);
+    check('y es la de los parámetros recomendados', row && chips.length > 0 && chips.every((c) => rowChips.includes(c)), `${shown}: ${chips.join(', ')} frente a ${rowChips.join(', ')}`);
+    // El número no basta para encontrarla en MT5 (no lo guarda al cerrarse): se dan sus cifras,
+    // que tienen que ser las de esa fila del archivo.
+    const find = await page.$$eval('.vx .vx-pass-note', (ps) => {
+      const p = ps.find((x) => /Búscala/.test(x.textContent));
+      return p ? [...p.querySelectorAll('b')].map((b) => b.textContent.trim()) : [];
+    });
+    const col = (name) => demo.isTable.headers.indexOf(name);
+    check('se dan sus cifras para buscarla en MT5: beneficio y operaciones de esa fila',
+      row && find[0] === Number(row[col('Profit')]).toFixed(2) && find[1] === String(row[col('Trades')]),
+      `${find.join(' · ')} frente a ${row && row[col('Profit')]} · ${row && row[col('Trades')]}`);
+    await page.context().close();
+  }
+
+  section('5a. Mesetas en un móvil estrecho, en español');
+  // A 375 px los seis parámetros iban de uno en uno (393 px de alto) y «Exportar» bajaba
+  // solo a una tercera fila de la cabecera: el español no cabía donde el inglés sí.
+  for (const width of [360, 375]) {
+    const ctx = await browser.newContext({ viewport: { width, height: 800 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+    await ctx.addInitScript(() => { try { localStorage.setItem('orometra.lang', 'es'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    watch(page);
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.click('.nav-item[data-tab="plateaus"]');
+    await page.waitForTimeout(300);
+    const got = await page.evaluate(() => {
+      const g = document.querySelector('#view .param-grid');
+      const tops = [...document.querySelectorAll('.top-actions > button')].filter((b) => b.offsetParent).map((b) => Math.round(b.getBoundingClientRect().top));
+      return {
+        cols: getComputedStyle(g).gridTemplateColumns.split(' ').length,
+        cut: [...g.querySelectorAll('.param span')].filter((s) => s.scrollWidth > s.clientWidth).length,
+        buttons: tops.length,
+        rows: new Set(tops).size,
+      };
+    });
+    check(`${width} px: los parámetros a dos columnas, sin nombres cortados`, got.cols === 2 && got.cut === 0, JSON.stringify(got));
+    check(`${width} px: los botones de la cabecera en una fila`, got.buttons === 3 && got.rows === 1, JSON.stringify(got));
+    await ctx.close();
+  }
+
+  section('5b. Tema: el del sistema hasta que el usuario elige');
+  for (const [scheme, saved, want] of [['light', null, 'light'], ['dark', null, 'dark'], ['light', 'dark', 'dark'], ['dark', 'light', 'light']]) {
+    const ctx = await browser.newContext({ colorScheme: scheme });
+    if (saved) await ctx.addInitScript((t) => { try { localStorage.setItem('orometra.theme', t); } catch { /* */ } }, saved);
+    const page = await ctx.newPage();
+    watch(page);
+    for (const path of ['/', '/app/']) {
+      await page.goto(`${BASE}${path}`);
+      const got = await page.evaluate(() => document.documentElement.dataset.theme);
+      check(`${path}: sistema ${scheme}${saved ? `, eligió ${saved}` : ''} → ${want}`, got === want, got);
+    }
+    await ctx.close();
+  }
+
+  section('5c. Historial local');
+  {
+    const ctx = await browser.newContext();
+    await ctx.addInitScript(() => { try { localStorage.setItem('orometra.lang', 'en'); } catch { /* */ } });
+    const page = await ctx.newPage();
+    watch(page);
+    const stored = () => page.evaluate(() => { try { return JSON.parse(localStorage.getItem('orometra.history')); } catch { return null; } });
+    // El ejemplo no se guarda.
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    check('el ejemplo no se guarda en el historial', !(await stored()));
+    // Primer análisis propio: se guarda y se avisa una vez.
+    await page.goto(`${BASE}/app/`);
+    await page.setInputFiles('#mainFile', [isXml, oosXml]);
+    await page.waitForSelector('#analyzeBtn:not([disabled])');
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    const s1 = await stored();
+    check('un análisis propio se guarda (un resumen, sin las tablas)', s1 && s1.entries.length === 1 && JSON.stringify(s1).length < 4000, s1 ? `${JSON.stringify(s1).length} bytes` : 'nada');
+    check('la primera vez se avisa', Boolean(await page.$('.hist-notice')));
+    await page.click('[data-hist="ack"]');
+    check('«Entendido» quita el aviso', !(await page.$('.hist-notice')));
+    // El periodo no visto se apunta, y un intento que no llega a resultado no lo borra.
+    await page.click('.nav-item[data-tab="unseen"]');
+    await page.fill('#u_trades', '400');
+    await page.fill('#u_profit', '30000');
+    await page.fill('#u_profitFactor', '1.35');
+    await page.fill('#u_drawdown', '5');
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.u-result', { timeout: 15000 }).catch(() => {});
+    const u1 = (await stored()).entries[0].unseen;
+    await page.fill('#u_trades', '');
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.error-box', { timeout: 15000 }).catch(() => {});
+    const u2 = (await stored()).entries[0].unseen;
+    check('el periodo no visto se apunta en el historial', Boolean(u1 && u1.level), JSON.stringify(u1));
+    check('y un intento fallido no lo borra', Boolean(u2) && JSON.stringify(u2) === JSON.stringify(u1), JSON.stringify(u2));
+    // Otro backtest distinto: el anterior no se pierde, y se avisa en la pestaña y en el veredicto.
+    await page.fill('#u_trades', '400');
+    await page.fill('#u_profit', '-20000');
+    await page.fill('#u_profitFactor', '0.6');
+    await page.fill('#u_drawdown', '40');
+    await page.click('#unseenCheck');
+    await page.waitForSelector('.u-result .vx-tries', { timeout: 15000 }).catch(() => {});
+    const tries = (await stored()).entries[0].unseenTries || [];
+    check('el historial guarda los dos backtests del periodo no visto, no solo el último', tries.length === 2, JSON.stringify(tries));
+    check('la pestaña avisa de que no es el primer backtest', /not the first unseen-period backtest/.test(await page.$eval('.u-result .vx-tries', (e) => e.textContent).catch(() => '')));
+    await page.click('.nav-item[data-tab="verdict"]');
+    check('y el veredicto también', Boolean(await page.$('.vx-next .vx-tries')));
+    await page.click('.nav-item[data-tab="verdict"]');
+    // Segundo análisis del mismo EA con otros mínimos: compara y avisa de que no son comparables.
+    await page.click('#intakeExpandBtn').catch(() => {});
+    await page.fill('#gPf', '1.10');
+    await page.dispatchEvent('#gPf', 'input');
+    await page.click('#analyzeBtn');
+    await page.waitForFunction(() => { try { return JSON.parse(localStorage.getItem('orometra.history')).entries.length === 2; } catch { return false; } }, null, { timeout: 120000 });
+    await page.waitForSelector('.hist-panel', { timeout: 30000 });
+    check('el segundo análisis del mismo EA se compara con el anterior', Boolean(await page.$('.hist-panel')));
+    check('y dice que con otros mínimos el nivel no es comparable', Boolean(await page.$('.hist-panel .hist-caveat')));
+    check('la meseta cae en el mismo sitio (mismos datos)', /all 6 parameters/.test(await page.$eval('.hist-lead', (e) => e.textContent)));
+    // Pestaña Historial: se ve, se borra uno y se apaga.
+    await page.click('.nav-item[data-tab="history"]');
+    check('la pestaña Historial lista los análisis', (await page.$$('.hist-table tbody tr')).length === 2);
+    check('cada «Borrar» dice de qué análisis es', /^Delete the analysis from /.test((await page.getAttribute('[data-hist="delete"]', 'aria-label')) || ''));
+    // «Borrar todo» pide un segundo toque; sin él, a los 5 s vuelve a su texto y no borra.
+    await page.click('[data-hist="clear"]');
+    check('«Borrar todo» pide confirmación', /Tap again/.test(await page.textContent('[data-hist="clear"]')));
+    await page.waitForTimeout(5400);
+    check('sin segundo toque, a los 5 s vuelve a su texto', (await page.textContent('[data-hist="clear"]')).trim() === 'Delete all history', await page.textContent('[data-hist="clear"]'));
+    await page.click('[data-hist="clear"]');
+    check('y el toque siguiente vuelve a pedir confirmación, sin borrar', (await stored()).entries.length === 2 && /Tap again/.test(await page.textContent('[data-hist="clear"]')));
+    await page.click('[data-hist="delete"]');
+    check('se puede borrar uno', (await stored()).entries.length === 1);
+    await page.uncheck('[data-hist="toggle"]');
+    check('el interruptor lo desactiva', (await stored()).off === true);
+    await page.click('.nav-item[data-tab="verdict"]');
+    await page.click('#analyzeBtn');
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.waitForTimeout(300);
+    check('desactivado, no guarda nada más', (await stored()).entries.length === 1);
     await ctx.close();
   }
 

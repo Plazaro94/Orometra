@@ -2,10 +2,13 @@
 // y para comparar varios EA de una tacada.
 //
 //   node tools/audit.js <IS.xls> [OOS.xls] [--pf 1.05] [--dd 35] [--trades 100] [--json salida.json]
+//
+// Lee lo mismo que la app: XML de MT5, CSV y .xlsx.
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseTable } from '../core/parse.js';
+import { parseTable, finishTable, isZip } from '../core/parse.js';
+import { parseXlsx } from '../js/xlsx.js';
 import { runAnalysis } from '../core/analysis.js';
 import { DEFAULT_POLICY, qualityLabel } from '../core/metrics.js';
 import { buildReport } from '../js/export.js';
@@ -33,27 +36,31 @@ const policy = {
   },
 };
 
-function read(file) {
+async function read(file) {
   const buf = fs.readFileSync(file);
-  return parseTable(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), path.basename(file));
+  const buffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  // Un .xlsx es un ZIP: se descomprime aparte, igual que en la app (js/worker.js).
+  return isZip(buffer) ? finishTable(await parseXlsx(buffer), path.basename(file)) : parseTable(buffer, path.basename(file));
 }
+// Los textos del veredicto traen <strong>/<em> para la app; en la consola, sin etiquetas.
+const plain = (s) => String(s ?? '').replace(/<\/?(?:strong|em|b|i|code|a)\b[^>]*>/gi, '');
 
 const es = (v, d = 2) => (Number.isFinite(v) ? v.toLocaleString('es-ES', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
 const esInt = (v) => (Number.isFinite(v) ? Math.round(v).toLocaleString('es-ES') : '—');
 const rule = (ch = '─') => console.log(ch.repeat(74));
 const MARK = { block: '✗', warn: '!', ok: '✓', info: '·' };
 
-const isTable = read(files[0]);
-const oosTable = files[1] ? read(files[1]) : null;
+const isTable = await read(files[0]);
+const oosTable = files[1] ? await read(files[1]) : null;
 const a = runAnalysis({ isTable, oosTable, policy });
 
 rule('═');
-console.log(a.verdict.headline.toUpperCase());
+console.log(plain(a.verdict.headline).toUpperCase());
 rule('═');
 // El resumen dice QUE se ha encontrado; el siguiente paso, que se puede hacer con ello.
 // Nunca si operarlo: eso no lo mide esta herramienta.
-if (a.verdict.summary) { console.log(a.verdict.summary); console.log(''); }
-console.log('Qué puedes hacer: ' + a.verdict.nextStep);
+if (a.verdict.summary) { console.log(plain(a.verdict.summary)); console.log(''); }
+console.log('Qué puedes hacer: ' + plain(a.verdict.nextStep));
 console.log('');
 
 console.log(`Archivos        : ${path.basename(files[0])}${files[1] ? ' + ' + path.basename(files[1]) : ' (sin forward)'}`);
@@ -68,8 +75,8 @@ rule();
 console.log('EVIDENCIA');
 rule();
 for (const f of a.verdict.findings) {
-  console.log(` ${MARK[f.severity] || '·'} ${f.title}`);
-  console.log(`   ${f.detail.replace(/(.{68}\s)/g, '$1\n   ')}`);
+  console.log(` ${MARK[f.severity] || '·'} ${plain(f.title)}`);
+  console.log(`   ${plain(f.detail).replace(/(.{68}\s)/g, '$1\n   ')}`);
 }
 console.log('');
 
@@ -87,8 +94,7 @@ if (a.stats.fragilityFolds) {
 }
 if (a.stats.stabilityCheck) {
   const st = a.stats.stabilityCheck;
-  const inter = st.internal || st;
-  console.log(` Estabilidad ±20 % (n. umbrales)  : ${es(inter.regionRate * 100, 0)} % (misma región en ${esInt(inter.draws)} variaciones)`);
+  console.log(` Estabilidad ±20 % (n. umbrales)  : ${es(st.regionRate * 100, 0)} % (misma región en ${esInt(st.draws)} variaciones)`);
   console.log(` Estabilidad ±20 % (TUS mínimos)  : ${st.gates ? es(st.gates.regionRate * 100, 0) + ' % (' + esInt(st.gates.draws) + ' variaciones)' : '(omitida: conjunto demasiado grande)'}`);
 }
 if (a.meta.degreesOfFreedom) {
@@ -104,7 +110,14 @@ console.log(` Pruebas / pruebas efectivas      : ${esInt(a.meta.total)} / ${esIn
 if (a.stats.sharpeTest) {
   const s = a.stats.sharpeTest;
   console.log(` Sharpe máximo observado          : ${es(s.observedMax, 3)} (media ${es(s.mean, 3)}, σ ${es(s.sigma, 3)})`);
-  console.log(` Umbral por azar (pruebas efectivas): ${es(s.chanceMax, 3)}`);
+  console.log(` Umbral por azar (95 %, pruebas efectivas): ${es(s.chanceMax, 3)}`);
+}
+if (a.stats.shrinkage && a.stats.shrinkage.usable) {
+  const s = a.stats.shrinkage;
+  console.log(` Se conserva de lo que sobresale  : ${es(100 * s.beta, 0)} % (${es(100 * s.betaLo, 0)}–${es(100 * s.betaHi, 0)} %), familia ${es(s.family, 2)} por operación`);
+  for (const p of s.predictions) {
+    console.log(`   Pasada ${p.id}: esperado ${es(p.expected, 2)} por operación (forward ${es(p.observedOos, 2)}); ventaja propia ${es(p.own, 2)}, al menos ${es(p.ownLo, 2)}`);
+  }
 }
 if (a.meta.rescuedDims && a.meta.rescuedDims.length) {
   console.log(` Rescatados por efecto combinado  : ${a.meta.rescuedDims.map((d) => d.name).join(', ')}`);

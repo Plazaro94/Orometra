@@ -66,10 +66,9 @@ section('1. [hidden] no puede ser anulado por display:flex/grid');
   );
 
   for (const id of ['statusBar', 'errorBox', 'preflight', 'policyPreview', 'dropOverlay']) {
-    const re = new RegExp(`id="${id}"[^>]*\\bhidden\\b|\\bhidden\\b[^>]*id="${id}"`);
-    // Atributo hidden puede ir antes o después del id.
-    const ok = new RegExp(`id="${id}"[^>]*>`).test(appHtml)
-      && appHtml.match(new RegExp(`<[^>]*id="${id}"[^>]*>`))?.[0]?.includes('hidden');
+    // El atributo hidden puede ir antes o después del id; aria-hidden no cuenta.
+    const tag = appHtml.match(new RegExp(`<[^>]*\\sid="${id}"[^>]*>`))?.[0] || '';
+    const ok = /\shidden(?=[\s=>/])/.test(tag);
     check(`#${id} arranca con atributo hidden`, Boolean(ok));
   }
 }
@@ -99,7 +98,8 @@ section('2. Arranque /app/: sin progreso ni error visibles en el marcado');
 section('3. Demo: carga y encuentra meseta (botón / ?demo=1)');
 {
   check('landing enlaza demo con ?demo=1', /href="app\/\?demo=1"/.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')));
-  check('ui arranca demo si ?demo=1', /get\('demo'\)\s*===\s*'1'[\s\S]{0,80}loadDemo\(/.test(uiSrc));
+  check('ui arranca demo si ?demo=1', /get\('demo'\)[\s\S]{0,80}===\s*'1'\)\s*loadDemo\('good'\)/.test(uiSrc));
+  check('y el ejemplo sin ventaja si ?demo=noedge', /===\s*'noedge'\)\s*loadDemo\('noedge'\)/.test(uiSrc));
 
   const demo = buildDemoTables();
   check('demo genera IS y OOS', Boolean(demo.isTable && demo.oosTable && demo.isTable.rows.length > 100));
@@ -140,7 +140,7 @@ section('4. Errores tipados: título + pista, no solo “Analysis failed”');
   check('classifyError conserva el código del worker', classifyError(new AnalysisError(CODE.WORKER_ERROR, 'Worker timeout')).code === CODE.WORKER_ERROR);
 
   check('ui importa errorCopy/classifyError', /errorCopy/.test(uiSrc) && /classifyError/.test(uiSrc));
-  check('showError rellena errorHint', /function showError[\s\S]{0,600}errorHint/.test(uiSrc));
+  check('showError rellena errorHint', /function showError[\s\S]{0,1200}errorHint/.test(uiSrc));
   check('holdout en sello del veredicto', /function holdoutFact/.test(uiSrc) && /run-holdout/.test(uiSrc));
   check('evidencia fuerte sin holdout se atenúa', /function displayVerdictLevel/.test(uiSrc));
 }

@@ -2,6 +2,7 @@
 
 import { getLocale, L } from './i18n.js';
 import { mergeSetValues } from '../core/setfile.js';
+import { mt5Figure } from './ui-state.js';
 
 /** Formato MT5 (.set / pegar en Inputs): punto decimal, sin locale. */
 export function formatSetValue(value) {
@@ -12,8 +13,18 @@ export function formatSetValue(value) {
   return String(Number(value.toFixed(8)));
 }
 
-function fmt(value) {
-  return formatSetValue(value);
+const fmt = formatSetValue;
+
+/**
+ * Con qué cifras se encuentra la configuración en MT5: el número de pasada no se conserva al
+ * cerrar el probador y el del XML puede no coincidir con el de su tabla (PASS-2).
+ */
+function mt5FiguresComment(rec) {
+  const r = (rec && rec.is) || {};
+  if (!Number.isFinite(r.profit) || !Number.isFinite(r.trades)) return [];
+  const result = Number.isFinite(rec.criterionIs) ? ` · ${L('Resultado', 'Result')} ${mt5Figure(rec.criterionIs)}` : '';
+  return [L(`; En MT5 (periodo optimizado): beneficio ${mt5Figure(r.profit)} · ${Math.round(r.trades)} operaciones${result}`,
+    `; In MT5 (optimized period): profit ${mt5Figure(r.profit)} · ${Math.round(r.trades)} trades${result}`)];
 }
 
 /**
@@ -25,8 +36,9 @@ export function buildSetFile(analysis, plateau, baseSet = null) {
   const merged = mergeSetValues(paramNames, paramNames.map((_, j) => fmt(plateau.record.params[j])), baseSet);
   const lines = [
     '; ================================================================',
-    L('; Orometra - configuración representativa', '; Orometra - representative configuration'),
-    L(`; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pasada original ${plateau.record.id}`, `; Plateau ${plateau.rank} of ${analysis.plateaus.length} | Original pass ${plateau.record.id}`),
+    L('; Orometra (orometra.com) - configuración representativa', '; Orometra (orometra.com) - representative configuration'),
+    L(`; Meseta ${plateau.rank} de ${analysis.plateaus.length} | Pasada ${plateau.record.id} del archivo exportado`, `; Plateau ${plateau.rank} of ${analysis.plateaus.length} | Pass ${plateau.record.id} in the exported file`),
+    ...mt5FiguresComment(plateau.record),
     L(`; Robustez ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configuraciones en la meseta`, `; Robustness ${plateau.robust.toFixed(1)}/100 | ${plateau.size} configurations in the plateau`),
     L('; Elegida por buen puesto en el periodo optimizado y en el forward, promediado con sus vecinas.', '; Chosen for ranking well on both the optimized period and the forward, averaged with its neighbors.'),
     L(`; Generado ${new Date().toISOString()}`, `; Generated ${new Date().toISOString()}`),
@@ -50,12 +62,12 @@ function setCompletenessComment(merged) {
   }
   return L(
     [
-      `; OJO: este archivo solo lleva los ${merged.optimized} parámetros que optimizaste. Al cargarlo en MT5,`,
+      `; OJO: este archivo solo lleva ${merged.optimized === 1 ? 'el parámetro' : `los ${merged.optimized} parámetros`} que optimizaste. Al cargarlo en MT5,`,
       '; el resto se queda como lo tengas en ese momento en el probador. Suelta en Orometra el .set',
       '; de tu optimización para obtener uno completo.',
     ],
     [
-      `; NOTE: this file only carries the ${merged.optimized} parameters you optimized. When loaded in MT5,`,
+      `; NOTE: this file only carries ${merged.optimized === 1 ? 'the parameter' : `the ${merged.optimized} parameters`} you optimized. When loaded in MT5,`,
       '; the rest stay as you have them in the tester at that moment. Drop your optimization .set',
       '; in Orometra to get a complete one.',
     ],
@@ -75,8 +87,8 @@ export function setCoverageNote(analysis, plateau, baseSet = null) {
     );
   }
   return L(
-    `El .set solo lleva los ${merged.optimized} parámetros que optimizaste: MT5 no cambiará el resto y quedarán como los tengas en el probador. Suelta el .set de tu optimización para completarlo.`,
-    `The .set only carries the ${merged.optimized} parameters you optimized: MT5 will not change the rest and they will stay as you have them in the tester. Drop your optimization .set to complete it.`,
+    `El .set solo lleva ${merged.optimized === 1 ? 'el parámetro' : `los ${merged.optimized} parámetros`} que optimizaste: MT5 no cambiará el resto y quedarán como los tengas en el probador. Suelta el .set de tu optimización para completarlo.`,
+    `The .set only carries ${merged.optimized === 1 ? 'the parameter' : `the ${merged.optimized} parameters`} you optimized: MT5 will not change the rest and they will stay as you have them in the tester. Drop your optimization .set to complete it.`,
   );
 }
 
@@ -90,20 +102,34 @@ export function buildRefinementSetFile(analysis, plateau, baseSet = null) {
     '; ================================================================',
     L('; Orometra - rango de refinamiento', '; Orometra - refinement range'),
     ';',
-    ...L(
-      [
-        '; Cárgalo en el probador y lanza una optimización con el algoritmo lento',
-        '; (búsqueda completa) sobre este rango reducido. Con la búsqueda completa la',
-        '; geometría de mesetas se mide de verdad, sin los huecos que deja el genético.',
-        '; Después vuelve a subir los dos archivos a la aplicación.',
-      ],
-      [
-        '; Load it in the tester and run an optimization with the slow complete',
-        '; algorithm over this reduced range. With the complete search the plateau',
-        '; geometry is measured for real, without the gaps the genetic algorithm leaves.',
-        '; Then upload the two files to the application again.',
-      ],
-    ),
+    ...(analysis.meta.sampling === 'grid'
+      ? L(
+        [
+          '; Tu optimización ya probó la rejilla entera: este rango pone el paso a la',
+          '; mitad alrededor de la configuración recomendada, para ver los valores',
+          '; intermedios. Cárgalo en el probador y lanza una optimización con el',
+          '; algoritmo lento (búsqueda completa). Después suelta el resultado en Orometra.',
+        ],
+        [
+          '; Your optimization already tested the whole grid: this range halves the',
+          '; step around the recommended configuration, to see the in-between values.',
+          '; Load it in the tester and run an optimization with the slow complete',
+          '; algorithm. Then drop the result into Orometra.',
+        ],
+      )
+      : L(
+        [
+          '; Cárgalo en el probador y lanza una optimización con el algoritmo lento',
+          '; (búsqueda completa) sobre este rango reducido. Con la búsqueda completa',
+          '; no quedan huecos sin probar alrededor de la meseta. Después suelta el',
+          '; resultado en Orometra.',
+        ],
+        [
+          '; Load it in the tester and run an optimization with the slow complete',
+          '; algorithm over this reduced range. With the complete search no gaps are',
+          '; left untested around the plateau. Then drop the result into Orometra.',
+        ],
+      )),
     ';',
     // Sin separador de miles ni formato regional: es un archivo para una máquina.
     L(`; Combinaciones del rango: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1)}`, `; Combinations in the range: ${plateau.refinement.reduce((a, p) => a * (p.constant ? 1 : p.levels), 1)}`),
@@ -172,9 +198,15 @@ export function buildReport(analysis, extra = {}) {
     // El nivel que el usuario vio en pantalla, no el crudo del motor: exportar "strong"
     // mientras la interfaz dice "moderada" hacia que el informe compartido contradijera
     // a la app. El del motor se conserva aparte, para trazabilidad.
-    verdict: extra.shownVerdict
-      ? { ...analysis.verdict, level: extra.shownVerdict.level, headline: extra.shownVerdict.headline, summary: extra.shownVerdict.summary, engineLevel: analysis.verdict.level }
-      : analysis.verdict,
+    // Los textos de los hallazgos llevan algo de HTML para la pantalla (<strong>, <code>): en
+    // el JSON van en texto plano.
+    verdict: (() => {
+      const v = extra.shownVerdict
+        ? { ...analysis.verdict, level: extra.shownVerdict.level, headline: extra.shownVerdict.headline, summary: extra.shownVerdict.summary, engineLevel: analysis.verdict.level }
+        : { ...analysis.verdict };
+      const plain = (x) => (typeof x === 'string' ? x.replace(/<[^>]+>/g, '') : x);
+      return { ...v, headline: plain(v.headline), summary: plain(v.summary), nextStep: plain(v.nextStep), findings: (v.findings || []).map((f) => ({ ...f, title: plain(f.title), detail: plain(f.detail) })) };
+    })(),
     meta: analysis.meta,
     integrity: analysis.integrity,
     statistics: analysis.stats,
@@ -195,19 +227,24 @@ export function buildReport(analysis, extra = {}) {
       oosValidation: p.oosValidation || null,
       representative: {
         pass: p.record.id,
+        // Configuraciones distintas del archivo con el mismo beneficio y operaciones (al
+        // buscarla en MT5 por sus cifras, cuántas más salen).
+        sameFiguresCount: p.record.twins || 0,
         params: Object.fromEntries(analysis.meta.paramNames.map((n, j) => [n, p.record.params[j]])),
         qualityIs: p.record.qualityIs,
         qualityOos: p.record.qualityOos,
         metricsIs: p.record.is,
         metricsOos: p.record.oos,
         support: p.stability.support,
-        neighbourFloorQ25: p.stability.q25,
+        neighborFloorQ25: p.stability.q25,
       },
       boundaryAtRepresentative: p.boundary,
       refinement: p.refinement,
     })),
     rejectedPeaks: analysis.peaks.map((p) => ({
       pass: p.record.id,
+      profitIs: p.record.is ? p.record.is.profit : null,
+      tradesIs: p.record.is ? p.record.is.trades : null,
       criterionRank: p.criterionRank,
       criterionValue: p.key,
       quality: p.score,
@@ -238,9 +275,12 @@ export function buildCsv(analysis) {
   };
   const { paramNames } = analysis.meta;
   const hasF = analysis.meta.hasForward;
+  // inPlateau guarda el orden en que se encontró cada meseta, no su puesto: la columna lleva
+  // el número que se ve en pantalla («Meseta 1» es la recomendada), como el JSON.
+  const rankOf = new Map(analysis.plateaus.map((p) => [p.id, p.rank]));
   const head = es
-    ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinos', 'suelo_vecindad_q25', 'frac_vecinos_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta']
-    : ['pass', ...paramNames, 'quality_is', 'quality_forward', 'score', 'robustness', 'neighbors', 'neighborhood_floor_q25', 'neighbors_ok_share', 'cliff', 'peak_z', 'meets_minima_is', 'meets_minima_forward', 'plateau'];
+    ? ['pass', ...paramNames, 'calidad_is', 'calidad_forward', 'puntuacion', 'robustez', 'vecinas', 'suelo_vecindad_q25', 'frac_vecinas_ok', 'acantilado', 'pico_z', 'cumple_minimos_is', 'cumple_minimos_forward', 'meseta', 'beneficio_is', 'operaciones_is', 'result_is']
+    : ['pass', ...paramNames, 'quality_is', 'quality_forward', 'score', 'robustness', 'neighbors', 'neighborhood_floor_q25', 'neighbors_ok_share', 'cliff', 'peak_z', 'meets_minima_is', 'meets_minima_forward', 'plateau', 'profit_is', 'trades_is', 'result_is'];
   const rows = analysis.records.map((r, i) => {
     const st = analysis.stability[i];
     const okIs = r.failsIs ? !r.failsIs.length : r.passes;
@@ -249,14 +289,34 @@ export function buildCsv(analysis) {
       cell(r.id), ...r.params.map(cell),
       n(r.qualityIs), n(r.qualityOos), n(analysis.scores[i]), n(analysis.robust[i]),
       st.support, n(st.q25), n(st.fracPass), n(st.cliff), n(st.peakZ),
-      okIs ? 1 : 0, okOos, analysis.inPlateau[i] >= 0 ? analysis.inPlateau[i] + 1 : '',
+      okIs ? 1 : 0, okOos, analysis.inPlateau[i] >= 0 ? (rankOf.get(analysis.inPlateau[i]) ?? '') : '',
+      // Las cifras con las que se busca la configuración en MT5 (el número de pasada no sirve:
+      // PASS-2 en docs/MT5_ASSUMPTIONS.md). Al final, para no descolocar a quien lea por posición.
+      n(r.is && r.is.profit), n(r.is && r.is.trades), n(r.criterionIs),
     ].join(sep);
   });
   return [head.map(cell).join(sep), ...rows].join('\r\n');
 }
 
+/**
+ * Texto en UTF-16 little-endian con BOM, que es como guarda MT5 sus propios .set: así el
+ * terminal lo lee igual que uno suyo, también los comentarios con tildes.
+ */
+export function encodeUtf16le(text) {
+  const bytes = new Uint8Array(2 + text.length * 2);
+  bytes[0] = 0xFF;
+  bytes[1] = 0xFE;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    bytes[2 + 2 * i] = c & 0xFF;
+    bytes[3 + 2 * i] = c >> 8;
+  }
+  return bytes;
+}
+
 export function downloadText(filename, text, mime = 'text/plain;charset=utf-8') {
-  const blob = new Blob([text], { type: mime });
+  const utf16 = /charset=utf-16le/i.test(mime);
+  const blob = new Blob([utf16 ? encodeUtf16le(text) : text], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

@@ -2,7 +2,7 @@
  * Bootstrap estacionario (Politis-Romano) sobre retornos OOS.
  */
 
-import { makeRng, mean, maxDrawdown, cumsum } from './util.js';
+import { makeRng, mean, maxDrawdown } from './util.js';
 
 function geometricLength(rng, p) {
   // P(L=k) = (1-p)^(k-1)*p , media 1/p

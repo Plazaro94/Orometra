@@ -115,8 +115,8 @@ export function parseBacktestReport(text, fileName = '') {
 }
 
 const NOT_A_REPORT = () => L(
-  'Esto no parece el informe de un backtest de MT5. En el probador, pestaña Backtest: clic derecho sobre los resultados > Informe > HTML u Open XML.',
-  'This does not look like an MT5 backtest report. In the tester, Backtest tab: right-click the results > Report > HTML or Open XML.',
+  'Esto no parece el informe de un backtest de MT5. En el probador, pestaña Backtest: clic derecho sobre los resultados → Informe → HTML u Open XML.',
+  'This does not look like an MT5 backtest report. In the tester, Backtest tab: right-click the results → Report → HTML or Open XML.',
 );
 
 /**

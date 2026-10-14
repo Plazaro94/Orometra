@@ -14,7 +14,7 @@ import { DEFAULT_POLICY } from '../core/metrics.js';
 import { buildDemoTables } from '../js/demo.js';
 import { setLocale } from '../js/i18n.js';
 import { state } from '../js/ui-state.js';
-import { holdoutFact, displayVerdictLevel } from '../js/ui-verdict.js';
+import { holdoutFact, displayVerdictLevel, displayVerdictCopy } from '../js/ui-verdict.js';
 import { parseBacktestReport } from '../core/report.js';
 import { dailySeriesFromDeals } from '../core/trades/from-deals.js';
 import { refinementRange } from '../core/engine.js';
@@ -104,13 +104,17 @@ section('C2. Solo un periodo no visto de la configuracion propuesta sube el nive
   }
   if (a.verdict.level === 'strong') {
     set({ params: other }, 'normal');
-    check('con un informe ajeno el sello no pasa de buena', displayVerdictLevel(a) === 'good', displayVerdictLevel(a));
+    // Desde la enmienda del 2026-10-09: un informe ajeno no dice nada de la propuesta, ni a
+    // favor ni en contra. El nivel se queda como lo dio el motor y sin la mención.
+    check('con un informe ajeno el nivel no cambia', displayVerdictLevel(a) === 'strong', displayVerdictLevel(a));
+    check('y no dice que el periodo no visto no la contradiga', !/no la contradice/.test(displayVerdictCopy(a).headline), displayVerdictCopy(a).headline);
     set({ params: matching }, 'tail');
     check('si el periodo no visto va en contra, baja a moderada', displayVerdictLevel(a) === 'moderate', displayVerdictLevel(a));
     set({ params: matching }, 'outside');
     check('fuera de rango tambien baja a moderada', displayVerdictLevel(a) === 'moderate', displayVerdictLevel(a));
     set({ params: matching }, 'normal');
-    check('con el informe correcto el sello es solida', displayVerdictLevel(a) === 'strong', displayVerdictLevel(a));
+    check('con el informe correcto sigue en solida', displayVerdictLevel(a) === 'strong', displayVerdictLevel(a));
+    check('y lo dice en el titular', /no la contradice/.test(displayVerdictCopy(a).headline), displayVerdictCopy(a).headline);
   }
   state.report = null;
   state.unseen = { plateauIndex: 0, values: {}, result: null, error: null, tradesAudit: null };

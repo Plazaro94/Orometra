@@ -36,6 +36,31 @@ export function L(es, en) {
   return getLocale() === 'es' ? es : en;
 }
 
+/** Signo de porcentaje tras una cifra: «20 %» en español (con espacio irrompible, para que
+ * el % no salte solo a la línea siguiente) y «20%» en inglés. */
+export function pctSign() {
+  return L('\u00A0%', '%');
+}
+
+/**
+ * Proporción legible: «12,5 %» si es del 0,1 % o más; por debajo, «1 de cada 52.223.635».
+ * Con una optimización genética de muchos parámetros la parte probada es diminuta y un
+ * porcentaje redondeado salía como «0,0000 %», que no dice nada.
+ * @param {number} share   proporción entre 0 y 1
+ * @param {string} unitEs  lo que se cuenta («combinaciones»), solo en la forma «1 de cada N»
+ * @param {string} unitEn
+ */
+export function shareText(share, unitEs = '', unitEn = '') {
+  if (!Number.isFinite(share) || share < 0) return '—';
+  if (share === 0) return `0${pctSign()}`;
+  if (share >= 0.001) {
+    const d = share >= 0.1 ? 1 : 2;
+    return `${new Intl.NumberFormat(localeTag(), { minimumFractionDigits: 0, maximumFractionDigits: d }).format(100 * share)}${pctSign()}`;
+  }
+  const n = new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 0 }).format(Math.round(1 / share));
+  return L(`1 de cada ${n}${unitEs ? ` ${unitEs}` : ''}`, `1 in ${n}${unitEn ? ` ${unitEn}` : ''}`);
+}
+
 export function t(key, vars) {
   const pack = STRINGS[getLocale()] || STRINGS.en;
   let s = pack[key] ?? STRINGS.en[key] ?? key;

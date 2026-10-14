@@ -120,8 +120,7 @@ section('B11. Sin claves repetidas en las traducciones');
     }
   }
   check('ninguna clave repetida dentro de un idioma', dup === 0, `${dup} repetidas`);
-  const sm = fs.readFileSync(new URL('../sitemap.xml', import.meta.url), 'utf8');
-  check('el sitemap lleva lastmod en cada pagina', (sm.match(/<lastmod>/g) || []).length === (sm.match(/<loc>/g) || []).length);
+  // Que el sitemap lleve fecha en cada página lo comprueba tests/seo.test.js.
 }
 
 section('U. El periodo no visto no dice «normal» a secas');
@@ -139,7 +138,7 @@ section('U. El periodo no visto no dice «normal» a secas');
     sharpe: rep.oos.sharpe,
   });
   check('un tramo normal se titula «no contradice»', /no contradice/i.test(r.headline), r.headline);
-  check('la lectura explica el alcance con cifras medidas', r.notes.some((n) => /Alcance de este contraste/.test(n) && /35 %/.test(n) && /24 %/.test(n)));
+  check('la lectura explica el alcance con cifras medidas', r.notes.some((n) => /Alcance de este contraste/.test(n) && /35\u00A0%/.test(n) && /24\u00A0%/.test(n)));
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas`);

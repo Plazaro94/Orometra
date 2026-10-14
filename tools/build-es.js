@@ -8,11 +8,15 @@
 // las dos.
 //
 // Por que se generan: si se editaran a mano, las dos versiones acabarian siendo distintas.
-// Cualquier cambio se hace en la pagina inglesa o en js/i18n.js y se vuelve a ejecutar:
+// Los textos con data-i18n se cambian en js/i18n.js: este script los reescribe tambien en
+// la pagina inglesa. La estructura (etiquetas, clases, enlaces) se cambia en la inglesa.
+// Ademas genera js/i18n-site.js y pone en cada pagina la version de styles.css (?v=).
+// Tras cambiar cualquiera de esas fuentes se vuelve a ejecutar:
 //
-//   node tools/build-es.js           (escribe es/)
-//   node tools/build-es.js --check   (falla si es/ no esta al dia; lo usa `npm test`)
+//   node tools/build-es.js           (escribe es/, js/i18n-site.js y lo demas)
+//   node tools/build-es.js --check   (falla si algo no esta al dia; lo usa `npm test`)
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,7 +43,7 @@ const PAGES = [
 // Guias: fecha de publicacion y prefijo de sus claves i18n.
 const PUBLISHED = { 'guide-export': '2026-09-28', 'guide-overfit': '2026-09-28', 'guide-forward': '2026-09-28', 'guide-report': '2026-09-28', 'guide-genetic': '2026-09-28', 'guide-criterion': '2026-09-28' };
 // Fecha de la última revisión a fondo de una guía (si no está, la de publicación).
-const MODIFIED = { 'guide-overfit': '2026-10-04' };
+const MODIFIED = { 'guide-overfit': '2026-10-08', 'guide-export': '2026-10-08', 'guide-forward': '2026-10-08', 'guide-report': '2026-10-08', 'guide-genetic': '2026-10-08', 'guide-criterion': '2026-10-08' };
 const GUIDE_KEYS = { 'guide-export': 'guide.export', 'guide-overfit': 'guide.overfit', 'guide-forward': 'guide.forward', 'guide-report': 'guide.report', 'guide-genetic': 'guide.genetic', 'guide-criterion': 'guide.criterion' };
 const LOCALIZED = new Map(PAGES.map(([, en, es]) => [en, es]));
 
@@ -101,7 +105,15 @@ function rewriteUrls(html, enPath) {
     const abs = new URL(url, ORIGIN + enPath);
     let p = abs.pathname;
     if (LOCALIZED.has(p)) p = LOCALIZED.get(p);
-    return a + p + abs.search + abs.hash + b;
+    // La app no tiene direccion en espanol: se le dice el idioma en el enlace
+    // (js/theme-init.js), o quien tenga el navegador en ingles la veria en ingles.
+    let search = abs.search;
+    if (p === '/app/') {
+      const q = new URLSearchParams(search);
+      q.delete('lang');
+      search = '?' + ['lang=es', q.toString()].filter(Boolean).join('&amp;');
+    }
+    return a + p + search + abs.hash + b;
   });
 }
 
@@ -172,6 +184,7 @@ function build(file, enPath, esPath, page) {
   html = setMeta(html, /<meta name="twitter:title"[^>]*>/, title);
   html = setMeta(html, /<meta name="twitter:description"[^>]*>/, desc);
   html = setMeta(html, /<meta property="og:locale"[^>]*>/, 'es_ES');
+  html = setMeta(html, /<meta property="og:url"[^>]*>/, `${ORIGIN}${esPath}`);
   html = setMeta(html, /<meta property="og:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg?v=13`);
   html = setMeta(html, /<meta name="twitter:image"[^>]*>/, `${ORIGIN}/og-image-es.jpg?v=13`);
   html = html.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${ORIGIN}${esPath}">`);
@@ -199,7 +212,7 @@ function syncEnglish(html, page) {
 /**
  * js/i18n-site.js: los únicos textos que necesitan las páginas públicas. Ya vienen
  * escritas en su idioma, así que solo hacen falta los que pinta js/landing.js (menú del
- * móvil, índice de las guías, relieve de la portada) y los de la 404, que es una sola
+ * móvil, índice de las guías) y los de la 404, que es una sola
  * página para los dos idiomas. Antes cargaban js/i18n.js entero: 1.270 textos, 39 KB
  * comprimidos, para usar una veintena.
  */
@@ -233,6 +246,21 @@ let stale = 0;
     if (check) { stale++; console.log('  FAIL js/i18n-site.js no esta al dia (node tools/build-es.js)'); }
     else { fs.writeFileSync(out, next); console.log('escrito js/i18n-site.js'); }
   } else if (check) console.log('  ok   js/i18n-site.js');
+}
+// La hoja de estilos se pide como styles.css?v=<huella de su contenido>: si cambia, cambia
+// la direccion y nadie se queda con la vieja en cache junto a un HTML nuevo. Antes la
+// version se subia a mano y se olvidaba (seguia en 20261012c tras cinco cambios de la hoja).
+{
+  const v = crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, 'styles.css'))).digest('hex').slice(0, 10);
+  for (const file of [...PAGES.map(([f]) => f), 'app/index.html', '404.html']) {
+    const src = path.join(ROOT, file);
+    const current = fs.readFileSync(src, 'utf8');
+    if (!/styles\.css\?v=/.test(current)) throw new Error(`${file} no pide styles.css?v=...`);
+    const next = current.replace(/(styles\.css\?v=)[^"]*/g, `$1${v}`);
+    if (next === current) continue;
+    if (check) { stale++; console.log(`  FAIL ${file}: styles.css?v= no corresponde a la hoja actual (node tools/build-es.js)`); }
+    else { fs.writeFileSync(src, next); console.log(`actualizado ${file} (styles.css?v=${v})`); }
+  }
 }
 // Primero, los datos estructurados de la pagina inglesa (fuente) al dia.
 for (const [file, en, , page] of PAGES) {

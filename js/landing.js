@@ -29,11 +29,12 @@ function syncLang() {
   $$('[data-lang-set]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.langSet === lang)));
 }
 
-try {
-  const saved = localStorage.getItem(THEME_KEY);
-  setTheme(saved || 'dark', false);
-} catch {
-  setTheme('dark', false);
+// Sin elección guardada, el tema del sistema, y se sigue si cambia (modo noche automático).
+const systemLight = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)') : null;
+const savedTheme = () => { try { return localStorage.getItem(THEME_KEY); } catch { return null; } };
+setTheme(savedTheme() || (systemLight && systemLight.matches ? 'light' : 'dark'), false);
+if (systemLight) {
+  systemLight.addEventListener('change', (e) => { if (!savedTheme()) setTheme(e.matches ? 'light' : 'dark', false); });
 }
 
 $$('[data-theme-set]').forEach((b) => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
@@ -58,7 +59,7 @@ $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => {
 }));
 // La 404 es una sola página para los dos idiomas: en español, sus enlaces llevan a la
 // versión en español de cada página (las que la tienen).
-const ES_HREF = { '/': '/es/', '/methodology/': '/es/methodology/', '/guides/': '/es/guias/', '/privacy/': '/es/privacy/' };
+const ES_HREF = { '/': '/es/', '/app/': '/app/?lang=es', '/methodology/': '/es/methodology/', '/about/': '/es/about/', '/guides/': '/es/guias/', '/privacy/': '/es/privacy/' };
 function syncNotFoundLinks() {
   if (document.documentElement.getAttribute('data-page') !== 'notfound') return;
   const es = getLocale() === 'es';
@@ -188,7 +189,8 @@ function mountGuideRail() {
     const li = document.createElement('li');
     const a = document.createElement('a');
     a.href = `#${h.id}`;
-    a.textContent = h.textContent.trim();
+    // El índice ya numera con su contador: sin el «1.» que llevan algunos títulos.
+    a.textContent = h.textContent.trim().replace(/^\d+\.\s+/, '');
     li.append(a);
     list.append(li);
   });
@@ -198,7 +200,7 @@ function mountGuideRail() {
   q.textContent = t('guide.rail.q');
   const go = document.createElement('a');
   go.className = 'primary-btn';
-  go.href = '/app/';
+  go.href = getLocale() === 'es' ? '/app/?lang=es' : '/app/';
   go.textContent = t('lp.cta');
   cta.append(q, go);
   inner.append(k, list, cta);
