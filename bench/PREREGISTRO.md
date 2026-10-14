@@ -241,3 +241,53 @@ M1. Si no propone meseta, se registra como «se abstiene».
   del periodo optimizado en los casos con ventaja; sin ventaja, la ventaja propia sale distinta
   de cero el 9 % de las veces (5 de 56), frente al 5 % de la calibración
   (`REPORT-shrink-exam6.md`). Los criterios no cambian.
+- **2026-10-14 (b), prerregistro del orden entre mesetas, ANTES de generar ningún caso.**
+  *Pregunta:* con muchas dimensiones, muestreo genético y varias zonas buenas, ¿qué regla
+  para ordenar las mesetas elige mejor en el periodo no visto? *Conflicto declarado:* quien
+  escribe esto conoce un caso real (el export de la enmienda anterior) en el que
+  la regla actual pone primera una meseta grande que falla el forward por delante de una
+  pequeña que lo aguanta. Por eso las zonas del escenario se sortean, las reglas son pocas y
+  todo se fija aquí, antes de ver un solo resultado.
+  **Escenarios nuevos** (`bench/sim.js`; no entran en los criterios del §6, que siguen
+  midiendo S1-S8):
+  - **S9, varias zonas con ventaja.** Rejilla de 5 a 7 parámetros, de 5 a 8 niveles cada uno
+    (el espacio entero no se simula). Ventaja verdadera: K zonas, K al azar entre 2, 3 y 4;
+    cada zona con centro al azar (a un paso del borde como mínimo), anchura por parámetro
+    uniforme entre 0,8 y 2,5 pasos y altura uniforme entre 0,05 y 0,35 desviaciones por
+    operación; la ventaja de una configuración es la mayor de las zonas. Es la misma en el
+    in-sample, el forward y el no visto. Suerte del periodo y operaciones, como en S1-S8
+    (amplitud de 0,04 a 0,12; de 150 a 600 operaciones in-sample; forward del 25 % al 50 %).
+  - **Muestreo genético de S9:** de 1.500 a 4.000 configuraciones distintas. El 25 % al azar
+    uniforme; el resto, en tandas de 100 hijos: padre al azar entre el 20 % mejor por
+    beneficio in-sample de lo ya probado, hijo mutando 1 o 2 parámetros ±1 o ±2 pasos (dentro
+    de la rejilla); los repetidos se descartan. Forward: el 25 % mejor por beneficio
+    in-sample, como en S1-S8.
+  - **S10, su gemelo sin ventaja:** lo mismo, pero las zonas solo existen en el in-sample;
+    en el forward y en el no visto no hay ventaja.
+  **Reglas candidatas (lista cerrada):**
+  - **R0**, la actual: suelo × tamaño × evidencia × penalizaciones × (0,35 + 0,65 × fracción
+    validada en el forward).
+  - **R1, por lo que se espera:** cada meseta se ordena por su beneficio esperado por
+    operación en un periodo nuevo, con el modelo de `core/shrink.js` aplicado a la meseta
+    entera como una unidad (media de sus configuraciones en cada periodo; operaciones por
+    media armónica).
+  - **R2, por su límite inferior:** como R1, por esperado − 1,96 × su desviación a posteriori.
+  - Si el modelo no se puede estimar (sin forward, o con menos de 30 candidatas), R1 y R2
+    usan R0. La misma clave ordena las mesetas y la prueba de estabilidad.
+  **Métricas:** las del §5. Las reglas no cambian qué mesetas existen, solo su orden, así que
+  la abstención es la misma con las tres.
+  **Criterios (cerrados).** R1 o R2 se adopta solo si, en la calibración (semillas 1-100 de
+  S1-S10), cumple las cuatro:
+  (a) mediana del arrepentimiento en S9 al menos 0,02 por debajo de la de R0;
+  (b) en ningún escenario de S1 a S8 su mediana supera la de R0 en más de 0,01;
+  (c) «moderada o más» ≤ 5 % en S1, S2, S5 y S10, y en ninguno más de 1 punto por encima de R0;
+  (d) sigue aprobando los criterios del §6 que R0 aprueba en esa misma calibración.
+  Si las dos cumplen, la de menor mediana en S9. Si ninguna, se queda R0 y se dice.
+  **Examen:** semillas 7001-7100 de S1-S10, nunca generadas; una sola vez, con el motor
+  congelado, la regla elegida y R0 al lado. Se publica tal como salga. La adopción se
+  confirma si en el examen la mediana en S9 de la elegida no supera la de R0 y se cumple (c);
+  si no, se vuelve a R0 y se dice.
+  **Depurar el generador** solo con semillas de 900.000 en adelante, que no son de ningún
+  tramo, y mirando solo que funciona (tiempos, mesetas, forward), nunca arrepentimientos.
+  **El caso real** (el export del autor y su periodo no visto, cuando exista) se informa
+  aparte: es un caso, no decide.
