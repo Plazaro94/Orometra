@@ -307,3 +307,18 @@ M1. Si no propone meseta, se registra como «se abstiene».
   R1 cambia la elegida en 16 de 100 casos de S9 y acierta en 8 y falla en 8; R2, en 15 (8
   mejor, 7 peor). **Ninguna cumple (a) y (b): se queda R0.** Como no se adopta nada, no hay
   examen que confirmar: las semillas 7001-7100 quedan sin generar para la próxima pregunta.
+- **2026-10-14 (e), de dónde viene el suspenso frente a B4 (y B3).** No es la elección dentro
+  de la meseta. Arrepentimiento mediano en los escenarios con ventaja (S3, S4, S6, S7 y S8):
+
+  | | Calibración | Quinto examen | Sexto examen |
+  |---|---|---|---|
+  | Cuando Orometra propone meseta: Orometra / B4 | 0,146 / 0,180 | 0,135 / 0,172 | 0,145 / 0,164 |
+  | Cuando no la propone: sugerencia orientativa / B4 | 0,317 / 0,405 | — | 0,346 / 0,412 |
+  | Lo que enseña la app (meseta o sugerencia): Orometra / B4 | 0,177 / 0,229 | 0,187 / 0,198 | 0,191 / 0,213 |
+  | Como cuenta el criterio (sin meseta = 1): Orometra / B4 | 0,247 / 0,229 | 0,228 / 0,198 | 0,258 / 0,213 |
+
+  El suspenso sale de contar cada caso sin meseta (del 21 % al 36 % según el escenario) como
+  el peor resultado, que se decidió así a propósito. Se mantiene el criterio, y no se relajan
+  los umbrales para abstenerse menos: subirían los falsos positivos, que es lo que más
+  protege al usuario. Metodología lo explica con las cifras del quinto examen, que es el que
+  cita la portada.

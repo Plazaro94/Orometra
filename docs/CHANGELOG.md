@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-14 — El suspenso frente a «media con vecinas», explicado con cifras
+
+En el banco, Orometra suspende frente a B4 («media con vecinas») y B3. No es la elección
+dentro de la meseta: cuando Orometra propone meseta gana a B4 (0,145 frente a 0,164 en el
+sexto examen), y contando la sugerencia orientativa también (0,191 frente a 0,213). El
+suspenso sale de contar cada caso sin meseta como el peor resultado, una regla exigente
+fijada a propósito en el prerregistro. Se mantiene, y no se relajan los umbrales para
+abstenerse menos (subirían los falsos positivos). Metodología lo dice ahora con cifras, y la
+tabla completa está en `bench/PREREGISTRO.md` (enmienda (e) del 2026-10-14).
+
 ## 2026-10-14 — Orden entre mesetas: medido en un escenario nuevo, se queda como está
 
 Con el export auditado, Orometra pone primera una meseta grande que aguanta el forward a
