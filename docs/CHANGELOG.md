@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-14 — Portada y Metodología citan el sexto examen (el del motor actual)
+
+Citaban el quinto, hecho con el motor anterior. Ahora, con el sexto (semillas 6001-6100, a
+ciegas, motor actual):
+
+| | Quinto examen | Sexto examen |
+|---|---|---|
+| Falsas alarmas («moderada» o más sin ventaja) | 10 de 300 (3,3 %) | 4 de 300 (1,3 %) |
+| De ellas, «sólida» | ninguna | 1 |
+| Ventajas detectadas | 34 de 40 (85 %) | 31 de 32 (97 %) |
+| Elección: Orometra / n.º 1 de MT5 | 0,23 / 0,29 | 0,26 / 0,30 |
+| Criterios superados | 10 de 13 | 11 de 13 |
+
+- **Portada:** cifras, textos y las dos rejillas de puntos (4 de 300 y 31 de 32). La rejilla
+  pequeña pasa de 10 × 4 a 8 × 4 columnas con el mismo paso que la grande (clase
+  `hm-dots-small`).
+- **Metodología, «Cómo sabemos que funciona»:** las cifras, el enlace a `REPORT-exam6.md` y lo
+  que falla en ese examen (B3 y B4, por contar como fallo cada caso sin meseta; la «sólida»
+  sin ventaja, dentro del 1 % fijado). Ya no dice que el sobreajuste puro pase del 5 % (en el
+  sexto, 3 %) ni que la n.º 1 de MT5 gane por más de lo permitido en la rejilla real.
+- `tests/home-bench.test.js` lee ahora el sexto examen y comprueba esas frases.
+
 ## 2026-10-14 — El suspenso frente a «media con vecinas», explicado con cifras
 
 En el banco, Orometra suspende frente a B4 («media con vecinas») y B3. No es la elección
