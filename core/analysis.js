@@ -17,7 +17,7 @@ import {
   mean, stdev, extent, makeRng,
 } from './stats.js';
 import { buildVerdict, peakRejectReasons, peakRejectTags } from './verdict.js';
-import { selectionShrinkage } from './shrink.js';
+import { selectionShrinkage, fitShrinkModel, unitPosterior } from './shrink.js';
 import { coverageAgainstSet, discreteRange } from './setfile.js';
 import { L } from '../js/i18n.js';
 
@@ -664,6 +664,73 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       rank: 0,
     };
   });
+  // Número efectivo de pruebas: configuraciones vecinas no son ensayos independientes.
+  // Se cuenta cuántas celdas distintas del espacio grueso se han explorado de verdad.
+  const cell = new Set();
+  const grain = nb.radius + 1;
+  const cellOf = new Array(coords.length);
+  for (let i = 0; i < coords.length; i++) {
+    let key = '';
+    for (const d of activeDims.length ? activeDims : levels.map((_, j) => j)) key += Math.floor(coords[i][d] / grain) + ',';
+    cell.add(key);
+    cellOf[i] = key;
+  }
+
+  // Candidatas para la expectativa ajustada por selección (core/shrink.js): las que cumplen
+  // tus mínimos en el periodo optimizado, cada una medida con su vecindad. Se usan para la
+  // cifra «qué esperar» y, con `plateauRank`, para ordenar las mesetas.
+  const perTrade = (m) => (Number.isFinite(m.expectedPayoff) ? m.expectedPayoff
+    : Number.isFinite(m.profit) && m.trades > 0 ? m.profit / m.trades : NaN);
+  // Media de un grupo de configuraciones en un periodo, con sus operaciones «efectivas»:
+  // la media armónica de las de sus miembros. No se supone que promediar reduzca el ruido
+  // (las vecinas comparten la suerte del periodo).
+  const groupUnit = (grp, period) => {
+    let sx = 0;
+    let sInv = 0;
+    let m = 0;
+    for (const j of grp) {
+      const r = records[j];
+      if (period === 'oos' && !hasOos(r)) continue;
+      const x = perTrade(r[period]);
+      const t = r[period].trades;
+      if (!Number.isFinite(x) || !(t > 0)) continue;
+      sx += x;
+      sInv += 1 / t;
+      m++;
+    }
+    if (!m) return { x: NaN, t: NaN };
+    const t = opts.shrinkNoise === 'mean' ? (m * m) / sInv : opts.shrinkNoise === 'flat' ? 1 : m / sInv;
+    return { x: sx / m, t };
+  };
+  // Cada candidata se mide CON SU VECINDAD, que es con lo que Orometra elige: la media a
+  // posteriori solo descuenta la selección si condiciona sobre todos los datos que la
+  // decidieron. Con la configuración sola (versión probada antes en el banco) encogía de
+  // más justo a las recomendadas, cuyas vecinas también salieron bien.
+  const shrinkItems = [];
+  const itemOf = new Map();
+  if (hasForward) {
+    records.forEach((r, i) => {
+      if (r.failsIs.length) return;
+      const grp = opts.shrinkUnit === 'config' ? [i] : [i, ...neighbors[i]];
+      const ui = groupUnit(grp, 'is');
+      const uo = hasOos(r) ? groupUnit(grp, 'oos') : { x: NaN, t: NaN };
+      itemOf.set(i, shrinkItems.length);
+      shrinkItems.push({ xi: ui.x, ti: ui.t, xo: uo.x, to: uo.t, block: cellOf[i] });
+    });
+  }
+  // Para ordenar mesetas por lo que se espera de ellas (R1, R2 del prerregistro del
+  // 2026-10-14 (b)): el modelo se ajusta una vez y se evalúa cada meseta como una unidad.
+  const rankMode = opts.plateauRank || 'current';
+  const shrinkModel = hasForward && rankMode !== 'current' ? fitShrinkModel(shrinkItems) : null;
+  const expectedOf = (members) => {
+    if (!shrinkModel) return null;
+    const ui = groupUnit(members, 'is');
+    const uo = groupUnit(members, 'oos');
+    const post = unitPosterior(shrinkModel, { xi: ui.x, ti: ui.t, xo: uo.x, to: uo.t });
+    if (!post) return null;
+    return rankMode === 'lower' ? post.mean - 1.96 * Math.sqrt(post.v) : post.mean;
+  };
+
   /*
    * Orden de las mesetas. Manda el SUELO de la región, nunca su cima, pero el suelo
    * solo no basta: dos mesetas con el mismo suelo no merecen la misma confianza si una
@@ -688,7 +755,11 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // Clave de orden ÚNICA. La usan el orden principal y la prueba de sensibilidad
   // (assessStability): si cada una ordenara a su manera, la prueba podría decir que la
   // recomendación "no sobrevive a sus propios umbrales" solo por medir otra cosa.
-  const rankKey = ({ q10, effectiveSize, support, inverted, irregular, oosPassFrac }) => {
+  const rankKey = ({ q10, effectiveSize, support, inverted, irregular, oosPassFrac, members }) => {
+    if (rankMode !== 'current' && members) {
+      const e = expectedOf(members);
+      if (Number.isFinite(e)) return e;
+    }
     let s = Math.max(0, q10)
       * Math.log1p(effectiveSize)
       * evidenceFactor(support)
@@ -728,6 +799,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     inverted: p.invertedRisk.length > 0,
     irregular: p.spansIrregular.length > 0,
     oosPassFrac: p.oosValidation ? p.oosValidation.validatedFrac : NaN,
+    members: p.indices,
   });
   plateaus.forEach((p) => { p.rankScore = rankScore(p); });
   plateaus.sort((a, b) => b.rankScore - a.rankScore);
@@ -775,17 +847,6 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     : { fragility: NaN, usable: false };
   const degradation = hasForward ? degradationByDecile(isCriterion, oosCriterion) : [];
 
-  // Número efectivo de pruebas: configuraciones vecinas no son ensayos independientes.
-  // Se cuenta cuántas celdas distintas del espacio grueso se han explorado de verdad.
-  const cell = new Set();
-  const grain = nb.radius + 1;
-  const cellOf = new Array(coords.length);
-  for (let i = 0; i < coords.length; i++) {
-    let key = '';
-    for (const d of activeDims.length ? activeDims : levels.map((_, j) => j)) key += Math.floor(coords[i][d] / grain) + ',';
-    cell.add(key);
-    cellOf[i] = key;
-  }
   const effectiveTrials = Math.max(2, cell.size);
 
   // Expectativa ajustada por selección (core/shrink.js): cuánto de lo que saca de más la
@@ -795,45 +856,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // en el periodo optimizado. Bloques: las mismas celdas que las pruebas efectivas.
   const shrinkage = (() => {
     if (!hasForward) return null;
-    const perTrade = (m) => (Number.isFinite(m.expectedPayoff) ? m.expectedPayoff
-      : Number.isFinite(m.profit) && m.trades > 0 ? m.profit / m.trades : NaN);
-    // Cada candidata se mide CON SU VECINDAD, que es con lo que Orometra elige: la media a
-    // posteriori solo descuenta la selección si condiciona sobre todos los datos que la
-    // decidieron. Con la configuración sola (versión probada antes en el banco) encogía de
-    // más justo a las recomendadas, cuyas vecinas también salieron bien.
-    // Varianza del ruido de una media de m configuraciones: k/m² · Σ 1/T  ->  T efectivo.
-    const unit = (i, period) => {
-      const grp = opts.shrinkUnit === 'config' ? [i] : [i, ...neighbors[i]];
-      let sx = 0;
-      let sInv = 0;
-      let m = 0;
-      for (const j of grp) {
-        const r = records[j];
-        if (period === 'oos' && !hasOos(r)) continue;
-        const x = perTrade(r[period]);
-        const t = r[period].trades;
-        if (!Number.isFinite(x) || !(t > 0)) continue;
-        sx += x;
-        sInv += 1 / t;
-        m++;
-      }
-      if (!m) return { x: NaN, t: NaN };
-      // Operaciones «efectivas» de la media: la armónica de las de sus miembros. No se
-      // supone que promediar vecinas reduzca el ruido (comparten la suerte del periodo).
-      const t = opts.shrinkNoise === 'mean' ? (m * m) / sInv : opts.shrinkNoise === 'flat' ? 1 : m / sInv;
-      return { x: sx / m, t };
-    };
-    const items = [];
-    const itemOf = new Map();
-    records.forEach((r, i) => {
-      if (r.failsIs.length) return;
-      const ui = unit(i, 'is');
-      const uo = hasOos(r) ? unit(i, 'oos') : { x: NaN, t: NaN };
-      itemOf.set(i, items.length);
-      items.push({ xi: ui.x, ti: ui.t, xo: uo.x, to: uo.t, block: cellOf[i] });
-    });
     const reps = plateaus.slice(0, 3).map((p) => p.representative).filter((i) => itemOf.has(i));
-    const out = selectionShrinkage({ items, targets: reps.map((i) => itemOf.get(i)) });
+    const out = selectionShrinkage({ items: shrinkItems, targets: reps.map((i) => itemOf.get(i)) });
     if (!out.usable) return { usable: false, reason: out.reason };
     return {
       ...out,
@@ -979,6 +1003,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
           inverted: inversions.some((inv) => records[repIdx].params[inv.index] === inv.bestIs),
           irregular,
           oosPassFrac: hasForward && comp.length ? comp.filter((i) => !oosFails[i]).length / comp.length : NaN,
+          members: comp,
         });
         if (key > bestKey) { bestKey = key; best = repIdx; }
       }

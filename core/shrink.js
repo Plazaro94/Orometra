@@ -129,6 +129,25 @@ const sdAround = (vals, centre) => Math.sqrt(vals.reduce((acc, x) => acc + (x - 
  *   `own` es la ventaja sobre la familia (esperado menos `family`); `ownLo`, su límite
  *   inferior (1,96 desviaciones).
  */
+/**
+ * El modelo ajustado sobre todas las candidatas, sin bootstrap, para evaluar otras
+ * unidades (una meseta entera, por ejemplo) con `unitPosterior`. Null si no hay datos.
+ */
+export function fitShrinkModel(items, minN = 30) {
+  const ok = [];
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    if (num(it.xi) && it.ti > 0 && (!num(it.xo) || it.to > 0)) ok.push(i);
+  }
+  return estimate(items, ok, minN);
+}
+
+/** Beneficio esperado por operación de una unidad {xi, ti, xo, to}: media y varianza. */
+export function unitPosterior(model, unit) {
+  if (!model || !num(unit.xi) || !(unit.ti > 0)) return null;
+  return posterior(model, unit);
+}
+
 export function selectionShrinkage({ items, targets = [], seed = 20261014, reps = null, minN = 30 } = {}) {
   const ok = [];
   for (let i = 0; i < items.length; i++) {

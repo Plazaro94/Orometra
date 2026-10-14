@@ -3,7 +3,7 @@
 //
 //   node tests/shrink.test.js
 
-import { selectionShrinkage } from '../core/shrink.js';
+import { selectionShrinkage, fitShrinkModel, unitPosterior } from '../core/shrink.js';
 import { maxQuantileZ, expectedMaxZ, normInv } from '../core/stats.js';
 import { makeRng } from '../core/rng.js';
 
@@ -130,6 +130,17 @@ section('Encogimiento: la mejor elegida, frente a su cifra cruda');
   // Límite inferior de la ventaja propia: con el modelo bien especificado, la verdad cae
   // por debajo en torno al 2,5 % de las veces.
   check('la ventaja verdadera queda bajo el límite inferior como mucho 4 de 60 veces', below <= 4, `${below} de ${F}`);
+}
+
+section('Modelo suelto: evaluar otra unidad con el mismo ajuste');
+{
+  const { items } = family({ n: 4000, seed: 31 });
+  const s = selectionShrinkage({ items, targets: [7], reps: 50 });
+  const m = fitShrinkModel(items);
+  const p = unitPosterior(m, items[7]);
+  check('da lo mismo que la expectativa de selectionShrinkage', Math.abs(p.mean - s.predictions[0].expected) < 1e-9, `${p.mean} vs ${s.predictions[0].expected}`);
+  check('una unidad con más forward a favor espera más', unitPosterior(m, { ...items[7], xo: items[7].xo + 5 }).mean > p.mean);
+  check('sin datos no hay modelo', fitShrinkModel(items.slice(0, 10)) === null && unitPosterior(null, items[0]) === null);
 }
 
 section('Determinismo y casos sin datos');

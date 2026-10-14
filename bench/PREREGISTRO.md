@@ -291,3 +291,12 @@ M1. Si no propone meseta, se registra como «se abstiene».
   tramo, y mirando solo que funciona (tiempos, mesetas, forward), nunca arrepentimientos.
   **El caso real** (el export del autor y su periodo no visto, cuando exista) se informa
   aparte: es un caso, no decide.
+- **2026-10-14 (c), corrección del generador antes de la calibración.** Depurando con semillas
+  900.001-900.040, sin mirar arrepentimientos: en S9, 30 de 40 casos no tenían ninguna meseta y
+  solo 4 tenían dos o más. El escenario no podía responder a la pregunta. La causa es de
+  realismo: todos los parámetros movían la ventaja, y en un EA real solo unos pocos la mueven
+  (por eso los exports reales tienen mesetas grandes en muchas dimensiones). Cambio: de los 5
+  a 7 parámetros, solo de 2 a 4, sorteados, mueven las zonas; en el resto la zona no cambia.
+  Nada más cambia (alturas, anchuras en los relevantes, suerte, genético, reglas y criterios).
+  Con ello, en esas mismas semillas de depuración: S9 con dos o más mesetas en 20 de 40 y S10
+  en 27 de 40. Ahora se calibra.
