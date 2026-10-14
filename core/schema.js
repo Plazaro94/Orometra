@@ -271,14 +271,18 @@ export function pairTables(isTable, oosTable) {
   if (isResultCol >= 0 && backResultCol >= 0) {
     let mism = 0;
     let comp = 0;
+    const ids = [];
     for (const m of matched) {
       const a = toNumber(m.isRow[isResultCol]);
       const b = toNumber(m.oosRow[backResultCol]);
       if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
       comp++;
-      if (Math.abs(a - b) > 1e-6 * Math.max(1, Math.abs(a))) mism++;
+      if (Math.abs(a - b) > 1e-6 * Math.max(1, Math.abs(a))) {
+        mism++;
+        if (ids.length < 10) ids.push(String(m.id));
+      }
     }
-    provenance = { checked: true, mismatches: mism, ratio: comp ? 1 - mism / comp : NaN, compared: comp };
+    provenance = { checked: true, mismatches: mism, ratio: comp ? 1 - mism / comp : NaN, compared: comp, ids };
   }
 
   return {

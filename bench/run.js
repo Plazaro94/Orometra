@@ -5,7 +5,8 @@
 //   node bench/run.js exam2            semillas 2001-2100 (segundo examen, ya visto)
 //   node bench/run.js exam3            semillas 3001-3100 (tercer examen, ya visto)
 //   node bench/run.js exam4            semillas 4001-4100 (cuarto examen, ya visto)
-//   node bench/run.js exam5            semillas 5001-5100 (quinto examen, ciego)
+//   node bench/run.js exam5            semillas 5001-5100 (quinto examen, ya visto)
+//   node bench/run.js exam6            semillas 6001-6100 (sexto examen, ciego)
 //   node bench/run.js calib S3 5       un escenario y N semillas (pruebas rápidas)
 //
 // Escribe una línea JSON por caso en bench/results/<split>[-BENCH_TAG].jsonl.
@@ -93,7 +94,15 @@ async function evaluateCase(scenario, seed) {
   return {
     scenario, seed,
     meta: { dims: c.meta.dims, configs: c.meta.configs, tradesIs: c.meta.tradesIs, A: c.meta.A, luckAmp: c.meta.luckAmp, oosRatio: c.meta.oosRatio },
-    truth: { oracle, median, plateauSharpe: c.meta.A },
+    truth: {
+      oracle, median, plateauSharpe: c.meta.A,
+      // Nivel verdadero de la familia en el no visto: media de edge_unseen de las que
+      // cumplen los mínimos del in-sample (las candidatas de core/shrink.js).
+      familyUnseen: (() => {
+        const v = c.rows.filter((r) => passes(r.is, g.minTrades)).map((r) => r.edgeUnseen);
+        return v.length ? v.reduce((x, y) => x + y, 0) / v.length : null;
+      })(),
+    },
     level: a ? a.verdict.level : null,
     diag: a ? {
       searchPass: a.meta.searchPassCount, gatePass: a.meta.gatePassCount, total: a.meta.total,
@@ -106,7 +115,16 @@ async function evaluateCase(scenario, seed) {
       plateauSize: a.plateaus[0] ? a.plateaus[0].size : 0,
       fwdPass: a.plateaus[0] && a.plateaus[0].oosValidation ? a.plateaus[0].oosValidation.passFrac : null,
       fwdWith: a.plateaus[0] && a.plateaus[0].oosValidation ? a.plateaus[0].oosValidation.withForward : null,
+      sharpe: a.stats.sharpeTest ? { max: a.stats.sharpeTest.observedMax, q95: a.stats.sharpeTest.chanceMax, mean: a.stats.sharpeTest.chanceMean } : null,
     } : null,
+    // Expectativa ajustada por selección de la recomendada (core/shrink.js), para medirla
+    // contra la verdad del periodo no visto (bench/shrink.js).
+    shrink: (() => {
+      const s = a && a.stats.shrinkage;
+      if (!s || !s.usable || !a.plateaus.length) return null;
+      const pr = s.predictions.find((x) => x.index === a.plateaus[0].representative);
+      return pr ? { beta: s.beta, betaLo: s.betaLo, betaHi: s.betaHi, family: s.family, expected: pr.expected, own: pr.own, ownLo: pr.ownLo, observedIs: pr.observedIs, observedOos: pr.observedOos } : null;
+    })(),
     plateaus: a ? a.plateaus.length : 0,
     error, ms,
     orometra: pickInfo(pickIdx),
@@ -118,7 +136,7 @@ async function evaluateCase(scenario, seed) {
 if (isMainThread) {
   const [split = 'calib', only, nArg] = process.argv.slice(2);
   const { SCENARIOS } = await import('./sim.js');
-  const base = split === 'exam5' ? 5001 : split === 'exam4' ? 4001 : split === 'exam3' ? 3001 : split === 'exam2' ? 2001 : split === 'test' ? 1001 : 1;
+  const base = split === 'exam6' ? 6001 : split === 'exam5' ? 5001 : split === 'exam4' ? 4001 : split === 'exam3' ? 3001 : split === 'exam2' ? 2001 : split === 'test' ? 1001 : 1;
   const n = nArg ? Number(nArg) : 100;
   const scen = only ? only.split(',') : SCENARIOS;
   const tasks = [];

@@ -664,6 +664,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-pass-risk{font-size:22px;color:var(--warn-text)}
 .vx-pass-note{margin:6px 0 14px;font-size:var(--fs-base);line-height:1.5;color:var(--muted)}
 .vx-pass-note b{color:var(--text-hi)}
+.vx-expect{margin:0 0 14px;font-size:var(--fs-base);line-height:1.5;color:var(--muted)}
+.vx-expect .vx-label{display:block;margin-bottom:2px}
+.vx-expect b{color:var(--text-hi);font-variant-numeric:tabular-nums}
 .vx-params{margin:0 0 16px}
 .vx-actions{display:flex;flex-wrap:wrap;gap:8px}
 .vx-actions button{padding:12px 18px;font-size:var(--fs-md)}

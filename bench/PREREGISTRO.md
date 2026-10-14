@@ -211,3 +211,33 @@ M1. Si no propone meseta, se registra como «se abstiene».
   quinto examen, ya publicado, 216 de 800 y tampoco. **Cambio:** pasa a aviso de tabla. No
   cambia ningún nivel en el banco, así que los resultados publicados del quinto examen no
   cambian y no hace falta otro examen. Los criterios no cambian.
+- **2026-10-14, auditoría estadística con un export real (un EA sobre un índice en M15, unas
+  10.000 pasadas genéticas, su forward y su .set).** Tres cambios y una medición, con el motor publicado
+  (`dbcc488`) como referencia (`calib-motor-dbcc488.jsonl`).
+  (1) **Contraste del Sharpe:** el umbral era el máximo *esperado* de N pruebas sin ventaja,
+  que el máximo de puro ruido supera en torno al 43 % de las veces (`tests/shrink.test.js`
+  lo mide por Monte Carlo); pasa a ser su **percentil 95**, exacto bajo independencia. Es un
+  cambio de método, no de ajuste: no se eligió mirando resultados. En calibración baja de
+  nivel 5 casos, todos con ventaja (4 «moderada» y 1 «buena» a «débil»); falsos positivos y
+  potencia no cambian (1,3 % y 92,7 %); coherencia weak 0,074 < moderate 0,198 < good 0,232 <
+  strong 0,256 (`REPORT-calib-2026-10-14.md`).
+  (2) **Expectativa ajustada por selección** (`core/shrink.js`): cifra nueva que no mueve el
+  nivel. Se midió contra la verdad del no visto con `bench/shrink.js`; las ocho variantes
+  probadas, todas sobre la calibración, están en `REPORT-shrink-variantes-2026-10-14.md`.
+  (3) La procedencia y dos textos, sin efecto en el banco.
+  **Orden entre mesetas, medido y sin cambiar:** se probó a quitar el peso del forward al
+  ordenar las mesetas y a darle el peso entero (`rankForward`, `calib-fw-none.jsonl`,
+  `calib-fw-strong.jsonl`). El banco no lo distingue: solo 34 de 800 casos tienen más de una
+  meseta, la elección cambia en 4 y en 1 casos, y el arrepentimiento queda en 0,251 y 0,244
+  frente a 0,247. Sin pruebas no se cambia. Decidirlo exige un escenario con varias mesetas
+  en muchas dimensiones y muestreo genético, que se prerregistrará aparte, antes de generarlo.
+  **Sexto examen:** semillas 6001-6100, nunca generadas; una sola vez, motor congelado, se
+  publica tal como salió (`REPORT-exam6.md`). Aprueba falsos positivos (1,3 %; «sólida» 0,3 %),
+  potencia (96,9 % de 32) y coherencia. **Suspende la elección frente a B3 (0,258 frente a
+  0,236) y frente a B4 (0,258 frente a 0,213).** No viene de estos cambios: el motor anterior
+  elige exactamente lo mismo en los 800 casos y suspende igual (`REPORT-exam6-motor-dbcc488.md`).
+  Frente a él, solo cambia el nivel de 9 casos con ventaja (a «débil» por el umbral del Sharpe).
+  Expectativa ajustada en el examen: RMSE 6,7 frente a 10,4 de la cifra del forward y 10,7 de la
+  del periodo optimizado en los casos con ventaja; sin ventaja, la ventaja propia sale distinta
+  de cero el 9 % de las veces (5 de 56), frente al 5 % de la calibración
+  (`REPORT-shrink-exam6.md`). Los criterios no cambian.

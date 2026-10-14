@@ -72,7 +72,9 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   documentado y con estructura que cambia entre builds de MT5. Leerlo obligaría a adivinar el
   diseño de cada versión, y un fallo ahí no daría un error visible sino números equivocados.
 - Comprobación de integridad: emparejado por `Pass`, duplicados y **prueba de procedencia**
-  (el resultado del backtest del archivo forward debe reproducir el del in-sample). Aviso si
+  (el resultado del backtest del archivo forward debe reproducir el del in-sample; unas pocas
+  filas sueltas que no cuadran se nombran como anomalía de esas filas, sin dar por mezclados
+  los archivos). Aviso si
   el forward trae claramente menos filas que el in-sample (posible subconjunto de las mejores).
 - Detección del método de optimización por cobertura (`probadas / espacio cartesiano`):
   rejilla completa, parcial o muestreo disperso de algoritmo genético.
@@ -90,11 +92,22 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   la tabla» falla al remuestrear configuraciones (en ambos sentidos de la partición IS/OOS).
   No es el PBO publicado (CSCV); ese exige curvas de equity por pasada.
 - **Contraste de selección sobre el Sharpe (adaptación)**: compara el mejor Sharpe observado
-  con el máximo que cabría esperar por azar tras N pruebas, usando la dispersión de los
+  con el **percentil 95** del máximo de N pruebas sin ventaja (exacto bajo independencia:
+  Φ⁻¹(0,95^(1/N)); compararlo con el máximo *esperado* no daba ningún nivel de confianza,
+  porque el máximo de puro ruido lo supera el 43 % de las veces), usando la dispersión de los
   Sharpe observados entre pasadas (estilo Bailey y López de Prado) como nula — no el error
   de estimación de Lo (2002) por número de operaciones, retirado por partir de un supuesto
   falso sobre cómo MT5 calcula esa cifra (SR-1 en `docs/MT5_ASSUMPTIONS.md`). No es el
   Deflated Sharpe Ratio publicado.
+- **Expectativa ajustada por selección**: qué beneficio por operación cabe esperar de la
+  configuración recomendada, descontado lo que tenía de suerte. Modelo de efectos aleatorios
+  sobre el beneficio esperado por operación, estimado con la relación del forward
+  condicionada al in-sample (lo único que la selección por el in-sample —genético, tus
+  mínimos y la preselección del forward de MT5— no sesga), cada candidata medida con su
+  vecindad, que es con lo que Orometra elige. Intervalo del 95 % con la varianza a
+  posteriori más un bootstrap por bloques. Medida contra la verdad del banco
+  (`bench/shrink.js`). Supone que el próximo periodo se parece al forward: un cambio de
+  régimen no lo anticipa ningún dato pasado, y se dice.
 - **Calificación de la FUERZA DE LA EVIDENCIA** («Fiabilidad»), no de la estrategia, en cinco
   niveles: insuficiente, débil, moderada, buena y sólida. «Sólida» es una meseta validada en
   el forward, estable al mover los umbrales y sin avisos sobre ella; «buena», lo mismo con

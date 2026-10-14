@@ -104,7 +104,14 @@ console.log(` Pruebas / pruebas efectivas      : ${esInt(a.meta.total)} / ${esIn
 if (a.stats.sharpeTest) {
   const s = a.stats.sharpeTest;
   console.log(` Sharpe máximo observado          : ${es(s.observedMax, 3)} (media ${es(s.mean, 3)}, σ ${es(s.sigma, 3)})`);
-  console.log(` Umbral por azar (pruebas efectivas): ${es(s.chanceMax, 3)}`);
+  console.log(` Umbral por azar (95 %, pruebas efectivas): ${es(s.chanceMax, 3)}`);
+}
+if (a.stats.shrinkage && a.stats.shrinkage.usable) {
+  const s = a.stats.shrinkage;
+  console.log(` Se conserva de lo que sobresale  : ${es(100 * s.beta, 0)} % (${es(100 * s.betaLo, 0)}–${es(100 * s.betaHi, 0)} %), familia ${es(s.family, 2)} por operación`);
+  for (const p of s.predictions) {
+    console.log(`   Pasada ${p.id}: esperado ${es(p.expected, 2)} por operación (forward ${es(p.observedOos, 2)}); ventaja propia ${es(p.own, 2)}, al menos ${es(p.ownLo, 2)}`);
+  }
 }
 if (a.meta.rescuedDims && a.meta.rescuedDims.length) {
   console.log(` Rescatados por efecto combinado  : ${a.meta.rescuedDims.map((d) => d.name).join(', ')}`);

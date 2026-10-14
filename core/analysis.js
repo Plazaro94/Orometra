@@ -13,10 +13,11 @@ import {
   collapseToTopology,
 } from './engine.js';
 import {
-  median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum,
+  median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum, maxQuantileZ,
   mean, stdev, extent, makeRng,
 } from './stats.js';
 import { buildVerdict, peakRejectReasons, peakRejectTags } from './verdict.js';
+import { selectionShrinkage } from './shrink.js';
 import { coverageAgainstSet, discreteRange } from './setfile.js';
 import { L } from '../js/i18n.js';
 
@@ -693,7 +694,11 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       * evidenceFactor(support)
       * (inverted ? INVERTED_RISK_PENALTY : 1)
       * (irregular ? IRREGULAR_PENALTY : 1);
-    if (Number.isFinite(oosPassFrac)) s *= 0.35 + 0.65 * oosPassFrac;
+    if (Number.isFinite(oosPassFrac)) {
+      const mode = opts.rankForward || 'soft';
+      if (mode === 'soft') s *= 0.35 + 0.65 * oosPassFrac;
+      else if (mode === 'strong') s *= oosPassFrac;
+    }
     return s;
   };
   // Validación OOS tras descubrir en IS: una meseta que no aguanta el forward baja de rango.
@@ -774,12 +779,70 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // Se cuenta cuántas celdas distintas del espacio grueso se han explorado de verdad.
   const cell = new Set();
   const grain = nb.radius + 1;
+  const cellOf = new Array(coords.length);
   for (let i = 0; i < coords.length; i++) {
     let key = '';
     for (const d of activeDims.length ? activeDims : levels.map((_, j) => j)) key += Math.floor(coords[i][d] / grain) + ',';
     cell.add(key);
+    cellOf[i] = key;
   }
   const effectiveTrials = Math.max(2, cell.size);
+
+  // Expectativa ajustada por selección (core/shrink.js): cuánto de lo que saca de más la
+  // configuración recomendada se puede esperar que conserve. Se mide sobre el beneficio
+  // esperado por operación, la única cifra que se compara entre periodos de distinta
+  // duración sin reescalar, y sobre las candidatas de verdad: las que cumplen tus mínimos
+  // en el periodo optimizado. Bloques: las mismas celdas que las pruebas efectivas.
+  const shrinkage = (() => {
+    if (!hasForward) return null;
+    const perTrade = (m) => (Number.isFinite(m.expectedPayoff) ? m.expectedPayoff
+      : Number.isFinite(m.profit) && m.trades > 0 ? m.profit / m.trades : NaN);
+    // Cada candidata se mide CON SU VECINDAD, que es con lo que Orometra elige: la media a
+    // posteriori solo descuenta la selección si condiciona sobre todos los datos que la
+    // decidieron. Con la configuración sola (versión probada antes en el banco) encogía de
+    // más justo a las recomendadas, cuyas vecinas también salieron bien.
+    // Varianza del ruido de una media de m configuraciones: k/m² · Σ 1/T  ->  T efectivo.
+    const unit = (i, period) => {
+      const grp = opts.shrinkUnit === 'config' ? [i] : [i, ...neighbors[i]];
+      let sx = 0;
+      let sInv = 0;
+      let m = 0;
+      for (const j of grp) {
+        const r = records[j];
+        if (period === 'oos' && !hasOos(r)) continue;
+        const x = perTrade(r[period]);
+        const t = r[period].trades;
+        if (!Number.isFinite(x) || !(t > 0)) continue;
+        sx += x;
+        sInv += 1 / t;
+        m++;
+      }
+      if (!m) return { x: NaN, t: NaN };
+      // Operaciones «efectivas» de la media: la armónica de las de sus miembros. No se
+      // supone que promediar vecinas reduzca el ruido (comparten la suerte del periodo).
+      const t = opts.shrinkNoise === 'mean' ? (m * m) / sInv : opts.shrinkNoise === 'flat' ? 1 : m / sInv;
+      return { x: sx / m, t };
+    };
+    const items = [];
+    const itemOf = new Map();
+    records.forEach((r, i) => {
+      if (r.failsIs.length) return;
+      const ui = unit(i, 'is');
+      const uo = hasOos(r) ? unit(i, 'oos') : { x: NaN, t: NaN };
+      itemOf.set(i, items.length);
+      items.push({ xi: ui.x, ti: ui.t, xo: uo.x, to: uo.t, block: cellOf[i] });
+    });
+    const reps = plateaus.slice(0, 3).map((p) => p.representative).filter((i) => itemOf.has(i));
+    const out = selectionShrinkage({ items, targets: reps.map((i) => itemOf.get(i)) });
+    if (!out.usable) return { usable: false, reason: out.reason };
+    return {
+      ...out,
+      predictions: out.predictions.map((pr, k) => {
+        const r = records[reps[k]];
+        return { ...pr, index: reps[k], id: r.id, observedIs: perTrade(r.is), observedOos: hasOos(r) ? perTrade(r.oos) : NaN };
+      }),
+    };
+  })();
 
   // Contraste de seleccion sobre el Sharpe. La hipotesis nula es "ninguna
   // configuracion tiene ventaja": entonces cada Sharpe observado es ruido alrededor
@@ -810,6 +873,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // El informe lo dice: el Sharpe máximo que enseña es el de estas pasadas, no el de toda la
   // tabla (sin forward, en un export real: 33,37 frente a 40,24 de una pasada de 24 operaciones).
   const SHARPE_MIN_TRADES = 30;
+  const SHARPE_CHANCE_LEVEL = 0.95;
   const sharpeValues = records
     .filter((r) => Number.isFinite(r[period].sharpe) && Number.isFinite(r[period].trades) && r[period].trades > SHARPE_MIN_TRADES)
     .map((r) => r[period].sharpe);
@@ -818,7 +882,11 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // no hay nada que contrastar: se omite en vez de dar un "0.00 frente a 0.00".
   if (sharpeValues.length >= 30 && stdev(sharpeValues) > 1e-12) {
     const sigma = stdev(sharpeValues);
-    const chanceMax = expectedMaximum(0, sigma, effectiveTrials);
+    // Umbral: el cuantil 0,95 del máximo de N pruebas sin ventaja, no su media. Con la
+    // media (versión anterior), el mejor de N pruebas de puro ruido la superaba en torno
+    // al 43 % de las veces: «superar el umbral» no tenía ningún nivel de confianza.
+    const chanceMax = 0 + sigma * maxQuantileZ(effectiveTrials, SHARPE_CHANCE_LEVEL);
+    const chanceMean = expectedMaximum(0, sigma, effectiveTrials);
     const observedMax = extent(sharpeValues)[1];
     sharpeTest = {
       period,
@@ -829,6 +897,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       trials: records.length,
       effectiveTrials,
       chanceMax,
+      chanceLevel: SHARPE_CHANCE_LEVEL,
+      chanceMean,
     };
   }
 
@@ -1075,6 +1145,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     fragilityAsymmetry: fragilityResult.asymmetry,
     fragilityWorstDirection: fragilityResult.worstDirection,
     sharpeTest,
+    shrinkage,
     spearman: rho,
     spearmanQuality: rhoQuality,
     coverage,
@@ -1217,6 +1288,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       stabilityCheck,
       degradation,
       sharpeTest,
+      shrinkage,
       effectiveTrials,
       medianQualityIs: median(records.map((r) => r.qualityIs)),
       medianQualityOos: median(records.map((r) => r.qualityOos)),

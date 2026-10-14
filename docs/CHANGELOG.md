@@ -1,5 +1,65 @@
 # Changelog
 
+## 2026-10-14 — Auditoría estadística con un export real: qué esperar de la recomendada, Sharpe al 95 %, procedencia
+
+Se auditó como lo haría un quant un export real de MT5 (un EA sobre un índice en M15: unas
+10.000 pasadas genéticas, la mitad con forward, y su `.set`). Orometra reproducía sus cifras, pero tres cosas
+no aguantaban la revisión, y faltaba la que más importa para planificar.
+
+**Qué esperar de la recomendada (nuevo, `core/shrink.js`).** Lo que una configuración saca
+de más en el periodo optimizado es en parte suerte, y la recomendada, por construcción, es de
+las que mejor salieron. Ahora la app da su beneficio esperado por operación descontada esa
+suerte, junto a la cifra del forward («unos X por operación, no los Y del forward»), y
+dice si se distingue de una configuración cualquiera de las que cumplen tus mínimos.
+- Modelo de efectos aleatorios. Toda la selección (genético, mínimos, preselección del forward
+  de MT5) depende solo del in-sample, así que se estima con lo único que esa selección no
+  sesga: la regresión del forward sobre el in-sample (pendiente y residuo) y el número de
+  operaciones. Cada candidata se mide con su vecindad, que es con lo que Orometra elige.
+- Medida contra la verdad del banco (`bench/shrink.js`). En el sexto examen, con ventaja real:
+  error 6,7 frente a 10,4 de la cifra del forward y 10,7 de la del periodo optimizado; sesgo
+  −2,3 (prudente: se queda corta, no se pasa). Sin ventaja real, la app dice que la
+  recomendada se distingue de la familia el 5 % de las veces en calibración y el 9 % en el
+  examen (5 de 56), y así lo dice el texto.
+- Solo se da el **límite inferior** de la ventaja sobre la familia: ningún intervalo de dos
+  lados cubría el 95 % que habría dicho (ocho variantes probadas,
+  `bench/results/REPORT-shrink-variantes-2026-10-14.md`). Tampoco hay intervalo del total: su
+  mayor incertidumbre es el régimen del próximo periodo, y con un solo forward no se mide.
+- No mueve el nivel de evidencia (su peso en los niveles no está calibrado). Sale en la
+  tarjeta de la recomendada, en un hallazgo de Estadística, en el resumen de texto, en el
+  informe JSON y en `tools/audit.js`.
+- Con el export auditado: la recomendada da por operación lo mismo que la familia; la
+  alternativa que mejor salió en el forward se queda en algo más de la mitad de su cifra
+  del forward, y tampoco se distingue de la familia. De cada 100 que una configuración saca de más en el periodo optimizado, en el
+  forward conserva unas 17 (entre 10 y 26).
+
+**Contraste del Sharpe: percentil 95, no la media.** El umbral era el máximo *esperado* de N
+pruebas sin ventaja, y el máximo de puro ruido supera su media en torno al 43 % de las veces:
+«supera el umbral del azar» no tenía ningún nivel de confianza. Ahora es el percentil 95 del
+máximo, Φ⁻¹(0,95^(1/N)), exacto bajo independencia, y el texto dice que por azar se superaría
+el 5 % de las veces. En calibración baja de nivel 5 casos de 800, todos con ventaja; falsos
+positivos y potencia no cambian. Con el export auditado, el mejor Sharpe sigue superándolo.
+
+**Procedencia.** Una sola pasada cuyo Back Result no cuadraba daba un crítico, «los
+dos archivos no parecen de la misma optimización», con todas las demás idénticas. Mezclar
+exportaciones cambia casi todas las filas (por encima del 2 % ya se rechazaba el análisis): por
+debajo del 1 % ahora es un aviso que nombra las pasadas y no mueve el nivel.
+
+**Dos textos que decían más de lo que se mide.** «La nota de Orometra conserva el orden de las
+configuraciones» salía con una correlación de rangos de la nota de 0,08: lo que se mide es si
+la mejor de una mitad al azar aguanta en el otro periodo. Ahora lo dice así y, si la
+correlación es baja, añade que el orden completo apenas se conserva.
+
+**Medido y sin cambiar: el orden entre mesetas.** Con el export auditado, la meseta
+recomendada (muy grande, aguanta el forward a medias) queda por delante de una pequeña que
+lo aguanta entera. Quitar o reforzar el peso del forward al ordenar no se distingue en el
+banco: solo 34 de 800 casos tienen más de una meseta. Sin pruebas no se toca; hace falta un
+escenario nuevo, prerregistrado antes de generarlo (`bench/PREREGISTRO.md`, enmienda del
+2026-10-14).
+
+**Sexto examen del banco** (semillas 6001-6100, a ciegas, una sola vez): aprueba falsos
+positivos, potencia (96,9 %) y coherencia; **suspende la elección frente a B3 y B4**, igual que
+el motor anterior con esas semillas, que elige lo mismo en los 800 casos.
+
 ## 2026-10-13 — Pie: por orden de importancia, «Analizar» y «GitHub»
 
 Los enlaces del pie van ahora de lo más usado a lo menos: Analizar · Guías · Metodología ·

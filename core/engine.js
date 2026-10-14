@@ -70,6 +70,12 @@ export const ENGINE_DEFAULTS = {
   // Es de donde se elige la configuración a desplegar.
   coreFloorQuality: 0.58,
   coreMinRobust: 65,
+  // Cuánto pesa el forward al ORDENAR las mesetas: 'soft' (por defecto) multiplica por
+  // 0,35 + 0,65 x fracción validada; 'strong', por la fracción validada; 'none', nada.
+  // Se dejan las tres para el banco: el 2026-10-14 se midieron y el banco no las
+  // distingue (solo 34 de 800 casos de calibración tienen más de una meseta; ver
+  // bench/PREREGISTRO.md, enmienda de esa fecha). No se cambia sin pruebas.
+  rankForward: 'soft',
 };
 
 /**

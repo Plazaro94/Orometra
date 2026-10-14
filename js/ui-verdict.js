@@ -494,6 +494,25 @@ export function refreshCompactCharts(a) {
 }
 
 /** La tarjeta principal: qué configuración usar, su fiabilidad y qué hacer ahora. */
+/**
+ * «Qué esperar»: el beneficio por operación de la recomendada descontada la selección
+ * (core/shrink.js), junto a la cifra cruda del forward con la que se suele planificar.
+ */
+export function expectationHtml(a, best) {
+  const s = a.stats && a.stats.shrinkage;
+  if (!best || !s || !s.usable) return '';
+  const pr = (s.predictions || []).find((p) => p.index === best.representative);
+  if (!pr || !Number.isFinite(pr.expected)) return '';
+  const raw = Number.isFinite(pr.observedOos)
+    ? L(`, no los ${num(pr.observedOos, 2)} del forward`, `, not the ${num(pr.observedOos, 2)} of the forward`)
+    : '';
+  return `<p class="vx-expect"><span class="vx-label">${gloss('expectation', esc(L('Qué esperar', 'What to expect')))}</span>
+    ${L('Unos', 'About')} <b>${num(pr.expected, 2)}</b> ${esc(L('por operación', 'per trade'))}${esc(raw)}.
+    ${esc(pr.ownLo > 0
+    ? L('Se distingue de una configuración cualquiera de las que cumplen tus mínimos.', 'It stands out from any configuration that meets your minimums.')
+    : L('No se distingue de una configuración cualquiera de las que cumplen tus mínimos.', 'It does not stand out from any configuration that meets your minimums.'))}</p>`;
+}
+
 function renderDecision(a, dv, best, hold) {
   const c = verdictCopy(dv.level);
   const hasF = a.meta.hasForward;
@@ -517,6 +536,7 @@ function renderDecision(a, dv, best, hold) {
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on both the optimized period and the forward (averaged with its neighbors).`)
     : L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado (promediado con sus vecinas).`,
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on the optimized period (averaged with its neighbors).`))}</p>
+      ${expectationHtml(a, best)}
       <div class="t3-param-chips vx-params" role="group" aria-label="${esc(L('Valores recomendados', 'Recommended values'))}">
         ${a.meta.paramNames.map((n, j) => `<span>${esc(n)} <b>${paramHtml(best.record.params[j])}</b></span>`).join('')}
       </div>
