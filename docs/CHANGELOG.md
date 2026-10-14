@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-14 — Informe de backtest comprobado con datos reales
+
+Tres informes reales del probador del autor, en `.xlsx` y de un terminal en español, con comisión
+y swap (de 164 a 1.303 operaciones). Orometra los lee enteros; la suma de las operaciones da
+exactamente el beneficio neto de cada informe, y el valor del contrato que usa el stress de
+costes sale igual en todas las operaciones que lo permiten. Queda apuntado como REP-1 en
+`docs/MT5_ASSUMPTIONS.md`. Sin probar todavía: el formato `.html` (otro lector) y una cuenta de
+cobertura con varias posiciones abiertas a la vez (en esos informes nunca hubo más de una). Los
+archivos no se suben al repositorio.
+
 ## 2026-10-14 — Limpieza general: lo que se veía mal, documentación al día y código muerto fuera
 
 Auditoría de todo el repositorio buscando lo huérfano, lo desfasado y lo que no cuadraba. Nada
