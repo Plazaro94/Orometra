@@ -23,9 +23,9 @@ se indica en la tabla. Los hashes son el commit del motor con el que se generó 
 | `calib-v4` | `36be999` | 1-100 | Calibración tras corregir el tope de 0,82 de la estabilidad frente a los umbrales |
 | `exam5`, `exam5-motor-22b4b3d` | `36be999` / anterior | 5001-5100 | **Quinto examen, ciego**; el anterior, para comparar (mismos tres suspensos). Lo citó la portada hasta el sexto |
 | `calib-motor-dbcc488.jsonl` | `dbcc488` | 1-100 | Calibración con el motor publicado antes de la auditoría estadística del 2026-10-14 (referencia) |
-| `calib-2026-10-14` | `f778c5b` | 1-100 | Calibración tras la auditoría estadística (umbral del Sharpe al percentil 95, expectativa ajustada) |
-| `calib-fw-none.jsonl`, `calib-fw-strong.jsonl` | `f778c5b` con `rankForward` | 1-100 | Orden entre mesetas sin el peso del forward y con el peso entero; el banco no lo distingue (enmienda del 2026-10-14) |
-| `exam6`, `exam6-motor-dbcc488` | `f778c5b` / anterior | 6001-6100 | **Sexto examen, ciego**, motor actual; el anterior, para comparar (elige lo mismo en los 800 casos). **Cifras que cita la portada** (`tests/home-bench.test.js` las lee de `REPORT-exam6.md`) |
+| `calib-2026-10-14` | `95ef28e` | 1-100 | Calibración tras la auditoría estadística (umbral del Sharpe al percentil 95, expectativa ajustada) |
+| `calib-fw-none.jsonl`, `calib-fw-strong.jsonl` | `95ef28e` con `rankForward` | 1-100 | Orden entre mesetas sin el peso del forward y con el peso entero; el banco no lo distingue (enmienda del 2026-10-14) |
+| `exam6`, `exam6-motor-dbcc488` | `95ef28e` / anterior | 6001-6100 | **Sexto examen, ciego**, motor actual; el anterior, para comparar (elige lo mismo en los 800 casos). **Cifras que cita la portada** (`tests/home-bench.test.js` las lee de `REPORT-exam6.md`) |
 
 ## Estudios aparte
 

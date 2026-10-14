@@ -321,7 +321,7 @@ M1. Si no propone meseta, se registra como «se abstiene».
   el peor resultado, que se decidió así a propósito. Se mantiene el criterio, y no se relajan
   los umbrales para abstenerse menos: subirían los falsos positivos, que es lo que más
   protege al usuario. Metodología lo explica con las cifras del sexto examen, que es el que
-  cita la portada (antes del commit 8b3cde2, las del quinto).
+  cita la portada (antes del commit ae29999, las del quinto).
 
   Nota del 2026-10-14, añadida después: la casilla del quinto examen «cuando no la propone»
   estaba vacía; calculada sobre `exam5.jsonl` (121 casos sin meseta), 0,324 frente a 0,323.
