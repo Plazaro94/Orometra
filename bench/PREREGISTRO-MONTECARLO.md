@@ -157,3 +157,41 @@ es; por debajo de *n_min* dice que no hay muestra.
   más: G10, remuestreo independiente de esa serie como verdad conocida.
   Implementación: `core/trades/montecarlo.js` y `bench/montecarlo.js` en el commit de esta
   enmienda; la calibración se ejecuta después.
+- **Enmienda 2 — 2026-10-14, tras la primera calibración (`REPORT-MC-calib1.md`) y antes de
+  cualquier examen. Aprobada por el autor.** Con los criterios originales, ni M1 ni M2 son
+  aptos para ningún horizonte y no se cumple el criterio de descarte; ese resultado se
+  conserva tal cual. Cambios, con su motivo:
+  (a) **Dos criterios del §6 estaban mal planteados y se sustituyen.** La fiabilidad por
+  tramos y la puntuación de Brier frente a M0 se medían dentro de cada celda, donde la media
+  verdadera es fija: la probabilidad real de pérdida es la misma en todos los casos y la
+  frecuencia observada no depende de lo que diga el método (en G1 con μ = 0 está entre un
+  42 % y un 64 % en todos los tramos, casi siempre entre un 47 % y un 56 %). Solo podría cumplirlo quien conociera
+  la media verdadera; y Brier, dentro de una celda, premia acertar la dirección por azar. Se
+  sustituyen por la **calibración probabilística** (Gneiting, Balabdaoui y Raftery, 2007):
+  el PIT, u = F̂(y), del resultado y del drawdown futuros bajo la distribución predictiva de
+  cada método debe ser uniforme. Con empates (átomos), PIT aleatorizado:
+  u = F̂(y⁻) + V·(F̂(y) − F̂(y⁻)), V uniforme. **Criterio:** en cada celda, la fracción de
+  casos en cada décimo del PIT, para el resultado y para el drawdown, entre un 7 % y un
+  13 %. Las filas de cobertura del §6 (p95, p50, P05–P95) se mantienen. La fiabilidad y
+  Brier se siguen calculando y se informan, sin exigirse.
+  (b) **Detector de rachas** (§8). Si el contraste de Ljung y Box (1978) sobre los
+  resultados diarios, con 10 retardos, da p < 0,05, la app no da cifras y dice por qué. En el
+  banco, los criterios se evalúan sobre los casos que el detector deja pasar, y se exige
+  además que el detector no rechace más de un 15 % de los casos en los procesos sin
+  dependencia en el nivel (G1, G2, G4, G5, G6 y G7). Se informa la tasa de rechazo de cada
+  celda. G3a y G3b siguen siendo exigidos.
+  (c) **Horizonte como mucho la mitad de la muestra:** H ≤ n/2. Pedir prever un periodo tan
+  largo como todos los datos dejaba a M2 demasiado prudente (resultado fuera de su P05–P95
+  en un 5,0-5,8 % de los casos). Las celdas evaluadas pasan a ser los 9 pares con H ≤ n/2
+  (desaparece n = 63). El criterio de descarte no cambia (H = 126 con n_min ≤ 252).
+  (d) **M2c:** M2 con el nivel calibrado por doble bootstrap (Beran, 1987), en lugar de M1c,
+  porque M2 fue el mejor en la calibración. Para unos datos x: B = 200 réplicas externas;
+  en cada una, unos datos x* de n días y un futuro y* de H días sacados de x por bootstrap
+  estacionario (x hace de verdad), M2 con S′ = 500 simulaciones sobre x* y el PIT de y*.
+  La distribución de esos PIT (G) corrige los niveles: el cuantil q pasa a ser
+  F̂⁻¹(G⁻¹(q)) y una probabilidad F̂(c) pasa a G(F̂(c)); por separado para el resultado y
+  para el drawdown. Como fija el §4, se mide primero en un subconjunto de la calibración
+  (G1, G3a, G4 y G5; pares (126, 63) y (252, 126); tres μ) y pasa a la calibración
+  completa y al examen solo si mejora a M2 y su tiempo es razonable.
+  **Calibración 2:** casos 1-1.000 otra vez, con todo lo anterior. Examen: casos
+  1.000.001-1.001.000, que siguen sin generarse.
