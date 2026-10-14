@@ -232,6 +232,8 @@ Un backtest del autor: EA TPS 3.0 en NDX M15, Darwinex, terminal en español, gu
   banco y no a G3 o G4: para un EA así, el caso difícil (rachas) no aparece.
 - **El informe no trae el modelado** («cada tick basado en ticks reales»…); sí la calidad
   del historial (97 %), las barras y los ticks.
+- **Su periodo no visto es ciego de verdad:** el autor confirma que no miró del 2025-10-14
+  al 2026-10-14 antes de elegir la configuración. Es la prueba más limpia que tiene.
 
 ---
 

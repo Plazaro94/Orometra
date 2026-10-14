@@ -137,3 +137,23 @@ es; por debajo de *n_min* dice que no hay muestra.
   desde el informe.
 
 ## Enmiendas
+- **Enmienda 1 — 2026-10-14, antes de generar ningún caso.** Aclaraciones de implementación;
+  los procesos, las métricas y los criterios no cambian.
+  (a) **M0 a un horizonte H:** el método retirado daba sus cifras a un horizonte h < n con los
+  h primeros días de cada camino de n días; en el banco se simulan caminos de H días con el
+  mismo algoritmo (bloque medio max(2, round(√n)), inicio al azar, longitud geométrica, vuelta
+  circular), que tienen la misma distribución. Con H = n es exactamente el de la app.
+  (b) **M2:** los inicios de bloque con pesos Dirichlet(1, …, 1) se sortean con la urna de
+  Pólya (Blackwell y MacQueen, 1973), que da exactamente la misma distribución sin calcular
+  los n pesos (comprobado: mismos cuantiles con 200.000 simulaciones, dentro del ruido).
+  (c) **G7:** M1 y M2 trabajan en log-rendimiento y se juzgan en % del balance; M0 trabajaba
+  en dinero y se le juzga en dinero, sin la fiabilidad de P(drawdown ≥ nivel) (los niveles
+  k·σ·√H no tienen una σ fija en dinero cuando el lote crece con el balance).
+  (d) **Drawdown operación a operación** (`docs/MONTECARLO.md` 5.1): en los procesos
+  sintéticos hay un incremento por día y no cambia nada; en G7 hay una operación por día.
+  (e) **Contexto del primer informe real** (`docs/MONTECARLO.md` 4.5): su serie diaria se
+  parece a G5 y G6 (días sin cierres, asimetría positiva, colas gruesas, sin dependencia).
+  Si el autor permite usarla, se añadirá por enmienda, antes del examen, un proceso exigido
+  más: G10, remuestreo independiente de esa serie como verdad conocida.
+  Implementación: `core/trades/montecarlo.js` y `bench/montecarlo.js` en el commit de esta
+  enmienda; la calibración se ejecuta después.
