@@ -1,7 +1,7 @@
 // Pruebas de respuesta conocida para core/trades/montecarlo.js (Monte Carlo predictivo).
 // El banco que decide si se enseña en la app es otro: bench/PREREGISTRO-MONTECARLO.md.
 
-import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo, pitSorted, chi2Cdf, ljungBox, calibratedMonteCarlo } from '../core/trades/montecarlo.js';
+import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo, pitSorted, chi2Cdf, ljungBox, robustPortmanteau, calibratedMonteCarlo } from '../core/trades/montecarlo.js';
 import { makeRng } from '../core/rng.js';
 
 let failures = 0;
@@ -148,6 +148,24 @@ section('Detector de rachas (Ljung-Box)');
   }
   check('independientes: rechaza en torno a un 5 % (entre 2 % y 9 %)', rejIid / 400 >= 0.02 && rejIid / 400 <= 0.09, `${(100 * rejIid / 400).toFixed(1)} %`);
   check('AR(1) φ = 0,3 con un año: rechaza casi siempre (> 90 %)', rejAr / 400 > 0.9, `${(100 * rejAr / 400).toFixed(1)} %`);
+}
+
+section('Detector de rachas robusto (Dalla, Giraitis y Phillips, 2020)');
+{
+  // Volatilidad agrupada sin autocorrelación (GARCH): el clásico rechaza de más; el robusto, ~5 %.
+  const garch = (seed, n) => { const r = makeRng(seed); const o = []; let h = 1; let e = 0; for (let i = 0; i < 300 + n; i++) { h = 0.05 + 0.1 * e * e + 0.85 * h; e = Math.sqrt(h) * gauss(r); if (i >= 300) o.push(e); } return o; };
+  let lb = 0; let rob = 0; let robIid = 0; let robAr = 0;
+  for (let c = 0; c < 400; c++) {
+    const g = garch(5000 + c, 1008);
+    if (ljungBox(g, 10).p < 0.05) lb++;
+    if (robustPortmanteau(g, 10).p < 0.05) rob++;
+    if (robustPortmanteau(ar1(0, 252, 6000 + c), 10).p < 0.05) robIid++;
+    if (robustPortmanteau(ar1(0.3, 252, 7000 + c), 10).p < 0.05) robAr++;
+  }
+  check('GARCH sin autocorrelación: el clásico rechaza de más (> 10 %)', lb / 400 > 0.1, `${(100 * lb / 400).toFixed(1)} %`);
+  check('GARCH sin autocorrelación: el robusto rechaza entre un 2 % y un 9 %', rob / 400 >= 0.02 && rob / 400 <= 0.09, `${(100 * rob / 400).toFixed(1)} %`);
+  check('independientes: el robusto rechaza entre un 2 % y un 9 %', robIid / 400 >= 0.02 && robIid / 400 <= 0.09, `${(100 * robIid / 400).toFixed(1)} %`);
+  check('AR(1) φ = 0,3 con un año: el robusto rechaza casi siempre (> 85 %)', robAr / 400 > 0.85, `${(100 * robAr / 400).toFixed(1)} %`);
 }
 
 section('M2c: nivel calibrado por doble bootstrap');

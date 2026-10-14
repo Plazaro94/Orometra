@@ -325,6 +325,29 @@ export function ljungBox(series, lags = 10) {
   return { usable: true, q, lags: m, p: 1 - chi2Cdf(q, m) };
 }
 
+/**
+ * Contraste robusto de ausencia de autocorrelación de Dalla, Giraitis y Phillips (2020,
+ * Econometric Theory): t̃ₖ = Σ eₜeₜ₋ₖ / √(Σ eₜ²eₜ₋ₖ²), Q̃ = Σ t̃ₖ², k = 1..m, con eₜ = xₜ − x̄;
+ * bajo ausencia de autocorrelación, Q̃ ~ χ²(m) aunque la volatilidad vaya por rachas. El de
+ * Ljung y Box no lo es: con volatilidad agrupada (GARCH) rechazaba hasta un 19 % de series sin
+ * autocorrelación (bench/PREREGISTRO-MONTECARLO.md, enmienda 4). Con p < 0,05 la app no da cifras.
+ */
+export function robustPortmanteau(series, lags = 10) {
+  const x = Array.from(series).filter(Number.isFinite);
+  const n = x.length;
+  const m = Math.min(lags, n - 2);
+  if (m < 1) return { usable: false };
+  const mean = x.reduce((a, v) => a + v, 0) / n;
+  const e = x.map((v) => v - mean);
+  let q = 0;
+  for (let k = 1; k <= m; k++) {
+    let num = 0; let den = 0;
+    for (let t = k; t < n; t++) { const prod = e[t] * e[t - k]; num += prod; den += prod * prod; }
+    if (den > 0) q += (num * num) / den;
+  }
+  return { usable: true, q, lags: m, p: 1 - chi2Cdf(q, m) };
+}
+
 // ------------------------------------------------------------------ M2c: nivel calibrado
 
 /** Días remuestreados por índice, en el formato compacto. */

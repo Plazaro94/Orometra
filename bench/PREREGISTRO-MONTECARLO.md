@@ -204,3 +204,47 @@ es; por debajo de *n_min* dice que no hay muestra.
   Orden de las tandas: calibración 2 completa con M0, M1 y M2; después M2c en su subconjunto.
   Implementación: `bench/montecarlo.js` y `core/trades/montecarlo.js` en el commit de esta
   enmienda.
+- **Enmienda 4 — 2026-10-14, tras la primera tanda de la calibración 2 y antes de la
+  calibración 3. Aprobada por el autor.** La calibración 2 dejó a la vista dos fallos más de
+  diseño, comprobados con métodos simulados de calibración conocida (oráculo): con las reglas
+  de la enmienda 2, un método **perfecto** suspendía siempre por azar (el PIT por décimos,
+  miles de comprobaciones a 1.000 casos), y con las bandas de cobertura originales, casi la
+  mitad de las veces. Y el detector de Ljung y Box rechazaba hasta un 19 % de series sin
+  autocorrelación cuando la volatilidad va por rachas (G4). La primera tanda de la calibración
+  2 se conserva (`REPORT-MC-calib2a.md`); la segunda se interrumpió a las 56 de 116 celdas,
+  porque con estos cambios ya no servía para decidir, y lo calculado se conserva
+  (`MC-calib2b.jsonl`). Cambios:
+  (a) **Reglas.** Cada método se juzga con dos clases de pruebas: por celda (cobertura del
+  p95, del p50 y del P05–P95, con sus bandas de siempre, y el PIT del resultado y del
+  drawdown, con cada décimo entre un 7 % y un 13 %) y por grupo (lo mismo sumando las celdas
+  de un proceso y un horizonte con n ≥ n0; bandas: p95 entre 4 % y 6,5 %, p50 entre 46 % y
+  54 %, P05–P95 entre 8,5 % y 11,5 %, cada décimo del PIT entre 8,5 % y 11,5 %). Una prueba
+  suspende solo si se sale de su banda **y** es significativa con Holm-Bonferroni al 5 %
+  sobre todas las pruebas del método (binomial exacta bilateral para las coberturas;
+  chi-cuadrado con 9 grados de libertad para el PIT). n_min(H) es el menor n0 sin ninguna
+  prueba suspendida en las celdas con n ≥ n0 ni en los grupos con ese n0. **Comprobado antes
+  de medir**, con el mismo código (`node bench/montecarlo.js oracle`, 200 bancos simulados):
+  con 1.000 casos por celda un método perfecto no es apto en el 2,5 % de los bancos (con 500,
+  en el 4,0 %); uno que se queda corto con P(DD > p95) = 5,7 %, 6,4 %, o demasiado prudente
+  (3,4 %), no es apto en el 100 %.
+  (b) **Detector de rachas robusto:** el contraste de Dalla, Giraitis y Phillips (2020,
+  *Econometric Theory*), con 10 retardos y p < 0,05, en lugar del de Ljung y Box. Medido
+  antes de la calibración 3 (2.000 series por fila): rechaza un 4,7-5,5 % en G4 (el clásico,
+  un 11-19 %), un 2-5,6 % en G1, G2 y G5 y un 6,5-9,4 % en G6; en G3a con un año, un 91 %. El
+  límite del 15 % de rechazo se aplica a G1, G2, G4, G5, G5b, G6, G6b, G7, G11 y G12.
+  (c) **Mínimo de días con operaciones (k):** segunda puerta. Se evalúan k ∈ {0, 20, 30, 40,
+  60, 80, 100, 150}; en la calibración 3 se elige para cada método el menor k que da el mejor
+  n_min con H = 126, y queda fijo para el examen. Esta puerta no cuenta para el límite del
+  15 %, que es solo del detector de rachas.
+  (d) **Procesos nuevos.** Exigidos: **G5b**, EA de muy baja frecuencia (90 % de días sin
+  cierres; el resto μ/0,1 + t₄/√2/√0,1); **G6b**, muchas ganancias pequeñas y pérdidas grandes
+  y raras (G6 cambiado de signo); **G11**, scalper (Poisson(8) operaciones al día, cada una
+  μ/8 + N(0, 1/8); el drawdown se mide operación a operación); **G12**, los días reales del EA
+  del autor (2.247 días, `bench/data/ea-real-diario.json`, divididos por su desviación típica,
+  sin fechas y barajados, cedidos por el autor), remuestreados de forma independiente con su
+  media real y con media 0 (restando a cada operación lo justo). Se informa: **G10**, pérdidas
+  extremas que pueden no estar en la muestra (G1 más, con probabilidad 0,2 % al día, una
+  pérdida de 12 desviaciones típicas). Con esto hay 12 procesos exigidos.
+  (e) Fiabilidad y Brier se siguen calculando y se guardan; no se exigen.
+  **Calibración 3:** casos 1-1.000 con M0, M1 y M2; después M2c en el subconjunto de la
+  enmienda 2 más G3b, G5b, G6b, G11 y G12. Examen: casos 1.000.001-1.001.000, sin generar.
