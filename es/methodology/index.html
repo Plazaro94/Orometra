@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1019">
@@ -34,7 +34,7 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261012c">
+<link rel="stylesheet" href="/styles.css?v=9cf2c1a71f">
 <script src="/js/theme-init.js"></script>
 </head>
 <body class="landing-page">
@@ -62,7 +62,7 @@
         <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Claro</span>
       </button>
     </div>
-    <a class="ghost-btn lp-cta-top" href="/app/" data-i18n="lp.cta">Analizar mis resultados</a>
+    <a class="ghost-btn lp-cta-top" href="/app/?lang=es" data-i18n="lp.cta">Analizar mis resultados</a>
   </div>
   </div>
 </header>
@@ -145,7 +145,7 @@
         <h2 data-i18n="doc.method.s4.title">Mesetas, no picos</h2>
         <p data-i18n="doc.method.s4.body">Para cada configuración mira sus vecinas: las que están a uno, dos o tres pasos en tu rejilla, sumando los pasos de todos los parámetros (de 30 a 35, o de 0,1 a 0,2, es un paso). El radio solo crece hasta que la configuración típica tiene unas ocho vecinas. Solo cuentan los parámetros que de verdad cambian el resultado; los de sí/no y los de texto tienen que coincidir, y los que apenas influyen se ignoran. Y solo cuentan las vecinas que probaste: las que faltan no se inventan.</p>
         <p data-i18n="doc.method.s4.body2">Una meseta es una zona conectada de al menos tres configuraciones que cumplen tus mínimos y cuyas vecinas también responden: cada una tiene al menos cuatro vecinas probadas, el 90 % o más cumple tus mínimos, tres de cada cuatro tienen una calidad al menos aceptable y el punto no sobresale de golpe sobre ellas. Los picos aislados se descartan, y el informe te dice por qué (pocas vecinas, una caída brusca al lado, un pico que sobresale demasiado…).</p>
-        <p data-i18n="doc.method.s4.body3">Dentro de la meseta elige la configuración con mejor puesto conjunto en el periodo optimizado y en el forward, promediado con sus vecinas: ni el punto más alto ni la suerte de un punto concreto. Si no hay meseta y hay forward, da una sugerencia orientativa con la misma regla y lo dice. En nuestro banco de pruebas ciego esta elección queda más cerca de la mejor configuración posible que la pasada que MT5 pone primera, la mejor del forward, la suma de puestos y el azar. Pierde por poco contra «media con vecinas» cuando cada caso sin meseta cuenta como fallo (con la sugerencia orientativa, gana), y en búsquedas genéticas y en una rejilla tomada de un export real la n.º 1 de MT5 queda por delante.</p>
+        <p data-i18n="doc.method.s4.body3">Dentro de la meseta elige la configuración con mejor puesto conjunto en el periodo optimizado y en el forward, promediado con sus vecinas: ni el punto más alto ni la suerte de un punto concreto. Si no hay meseta y hay forward, da una sugerencia orientativa con la misma regla y lo dice. En nuestro banco de pruebas ciego esta elección queda más cerca de la mejor configuración posible que la pasada que MT5 pone primera, la mejor del forward y el azar. Cuando cada caso sin meseta cuenta como fallo, «media con vecinas» y la suma de puestos quedan por delante; contando la sugerencia orientativa, gana a las dos. En búsquedas genéticas y en una rejilla tomada de un export real, la n.º 1 de MT5 queda por delante.</p>
       </div>
       <div class="lp-method-step-media" aria-hidden="true">
         <svg viewBox="0 0 480 320" role="img">
@@ -314,7 +314,7 @@
   </section>
 
   <section class="lp-doc-cta">
-    <a class="primary-btn" href="/app/" data-i18n="doc.method.cta">Probar con mis archivos</a>
+    <a class="primary-btn" href="/app/?lang=es" data-i18n="doc.method.cta">Probar con mis archivos</a>
   </section>
 </main>
 
@@ -326,7 +326,7 @@
     </div>
     <nav class="lp-foot-nav" aria-label="Pie de página" data-i18n="nav.footer" data-i18n-attr="aria-label">
       <a href="/es/">Orometra</a>
-      <a href="/app/" data-i18n="lp.cta.footer">Analizar</a>
+      <a href="/app/?lang=es" data-i18n="lp.cta.footer">Analizar</a>
       <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
       <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
       <a href="/es/about/" data-i18n="doc.about.nav">Quiénes somos</a>

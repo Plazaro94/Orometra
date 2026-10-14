@@ -313,12 +313,16 @@ M1. Si no propone meseta, se registra como «se abstiene».
   | | Calibración | Quinto examen | Sexto examen |
   |---|---|---|---|
   | Cuando Orometra propone meseta: Orometra / B4 | 0,146 / 0,180 | 0,135 / 0,172 | 0,145 / 0,164 |
-  | Cuando no la propone: sugerencia orientativa / B4 | 0,317 / 0,405 | — | 0,346 / 0,412 |
+  | Cuando no la propone: sugerencia orientativa / B4 | 0,317 / 0,405 | 0,324 / 0,323 | 0,346 / 0,412 |
   | Lo que enseña la app (meseta o sugerencia): Orometra / B4 | 0,177 / 0,229 | 0,187 / 0,198 | 0,191 / 0,213 |
   | Como cuenta el criterio (sin meseta = 1): Orometra / B4 | 0,247 / 0,229 | 0,228 / 0,198 | 0,258 / 0,213 |
 
   El suspenso sale de contar cada caso sin meseta (del 21 % al 36 % según el escenario) como
   el peor resultado, que se decidió así a propósito. Se mantiene el criterio, y no se relajan
   los umbrales para abstenerse menos: subirían los falsos positivos, que es lo que más
-  protege al usuario. Metodología lo explica con las cifras del quinto examen, que es el que
-  cita la portada.
+  protege al usuario. Metodología lo explica con las cifras del sexto examen, que es el que
+  cita la portada (antes del commit 8b3cde2, las del quinto).
+
+  Nota del 2026-10-14, añadida después: la casilla del quinto examen «cuando no la propone»
+  estaba vacía; calculada sobre `exam5.jsonl` (121 casos sin meseta), 0,324 frente a 0,323.
+  Ahí la sugerencia no gana a B4; en lo que enseña la app, sí (0,187 frente a 0,198).

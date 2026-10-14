@@ -5,7 +5,7 @@ import { CODE } from '../core/errors.js';
 import { evaluateUnseen } from '../core/unseen.js';
 import { parseBacktestReport, parseBacktestReportGrid, compareParams } from '../core/report.js';
 import { compareOtherParams } from '../core/setfile.js';
-import { parseXmlSpreadsheet } from '../core/parse.js';
+import { parseXmlSpreadsheet, isZip } from '../core/parse.js';
 import { auditUnseenTrades } from '../core/trades/from-deals.js';
 import { bpToPoints } from '../core/trades/costs.js';
 import { MIN_SAMPLE_DAYS } from '../core/trades/sample.js';
@@ -20,8 +20,7 @@ import { holdoutFact, displayVerdictLevel, levelName, repeatedPeriodText } from 
  */
 export async function readBacktestReport(file) {
   const buffer = await file.arrayBuffer();
-  const head = new Uint8Array(buffer.slice(0, 2));
-  if (head[0] === 0x50 && head[1] === 0x4b) {
+  if (isZip(buffer)) {
     const { parseXlsx } = await import('./xlsx.js');
     const sheet = await parseXlsx(buffer);
     return parseBacktestReportGrid(sheet.rows, file.name);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://plazaro94.goatcounter.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1019">
@@ -21,7 +21,7 @@
 <link rel="preload" href="../fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../styles.css?v=20261012c">
+<link rel="stylesheet" href="../styles.css?v=9cf2c1a71f">
 <script src="../js/theme-init.js"></script>
 </head>
 <body>
@@ -105,7 +105,7 @@
       <!-- Enlaces a paginas aparte: se abren en otra pestana para no perder el analisis
            cargado (los archivos solo estan en memoria). -->
       <div class="legal-links foot-links">
-        <a class="text-btn" href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" aria-label="Send feedback" data-i18n="contact.feedback" data-i18n-attr="aria-label"><span data-i18n="contact.short">Feedback</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" aria-label="Code on GitHub" data-i18n="nav.code" data-i18n-attr="aria-label">GitHub</a>
+        <a class="text-btn" href="/privacy/" target="_blank" rel="noopener" data-i18n="help.privacy.href" data-i18n-attr="href"><span data-i18n="doc.privacy.nav">Privacy</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="mailto:hello@orometra.com?subject=Orometra" aria-label="Send feedback" data-i18n="contact.feedback" data-i18n-attr="aria-label"><span data-i18n="contact.short">Feedback</span></a><span class="foot-links-sep" aria-hidden="true">·</span><a class="text-btn" href="https://github.com/Plazaro94/Orometra" target="_blank" rel="noopener" aria-label="GitHub" data-i18n="nav.code" data-i18n-attr="aria-label">GitHub</a>
       </div>
     </div>
   </aside>
@@ -202,9 +202,9 @@
         <div class="policy-preview" id="policyPreview" hidden>
           <div>
             <strong id="policyPreviewCount">—</strong>
-            <span id="policyPreviewNote" data-i18n="policy.previewNote">configurations would pass these gates</span>
+            <span id="policyPreviewNote" data-i18n="policy.previewNote">configurations would meet these minimums</span>
           </div>
-          <button class="primary-btn" id="policyRerun" type="button" data-i18n="policy.rerun">Recalculate with these gates</button>
+          <button class="primary-btn" id="policyRerun" type="button" data-i18n="policy.rerun">Recalculate with these minimums</button>
         </div>
       </div>
 

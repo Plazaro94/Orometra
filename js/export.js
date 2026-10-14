@@ -2,6 +2,7 @@
 
 import { getLocale, L } from './i18n.js';
 import { mergeSetValues } from '../core/setfile.js';
+import { mt5Figure } from './ui-state.js';
 
 /** Formato MT5 (.set / pegar en Inputs): punto decimal, sin locale. */
 export function formatSetValue(value) {
@@ -12,15 +13,7 @@ export function formatSetValue(value) {
   return String(Number(value.toFixed(8)));
 }
 
-function fmt(value) {
-  return formatSetValue(value);
-}
-
-/** Cifra como la enseña la tabla de MT5: punto decimal, dos decimales. */
-function mt5Figure(v) {
-  const cents = Math.round(v * 100);
-  return Math.abs(v * 100 - cents) < 1e-6 ? (cents / 100).toFixed(2) : String(v);
-}
+const fmt = formatSetValue;
 
 /**
  * Con qué cifras se encuentra la configuración en MT5: el número de pasada no se conserva al

@@ -18,6 +18,7 @@
 // bordes de rango, inversiones, puertas inertes- se conservan intactos: son lo valioso.
 
 import { L, localeTag, pctSign, shareText } from '../js/i18n.js';
+import { ENGINE_DEFAULTS } from './engine.js';
 
 /** Numero en el formato del idioma activo (1,20 en ES, 1.20 en EN). */
 const fmt = (v, d = 2) => (Number.isFinite(v)
@@ -61,7 +62,7 @@ export function buildVerdict(ctx) {
   const tableOnly = () => { findings[findings.length - 1].scope = 'table'; };
 
   const { gatePassCount, total, plateaus, fragility, fragilityQuality, fragilityFolds, fragilityAsymmetry,
-    fragilityWorstDirection, sharpeTest, shrinkage, spearman, spearmanQuality, coverage, searchCoverage, medianSupport,
+    sharpeTest, shrinkage, spearman, spearmanQuality, coverage, searchCoverage, medianSupport,
     periodRatio, integrity, sampling, boundaryWorst, bestPlateau, inversions, periodComparison,
     hasForward, invertedRisk, alternativePlateau, underpowered, viableNeededForPlateau,
     tiedCount, tiedRanks, stabilityCheck, irregularGrids, rescuedDims, offsetsComplete,
@@ -78,7 +79,7 @@ export function buildVerdict(ctx) {
       L(`${searchPassCount.toLocaleString(localeTag())} ${pl(searchPassCount, 'configuración los cumple', 'configuraciones los cumplen')} en el periodo optimizado, pero ninguna en el forward. Con estos mínimos, lo que se encuentra en el periodo optimizado no se sostiene fuera de él.`,
         `${searchPassCount.toLocaleString(localeTag())} ${pl(searchPassCount, 'configuration meets', 'configurations meet')} them on the optimized period, but none in the forward. With these minimums, what is found on the optimized period does not hold outside it.`), null);
   } else if (!gatePassCount) {
-    add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration passes the minimum gates'),
+    add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration meets the minimums'),
       hasForward
         ? L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple tus mínimos en el periodo optimizado y en el forward. Con estos mínimos no hay nada que seleccionar.`,
           `Of ${total.toLocaleString(localeTag())} configurations, none meet your minimums in both the optimized period and the forward. With these minimums there is nothing to select.`)
@@ -815,8 +816,10 @@ function gateShortName(token) {
  * la tabla (lo que distingue a esa fila) y `detail` la frase completa, con las cifras.
  */
 export function peakRejectTags(p, opts = {}) {
-  const minSupport = opts.minSupport ?? 4;
-  const plateauFloorQuality = opts.plateauFloorQuality ?? 0.42;
+  // Las mismas condiciones que exige el motor a una meseta (engine.js#plateauCandidates).
+  const minSupport = opts.minSupport ?? ENGINE_DEFAULTS.minSupport;
+  const plateauFloorQuality = opts.plateauFloorQuality ?? ENGINE_DEFAULTS.plateauFloorQuality;
+  const minFracPass = opts.plateauMinFracPass ?? ENGINE_DEFAULTS.plateauMinFracPass;
   const out = [];
   const tagged = (tag, detail) => out.push({ tag, detail });
   if (p.st.support < minSupport) {
@@ -851,7 +854,7 @@ export function peakRejectTags(p, opts = {}) {
         L(`no cumple tus mínimos (${parts.join(' · ')})`, `does not meet your minimums (${parts.join(' · ')})`));
     }
   }
-  if (Number.isFinite(p.st.fracPass) && p.st.fracPass < 0.9) {
+  if (Number.isFinite(p.st.fracPass) && p.st.fracPass < minFracPass) {
     tagged(L(`${fmt(100 * p.st.fracPass, 0)}\u00A0% de vecinas cumple`, `${fmt(100 * p.st.fracPass, 0)}% of neighbors pass`),
       L(`solo el ${fmt(100 * p.st.fracPass, 0)}\u00A0% de sus vecinas cumple tus mínimos`,
         `only ${fmt(100 * p.st.fracPass, 0)}% of its neighbors clear the minimums`));
@@ -864,8 +867,8 @@ export function peakRejectTags(p, opts = {}) {
   if (!out.length) {
     // Si su robustez sí llega, lo que falla es que su zona conexa tiene menos configuraciones
     // de las que pide una meseta (engine.js, plateauMinSize): «poca robustez» era falso.
-    const minRobust = opts.plateauMinRobust ?? 50;
-    const minSize = opts.plateauMinSize ?? 3;
+    const minRobust = opts.plateauMinRobust ?? ENGINE_DEFAULTS.plateauMinRobust;
+    const minSize = opts.plateauMinSize ?? ENGINE_DEFAULTS.plateauMinSize;
     if (Number.isFinite(p.robust) && p.robust >= minRobust) {
       tagged(L('Zona demasiado pequeña', 'Zone too small'),
         L(`cumple lo que se pide a una meseta, pero forma una zona de menos de ${minSize} configuraciones así`,
@@ -897,7 +900,6 @@ export function rebuildLocalizedCopy(analysis) {
   const tiedList = tied.length > 1 ? tied : [];
   const verdict = buildVerdict({
     gatePassCount: m.gatePassCount,
-    discoverPassCount: m.discoverPassCount,
     searchPassCount: m.searchPassCount,
     forwardCount: m.forwardCount,
     missingMetrics: m.missingMetrics,
@@ -907,10 +909,8 @@ export function rebuildLocalizedCopy(analysis) {
     plateaus,
     fragility: s.fragility,
     fragilityQuality: s.fragilityQuality,
-    fragilityMargin: s.fragilityMargin,
     fragilityFolds: s.fragilityFolds,
     fragilityAsymmetry: s.fragilityAsymmetry,
-    fragilityWorstDirection: s.fragilityWorstDirection,
     sharpeTest: s.sharpeTest,
     shrinkage: s.shrinkage,
     spearman: s.spearmanCriterion,
@@ -943,11 +943,9 @@ export function rebuildLocalizedCopy(analysis) {
       : null,
     bestPlateau,
   });
-  const peakOpts = {
-    minSupport: (m.policy && m.policy.minSupport) || 4,
-    plateauFloorQuality: 0.42,
-  };
-  // ENGINE opts live on analysis via meta if we stored them; use defaults matching engine.
+  // Con los umbrales con que se analizó (meta.peakOpts): sin ellos, al cambiar de idioma los
+  // motivos se calculaban con los de por defecto aunque el análisis usara otros (BENCH_OPTS).
+  const peakOpts = m.peakOpts || {};
   const peaks = (analysis.peaks || []).map((p) => ({
     ...p,
     reasons: peakRejectReasons(p, peakOpts),

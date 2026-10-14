@@ -697,7 +697,7 @@ export function renderDiagnostics(a) {
 export function renderStabilityPanel(a) {
   const st = a.stats.stabilityCheck;
   if (!st || !st.draws) return '';
-  const internal = st.internal || st;
+  const internal = st; // la auditoría de nuestros umbrales (los campos planos)
   const gates = st.gates;
   const pctRegion = 100 * internal.regionRate;
   const tone = internal.regionRate >= 0.8 ? 'ok' : internal.regionRate >= 0.5 ? 'warn' : 'bad';

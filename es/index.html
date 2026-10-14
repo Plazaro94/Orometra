@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <!-- GitHub Pages no envia cabeceras propias: la politica va aqui (frame-ancestors no se admite en meta). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1019">
@@ -38,7 +38,7 @@
 <link rel="preload" href="/fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=20261012c">
+<link rel="stylesheet" href="/styles.css?v=9cf2c1a71f">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/es/#website","url":"https://orometra.com/es/","name":"Orometra","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separa lo frágil de lo estable en tu optimización de MT5: qué configuración de tu EA es estable y cuánta evidencia la respalda. Gratis y en tu navegador.","inLanguage":"es","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="/js/theme-init.js" data-hero-photo></script>
 </head>
@@ -67,7 +67,7 @@
           <span class="swatch light" aria-hidden="true"></span><span data-i18n="theme.light">Claro</span>
         </button>
       </div>
-      <a class="ghost-btn lp-cta-top" href="/app/" data-track="cabecera-cta" data-i18n="lp.cta">Analizar mis resultados</a>
+      <a class="ghost-btn lp-cta-top" href="/app/?lang=es" data-track="cabecera-cta" data-i18n="lp.cta">Analizar mis resultados</a>
     </div>
   </div>
 </header>
@@ -79,7 +79,7 @@
       <h1 id="hm-title" data-i18n-html="home.h1">Separa lo frágil <em>de lo estable.</em></h1>
       <p class="hm-lead" data-i18n="home.lead">Orometra analiza tu optimización de MT5 y te dice qué configuración de tu EA es estable y cuánta evidencia la respalda.</p>
       <div class="hm-actions">
-        <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="portada-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
+        <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/?lang=es" data-track="portada-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
       </div>
       <p class="hm-need" data-i18n-html="home.need">Solo necesitas el XML que exporta MT5<span class="hm-need-sep"> · </span><a href="/es/guias/exportar-optimizacion-mt5-xml/" data-track="portada-guia-xml">Cómo exportarlo →</a></p>
     </div>
@@ -183,13 +183,13 @@
           </div>
         </div>
       </figure>
-      <p class="hm-more"><a href="/app/?demo=1" data-track="portada-informe-ejemplo" data-i18n="home.take.more">Ver el informe de ejemplo completo →</a></p>
+      <p class="hm-more"><a href="/app/?lang=es&amp;demo=1" data-track="portada-informe-ejemplo" data-i18n="home.take.more">Ver el informe de ejemplo completo →</a></p>
     </div>
     <!-- Fuera de .hm-take-grid: allí el enlace se estira sobre toda la tarjeta. -->
-    <p class="hm-more hm-more-alt"><a href="/app/?demo=noedge" data-track="portada-ejemplo-sin-ventaja" data-i18n="home.take.noedge">¿Y cuando no hay nada? Ver un ejemplo sin ventaja real →</a></p>
+    <p class="hm-more hm-more-alt"><a href="/app/?lang=es&amp;demo=noedge" data-track="portada-ejemplo-sin-ventaja" data-i18n="home.take.noedge">¿Y cuando no hay nada? Ver un ejemplo sin ventaja real →</a></p>
   </section>
 
-  <!-- 5. Banco de pruebas: cifras medidas en bench/ (quinto examen, ciego). Las comprueba tests/home-bench.test.js. -->
+  <!-- 5. Banco de pruebas: cifras medidas en bench/ (sexto examen, ciego). Las comprueba tests/home-bench.test.js. -->
   <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
     <h2 id="hm-bench-title" data-i18n="home.bench.title">Lo probamos con casos de respuesta conocida</h2>
     <p class="hm-sub" data-i18n="home.bench.sub">Pasamos el motor por 800 optimizaciones simuladas en las que sabíamos de antemano si había una ventaja real o no. Orometra califica la evidencia en cinco niveles, de «insuficiente» a «sólida».</p>
@@ -296,7 +296,7 @@
       <li data-i18n="home.final.c5">Optimizaciones completas y genéticas</li>
       <li data-i18n="home.final.c6">Comprueba tu backtest en un periodo no visto</li>
     </ul>
-    <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/" data-track="cierre-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
+    <span class="hm-go-group"><a class="primary-btn hm-cta" href="/app/?lang=es" data-track="cierre-cta" data-i18n="lp.cta">Analizar mis resultados</a></span>
   </section>
 </main>
 
@@ -307,7 +307,7 @@
       <span data-i18n="lp.foot.tagline">Separa lo frágil de lo estable</span>
     </div>
     <nav class="lp-foot-nav" aria-label="Pie de página" data-i18n="nav.footer" data-i18n-attr="aria-label">
-      <a href="/app/" data-i18n="lp.cta.footer">Analizar</a>
+      <a href="/app/?lang=es" data-i18n="lp.cta.footer">Analizar</a>
       <a href="/es/guias/" data-i18n="nav.guides">Guías</a>
       <a href="/es/methodology/" data-i18n="nav.method">Metodología</a>
       <a href="/es/about/" data-i18n="doc.about.nav">Quiénes somos</a>

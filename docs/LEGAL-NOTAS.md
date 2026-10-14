@@ -2,8 +2,8 @@
 
 Nota interna (antes se mostraba en la pestaña legal de la app; no es para el usuario).
 
-Los textos legales de la app (`js/ui-chrome.js#renderLegal`) y de la página de privacidad
-(`privacy/index.html` y su versión en `es/`) son borradores cuidados, no asesoramiento
+Los textos legales de la web (la página de privacidad, `privacy/index.html`, y su versión en
+`es/`, que incluye el aviso de que no es asesoramiento financiero) son borradores cuidados, no asesoramiento
 jurídico. Si algún día la herramienta pasa a tener dimensión económica (cobro, publicidad o
 recogida de datos de contacto), la normativa española (LSSI) exigirá además identificar al
 titular con nombre, NIF y domicilio, y estos textos tendrán que revisarse con un profesional.

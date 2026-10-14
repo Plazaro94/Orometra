@@ -36,6 +36,7 @@ const [b1S3, b1S4, b1S6, b1S7, b1S8, b1All] = row('B1 primera fila MT5');
 const b4All = row('B4 media con vecinas')[5];
 const fb = md.match(/Con sugerencia orientativa[^\n]*S7 ([\d.]+) · S8 ([\d.]+) · \*\*Todos ([\d.]+)\*\*/);
 const passed = (md.match(/\| APROBADO \|/g) || []).length;
+const losesTo = (b) => md.split('\n').some((l) => l.includes(`Orometra ≤ ${b}`) && l.includes('**SUSPENDIDO**'));
 const failed = (md.match(/\| \*\*SUSPENDIDO\*\* \|/g) || []).length;
 
 const fp = (lang, x, d) => (lang === 'es' ? `${x.toFixed(d).replace('.', ',')}\u00A0%` : `${x.toFixed(d)}%`);
@@ -50,7 +51,7 @@ for (const lang of ['en', 'es']) {
   check('falsas alarmas: porcentaje', t('home.bench.1.n') === fp(lang, fpPct, 1), `${t('home.bench.1.n')} frente a ${fpPct}`);
   check('falsas alarmas: n de N', t('home.bench.1.body').includes(String(noEdgeCases)) && t('home.bench.1.body').includes(` ${falseAlarms} `), t('home.bench.1.body'));
   check('potencia: porcentaje', t('home.bench.2.n') === fp(lang, powerPct, 0), `${t('home.bench.2.n')} frente a ${powerPct}`);
-  // «De 40 optimizaciones con una ventaja real clara, 34 recibieron…»
+  // «De 32 optimizaciones con una ventaja real clara, 31 recibieron…»
   const of = lang === 'es' ? `De ${powerCases} optimizaciones` : `Out of ${powerCases} optimizations`;
   const got = ` ${detected} `;
   check('potencia: n de N', t('home.bench.2.body').includes(of) && t('home.bench.2.body').includes(got), t('home.bench.2.body'));
@@ -71,6 +72,12 @@ for (const lang of ['en', 'es']) {
   const m2 = t('doc.method.bench.p2');
   check('metodología: criterios y media con vecinas', m2.includes(crit) && m2.includes(dec(lang, b4All)), m2);
   check('metodología: enlaza al mismo examen', m2.includes('REPORT-exam6.md'));
+  // El paso 4 de Metodología resume la elección: no puede decir que gana a un método al que
+  // el examen la da por perdedora (decía que ganaba a la suma de puestos, B3).
+  const s4 = t('doc.method.s4.body3');
+  const ahead = lang === 'es' ? '«media con vecinas» y la suma de puestos quedan por delante' : '“average with neighbors” and the rank sum come out ahead';
+  check('metodología (paso 4): media con vecinas y suma de puestos, como en el examen', s4.includes(ahead) === (losesTo('B3') && losesTo('B4')), s4);
+  check('metodología (paso 4): gana a la n.º 1 de MT5, al forward y al azar', !losesTo('B1') && !losesTo('B2') && !losesTo('B5'));
   check('metodología: dice por qué no gana en el total y dónde gana la n.º 1 de MT5', /(sugerencia orientativa|tentative suggestion)/.test(m2) && /(genéticas|genetic)/.test(m2), m2);
 }
 setLocale('en');

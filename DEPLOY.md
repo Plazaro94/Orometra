@@ -63,15 +63,20 @@ del despliegue:
 ```
 default-src 'self'      · script-src 'self' + Cloudflare Analytics
 style-src 'self'        · connect-src 'self' + Cloudflare Analytics + GoatCounter
+font-src 'self'         · worker-src 'self'
 object-src 'none'       · base-uri 'self'
 form-action 'none'      · frame-ancestors 'none'
-img-src 'self' data: + GoatCounter · worker-src 'self' blob:
-style-src-attr 'unsafe-inline'   (tres atributos style= generados en plantillas)
+img-src 'self' data: + GoatCounter
+upgrade-insecure-requests
+style-src-attr 'unsafe-inline'   (atributos style= que generan las plantillas: posiciones y
+                                  tamaños calculados de los gráficos y el color de cada nivel)
 ```
+
+La app no lleva Cloudflare: su política es la misma sin esos dos orígenes.
 
 Detalles que la hacen posible:
 
-- **El `.xlsx` se lee con código propio** (`js/xlsx.js`, unas 160 líneas). Antes se cargaba
+- **El `.xlsx` se lee con código propio** (`js/xlsx.js`, unas 230 líneas). Antes se cargaba
   SheetJS desde jsdelivr: 900 KB —más del doble que la aplicación entera— para un caso
   poco frecuente, que además rompía la promesa de que todo se ejecuta en tu navegador y
   obligaba a abrir la política a un origen externo. Un `.xlsx` es un ZIP con XML dentro y
@@ -90,5 +95,8 @@ Hacen falta módulos ES, Web Workers (de tipo módulo), `structuredClone` y, sol
 
 Los archivos se procesan en el navegador y no se envían a ningún servidor: no hay `fetch` ni
 peticiones de ningún tipo con su contenido. Las únicas peticiones externas son las de la
-analítica descrita arriba, que cuenta visitas y no ve los archivos. En el navegador se guardan
-tres preferencias (tema, idioma y mínimos) en `localStorage`.
+analítica descrita arriba, que cuenta visitas y no ve los archivos. En `localStorage` se guardan
+tres preferencias (tema, idioma y mínimos), el historial de análisis (un resumen de cada uno,
+nunca los archivos) y, solo si se abre la web con `#toggle-goatcounter` (el truco de
+GoatCounter para no contar tus propias visitas), su marca `skipgc`. La página de privacidad
+detalla lo que guarda Orometra.

@@ -1,6 +1,6 @@
 // Mide la expectativa ajustada por selección (core/shrink.js) contra la verdad del banco.
 //
-//   node bench/shrink.js calib-shrink
+//   node bench/shrink.js calib-2026-10-14     (o exam6: cualquier .jsonl de bench/run.js)
 //
 // La verdad es el beneficio esperado por operación de la recomendada en el periodo NO
 // visto: TRADE_SD x edge_unseen (bench/sim.js). Se compara con las dos cifras que un

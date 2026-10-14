@@ -1,6 +1,5 @@
-// Superficie isométrica de una meseta real: mismo lenguaje visual que el relieve
-// de la portada (js/hero-surface.js: luz, paleta y banderín), pero con datos de
-// verdad en vez de una fórmula. Los datos son discretos (niveles probados de dos parámetros), así
+// Superficie isométrica de una meseta real, con los datos del análisis. Los datos son
+// discretos (niveles probados de dos parámetros), así
 // que se dibuja como barras isométricas —un histograma 3D—, no como una malla
 // continua: interpolar entre niveles reales inventaría valores que nadie
 // probó.
@@ -18,16 +17,16 @@ function cssColor(el, name, fallback) {
  * Monta la superficie en `canvas`. `grid` es el objeto de buildAxisPairGrid.
  * `onHover(cell|null, a, b)` se llama al pasar el ratón sobre una celda (o al
  * salir, con null), para que la interfaz pueda mostrar el detalle a un lado.
- * Devuelve `{ destroy(), setGrid(nuevaRejilla) }`.
+ * Devuelve `{ destroy() }`.
  */
 export function mountPlateauSurface(canvas, grid, { onHover, label } = {}) {
-  if (!canvas || !canvas.getContext) return { destroy() {}, setGrid() {} };
+  if (!canvas || !canvas.getContext) return { destroy() {} };
   const ctx = canvas.getContext('2d', { alpha: false });
   const root = document.documentElement;
   const quiet = matchMedia('(prefers-reduced-motion: reduce)');
 
-  let data = grid;
-  let repLabel = label || '';
+  const data = grid;
+  const repLabel = label || '';
   let angle = -0.72;
   let raf = 0;
   let dragging = false;
@@ -386,12 +385,6 @@ export function mountPlateauSurface(canvas, grid, { onHover, label } = {}) {
       io.disconnect();
       ro.disconnect();
       mo.disconnect();
-    },
-    setGrid(next, nextLabel) {
-      data = next;
-      if (nextLabel !== undefined) repLabel = nextLabel;
-      hoverCell = null;
-      schedule();
     },
   };
 }

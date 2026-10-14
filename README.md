@@ -39,10 +39,11 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
    mejor puesto en in-sample más su puesto en forward, ambos promediados con sus vecinas. Se
    midió en el banco de pruebas (`bench/`) frente a la regla maximin anterior y a métodos
    habituales. Sin meseta y con forward, se da una sugerencia **orientativa** con la misma
-   regla. Resultado honesto del examen ciego: gana a elegir la pasada que MT5 pone primera (mayor beneficio in-sample), la mejor del
-   forward, la suma de puestos y el azar; **pierde por poco contra «media con vecinas»** si
-   se cuenta como fallo cada caso en que Orometra no propone meseta (con la sugerencia
-   orientativa gana). Detalle en `bench/PREREGISTRO.md`.
+   regla. Resultado honesto del examen ciego (el sexto): gana a elegir la pasada que MT5 pone
+   primera (mayor beneficio in-sample), la mejor del forward y el azar; **pierde contra «media
+   con vecinas» y contra la suma de puestos** si se cuenta como fallo cada caso en que Orometra
+   no propone meseta (con la sugerencia orientativa, gana a las dos). Detalle en
+   `bench/PREREGISTRO.md` y `bench/results/REPORT-exam6.md`.
 6. **Solo se ignora lo demostrablemente plano, medido de dos formas.** La influencia de un
    parámetro se mide *aislada* (agrupando por su valor y promediando el resto) y *combinada*
    (dejando fijo todo lo demás), y manda la mayor de las dos. Un parámetro cuyo efecto se
@@ -84,7 +85,7 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   que enumerarla no cabe en el presupuesto, se degrada a la aproximación anterior **avisando**.
 - Detección de **rejillas con saltos desiguales** (`10, 20, 30, 100, 500`): el motor cuenta
   posiciones, no distancias, así que ahí la continuidad de una meseta puede ser un espejismo.
-- El tamaño de una meseta se tope por el **volumen del espacio que abarca**, no por cuántas
+- El tamaño de una meseta se topa por el **volumen del espacio que abarca**, no por cuántas
   configuraciones se muestrearon: con algoritmo genético, la densidad mide dónde miró el
   optimizador tanto como dónde hay estabilidad.
 - Mesetas como componentes conexas con suelo de calidad absoluto, y su **núcleo**.
@@ -174,14 +175,18 @@ Después abre `http://localhost:3000`. Acepta otro puerto como argumento: `node 
 Las páginas públicas (portada, metodología, guías, privacidad y «Quiénes somos») tienen una
 versión por idioma: en inglés en la raíz (`/`, `/methodology/`, `/guides/…`) y en español bajo
 `/es/…`, enlazadas con `hreflang` para que Google indexe
-las dos. Las de `es/` **se generan**, no se editan a mano: cambia la página inglesa o
-`js/i18n.js` y ejecuta
+las dos. Las de `es/` **se generan**, no se editan a mano. Los textos con `data-i18n` se
+cambian en `js/i18n.js` (el script los reescribe también en la página inglesa); la estructura,
+en la página inglesa. Después ejecuta
 
 ```bash
 node tools/build-es.js
 ```
 
-`npm test` falla (`build-es.js --check`) si `es/` no está al día. El idioma de estas páginas lo
+El mismo script genera `js/i18n-site.js` (los pocos textos que pinta JavaScript en las páginas
+públicas) y pone en cada página la huella de `styles.css` (`styles.css?v=…`), para que nadie se
+quede con una hoja vieja en caché: ejecútalo también tras cambiar la hoja de estilos.
+`npm test` falla (`build-es.js --check`) si algo de esto no está al día. El idioma de estas páginas lo
 decide su dirección; `js/theme-init.js` lleva a `/es/` a quien tiene el navegador en español
 (o lo eligió antes) y los botones EN/ES cambian de dirección. La aplicación (`/app/`) sigue
 siendo una sola página que se traduce en el navegador.
@@ -214,7 +219,12 @@ Carga archivos XML como los de MT5, recorre el informe, cambia de idioma, descar
 prueba un archivo que no sirve, cancela un análisis y comprueba la navegación en el móvil.
 
 La imagen para redes (`og-image.jpg`, `og-image-es.jpg`) se genera con
-`node tools/og-image.mjs`, a partir del relieve de la portada.
+`node tools/og-image.mjs`, a partir de la tarjeta de la portada (la foto y el titular).
+
+Para revisar una optimización sin navegador, `node tools/audit.js IS.xml [OOS.xml]` (lee lo
+mismo que la app: XML, CSV y `.xlsx`). `node tools/sensitivity-study.js` repite el estudio que
+decidió no usar la «suavidad» para declarar planos los parámetros (2026-09-27; conclusiones en
+su cabecera).
 
 Para incluir archivos reales, colócalos como `IS(1).xls` y `OOS(1).xls` en tu carpeta de
 descargas, o indica la ruta:

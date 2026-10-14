@@ -6,12 +6,17 @@
 //   node bench/run.js exam3            semillas 3001-3100 (tercer examen, ya visto)
 //   node bench/run.js exam4            semillas 4001-4100 (cuarto examen, ya visto)
 //   node bench/run.js exam5            semillas 5001-5100 (quinto examen, ya visto)
-//   node bench/run.js exam6            semillas 6001-6100 (sexto examen, ciego)
+//   node bench/run.js exam6            semillas 6001-6100 (sexto examen, ya visto)
 //   node bench/run.js calib S3 5       un escenario y N semillas (pruebas rápidas)
 //
-// Escribe una línea JSON por caso en bench/results/<split>[-BENCH_TAG].jsonl.
+// Escribe una línea JSON por caso en bench/results/<split>[-escenarios][-BENCH_TAG].jsonl.
+// Variantes del motor con BENCH_OPTS (opciones de ENGINE_DEFAULTS, en JSON). Ejemplo, las
+// tandas del orden entre mesetas (bench/orden-mesetas.js):
+//
+//   BENCH_TAG=orden-expected BENCH_OPTS='{"plateauRank":"expected"}' \
+//     node bench/run.js calib S1,S2,S3,S4,S5,S6,S7,S8,S9,S10
 
-import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
+import { Worker, isMainThread, parentPort } from 'node:worker_threads';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -135,8 +140,8 @@ async function evaluateCase(scenario, seed) {
 
 if (isMainThread) {
   const [split = 'calib', only, nArg] = process.argv.slice(2);
-  const { SCENARIOS } = await import('./sim.js');
-  const base = split === 'exam6' ? 6001 : split === 'exam5' ? 5001 : split === 'exam4' ? 4001 : split === 'exam3' ? 3001 : split === 'exam2' ? 2001 : split === 'test' ? 1001 : 1;
+  const { SCENARIOS, seedBase } = await import('./sim.js');
+  const base = seedBase(split);
   const n = nArg ? Number(nArg) : 100;
   const scen = only ? only.split(',') : SCENARIOS;
   const tasks = [];
@@ -149,7 +154,7 @@ if (isMainThread) {
   const t0 = Date.now();
   const nWorkers = Math.min(os.cpus().length, tasks.length);
   await Promise.all(Array.from({ length: nWorkers }, () => new Promise((resolve) => {
-    const w = new Worker(fileURLToPath(import.meta.url), { workerData: {} });
+    const w = new Worker(fileURLToPath(import.meta.url));
     const next = () => {
       const t = tasks.shift();
       if (!t) { w.terminate(); resolve(); return; }

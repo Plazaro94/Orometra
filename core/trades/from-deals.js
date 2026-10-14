@@ -134,9 +134,9 @@ export function auditUnseenTrades(deals, opts = {}) {
 
   // El swap lo aplica el tester con la tasa ACTUAL a todo el histórico simulado: cuanto
   // más pesa sobre el resultado neto, menos fiable es ese resultado si el swap real
-  // varió en el periodo. `avgTradeDays` (duración media de cada operación) no está
-  // disponible: el informe de transacciones no trae la hora de apertura, solo la de
-  // cierre, así que el aviso solo usa el umbral que no depende de ella.
+  // varió en el periodo. `avgTradeDays` (duración media de cada operación) no se calcula:
+  // la hora de apertura está en la fila de entrada, que core/report.js empareja con el
+  // cierre solo para el precio (DEAL-1), así que el aviso usa el umbral que no depende de ella.
   const totalAbsNet = Math.abs(series.totalNet);
   const swapPctOfPnl = totalAbsNet > 1e-9
     ? Math.min(1, Math.abs(series.totalSwap) / totalAbsNet)

@@ -22,7 +22,7 @@ function el(attrs, text) {
     setAttribute(n, v) { this.attrs[n] = v; },
   };
 }
-const known = el({ 'data-i18n': 'home.trust' }, 'texto viejo');
+const known = el({ 'data-i18n': 'nav.method' }, 'texto viejo');
 const unknown = el({ 'data-i18n': 'home.no.existe' }, 'Lo que te llevas');
 const unknownAttr = el({ 'data-i18n': 'home.no.existe.attr', 'data-i18n-attr': 'aria-label', 'aria-label': 'Etiqueta buena' }, '');
 const unknownHtml = el({ 'data-i18n-html': 'home.no.existe.html' }, '<b>HTML bueno</b>');
@@ -38,7 +38,7 @@ globalThis.location = { pathname: '/es/' };
 const { applyStaticI18n, t } = await import('../js/i18n.js');
 try { applyStaticI18n(); } catch (e) { check('applyStaticI18n no lanza con un DOM mínimo', false, e.message); }
 
-check('una clave conocida se traduce', known.textContent === t('home.trust'), known.textContent);
+check('una clave conocida se traduce', known.textContent === t('nav.method'), known.textContent);
 check('una clave desconocida deja el texto del HTML', unknown.textContent === 'Lo que te llevas', unknown.textContent);
 check('...también en atributos', unknownAttr.attrs['aria-label'] === 'Etiqueta buena', unknownAttr.attrs['aria-label']);
 check('...y en HTML', unknownHtml.innerHTML === '<b>HTML bueno</b>', unknownHtml.innerHTML);

@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-10-14 — Limpieza general: lo que se veía mal, documentación al día y código muerto fuera
+
+Auditoría de todo el repositorio buscando lo huérfano, lo desfasado y lo que no cuadraba. Nada
+cambia en el motor: la regresión de la demo da el mismo JSON y el banco no se ha vuelto a pasar
+porque ningún cálculo se ha tocado.
+
+- **Lo que veía el usuario.** Desde `/es/`, con el navegador en inglés, la app se abría en
+  inglés: las páginas en español la enlazan ahora con `?lang=es` (`tools/build-es.js`), que
+  `js/theme-init.js` respeta si no hay idioma elegido. La 404 en español llevaba «Quiénes
+  somos» a la versión inglesa. Metodología (paso 4) y el README decían que la elección gana a
+  la suma de puestos, y en el sexto examen pierde (0,258 frente a 0,236): corregido, con una
+  prueba que lo ata a `REPORT-exam6.md`. «Puertas/gates» por «mínimos/minimums» en la barra
+  de progreso y en un hallazgo en inglés.
+- **Caché de la hoja de estilos.** `styles.css?v=` se subía a mano y llevaba cinco cambios sin
+  subir. Ahora es la huella del contenido y la pone `tools/build-es.js`; `npm test` falla si
+  no está al día.
+- **Política de seguridad:** fuera `blob:` de `worker-src` (no hay workers desde `blob:`).
+  `tools/serve.js` sirve las fotos con su tipo y la 404 como Pages.
+- **Documentación.** SPEC (principio 4 como funciona de verdad: se descubre en el in-sample y
+  el forward valida; árbol de archivos), DEPLOY (política, almacenamiento), MT5_ASSUMPTIONS
+  (DEAL-1: la hora de apertura sí viene, en la fila de entrada; fuera la guía para verificar
+  SR-1, ya resuelto), prerregistro y `bench/results/LEEME.md` al día con el sexto examen y con
+  todo lo posterior al quinto; CLAUDE.md y README dicen qué genera `build-es.js`. Referencias
+  a archivos y funciones que ya no existen, corregidas.
+- **Banco.** Fuera `calib.jsonl` y `test.jsonl` (copias exactas de `*-c948971-n100.jsonl`),
+  `REPORT-test.md` (copia de `REPORT-test-c948971-n100.md`), `REPORT-calib.md` (regenerado como
+  `REPORT-calib-c948971-n100.md`, mismas cifras) y `calib-S1_S3.jsonl` (prueba suelta de 6
+  casos). Las tandas comparten las semillas de `bench/sim.js#seedBase`: un nombre desconocido
+  ya no cae en silencio en las de la calibración (`orden-tabla.js exam6` lo hacía).
+- **Código muerto.** Fuera `rawValue`, `setGrid`, `ENGINE_DEFAULTS.denseCoverage`, la clave
+  `home.trust`, el texto de `ANALYSIS_SUCCESS` (nunca se pintaba), una comprobación de
+  cancelar que no podía cumplirse, datos que se pasaban al veredicto y nadie leía, la copia
+  `stabilityCheck.internal`, imports sin usar, entradas de `api` sin uso y 11 clases de CSS
+  que ningún elemento lleva. Una sola versión de `isZip`, `esc`, `mt5Figure` y del tope de
+  desplazamientos de la vecindad. Los motivos de los picos descartados usan los umbrales con
+  que se analizó también al cambiar de idioma.
+- **Herramientas.** `tools/audit.js` lee `.xlsx` y escribe sin etiquetas HTML;
+  `tools/sensitivity-study.js` enseña la nula barajada que ya calculaba.
+- **Pruebas que no probaban:** `audit-fixes` comprobaba la meseta sobre una rejilla sin
+  ninguna (pasaba siempre); `smoke` aceptaba `aria-hidden` por `hidden`. `source.test.js`
+  revisa también `core/trades/`, `bench/` y `tools/`.
+- **Pendiente, a propósito:** el código sin uso de `core/trades/` (avisos de `risk.js` que nunca
+  saltan, opciones de costes que nadie pasa) y su texto en `js/ui-unseen.js` se quitan cuando
+  se integre la rama del Monte Carlo, que está reescribiendo esa parte.
+
 ## 2026-10-14 — Portada y Metodología citan el sexto examen (el del motor actual)
 
 Citaban el quinto, hecho con el motor anterior. Ahora, con el sexto (semillas 6001-6100, a
@@ -1507,15 +1552,18 @@ aplica). `docs/MT5_ASSUMPTIONS.md` sin las filas `INI-*`/`FRAME-*`/`ORF-1`/`PROB
 - `docs/SPEC.md`, `docs/MT5_ASSUMPTIONS.md` (este changelog).
 
 ### Pendiente / no cerrado en Fase 0
+(Después: SR-1 se resolvió el 2026-09-26; FWD-1 se observó en exports reales el 2026-09-28 y el
+2026-10-11, ver `docs/MT5_ASSUMPTIONS.md`; la carpeta `web/` no se hizo.)
 - **SR-1** (cómo calcula MT5 el Sharpe del export): sigue pendiente de verificación manual en MT5.
 - **FWD-1**: mitigado con aviso; falta confirmar con exports reales el comportamiento exacto de MT5.
 - Reorganizar la app web bajo carpeta `web/` (arquitectura objetivo): aplazado.
 - Verificación manual FWD-1 / SR-1 en MT5 (sigue pendiente).
 
-### Trabajo Lite previo (aún puede estar sin commit limpio)
+### Trabajo Lite previo
 - Cobertura vs `.set`, copy DoF/Sharpe, UX evidencia débil, IS+Forward obligatorio, i18n del veredicto, etc.
 
 ---
 
 ## Cómo usar este archivo
-Al cerrar cada fase: fecha, qué se hizo, qué falta, y supuestos MT5 pendientes.
+Al cerrar un trabajo relevante, una entrada arriba del todo (la más reciente primero): fecha,
+qué se hizo y por qué, qué se midió y qué queda pendiente.

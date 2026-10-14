@@ -130,6 +130,15 @@ export function simulatePeriod(rng, mu, trades, years) {
 export const SCENARIOS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'];
 export const NO_EDGE = new Set(['S1', 'S2', 'S5']);
 
+// Primera semilla de cada tanda (bench/PREREGISTRO.md): calibración 1-100, exámenes 1001-1100,
+// 2001-2100… Un nombre que no está aquí es un error: antes caía sin avisar en las semillas de
+// la calibración con el nombre del examen.
+const SEED_BASE = { calib: 1, test: 1001, exam2: 2001, exam3: 3001, exam4: 4001, exam5: 5001, exam6: 6001 };
+export function seedBase(split) {
+  if (!(split in SEED_BASE)) throw new Error(`Tanda desconocida: ${split}. Hay: ${Object.keys(SEED_BASE).join(', ')}`);
+  return SEED_BASE[split];
+}
+
 /**
  * @returns {{ isTable, oosTable, truth, meta }}
  *   truth.byKey: Map "v1|v2|..." -> { edgeUnseen, edgeIs }
@@ -243,7 +252,6 @@ function exportCase(scenario, seed, rows, levels, meta) {
 // ---------------------------------------------------------------- S9 y S10: varias zonas
 // Prerregistrado en bench/PREREGISTRO.md (enmienda 2026-10-14 (b)) antes de generar ningún
 // caso: muchas dimensiones, muestreo genético y de 2 a 4 zonas buenas sorteadas.
-export const MULTI_SCENARIOS = ['S9', 'S10'];
 
 function generateMultiZone(scenario, seed) {
   const rng = makeRng(hashSeed(`${scenario}#${seed}`));

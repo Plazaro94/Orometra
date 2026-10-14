@@ -7,7 +7,7 @@ import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
 import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag, pctSign, shareText } from './i18n.js';
-import { state, api, num, int, pct, esc, rich, nf, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, forwardHoldHtml, deployableSet, forwardUntested } from './ui-state.js';
+import { state, api, num, int, pct, esc, rich, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, forwardHoldHtml, deployableSet, forwardUntested } from './ui-state.js';
 import { gloss } from './glossary.js';
 
 /*

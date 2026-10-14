@@ -186,7 +186,6 @@ section('2. Fixture: meseta pegada al borde del rango');
   if (a.plateaus.length) {
     const emaLevels = a.sensitivity.find((s) => s.name === 'EMA')?.values || [];
     const emaHi = emaLevels.length >= 2 ? emaLevels[emaLevels.length - 2] : 26;
-    const emaMax = emaLevels.length ? emaLevels[emaLevels.length - 1] : 28;
     const b = a.plateaus[0].boundary.map((x) => x.name);
     const emasIn = a.plateaus[0].indices.map((i) => a.records[i].params[a.meta.paramNames.indexOf('EMA')]);
     check('meseta en el tercio alto del rango EMA',

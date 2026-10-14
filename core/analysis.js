@@ -9,7 +9,7 @@ import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
   conditionalSensitivity, selectDims, buildNeighborhood, localStability, robustnessScores,
   findPlateaus, coreMembers, chooseRepresentative, boundaryParams, refinementRange, finerRefinement,
-  countPossibleNeighbors, detectInversions, gridRegularity, componentExtent,
+  countPossibleNeighbors, maxNeighborOffsets, detectInversions, gridRegularity, componentExtent,
   collapseToTopology,
 } from './engine.js';
 import {
@@ -263,7 +263,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   }
   integrity = { ...integrity, damagedDropped: { is: screenedIs.dropped, oos: screenedOos.dropped }, hiddenLosers: hiddenLosers.hidden };
 
-  progress(onProgress, 18, L('Evaluando calidad y puertas', 'Evaluating quality and gates'));
+  progress(onProgress, 18, L('Evaluando calidad y mínimos', 'Evaluating quality and minimums'));
   const periodRatio = hasForward ? estimatePeriodRatio(records) : NaN;
   const minTradesIs = policy.gates.minTrades;
   // Mínimo de operaciones del forward: el del usuario escalado por la duración del forward,
@@ -360,8 +360,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // No es el espacio que pediste en MT5; para eso hace falta el .set (abajo).
   const coverage = cartesian > 0 ? records.length / cartesian : 0;
   const optimisedDims = levels.filter((l) => l.length > 1).length;
-  // "grid" solo si la malla OBSERVADA esta casi llena. Cobertura media sobre niveles
-  // vistos (antes denseCoverage=0.35) mentía en GA densos en un rincón.
+  // "grid" solo si la malla OBSERVADA esta casi llena (95 %). Con un umbral de 0,35 sobre
+  // la cobertura media de los niveles vistos se tomaban por malla los GA densos en un rincon.
   const sampling = coverage >= 0.95 ? 'grid' : coverage >= 0.02 ? 'partial' : 'sparse';
 
   const searchCoverage = coverageAgainstSet(
@@ -607,8 +607,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const passing = Number.isFinite(st.passCount)
       ? st.passCount
       : (Number.isFinite(st.fracPass) ? Math.round(st.fracPass * st.support) : 0);
-    const maxOff = Math.max(64, Math.floor((opts.neighborWorkBudget || 8e6) / Math.max(1, coords.length)));
-    const slotInfo = countPossibleNeighbors(coords[rep], activeDims, levels, nb.radius, maxOff);
+    const slotInfo = countPossibleNeighbors(coords[rep], activeDims, levels, nb.radius, maxNeighborOffsets(coords.length, opts));
     const slotsKnown = slotInfo.complete && nb.offsetsComplete !== false;
     const neighborhood = {
       observed: st.support,
@@ -1119,12 +1118,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     }
 
     return {
-      // Se conservan los campos planos del panel original para no romper nada que ya
-      // los lea; describen la auditoria de NUESTROS umbrales.
+      // Los campos planos son la auditoria de NUESTROS umbrales; `gates`, la de TUS minimos.
       ...internal,
       perturbation: 0.2,
       keys: KEYS,
-      internal,
       gates,
       gatesSkipped: gates === null,
     };
@@ -1159,16 +1156,13 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     forwardCount: hasForward ? records.filter(hasOos).length : records.length,
     plateauForwardCritical: opts.plateauForwardCritical,
     gatePassCount,
-    discoverPassCount,
     searchPassCount,
     total: records.length,
     plateaus,
     fragility: fragilityResult.fragility,
     fragilityQuality: fragilityQuality.fragility,
-    fragilityMargin: fragilityResult.margin,
     fragilityFolds: fragilityResult.folds,
     fragilityAsymmetry: fragilityResult.asymmetry,
-    fragilityWorstDirection: fragilityResult.worstDirection,
     sharpeTest,
     shrinkage,
     spearman: rho,
@@ -1208,6 +1202,14 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     meta: {
       hasForward,
       selectionMode,
+      // Umbrales de meseta con que se explican los picos descartados (rebuildLocalizedCopy).
+      peakOpts: {
+        minSupport: opts.minSupport,
+        plateauFloorQuality: opts.plateauFloorQuality,
+        plateauMinFracPass: opts.plateauMinFracPass,
+        plateauMinRobust: opts.plateauMinRobust,
+        plateauMinSize: opts.plateauMinSize,
+      },
       discoverPassCount,
       searchPassCount,
       // Lo que el veredicto necesita para rehacerse igual al cambiar de idioma

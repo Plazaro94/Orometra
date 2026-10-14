@@ -7,6 +7,7 @@
 //
 //   node bench/orden-tabla.js calib            semillas 1-100 de cada escenario
 //   node bench/orden-tabla.js exam5            semillas 5001-5100 (ya publicado: comprueba que no cambia)
+//   node bench/orden-tabla.js exam6            semillas 6001-6100
 //   node bench/orden-tabla.js calib '{"gates":{"requireProfit":true,"minProfitFactor":1.4,"maxDrawdownPct":20,"minTrades":100}}'
 //
 // Escribe bench/results/<split>-orden-tabla[-pfX].jsonl y resume en pantalla.
@@ -40,8 +41,8 @@ async function evaluateCase(scenario, seed, policy) {
 
 if (isMainThread) {
   const [split = 'calib', pol] = process.argv.slice(2);
-  const base = split === 'exam5' ? 5001 : split === 'exam4' ? 4001 : split === 'exam3' ? 3001 : split === 'exam2' ? 2001 : split === 'test' ? 1001 : 1;
-  const { SCENARIOS } = await import('./sim.js');
+  const { SCENARIOS, seedBase } = await import('./sim.js');
+  const base = seedBase(split);
   const tasks = [];
   for (const s of SCENARIOS) for (let k = 0; k < 100; k++) tasks.push({ scenario: s, seed: base + k });
   const policy = pol ? JSON.parse(pol) : null;

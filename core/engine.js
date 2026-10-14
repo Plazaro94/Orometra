@@ -18,9 +18,6 @@ export const ENGINE_DEFAULTS = {
   conditionalMinBuckets: 5,
   // Presupuesto de trabajo de la vecindad: desplazamientos x configuraciones.
   neighborWorkBudget: 8e6,
-  // Umbral legado: solo se usa como referencia de "denso" en comentarios/tests.
-  // El etiquetado sampling==='grid' exige cobertura >= 0.95 (casi malla llena).
-  denseCoverage: 0.95,
   bruteForceLimit: 30000,
   /*
    * UMBRALES DE MESETA, Y DE DONDE SALEN SUS NUMEROS.
@@ -546,6 +543,15 @@ function neighborsSparse(coords, activeDims, blockDims, radius) {
 }
 
 /**
+ * Cuantos desplazamientos caben sin que el calculo se vuelva lento. El conjunto completo de
+ * la bola de Manhattan crece deprisa con la dimension, asi que se acota por trabajo total
+ * (desplazamientos x configuraciones) y se informa si no ha cabido.
+ */
+export function maxNeighborOffsets(n, opts = ENGINE_DEFAULTS) {
+  return Math.max(64, Math.floor((opts.neighborWorkBudget || 8e6) / Math.max(1, n)));
+}
+
+/**
  * Construye la vecindad ampliando el radio hasta alcanzar un soporte mediano util.
  * El radio efectivo se informa: es una decisión del motor que el usuario debe ver.
  */
@@ -567,10 +573,7 @@ export function buildNeighborhood(coords, activeDims, { dense, blockDims = [], o
   const localityCap = Math.max(opts.minSupport, Math.floor(coords.length * opts.maxLocalShare));
   const effectiveTarget = Math.min(opts.targetSupport, localityCap);
 
-  // Cuantos desplazamientos caben sin que el calculo se vuelva lento. El conjunto
-  // completo de la bola de Manhattan crece deprisa con la dimension, asi que se acota
-  // por trabajo total (desplazamientos x configuraciones) y se informa si no ha cabido.
-  const maxOffsets = Math.max(64, Math.floor((opts.neighborWorkBudget || 8e6) / Math.max(1, coords.length)));
+  const maxOffsets = maxNeighborOffsets(coords.length, opts);
   const build = (r) => (dense || truncated
     ? neighborsDense(coords, activeDims, blockDims, r, maxOffsets)
     : neighborsSparse(coords, activeDims, blockDims, r));

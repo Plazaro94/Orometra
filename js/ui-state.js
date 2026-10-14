@@ -111,12 +111,6 @@ export const forwardUntested = (a, p) => Boolean(a && a.meta.hasForward && p && 
 export const deployableSet = (a, p) => Boolean(a && a.meta.hasForward && p && !forwardUntested(a, p));
 
 export const money = (v) => (Number.isFinite(v) ? new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 0 }).format(v) : '—');
-/** Valor tal como lo escribe MT5: punto decimal y sin separador de millares. */
-export const rawValue = (v) => {
-  if (typeof v === 'boolean') return v ? 'true' : 'false';
-  return String(v);
-};
-
 /**
  * Valor de un PARÁMETRO tal como se escribe en MT5: exacto, con punto decimal y sin
  * separador de millares, igual que en el .set (js/export.js#formatSetValue). No se

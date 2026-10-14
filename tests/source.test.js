@@ -25,7 +25,10 @@ function check(name, cond, detail = '') {
 const sources = [
   ...fs.readdirSync(path.join(ROOT, 'js')).filter((f) => f.endsWith('.js')).map((f) => 'js/' + f),
   ...fs.readdirSync(path.join(ROOT, 'core')).filter((f) => f.endsWith('.js')).map((f) => 'core/' + f),
-  'index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'styles.css', 'tools/audit.js',
+  ...fs.readdirSync(path.join(ROOT, 'core/trades')).filter((f) => f.endsWith('.js')).map((f) => 'core/trades/' + f),
+  ...fs.readdirSync(path.join(ROOT, 'bench')).filter((f) => f.endsWith('.js')).map((f) => 'bench/' + f),
+  ...fs.readdirSync(path.join(ROOT, 'tools')).filter((f) => /\.m?js$/.test(f)).map((f) => 'tools/' + f),
+  'index.html', 'app/index.html', 'methodology/index.html', 'privacy/index.html', 'styles.css',
 ];
 
 const ACC = 'áéíóúÁÉÍÓÚñÑ';
@@ -161,7 +164,7 @@ for (const rel of sources) {
   const file = path.join(ROOT, rel);
   if (!fs.existsSync(file)) continue;
   const raw = fs.readFileSync(file, 'utf8');
-  if (rel.endsWith('.js')) {
+  if (/\.m?js$/.test(rel)) {
     const code = stripNonCode(raw);
     code.split('\n').forEach((line, n) => {
       if (ACCENTED.test(line)) offenders.push(`${rel}:${n + 1} ${line.trim().slice(0, 60)}`);
@@ -214,10 +217,10 @@ for (const rel of sources.filter((f) => f.endsWith('.js'))) {
   const file = path.join(ROOT, rel);
   if (!fs.existsSync(file)) continue;
   const s = fs.readFileSync(file, 'utf8');
-  if (rel === 'tools/audit.js') continue; // su salida ES por consola
+  if (/^(bench|tools)\//.test(rel)) continue; // scripts de consola: su salida ES por consola
   if (rel === 'js/goatcounter.js') continue; // copia sin modificar del contador oficial (ver cabecera)
   if (/\bdebugger\b/.test(s)) debugLeftovers.push(rel + ': debugger');
-  if (/console\.(log|warn|error)\(/.test(s) && rel !== 'js/worker.js') debugLeftovers.push(rel + ': console');
+  if (/console\.(log|warn|error)\(/.test(s)) debugLeftovers.push(rel + ': console');
 }
 check('sin debugger ni console sueltos', debugLeftovers.length === 0, debugLeftovers.join(', '));
 
