@@ -300,3 +300,10 @@ M1. Si no propone meseta, se registra como «se abstiene».
   Nada más cambia (alturas, anchuras en los relevantes, suerte, genético, reglas y criterios).
   Con ello, en esas mismas semillas de depuración: S9 con dos o más mesetas en 20 de 40 y S10
   en 27 de 40. Ahora se calibra.
+- **2026-10-14 (d), resultado de la calibración del orden entre mesetas** (semillas 1-100 de
+  S1-S10, `REPORT-orden-mesetas-calib.md`; criterios aplicados por `bench/orden-mesetas.js`).
+  Medianas del arrepentimiento en S9: R0 0,187, R1 0,193 y R2 0,173 (hacía falta ≤ 0,167).
+  En S6, R1 y R2 empeoran 0,019 (máximo permitido 0,010). Falsos positivos iguales en las tres.
+  R1 cambia la elegida en 16 de 100 casos de S9 y acierta en 8 y falla en 8; R2, en 15 (8
+  mejor, 7 peor). **Ninguna cumple (a) y (b): se queda R0.** Como no se adopta nada, no hay
+  examen que confirmar: las semillas 7001-7100 quedan sin generar para la próxima pregunta.

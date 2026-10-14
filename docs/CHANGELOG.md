@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-14 — Orden entre mesetas: medido en un escenario nuevo, se queda como está
+
+Con el export auditado, Orometra pone primera una meseta grande que aguanta el forward a
+medias por delante de una pequeña que lo aguanta entera. El banco no
+tenía casos así, así que no podía decir qué orden acierta. Se ha medido, con todo fijado antes
+de generar ningún caso (`bench/PREREGISTRO.md`, enmiendas (b), (c) y (d) del 2026-10-14):
+
+- **Escenarios nuevos.** S9: de 5 a 7 parámetros (2 a 4 relevantes), de 2 a 4 zonas buenas
+  con anchura y altura sorteadas, muestreo genético y forward del 25 % mejor. S10: su gemelo
+  sin ventaja fuera del periodo optimizado.
+- **Tres reglas:** la actual (R0); ordenar cada meseta por lo que se espera de ella en un
+  periodo nuevo (R1, con el modelo de «qué esperar»); y por su límite inferior (R2).
+- **Resultado en la calibración:** arrepentimiento mediano en S9 de 0,187 con R0, 0,193 con R1
+  y 0,173 con R2 (hacía falta bajar al menos 0,02). R1 y R2 empeoran S6 en 0,019. Cuando R1
+  cambia la elegida, acierta tantas veces como falla (8 y 8 de 16). **Se queda R0.**
+- Lo que se aprende: ordenar por lo que se espera no elige mejor que la regla actual. En el
+  banco no se ha encontrado que preferir la meseta que aguanta el forward entera, frente a la
+  grande que lo aguanta a medias, mejore la elección; el aviso crítico sobre el forward sigue
+  saliendo, que es lo que toca.
+- Las dos reglas nuevas quedan en el motor como opción del banco (`plateauRank`), sin uso en
+  la app. Las semillas de examen 7001-7100 siguen sin generar.
+
 ## 2026-10-14 — Auditoría estadística con un export real: qué esperar de la recomendada, Sharpe al 95 %, procedencia
 
 Se auditó como lo haría un quant un export real de MT5 (un EA sobre un índice en M15: unas

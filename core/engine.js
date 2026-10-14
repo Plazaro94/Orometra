@@ -76,6 +76,11 @@ export const ENGINE_DEFAULTS = {
   // distingue (solo 34 de 800 casos de calibración tienen más de una meseta; ver
   // bench/PREREGISTRO.md, enmienda de esa fecha). No se cambia sin pruebas.
   rankForward: 'soft',
+  // Regla para ordenar mesetas: 'current' (R0, la de arriba), 'expected' (R1, por lo que
+  // se espera de la meseta en un periodo nuevo) o 'lower' (R2, por su límite inferior).
+  // Prerregistradas y medidas el 2026-10-14 en un escenario con varias zonas, muchas
+  // dimensiones y genético (S9): ninguna mejora a R0 lo bastante (bench/PREREGISTRO.md).
+  plateauRank: 'current',
 };
 
 /**
