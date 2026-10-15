@@ -27,6 +27,35 @@ Contenido:
 
 ---
 
+## 0. Estado a 2026-10-15
+
+Lo que sigue (secciones 1 a 15) es el diseño de partida, con las correcciones que fue pidiendo
+el banco. Lo vigente, en corto:
+
+- **Dos partes, cada una honesta con lo que es.**
+  - **Radiografía** (para todos): los mismos días de operativa en otro orden. Dice si el orden
+    real fue afortunado, la racha de pérdidas normal y dibuja las curvas posibles. No es una
+    previsión. `core/trades/radiography.js`.
+  - **Previsión** (cuando los datos lo permiten): **M2bc**, el bootstrap bayesiano por bloques
+    con el nivel calibrado por doble bootstrap. `core/trades/montecarlo.js`.
+- **Tres puertas antes de la previsión:** rachas (contraste robusto de Dalla, Giraitis y
+  Phillips, 2020), volatilidad agrupada (McLeod y Li, 1983) y al menos 100 días con operaciones.
+  Si alguna salta, no hay cifras y se dice por qué.
+- **Límites medidos en la calibración 4** (pendientes del examen): previsión a 3 meses desde 1
+  año de datos no usados para elegir; a 6 meses desde 2 años. Criterio de descarte vigente
+  (enmienda 6): 6 meses con 2 años.
+- **Nunca hay previsión con datos usados para elegir** (con 100 o más configuraciones probadas,
+  el drawdown supera su p95 un 12-32 % de las veces).
+- **Descartados:** M0 (el que había en la app), M1, M2 (contaba dos veces la incertidumbre) y M2c.
+- **Defecto conocido:** el detector de volatilidad agrupada mira los cuadrados y, con colas
+  gruesas, dos días extremos pueden dispararlo. En el informe real del autor salta en el
+  histórico completo por dos ganancias de 5.187 y 6.361 separadas 9 días (recortándolas, p =
+  0,08). Es un error del lado prudente (niega cifras, no da cifras malas), pero confunde.
+  Mejora pendiente: un detector robusto, que exigiría calibrar y examinar de nuevo.
+- **Qué recibe cada usuario:** sección 8.6. **Los gráficos:** sección 8.7.
+
+---
+
 ## 1. Resumen
 
 - **Qué es.** Un módulo de Orometra, no una herramienta aparte. Toma el informe de un
@@ -484,6 +513,52 @@ preguntas de 4.4 van debajo, una cada vez.
 
 ---
 
+### 8.6 Qué recibe cada usuario
+
+Solo tres cosas cambian la respuesta: si las operaciones se usaron para elegir la configuración
+(se pregunta: fechas de corte y origen de los parámetros), cuántos datos limpios hay (se lee) y
+cómo se comportan las operaciones (lo detectan las puertas). Que el backtest sea de 10 años o de
+2, o que tenga IS y OOS o no, solo importa a través de esas tres cosas.
+
+| Situación | Radiografía | Previsión |
+|---|---|---|
+| Optimizó todo el histórico, sin tramo reservado | Sí | No: «todo tu histórico se usó para elegir; cualquier previsión saldría optimista» |
+| IS + OOS eligiendo con el OOS, sin tramo no visto | Sí | No, por lo mismo |
+| EA comprado, con los parámetros del vendedor | Sí | No, salvo con datos posteriores a la compra |
+| Tramo no visto de 1 a 2 años | Sí | A 3 meses |
+| Tramo no visto de 2 años o más | Sí | A 3, 6 y 12 meses (según el examen) |
+| Menos de 1 año limpio o menos de 100 días con operaciones | Sí, con 30 operaciones o más | No: «te faltan datos» y cuántos |
+| Rachas o volatilidad agrupada detectadas | Con aviso (reordenar las rompe y subestima) | No, y por qué |
+| Martingala o rejilla | No | No |
+| Lote proporcional al balance | Sí, en % | Sí, en % |
+
+Lo que la app no puede comprobar y cómo se protege:
+
+- **Las fechas que da el usuario.** Cada cifra dice de qué tramo sale («según nos dijiste, este
+  tramo no se usó para elegir»); Orometra ya avisa si un tramo «no visto» coincide con uno usado;
+  y el historial de la app puede avisar si se probaron varias configuraciones contra el mismo
+  tramo, que entonces deja de ser ciego.
+- **El cambio de mercado** y **las pérdidas que nunca salieron:** aviso fijo junto a las cifras,
+  con lo medido en el banco (G8: las puertas rechazan un 30-60 % y en el resto el drawdown supera
+  el p95 un 5,6-10 % de las veces; G10: 4,1-7,2 %).
+
+### 8.7 Los gráficos
+
+- **Radiografía:** las curvas de balance de unas 100 permutaciones, finas y en gris, con las
+  bandas del 5-95 % y del 25-75 %, y **la curva real resaltada encima**. Todas acaban en el mismo
+  punto. Debajo, en una frase: «tu caída máxima fue de X; con otro orden, en el Y % de los casos
+  habría sido mayor» y la racha de pérdidas normal frente a la real. Etiqueta fija: «Esto analiza
+  tu backtest; no es una previsión».
+- **Previsión:** el abanico hacia delante desde hoy, con las bandas del 5-95 % y del 25-75 %,
+  unas pocas curvas de ejemplo y la línea del drawdown que el usuario diga que no aguanta. Al
+  lado, en tarjetas: caída máxima probable (p95), probabilidad de perder y probabilidad de tocar
+  ese límite. Sello: «cifras comprobadas en cientos de miles de escenarios con verdad conocida».
+- Lo que no se puede calcular ocupa el mismo sitio, con el motivo: no desaparece sin más.
+
+Ejemplo real (informe del autor, radiografía por tramos): en el in-sample, con otro orden la
+caída habría sido mayor en el 88 % de los casos (orden favorable: lo esperable en un tramo con el
+que se eligió); en el forward, solo en el 3 % (orden muy desfavorable); en el no visto, en el 53 %.
+
 ## 9. Preguntas frecuentes
 
 **Antes de empezar**
@@ -653,13 +728,15 @@ La decisión D1 (qué hacer ya con lo que enseña la app) no espera a ninguna fa
   el intervalo del resultado diario medio, que se mide después y tampoco cubre lo que dice.
   En su lugar, una línea que dice por qué. Se quedan «¿se distingue de cero?», los días de
   datos y los costes.
-- **D2. Cifras sobre el tramo que se usó para elegir.** Depende de lo que mida G9 (6.2).
+- **D2. Cifras sobre el tramo que se usó para elegir.** Decidido: ninguna previsión (G9: con
+  100 o más configuraciones, el drawdown supera su p95 un 12-32 % de las veces).
 - **D3. Nombre y entrada.** Propuesta: «Monte Carlo» como sección de la app y una página
   `/montecarlo/` (`/es/montecarlo/`) que explique el mapa y lleve a la app.
 - **D4. Umbral de descarte.** *H* = 126 con *n_min* ≤ 252 (10.5). Aceptado por el autor de
   forma provisional (2026-10-13); si cambia, será antes de ejecutar el examen y como enmienda
   fechada.
-- **D5. La permutación «¿fue suerte el orden?».** Dentro o fuera de la primera versión (5.6).
+- **D5. La permutación «¿fue suerte el orden?».** Decidido (2026-10-15): entra como la
+  radiografía, con su propia prueba (enmienda 6 c).
 
 ---
 

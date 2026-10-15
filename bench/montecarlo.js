@@ -14,7 +14,7 @@
 // y cómo se reparte su PIT. Las calibraciones 1 y 2 usaron versiones anteriores de este archivo
 // (commits f1bf4c9 y 8aa2434).
 
-import { Worker, isMainThread, parentPort } from 'node:worker_threads';
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -398,7 +398,8 @@ export { evaluate, oracleCells, genDays, REQUIRED };
 // ------------------------------------------------------------------ orquestación
 const IS_MAIN_SCRIPT = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
 if (!isMainThread) {
-  parentPort.on('message', (task) => { if (task === null) process.exit(0); parentPort.postMessage(runCell(task)); });
+  // Solo los hilos que lanza este banco: otro script puede importar genDays desde sus propios hilos.
+  if (workerData?.role === 'montecarlo') parentPort.on('message', (task) => { if (task === null) process.exit(0); parentPort.postMessage(runCell(task)); });
 } else if (IS_MAIN_SCRIPT) {
   const args = process.argv.slice(2);
   const mode = args[0];
@@ -458,7 +459,7 @@ if (!isMainThread) {
   await new Promise((resolve) => {
     let alive = nWorkers;
     for (let w = 0; w < nWorkers; w++) {
-      const worker = new Worker(fileURLToPath(import.meta.url));
+      const worker = new Worker(fileURLToPath(import.meta.url), { workerData: { role: 'montecarlo' } });
       const feed = () => { if (next < todo.length) worker.postMessage(todo[next++]); else { worker.postMessage(null); if (--alive === 0) resolve(); } };
       worker.on('message', (cell) => {
         results.push(cell); fs.appendFileSync(jsonl, JSON.stringify(cell) + '\n');
