@@ -274,3 +274,25 @@ es; por debajo de *n_min* dice que no hay muestra.
   (e) Las reglas, los procesos, el mínimo de días con operaciones y el criterio de descarte no
   cambian. **Calibración 4:** casos 1-1.000 (M2bc, 1-500) con M0, M1, M2b y M2bc. Examen: casos
   1.000.001-1.001.000 (M2bc, 1.000.001-1.000.500), sin generar.
+- **Enmienda 6 — 2026-10-15, tras la calibración 4 y antes del examen. Decidida por el autor.**
+  La calibración 4 (`REPORT-MC-calib4.md`) deja a M2bc, con k = 100, apto para H = 63 desde
+  n = 252 y para H = 126 desde n = 504; con H = 252 le falta un suspenso del lado prudente
+  (G5b). No cumple el criterio de descarte original (H = 126 con n_min ≤ 252): lo impide la
+  volatilidad agrupada con un año de datos, que ninguna de las seis variantes del detector
+  probadas detecta en más de un 72 % de los casos sin rechazar de más al resto. El autor aceptó
+  ese umbral de forma provisional y, conocida la calibración, lo cambia; se declara así:
+  (a) **Criterio de descarte: H = 126 con n_min ≤ 504** (seis meses de previsión con dos años de
+  datos). El resto de reglas no cambia.
+  (b) **Examen:** M2bc congelado (`core/trades/montecarlo.js` en el commit de esta enmienda),
+  con **k = 100** fijado de antemano; M0 de referencia. Casos 1.000.001-1.000.500 para M2bc y
+  1.000.001-1.001.000 para M0, en todos los procesos (exigidos e informativos). Se ejecuta una
+  vez y se publica tal como salga (`REPORT-MC-exam1.md`). La app solo enseñará la previsión en
+  los horizontes y tamaños de muestra en que M2bc sea apto en el examen.
+  (c) **Radiografía** (no es una previsión): los días con operaciones del backtest en otro orden
+  (permutaciones), con el percentil del drawdown real entre ellas, la racha de pérdidas y las
+  curvas. Es exacta si los días son intercambiables. Prueba propia antes de enseñarla: con los
+  procesos sin rachas ni volatilidad agrupada, el percentil del drawdown real debe repartirse
+  por igual entre los diez décimos (mismas reglas de Holm y bandas que el §6 con la enmienda 4,
+  aplicadas a ese percentil), y las puertas de rachas y volatilidad se aplican igual. Mínimo:
+  30 operaciones. Casos 2.000.001 en adelante; si suspende, se corrige y se repite con casos
+  nuevos (3.000.001 en adelante).

@@ -38,6 +38,7 @@ const DD_K = [1, 2, 3];
 const MIN_ACCEPTED = 100;
 // Error de familia de Holm-Bonferroni sobre todas las pruebas de un método (enmienda 4 a).
 const ALPHA = 0.05;
+const KILL_NMIN = 504;
 const REAL = JSON.parse(fs.readFileSync(path.join(HERE, 'data', 'ea-real-diario.json'), 'utf8')).dias;
 const REAL_MEAN = REAL.reduce((a, d) => a + d.reduce((s, v) => s + v, 0), 0) / REAL.length;
 const REAL_TRADES = REAL.reduce((a, d) => a + d.length, 0) / REAL.length;
@@ -314,7 +315,7 @@ function chooseK(cells, m) {
   return best;
 }
 
-function report(cells, label, timing) {
+function report(cells, label, timing, fixedK = null) {
   const pct = (v) => (Number.isFinite(v) ? `${(100 * v).toFixed(1)}` : '—');
   const methods = ['M0', 'M1', 'M2', 'M2c', 'M2b', 'M2bc'].filter((m) => cells.some((c) => c.byK[0][m]));
   const L = [];
@@ -327,11 +328,12 @@ function report(cells, label, timing) {
       const v = evaluate(cells, m, k);
       L.push(`| ${m} | ${k} | ${[63, 126, 252].map((H) => (v.nmin[H] ? `apto desde n = ${v.nmin[H]}` : 'no apto')).join(' | ')} |`);
     }
-    chosen[m] = chooseK(cells, m);
+    chosen[m] = fixedK != null ? { k: fixedK, score: evaluate(cells, m, fixedK).nmin[126] ?? Infinity, v: evaluate(cells, m, fixedK) } : chooseK(cells, m);
   }
-  const kill = Object.values(chosen).some((b) => b.score <= 252);
-  L.push('', `**Criterio de descarte** (algún método apto para H = 126 con n_min ≤ 252): ${!full ? 'no se puede evaluar con esta tanda (faltan procesos)' : kill ? 'se cumple' : '**no se cumple**'}.`);
-  for (const [m, b] of Object.entries(chosen)) L.push(`- ${m}: k elegido = ${b.k} (el menor que da el mejor n_min con H = 126).`);
+  // Enmienda 6: el criterio de descarte pasa a H = 126 con n_min ≤ 504 (antes, ≤ 252).
+  const kill = Object.values(chosen).some((b) => b.score <= KILL_NMIN);
+  L.push('', `**Criterio de descarte** (algún método apto para H = 126 con n_min ≤ ${KILL_NMIN}): ${!full ? 'no se puede evaluar con esta tanda (faltan procesos)' : kill ? 'se cumple' : '**no se cumple**'}.`);
+  for (const [m, b] of Object.entries(chosen)) L.push(fixedK != null ? `- ${m}: k fijado de antemano = ${b.k}.` : `- ${m}: k elegido = ${b.k} (el menor que da el mejor n_min con H = 126).`);
   L.push('', '## Puertas: casos sin cifras', '', 'Detectores de rachas y de volatilidad agrupada juntos, en % de casos; entre paréntesis, la mediana de días con operaciones de la muestra.', '', '| Proceso | μ | ' + PAIRS.map(([n, H]) => `${n}/${H}`).join(' | ') + ' |', '|---|---|' + PAIRS.map(() => '---|').join(''));
   for (const g of [...REQUIRED, ...INFORMED.filter((x) => x !== 'G9')]) for (const mu of (g === 'G12' ? ['real', 0] : MUS)) {
     const row = PAIRS.map(([n, H]) => { const c = cells.find((x) => x.g === g && x.mu === mu && x.n === n && x.H === H); return c ? `${pct(((c.refusedRachas || 0) + (c.refusedVol || 0)) / c.cases)} (${c.tradingDaysMedian})` : ''; });
@@ -426,7 +428,8 @@ if (!isMainThread) {
     const parts = (args[1] || '').split(',').filter(Boolean);
     const out = opt('out', parts.join('+'));
     const cells = parts.flatMap((name) => fs.readFileSync(path.join(HERE, 'results', `${name}.jsonl`), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)));
-    fs.writeFileSync(path.join(HERE, 'results', `REPORT-${out}.md`), report(sortCells(cells), out, timingNow()));
+    const fk = opt('k', null);
+    fs.writeFileSync(path.join(HERE, 'results', `REPORT-${out}.md`), report(sortCells(cells), out, timingNow(), fk == null ? null : Number(fk)));
     console.log(`escrito bench/results/REPORT-${out}.md (${cells.length} celdas)`);
     process.exit(0);
   }
@@ -466,6 +469,7 @@ if (!isMainThread) {
       feed();
     }
   });
-  fs.writeFileSync(path.join(HERE, 'results', `REPORT-${out}.md`), report(sortCells(results), out, timingNow()));
+  const fk = opt('k', null);
+  fs.writeFileSync(path.join(HERE, 'results', `REPORT-${out}.md`), report(sortCells(results), out, timingNow(), fk == null ? null : Number(fk)));
   console.log(`escrito bench/results/REPORT-${out}.md`);
 }
