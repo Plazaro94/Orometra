@@ -37,7 +37,7 @@
 <link rel="preload" href="fonts/source-sans-3-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/source-sans-3-700.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=6ee626400d">
+<link rel="stylesheet" href="styles.css?v=328f2cc051">
 <script type="application/ld+json" data-ld="landing">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://orometra.com/#org","name":"Orometra","url":"https://orometra.com/","logo":"https://orometra.com/icon-512.png","email":"hello@orometra.com"},{"@type":"WebSite","@id":"https://orometra.com/#website","url":"https://orometra.com/","name":"Orometra","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}},{"@type":"SoftwareApplication","name":"Orometra","url":"https://orometra.com/app/","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"description":"Separate the fragile from the stable in your MT5 optimization: which configuration of your EA is stable and how much evidence backs it. Free, in your browser.","inLanguage":"en","publisher":{"@id":"https://orometra.com/#org"}}]}</script>
 <script src="js/theme-init.js" data-hero-photo></script>
 </head>
@@ -188,31 +188,32 @@
     <p class="hm-more hm-more-alt"><a href="app/?demo=noedge" data-track="portada-ejemplo-sin-ventaja" data-i18n="home.take.noedge">And when there is nothing? See an example with no real edge →</a></p>
   </section>
 
-  <!-- 5. Banco de pruebas: cifras medidas en bench/ (sexto examen, ciego). Las comprueba tests/home-bench.test.js. -->
+  <!-- 5. Banco de pruebas: cifras medidas en bench/ (séptimo examen, ciego). Las comprueba tests/home-bench.test.js. -->
   <section class="hm-section hm-bench" aria-labelledby="hm-bench-title">
     <h2 id="hm-bench-title" data-i18n="home.bench.title">Tested on cases with a known answer</h2>
     <p class="hm-sub" data-i18n="home.bench.sub">We ran the engine on 800 simulated optimizations where we knew in advance whether there was a real edge or not. Orometra rates the evidence on five levels, from “insufficient” to “strong”.</p>
     <ul class="hm-bench-grid">
       <li>
-        <h3 class="hm-bench-k" data-i18n="home.bench.1.k">False alarms</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">1.3%</p>
+        <h3 class="hm-bench-k" data-i18n="home.bench.1.k">False alarms</h3><p class="hm-bench-n" data-i18n="home.bench.1.n">0.3%</p>
         <!-- Un punto por optimización, en columnas de 10: las marcadas, primero. Mismo paso en las dos rejillas, para que se vea que una muestra es mucho mayor que la otra. Lo que dicen ya está en el texto de al lado. -->
         <svg class="hm-dots" viewBox="0 0 30 10" aria-hidden="true" focusable="false">
           <defs><pattern id="hm-dot-off" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="off" cx=".5" cy=".5" r=".3"/></pattern><pattern id="hm-dot-fa" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="fa" cx=".5" cy=".5" r=".3"/></pattern></defs>
-          <rect data-on x="0" y="0" width="1" height="4" fill="url(#hm-dot-fa)"/>
-          <rect x="0" y="4" width="1" height="6" fill="url(#hm-dot-off)"/>
+          <rect data-on x="0" y="0" width="1" height="1" fill="url(#hm-dot-fa)"/>
+          <rect x="0" y="1" width="1" height="9" fill="url(#hm-dot-off)"/>
           <rect x="1" y="0" width="29" height="10" fill="url(#hm-dot-off)"/>
         </svg>
-        <p data-i18n="home.bench.1.body">Out of 300 optimizations with no real edge at all, only 4 got “moderate” or higher; one of them, “strong”.</p>
+        <p data-i18n="home.bench.1.body">Out of 300 optimizations with no real edge at all, only 1 got “moderate” or higher, and none got “strong”.</p>
       </li>
       <li>
-        <h3 class="hm-bench-k" data-i18n="home.bench.2.k">Edges detected</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">97%</p>
-        <svg class="hm-dots hm-dots-small" viewBox="0 0 8 4" preserveAspectRatio="xMinYMin meet" aria-hidden="true" focusable="false">
+        <h3 class="hm-bench-k" data-i18n="home.bench.2.k">Edges detected</h3><p class="hm-bench-n" data-i18n="home.bench.2.n">89%</p>
+        <svg class="hm-dots hm-dots-small" viewBox="0 0 10 4" preserveAspectRatio="xMinYMin meet" aria-hidden="true" focusable="false">
           <defs><pattern id="hm-dot-ok" width="1" height="1" patternUnits="userSpaceOnUse"><circle class="ok" cx=".5" cy=".5" r=".3"/></pattern></defs>
-          <rect data-on x="0" y="0" width="7" height="4" fill="url(#hm-dot-ok)"/>
-          <rect data-on x="7" y="0" width="1" height="3" fill="url(#hm-dot-ok)"/>
-          <rect x="7" y="3" width="1" height="1" fill="url(#hm-dot-off)"/>
+          <rect data-on x="0" y="0" width="8" height="4" fill="url(#hm-dot-ok)"/>
+          <rect data-on x="8" y="0" width="1" height="2" fill="url(#hm-dot-ok)"/>
+          <rect x="8" y="2" width="1" height="2" fill="url(#hm-dot-off)"/>
+          <rect x="9" y="0" width="1" height="2" fill="url(#hm-dot-off)"/>
         </svg>
-        <p data-i18n="home.bench.2.body">Out of 32 optimizations with a clear real edge, 31 got “moderate” or higher.</p>
+        <p data-i18n="home.bench.2.body">Out of 38 optimizations with a clear real edge, 34 got “moderate” or higher.</p>
       </li>
     </ul>
     <p class="hm-more hm-bench-links"><a href="/methodology/#banco" data-track="portada-banco-metodologia" data-i18n="home.bench.how">How we tested it →</a></p>

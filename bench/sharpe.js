@@ -1,6 +1,10 @@
 // ¿Cuántas veces supera el contraste del Sharpe su umbral SIN ventaja, y cuántos niveles
 // cambiarían si el umbral contara todas las pasadas? (medición del 2026-10-15, sin cambiar el motor)
 //
+// Se midió con el motor 6689445, en el que A era el umbral del motor. Desde 906b8f3 el motor ya
+// usa B (enmiendas del 2026-10-15 en bench/PREREGISTRO.md): con él, A y B coinciden y el script
+// solo sirve para repetir la medición sobre ese commit.
+//
 // El umbral es el percentil 95 del máximo de N pruebas sin ventaja: sigma · Φ⁻¹(0,95^(1/N)),
 // con sigma la dispersión de los Sharpe observados. Hoy N son las «pruebas efectivas»
 // (celdas del espacio grueso, core/analysis.js), no las pasadas que entran en el contraste.

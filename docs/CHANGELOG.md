@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-10-15 — Contraste del Sharpe: el umbral cuenta todas las pasadas (séptimo examen)
+
+El umbral del contraste del Sharpe cuenta ahora como pruebas todas las pasadas que entran en él,
+no las zonas distintas del espacio. Prerregistrado antes de generar el examen (enmiendas del
+2026-10-15 en `bench/PREREGISTRO.md`) y examinado una sola vez en las semillas 7001-7100, con el
+motor anterior al lado (`REPORT-exam7.md`, `REPORT-exam7-motor-6689445.md`).
+
+- **Examen:** en el escenario de ruido puro, el umbral se supera en 2 de 68 casos (2,9 %); con el
+  umbral anterior, en 34 de 68 (50 %). Falsos positivos 0,3 % (antes 0,7 %), potencia 89,5 %
+  (igual), coherencia de niveles, y la misma elección en los 800 casos. Cambian 24 niveles, todos
+  a «débil»: 23 con ventaja y una «buena» sin ventaja. Cumple los dos criterios: se adopta.
+- **Motor** (`core/analysis.js`): N = pasadas del contraste. `sharpeTest.trials` es ese N y
+  `sharpeTest.totalPasses` las pasadas totales. Las zonas del espacio se siguen usando en la
+  expectativa ajustada.
+- **Textos:** el hallazgo del veredicto dice cuántas pruebas cuenta y que, si las vecinas se
+  parecen, el listón queda algo más alto de lo necesario; un análisis guardado antes conserva su
+  texto. Diagnóstico enseña las pasadas que cuentan como pruebas. Metodología lo explica y dice
+  lo que pasaba antes. Fuera la entrada del glosario de las pruebas efectivas.
+- **Portada y Metodología** citan el séptimo examen: 1 falsa alarma de 300 (0,3 %) y ninguna
+  «sólida»; 34 de 38 ventajas detectadas (89 %); gana a la suma de puestos y en la rejilla real,
+  pierde por muy poco con la media con vecinas (0,213 frente a 0,211) y con la n.º 1 de MT5 en
+  genética. Las rejillas de puntos, al día (la de 38, en columnas de 4).
+- **En la app:** el ejemplo «sin ventaja» ya no dice «A favor: el mejor Sharpe supera el umbral
+  del azar»; ahora es un hallazgo en contra (el nivel sigue en «débil»). El ejemplo con meseta
+  sigue en «sólida» (umbral 2,50 frente a 2,03; fixture de regresión regenerado).
+- Pruebas: N y los textos nuevo y anterior (`tests/audit-2026-10c.test.js`,
+  `tests/audit-2026-09b.test.js`) y la portada contra el séptimo examen
+  (`tests/home-bench.test.js`).
+
 ## 2026-10-15 — Contraste del Sharpe: el puro ruido supera el umbral el 37 % de las veces, no el 5 %
 
 Medición en el banco, **sin cambiar el motor** (`bench/sharpe.js`, informe en
@@ -22,8 +51,7 @@ superaría el umbral solo el 5 % de las veces. En el escenario de ruido puro (S1
 - Límite: en un EA real las vecinas comparten operaciones y sus Sharpe pueden estar mucho más
   correlacionados que en el banco. Con eso, B es prudente de más; A, en cambio, promete un nivel
   que no cumple. No hay exports reales en el repositorio para medirlo.
-- Pendiente del autor: adoptar B (con prerregistro y examen en semillas nuevas, 7001-7100) o
-  dejar el umbral y corregir el texto. Mientras tanto, la app sigue diciendo «solo el 5 %».
+- El autor decidió adoptar B con prerregistro y examen: ver la entrada de arriba.
 
 ## 2026-10-15 — Monte Carlo: backtest largo, antes y después de elegir
 

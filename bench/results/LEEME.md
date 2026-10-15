@@ -25,7 +25,9 @@ se indica en la tabla. Los hashes son el commit del motor con el que se generó 
 | `calib-motor-dbcc488.jsonl` | `dbcc488` | 1-100 | Calibración con el motor publicado antes de la auditoría estadística del 2026-10-14 (referencia) |
 | `calib-2026-10-14` | `95ef28e` | 1-100 | Calibración tras la auditoría estadística (umbral del Sharpe al percentil 95, expectativa ajustada) |
 | `calib-fw-none.jsonl`, `calib-fw-strong.jsonl` | `95ef28e` con `rankForward` | 1-100 | Orden entre mesetas sin el peso del forward y con el peso entero; el banco no lo distingue (enmienda del 2026-10-14) |
-| `exam6`, `exam6-motor-dbcc488` | `95ef28e` / anterior | 6001-6100 | **Sexto examen, ciego**, motor actual; el anterior, para comparar (elige lo mismo en los 800 casos). **Cifras que cita la portada** (`tests/home-bench.test.js` las lee de `REPORT-exam6.md`) |
+| `exam6`, `exam6-motor-dbcc488` | `95ef28e` / anterior | 6001-6100 | **Sexto examen, ciego**, motor de entonces; el anterior, para comparar (elige lo mismo en los 800 casos). Lo citó la portada hasta el séptimo |
+| `calib-2026-10-15` | `906b8f3` | 1-100 | Calibración con el umbral del Sharpe contando todas las pasadas (variante B, enmiendas del 2026-10-15) |
+| `exam7`, `exam7-motor-6689445` | `906b8f3` / anterior | 7001-7100 | **Séptimo examen, ciego**, prerregistrado para la variante B; el anterior, para comparar (elige lo mismo en los 800 casos). **Cifras que cita la portada** (`tests/home-bench.test.js` las lee de `REPORT-exam7.md`) |
 
 ## Estudios aparte
 

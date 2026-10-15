@@ -359,4 +359,17 @@ M1. Si no propone meseta, se registra como «se abstiene».
   *Examen:* semillas 7001-7100 de S1-S8, nunca generadas. Una sola vez, con el motor nuevo
   congelado y, al lado, el actual (`exam7-motor-6689445`). Se publica tal como salga, y la
   portada y Metodología pasan a citar este examen si B se adopta.
+- **2026-10-15 (c), resultado del séptimo examen.** Motor congelado en `906b8f3` (variante B) y,
+  al lado, el anterior (`6689445`), en las semillas 7001-7100 de S1-S8, generadas una sola vez
+  (`REPORT-exam7.md`, `REPORT-exam7-motor-6689445.md`). Se publica tal como salió.
+  (a) En S1 superan el umbral 2 de 68 casos con contraste (2,9 %; prueba binomial de una cola
+  frente al 5 %, p = 0,86): **aprobado**. Con el motor anterior, 34 de 68 (50 %).
+  (b) B aprueba todos los criterios que aprueba el anterior: falsos positivos 0,3 % (anterior,
+  0,7 %), «sólida» 0 %, «buena» o «sólida» 0 % en cada escenario sin ventaja (anterior, 1 % en
+  S5), potencia 89,5 % de 38 (igual) y coherencia (débil 0,086 < moderada 0,193 < buena 0,224 <
+  sólida 0,232). Los dos suspenden la elección frente a B4 (0,213 frente a 0,211) y la aprueban
+  frente a B1, B2, B3 y B5: eligen lo mismo en los 800 casos.
+  Cambian 24 niveles: 23 casos con ventaja bajan a «débil» (18 desde «moderada», 4 desde
+  «buena», 1 desde «sólida») y 1 «buena» sin ventaja, en S5, también.
+  **Decisión: B se adopta.** La portada y Metodología citan este examen.
 

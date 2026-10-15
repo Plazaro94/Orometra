@@ -39,11 +39,11 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
    mejor puesto en in-sample más su puesto en forward, ambos promediados con sus vecinas. Se
    midió en el banco de pruebas (`bench/`) frente a la regla maximin anterior y a métodos
    habituales. Sin meseta y con forward, se da una sugerencia **orientativa** con la misma
-   regla. Resultado honesto del examen ciego (el sexto): gana a elegir la pasada que MT5 pone
-   primera (mayor beneficio in-sample), la mejor del forward y el azar; **pierde contra «media
-   con vecinas» y contra la suma de puestos** si se cuenta como fallo cada caso en que Orometra
-   no propone meseta (con la sugerencia orientativa, gana a las dos). Detalle en
-   `bench/PREREGISTRO.md` y `bench/results/REPORT-exam6.md`.
+   regla. Resultado honesto del examen ciego (el séptimo): gana a elegir la pasada que MT5 pone
+   primera (mayor beneficio in-sample), la mejor del forward, la suma de puestos y el azar;
+   **pierde por muy poco contra «media con vecinas»** (0,213 frente a 0,211) si se cuenta como
+   fallo cada caso en que Orometra no propone meseta (con la sugerencia orientativa, le gana).
+   Detalle en `bench/PREREGISTRO.md` y `bench/results/REPORT-exam7.md`.
 6. **Solo se ignora lo demostrablemente plano, medido de dos formas.** La influencia de un
    parámetro se mide *aislada* (agrupando por su valor y promediando el resto) y *combinada*
    (dejando fijo todo lo demás), y manda la mayor de las dos. Un parámetro cuyo efecto se
@@ -98,8 +98,11 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   porque el máximo de puro ruido lo supera el 43 % de las veces), usando la dispersión de los
   Sharpe observados entre pasadas (estilo Bailey y López de Prado) como nula — no el error
   de estimación de Lo (2002) por número de operaciones, retirado por partir de un supuesto
-  falso sobre cómo MT5 calcula esa cifra (SR-1 en `docs/MT5_ASSUMPTIONS.md`). No es el
-  Deflated Sharpe Ratio publicado.
+  falso sobre cómo MT5 calcula esa cifra (SR-1 en `docs/MT5_ASSUMPTIONS.md`). N son todas las
+  pasadas que entran en el contraste: contando solo las zonas distintas del espacio, como hasta
+  el 2026-10-15, el puro ruido superaba el umbral el 37 % de las veces en el banco, no el 5 %
+  (`bench/results/REPORT-calib-sharpe.md`). Si las vecinas se parecen, el listón queda algo más
+  alto de lo necesario. No es el Deflated Sharpe Ratio publicado.
 - **Expectativa ajustada por selección**: qué beneficio por operación cabe esperar de la
   configuración recomendada, descontado lo que tenía de suerte. Modelo de efectos aleatorios
   sobre el beneficio esperado por operación, estimado con la relación del forward
