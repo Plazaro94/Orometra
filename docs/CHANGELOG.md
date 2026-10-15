@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-15 — Monte Carlo: calibración 4 completa; M2bc, el método candidato
+
+Tras cinco enmiendas al prerregistro (todas registradas antes de medir y con los resultados
+anteriores conservados en `bench/results/`), la calibración 4 (casos 1-1.000; M2bc, 1-500)
+deja un método candidato, **M2bc**: bootstrap bayesiano por bloques con el nivel calibrado por
+doble bootstrap, detrás de tres puertas (rachas, volatilidad agrupada y un mínimo de 100 días con
+operaciones). Con las reglas corregidas (comprobadas antes con métodos simulados: uno perfecto
+aprueba el 97,5 % de las veces), M2bc es apto para prever 3 meses desde 1 año de datos y 6 meses
+desde 2 años. No llega a 6 meses con 1 año, que era el criterio de descarte: la volatilidad
+agrupada con un año de datos solo se detecta en un 70 % de los casos y en el resto el método se
+queda corto. En los días reales del EA del autor (G12), el drawdown supera el p95 de M2bc entre
+un 2,5 % y un 6,6 % de las veces (ideal, 5 %).
+
+Por el camino se encontraron y corrigieron tres errores de diseño propios: dos criterios del
+prerregistro que ningún método podía cumplir, unas reglas que habrían suspendido por azar a un
+método perfecto y un método (M2) que contaba dos veces la incertidumbre. Y se confirma, con 1.000
+casos por celda, que con la configuración elegida entre 100 o más el drawdown supera su p95 entre
+un 12 % y un 32 % de las veces: la app no dará previsiones con el periodo usado para elegir.
+
+La app no cambia: el Monte Carlo sigue retirado. Falta la decisión del autor sobre el criterio de
+descarte y, si procede, el examen con casos nuevos.
+
 ## 2026-10-14 — Primer informe real de MT5: se lee bien y corrige el diseño del Monte Carlo
 
 Con un backtest real del autor (NDX M15, terminal en español, .xlsx, 1.303 operaciones de
