@@ -364,14 +364,17 @@ export function buildVerdict(ctx) {
     const among = Number.isFinite(sharpeTest.minTrades)
       ? L(` (entre las pasadas con más de ${sharpeTest.minTrades} operaciones)`, ` (among passes with more than ${sharpeTest.minTrades} trades)`)
       : '';
-    // El umbral se calcula con las pruebas EFECTIVAS (zonas distintas del espacio), no
-    // con todas las pasadas: hay que decir el número que de verdad se usa.
-    const eff = Number.isFinite(sharpeTest.effectiveTrials) ? sharpeTest.effectiveTrials : trials;
+    // El umbral cuenta como pruebas todas las pasadas del contraste (core/analysis.js, desde el
+    // 2026-10-15). Un análisis anterior trae `effectiveTrials` (las celdas del espacio grueso):
+    // su umbral se calculó con ellas y el texto tiene que decir eso.
     const n = (v) => v.toLocaleString(localeTag());
-    const howMany = eff < trials
-      ? L(`${n(eff)} pruebas efectivas (las partes distintas del espacio que cubren tus ${n(trials)} pasadas: las configuraciones vecinas no son pruebas independientes)`,
-        `${n(eff)} effective trials (the distinct zones covered by your ${n(trials)} passes: neighboring configurations are not independent trials)`)
-      : L(`${n(eff)} pruebas`, `${n(eff)} trials`);
+    const legacy = Number.isFinite(sharpeTest.effectiveTrials);
+    const minT = Number.isFinite(sharpeTest.minTrades) ? sharpeTest.minTrades : 30;
+    const howMany = legacy
+      ? L(`${n(sharpeTest.effectiveTrials)} pruebas efectivas (las partes distintas del espacio que cubren tus ${n(trials)} pasadas)`,
+        `${n(sharpeTest.effectiveTrials)} effective trials (the distinct zones covered by your ${n(trials)} passes)`)
+      : L(`${n(trials)} pruebas (cada pasada con más de ${minT} operaciones cuenta como una, aunque se parezca a sus vecinas: si se parecen, el listón queda algo más alto de lo necesario)`,
+        `${n(trials)} trials (each pass with more than ${minT} trades counts as one, even if it resembles its neighbors: if it does, the bar ends up somewhat higher than needed)`);
     if (observedMax <= chanceMax) {
       add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar', 'Best Sharpe does not beat the chance threshold'),
         L(`Con ${howMany} y ninguna ventaja real, el mejor Sharpe pasaría de ${fmt(chanceMax, 2)} solo el ${lvlOut}\u00A0% de las veces. El mejor observado${sharpeTest.period === 'oos' ? ' en el forward' : ''}${among} es ${fmt(observedMax, 2)}. Probar muchas configuraciones produce buenos resultados por sí solo, y este no destaca sobre ese ruido.`,

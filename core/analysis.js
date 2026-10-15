@@ -888,6 +888,14 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // esa dispersion la produce la forma de la superficie de parametros (senal real),
   // no solo el ruido, asi que sube el liston de mas cuando hay mas senal -- nunca da
   // falsa confianza.
+  //
+  // N son TODAS las pasadas que entran en el contraste, no las celdas del espacio grueso
+  // (las «pruebas efectivas», que se usaban hasta el 2026-10-15). Con las celdas, el puro
+  // ruido superaba el umbral el 37 % de las veces en el banco, no el 5 % que dice el texto:
+  // el máximo es el de todas las pasadas (bench/results/REPORT-calib-sharpe.md). Contarlas
+  // todas como independientes es exacto si sus Sharpe lo son; si las vecinas se parecen
+  // (comparten operaciones), el listón queda algo más alto de lo necesario, que es el error
+  // prudente. Prerregistro y examen: bench/PREREGISTRO.md, enmiendas del 2026-10-15.
   const period = hasForward ? 'oos' : 'is';
   // Se exige un minimo de operaciones por pasada para entrar en la dispersion: un
   // Sharpe calculado sobre un punado de operaciones es ruidoso por si solo (por eso
@@ -908,8 +916,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     // Umbral: el cuantil 0,95 del máximo de N pruebas sin ventaja, no su media. Con la
     // media (versión anterior), el mejor de N pruebas de puro ruido la superaba en torno
     // al 43 % de las veces: «superar el umbral» no tenía ningún nivel de confianza.
-    const chanceMax = 0 + sigma * maxQuantileZ(effectiveTrials, SHARPE_CHANCE_LEVEL);
-    const chanceMean = expectedMaximum(0, sigma, effectiveTrials);
+    const sharpeTrials = sharpeValues.length;
+    const chanceMax = 0 + sigma * maxQuantileZ(sharpeTrials, SHARPE_CHANCE_LEVEL);
+    const chanceMean = expectedMaximum(0, sigma, sharpeTrials);
     const observedMax = extent(sharpeValues)[1];
     sharpeTest = {
       period,
@@ -917,8 +926,9 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       observedMax,
       mean: mean(sharpeValues),
       sigma,
-      trials: records.length,
-      effectiveTrials,
+      // Pruebas con las que se calcula el umbral (las pasadas del contraste) y pasadas totales.
+      trials: sharpeTrials,
+      totalPasses: records.length,
       chanceMax,
       chanceLevel: SHARPE_CHANCE_LEVEL,
       chanceMean,
