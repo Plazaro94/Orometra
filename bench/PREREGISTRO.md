@@ -334,3 +334,29 @@ M1. Si no propone meseta, se registra como «se abstiene».
   «débil», la potencia queda en 87,8 % y 93,8 %, los falsos positivos no suben y la coherencia se
   mantiene. No se adopta nada aquí. Si se adopta B, se prerregistra en una enmienda propia y se
   examina una sola vez en las semillas 7001-7100, que siguen sin generar.
+- **2026-10-15 (b), prerregistro de la variante B del contraste del Sharpe, ANTES de generar
+  ninguna semilla del examen.** El autor decide adoptarla tras la medición anterior.
+  *Cambio (y nada más):* el umbral del contraste del Sharpe pasa a contar como pruebas todas las
+  pasadas que entran en él (las del forward, o del periodo optimizado sin forward, con más de 30
+  operaciones), no las celdas del espacio grueso. El resto del motor no cambia: las celdas se
+  siguen usando para los bloques de la expectativa ajustada (`core/shrink.js`), la elección de
+  la configuración no depende de este contraste y el umbral sigue siendo el percentil 95 del
+  máximo, con la misma σ. Cambian los textos que describen el contraste (veredicto, Diagnóstico y
+  Metodología).
+  *Elegida con:* la calibración (semillas 1-100) y el sexto examen, ya publicado y por tanto no
+  ciego (`REPORT-calib-sharpe.md`). No se ha generado ninguna semilla de 7001 en adelante.
+  *Criterios (cerrados):*
+  (a) **Calibración del contraste:** en S1 (la única nula limpia), el número de casos que superan
+  el umbral, entre los que tienen contraste, no es significativamente mayor que el 5 %: prueba
+  binomial de una cola con p ≥ 0,01.
+  (b) **Criterios del §6 y de las enmiendas:** falsos positivos («moderada» o más ≤ 5 % en cada
+  escenario sin ventaja), «sólida» ≤ 1 % y «buena» o «sólida» ≤ 2 % en cada uno, potencia ≥ 80 %
+  y coherencia (insuficiente/débil < moderada ≤ buena ≤ sólida). La elección (arrepentimiento
+  frente a B1-B5) no cambia con este contraste: se informa tal como salga y no decide.
+  *Decisión:* B se adopta si cumple (a) y cumple todos los criterios de (b) que cumpla el motor
+  actual (`6689445`) en las mismas semillas. Si no, se vuelve al umbral actual y lo que se
+  corrige es el texto (quitar «solo el 5 %» y decir la tasa medida).
+  *Examen:* semillas 7001-7100 de S1-S8, nunca generadas. Una sola vez, con el motor nuevo
+  congelado y, al lado, el actual (`exam7-motor-6689445`). Se publica tal como salga, y la
+  portada y Metodología pasan a citar este examen si B se adopta.
+
