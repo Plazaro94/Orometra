@@ -34,6 +34,7 @@ export function report({ start = Date.UTC(2023, 0, 2), weekdays = 260, seed = 1,
 <tr><td>Expert:</td><td><b>Demo EA</b></td></tr><tr><td>Symbol:</td><td><b>EURUSD</b></td></tr>
 <tr><td>Period:</td><td><b>H1 (${day(start)} - ${day(last + 86400000)})</b></td></tr>
 <tr><td>Inputs:</td><td><b>${inputs.split(' ').join('</b></td></tr><tr><td></td><td><b>')}</b></td></tr>
-<tr><td>Results</td></tr><tr><td>Total Net Profit:</td><td>${profitSum.toFixed(2)}</td></tr><tr><td>Total Trades:</td><td>${trades}</td></tr><tr><td>Profit Factor:</td><td>${(gp / gl).toFixed(2)}</td></tr>
+<tr><td>Results</td></tr><tr><td>History Quality:</td><td>99%</td></tr><tr><td>Total Net Profit:</td><td>${profitSum.toFixed(2)}</td></tr>
+<tr><td>Balance Drawdown Maximal:</td><td>300.00 (2.90%)</td><td>Equity Drawdown Maximal:</td><td>330.00 (3.19%)</td></tr><tr><td>Total Trades:</td><td>${trades}</td></tr><tr><td>Profit Factor:</td><td>${(gp / gl).toFixed(2)}</td></tr>
 </table><table>${rows.join('\n')}</table></body></html>`;
 }

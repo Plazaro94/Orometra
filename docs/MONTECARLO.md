@@ -86,8 +86,15 @@ el banco. Lo vigente, en corto:
     radiografía sale de los dos trozos, en una tabla y con el gráfico del que se elija; la
     previsión, solo con el de después, con las mismas condiciones de arriba. Con el informe real
     del autor: antes de elegir, 12 % de órdenes con más caída; después, 51 % (normal).
-  - **Limitación que sigue:** el contraste con la meseta («la prueba de fuego», `core/unseen.js`)
-    usa las cifras del informe entero, también cuando el usuario da fechas de corte aquí.
+  - **La prueba de fuego con la misma fecha (2026-10-15).** La pregunta de la fecha está en la
+    ficha del informe (`js/ui-cut.js`) y vale para toda la pestaña: con ella, el contraste con la
+    meseta usa solo lo de después, con las cifras calculadas desde las operaciones como MT5
+    (`summaryFromDeals`: operaciones, beneficio y factor de beneficio; con el informe real sale
+    exacto, 1,464124, contando la comisión de la apertura como una transacción aparte). El
+    drawdown, el factor de recuperación y el Sharpe no se reproducen y se quedan en blanco. Con
+    tres cifras el contraste avisa menos (`bench/results/unseen-2026-10-15.txt`): sin ventaja,
+    18-29 % (con seis, 35-45 %); con la ventaja intacta, 8-13 % de falsas alarmas (con seis,
+    24-30 %); la pantalla lo dice.
 
 ---
 

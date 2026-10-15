@@ -53,6 +53,40 @@ superaría el umbral solo el 5 % de las veces. En el escenario de ruido puro (S1
   que no cumple. No hay exports reales en el repositorio para medirlo.
 - El autor decidió adoptar B con prerregistro y examen: ver la entrada de arriba.
 
+## 2026-10-15 — Calidad del historial y caída de equidad frente a la de balance
+
+- La ficha del informe enseña la «Calidad del historial» tal como la da MT5. El informe no dice
+  qué modelado de ticks se usó, y no se sabe qué umbral de esa calidad haría poco fiable un
+  backtest, así que se enseña sin juzgarla.
+- El Monte Carlo mide la caída de balance (operaciones cerradas). Ahora dice además cuánto mayor
+  fue en el informe la caída máxima de equidad, que cuenta lo que estaba abierto (con el informe
+  real del autor, un 10 % mayor: 18.667 frente a 17.020).
+- El lector del informe lee la reducción máxima del balance y la de la equidad en dinero, y la
+  calidad del historial, con su prueba.
+
+## 2026-10-15 — La prueba de fuego usa también la fecha de corte
+
+La pregunta «¿Este informe incluye días que miraste para elegir?» sube a la ficha del informe y
+vale para toda la pestaña: la prueba de fuego (el contraste con la meseta), el historial de
+intentos y el Monte Carlo hablan de los mismos dos trozos. Antes, con un backtest de todo el
+histórico, el contraste mezclaba los días usados para elegir con los de después.
+
+- Con la fecha, el contraste usa solo lo de después, con las cifras calculadas desde las
+  operaciones (`core/trades/mc-report.js#summaryFromDeals`): operaciones, beneficio y factor de
+  beneficio, como MT5. Con el informe real del autor salen exactas (1.303 operaciones, 204.413,43 y
+  1,464124), contando la comisión de la apertura como una transacción aparte, que es como lo hace
+  MT5; el lector guarda ahora esa comisión por separado.
+- El drawdown, el factor de recuperación y el Sharpe no se pueden reproducir desde las operaciones
+  (MT5 los mide con la equidad y con su propia fórmula): se quedan en blanco y se dice por qué.
+- Medido antes de cambiar nada (`bench/results/unseen-2026-10-15.txt`, `node bench/unseen.js 100
+  --solo-operaciones`): con tres cifras el contraste avisa menos. Sin ventaja, 18-29 % (con las
+  seis, 35-45 %); con la ventaja intacta, 8-13 % de falsas alarmas (con las seis, 24-30 %). La
+  pantalla y la metodología lo dicen, y proponen un backtest de MT5 solo de esas fechas para la
+  comparación completa.
+- La comparación que se hizo con el informe entero deja de contar como otro intento al dar la
+  fecha (no valía); cambiar la fecha varias veces sí cuenta.
+- Arreglado de paso: una cifra que el informe no trae salía como «NaN» en el formulario.
+
 ## 2026-10-15 — Monte Carlo: backtest largo, antes y después de elegir
 
 Si el informe incluye días que se miraron para elegir la configuración, la sección del Monte

@@ -326,3 +326,13 @@ export function otherConfigOnSameDates(tries, { from, to, plateau }) {
   if (!from || !to) return [];
   return (Array.isArray(tries) ? tries : []).filter((t) => t && t.from && t.to && t.from <= to && t.to >= from && t.plateau !== plateau);
 }
+
+/**
+ * Al dar una fecha de corte en un backtest largo, la comparación que se hizo con el informe
+ * entero no valía (incluía días usados para elegir): es una corrección, no otro intento. Se quita
+ * solo esa, la del periodo completo del mismo archivo; las de otras fechas de corte se quedan,
+ * porque cambiar la fecha hasta que salga bien sí sería buscar.
+ */
+export function dropWholeReportTry(tries, { file, from, to }) {
+  return (Array.isArray(tries) ? tries : []).filter((t) => !(t && t.file === file && t.from === from && t.to === to));
+}

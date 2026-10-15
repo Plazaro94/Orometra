@@ -1,0 +1,29 @@
+# Contraste del periodo no visto con verdad conocida (2026-10-15)
+
+Generado por `node bench/unseen.js 100` y `node bench/unseen.js 100 --solo-operaciones` sobre el motor de `6689445`. Estudio, no prerregistrado (ver la cabecera de `bench/unseen.js`).
+
+```
+Las seis cifras
+grupo | duración (× forward) | casos | avisa (cola o fuera) | fuera
+ventaja intacta (S3/S4/S7/S8)  | ×1   |  297 |  24 % |  10 %
+ventaja intacta (S3/S4/S7/S8)  | ×0.4 |  297 |  29 % |  15 %
+ventaja intacta (S3/S4/S7/S8)  | ×0.2 |  297 |  30 % |  16 %
+ventaja a la mitad (S6)        | ×1   |   73 |  26 % |  11 %
+ventaja a la mitad (S6)        | ×0.4 |   73 |  29 % |  16 %
+ventaja a la mitad (S6)        | ×0.2 |   73 |  34 % |  23 %
+sin ventaja (S5)               | ×1   |   77 |  35 % |  14 %
+sin ventaja (S5)               | ×0.4 |   77 |  44 % |  32 %
+sin ventaja (S5)               | ×0.2 |   77 |  45 % |  38 %
+
+Solo operaciones, beneficio y factor de beneficio
+grupo | duración (× forward) | casos | avisa (cola o fuera) | fuera
+ventaja intacta (S3/S4/S7/S8)  | ×1   |  297 |  13 % |   6 %
+ventaja intacta (S3/S4/S7/S8)  | ×0.4 |  297 |  12 % |   5 %
+ventaja intacta (S3/S4/S7/S8)  | ×0.2 |  297 |   8 % |   3 %
+ventaja a la mitad (S6)        | ×1   |   73 |  22 % |  10 %
+ventaja a la mitad (S6)        | ×0.4 |   73 |  18 % |   4 %
+ventaja a la mitad (S6)        | ×0.2 |   73 |   4 % |   1 %
+sin ventaja (S5)               | ×1   |   77 |  29 % |  10 %
+sin ventaja (S5)               | ×0.4 |   77 |  22 % |   5 %
+sin ventaja (S5)               | ×0.2 |   77 |  18 % |   6 %
+```

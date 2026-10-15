@@ -53,10 +53,12 @@ import {
   disposePlateauSurface,
 } from './ui-plateaus.js';
 import { copyParams, doExport, toggleExportMenu } from './ui-export.js';
-import { initMonteCarlo } from './ui-montecarlo.js';
+import { initMonteCarlo, startTradesMC } from './ui-montecarlo.js';
+import { initCut } from './ui-cut.js';
 
 
 Object.assign(api, {
+  startTradesMC,
   loadDemo,
   clearError,
   showError,
@@ -99,6 +101,7 @@ Object.assign(api, {
 
 initHistory();
 initMonteCarlo();
+initCut();
 
 initChrome();
 loadPrefs();

@@ -13,6 +13,7 @@ import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, paramHtml, decodeHead, deployableSet } from './ui-state.js';
 import { holdoutFact, displayVerdictLevel, levelName, repeatedPeriodText } from './ui-verdict.js';
 import { renderMonteCarlo, startTradesMC } from './ui-montecarlo.js';
+import { renderCutQuestion, unseenValuesFromReport, cutWindow, cutPending } from './ui-cut.js';
 
 /**
  * El informe del backtest se acepta en los dos formatos que ofrece MT5 (Informe → HTML u
@@ -37,14 +38,8 @@ export async function setReport(file) {
   try {
     const report = await readBacktestReport(file);
     state.report = report;
-    state.unseen.values = {
-      trades: report.metrics.trades,
-      profit: report.metrics.profit,
-      profitFactor: report.metrics.profitFactor,
-      drawdown: report.metrics.drawdown,
-      recoveryFactor: report.metrics.recoveryFactor,
-      sharpe: report.metrics.sharpe,
-    };
+    // Informe nuevo: sin fecha de corte (js/ui-cut.js), así que las cifras son las del informe.
+    state.unseen.values = unseenValuesFromReport();
     state.unseen.result = null;
     state.unseen.error = null;
     state.unseen.reportError = null;
@@ -228,9 +223,11 @@ export function renderReportCard(a, plateau) {
       <div><span>${L('Periodo del backtest', 'Backtest period')}</span><strong>${fecha(rep.meta.from)} – ${fecha(rep.meta.to)}${Number.isFinite(rep.meta.days) ? ` <em>${int(rep.meta.days)} ${L('días', 'days')}</em>` : ''}</strong></div>
       <div><span>${L('Operaciones', 'Trades')}</span><strong>${int(rep.metrics.trades)}${rep.deals.length ? ` <em>${int(rep.deals.length)} ${L('leídas una a una', 'read one by one')}</em>` : ''}</strong></div>
       <div><span>${L('Beneficio neto', 'Net profit')}</span><strong>${num(rep.metrics.profit, 2)}</strong></div>
+      ${Number.isFinite(rep.metrics.historyQuality) ? `<div><span>${L('Calidad del historial (según MT5)', 'History quality (per MT5)')}</span><strong>${pct(rep.metrics.historyQuality / 100, 0)}</strong></div>` : ''}
     </div>
     ${mismatch}
     ${othersWarn}
+    ${renderCutQuestion()}
   </section>`;
 }
 
@@ -411,6 +408,36 @@ export function renderTradesAudit(a, plateau) {
   </section>`;
 }
 
+/**
+ * Con fecha de corte, el contraste solo tiene operaciones, beneficio y factor de beneficio, y avisa
+ * menos: lo mide `node bench/unseen.js 100 --solo-operaciones` (bench/results/unseen-2026-10-15.txt).
+ */
+function threeFiguresNote() {
+  const w = cutWindow();
+  const v = state.unseen.values || {};
+  const blank = (k) => v[k] === undefined || v[k] === '';
+  if (!w || !w.cut || !(blank('drawdown') && blank('recoveryFactor') && blank('sharpe'))) return '';
+  return `<p class="vx-pass-note">${esc(L(
+    'Comparado solo con operaciones, beneficio y factor de beneficio, este contraste avisa menos: en nuestro banco, cuando la ventaja ya no existe avisa en un 18-29\u00A0% de los casos (con las seis cifras, en un 35-45\u00A0%), y con la ventaja intacta da una falsa alarma en un 8-13\u00A0% (con las seis, en un 24-30\u00A0%). Para la comparación completa, lanza en MT5 un backtest solo de las fechas de después de elegir.',
+    'Compared only on trades, profit and profit factor, this check warns less: in our benchmark, when the edge is gone it warns in 18–29% of cases (with all six figures, 35–45%), and with the edge intact it raises a false alarm in 8–13% (with all six, 24–30%). For the full comparison, run an MT5 backtest of just the dates after choosing.',
+  ))}</p>`;
+}
+
+/** De dónde salen las cifras del formulario: del informe, de lo de después de la fecha de corte o a mano. */
+function introFor() {
+  if (!state.report) return L('Copia las cifras que te muestra el probador al terminar.', 'Copy the figures the tester shows when it finishes.');
+  if (cutPending()) return L('Indica arriba hasta qué día miraste para elegir: las cifras saldrán solo de lo de después.', 'Enter above up to what day you looked for choosing: the figures will come only from what comes after.');
+  const w = cutWindow();
+  if (w && w.cut) {
+    const f = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString(localeTag(), { timeZone: 'UTC' });
+    return L(
+      `Calculadas con las operaciones de después de elegir (del ${f(w.from)} al ${f(w.to)}): operaciones, beneficio y factor de beneficio salen como en MT5. El drawdown, el factor de recuperación y el Sharpe no se pueden calcular desde las operaciones (MT5 los mide con la equidad y con su propia fórmula) y se quedan en blanco; si quieres compararlos, lanza en MT5 un backtest solo de esas fechas.`,
+      `Computed from the trades after choosing (from ${f(w.from)} to ${f(w.to)}): trades, profit and profit factor come out as in MT5. Drawdown, recovery factor and Sharpe cannot be computed from the trades (MT5 measures them on equity and with its own formula) and are left blank; if you want to compare them, run an MT5 backtest of just those dates.`,
+    );
+  }
+  return L('Rellenadas desde el informe que has cargado. Puedes corregirlas a mano si hace falta.', 'Filled from the report you loaded. You can correct them by hand if needed.');
+}
+
 export function renderUnseen(a) {
   if (!a.plateaus.length) return renderUnseenNoPlateau(a);
   const fieldsDef = unseenFields();
@@ -473,9 +500,7 @@ export function renderUnseen(a) {
       <label class="inline-select">${L('Configuración', 'Configuration')} <select id="unseenPlateau">${options}</select></label>
     </div>
     <p class="panel-intro">
-      ${state.report
-        ? L('Rellenadas desde el informe que has cargado. Puedes corregirlas a mano si hace falta.', 'Filled from the report you loaded. You can correct them by hand if needed.')
-        : L('Copia las cifras que te muestra el probador al terminar.', 'Copy the figures the tester shows when it finishes.')}
+      ${introFor()}
       ${L(
         ` Las dos primeras son imprescindibles:
       sin el número de operaciones no se puede corregir por duración, y esa corrección es justo lo
@@ -589,6 +614,7 @@ export function renderUnseen(a) {
       <p class="vx-pass-note">${esc(subline)}</p>
       ${levelLine ? `<p class="vx-pass-note u-level-line">${esc(levelLine)}</p>` : ''}
       ${api.unseenTriesNote && api.unseenTriesNote() ? `<div class="inline-warn vx-tries">${esc(api.unseenTriesNote())}</div>` : ''}
+      ${threeFiguresNote()}
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Métrica a métrica', 'Metric by metric')}</div><h2>${L('Dónde cae cada cifra', 'Where each figure falls')}</h2></div></div>

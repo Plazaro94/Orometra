@@ -33,6 +33,7 @@ se indica en la tabla. Los hashes son el commit del motor con el que se generó 
 
 | Archivo | De dónde sale | Nota |
 |---|---|---|
+| `unseen-2026-10-15.txt` | `node bench/unseen.js 100` y `--solo-operaciones` | Contraste del periodo no visto con las seis cifras y solo con operaciones, beneficio y factor de beneficio (lo que se calcula con una fecha de corte). Cifras que cita la metodología y la pantalla |
 | `MC-calib*`, `MC-exam1*`, `REPORT-MC-*.md` | `node bench/montecarlo.js` | Banco del Monte Carlo (`bench/PREREGISTRO-MONTECARLO.md`, enmiendas 1 a 6): calibraciones 1 a 4 y el examen de M2bc (casos 1.000.001 en adelante), tal como salieron |
 | `RADIO-1.json`, `REPORT-RADIO-1.md` | `node bench/radiografia.js` | Prueba de exactitud de la radiografía (enmienda 6 c; casos 2.000.001 en adelante) |
 | `montecarlo-exploratorio.txt` | `node bench/montecarlo-exploratorio.js 300 1000` sobre `core/trades/bootstrap.js` de `dbcc488` | **Exploratorio, no prerregistrado**: calibración del Monte Carlo anterior frente al predictivo en dos etapas (`docs/MONTECARLO.md`, sección 2) |

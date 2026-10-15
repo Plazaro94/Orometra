@@ -83,6 +83,12 @@ function percentInside(text) {
   return m ? toNumber(m[1]) : NaN;
 }
 
+/** Cantidad antes del paréntesis: «17 020.43 (6.51%)» → 17020.43. */
+function moneyBefore(text) {
+  if (!text) return NaN;
+  return toNumber(String(text).split('(')[0]);
+}
+
 const P = {
   profit: [/beneficio\s*neto/i, /total\s*net\s*profit/i, /gesamtnettogewinn/i],
   grossProfit: [/beneficio\s*bruto/i, /gross\s*profit/i],
@@ -96,6 +102,8 @@ const P = {
   ddRelEquity: [/reducci[oó]n\s*relativa\s*de\s*la\s*equidad/i, /equity\s*drawdown\s*relative/i],
   ddMaxEquity: [/reducci[oó]n\s*m[aá]xima\s*de\s*la\s*equidad/i, /equity\s*drawdown\s*maximal/i],
   ddRelBalance: [/reducci[oó]n\s*relativa\s*del\s*balance/i, /balance\s*drawdown\s*relative/i],
+  ddMaxBalance: [/reducci[oó]n\s*m[aá]xima\s*del\s*balance/i, /balance\s*drawdown\s*maximal/i],
+  historyQuality: [/calidad\s*del\s*historial/i, /history\s*quality/i],
   expert: [/^experto$/i, /^expert$/i, /^asesor$/i],
   symbol: [/^s[ií]mbolo$/i, /^symbol$/i],
   period: [/^per[ií]odo$/i, /^period$/i],
@@ -217,6 +225,13 @@ function parseReportRows(rows, fileName) {
     // no transacciones. Mezclarlas doblaria la cifra y falsearia toda la comparacion.
     trades: toNumber(findValue(pairs, P.trades)),
     deals: toNumber(findValue(pairs, P.deals)),
+    // Caídas máximas en dinero («17 020.43 (6.51%)»): la de balance es la que mide el Monte
+    // Carlo (operaciones cerradas); la de equidad incluye lo abierto. La pantalla dice cuánto mayor
+    // fue la de equidad (js/ui-montecarlo.js).
+    ddMaxBalanceMoney: moneyBefore(findValue(pairs, P.ddMaxBalance)),
+    ddMaxEquityMoney: moneyBefore(findValue(pairs, P.ddMaxEquity)),
+    // «Calidad del historial» de MT5, tal cual (el informe no dice qué modelado de ticks se usó).
+    historyQuality: percentInside(findValue(pairs, P.historyQuality)),
   };
 
   return { meta, params, metrics, deals: parseDeals(rows) };
@@ -370,6 +385,10 @@ function parseDeals(rows) {
       }
     }
     const commission = commissionOf(c) + carryCommission;
+    // La comisión de las aperturas, aparte: MT5 calcula el factor de beneficio por transacción, y
+    // la apertura es una transacción con beneficio 0 que cuenta como pérdida (comprobado con un
+    // informe real: así sale exacto). Lo usa core/trades/mc-report.js#summaryFromDeals.
+    const openCommission = carryCommission;
     const swap = swapOf(c) + carrySwap;
     carryCommission = 0;
     carrySwap = 0;
@@ -381,6 +400,7 @@ function parseDeals(rows) {
       // exactamente el beneficio neto del informe.
       profit,
       commission,
+      openCommission,
       swap,
       cost,
       net: profit + cost,

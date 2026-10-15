@@ -352,6 +352,8 @@ try {
     check('dice que no es una previsión y lo que pasó con el orden', /no es una previsión/.test(short) && /habría sido mayor en el/.test(short));
     check('sin previsión con un año, y dice por qué', /Hacen falta 2 años/.test(short) && !(await page.$('#mcForecastBtn')));
     check('el lote fijo se deduce', (await page.$eval('#mcSizing', (e) => e.value)) === 'fixed');
+    check('la ficha enseña la calidad del historial de MT5', /Calidad del historial \(según MT5\)\s*99\s?%/.test(short.replace(/\u00A0/g, ' ')));
+    check('y el Monte Carlo dice cuánto mayor fue la caída de equidad que la de balance', /la de equidad, que cuenta también lo que estaba abierto, fue un 10\s?% mayor/.test(short.replace(/\u00A0/g, ' ')));
 
     await page.setInputFiles('#mainFile', [mcLong]);
     await page.waitForSelector('#mcForecastBtn', { timeout: 60000 }).catch(() => {});
@@ -375,11 +377,20 @@ try {
     await page.check('input[name="mcSplit"][value="yes"]');
     await page.waitForSelector('#mcChooseEnd', { timeout: 15000 }).catch(() => {});
     check('backtest largo: sin la fecha, no hay previsión y se pide', /Indica arriba hasta qué día miraste/.test(await page.textContent('#view')) && !(await page.$('#mcForecastBtn')));
+    check('y la prueba de fuego tampoco usa las cifras del informe entero', (await page.$eval('#u_trades', (e) => e.value)) === '' && !(await page.$('.u-result')));
     await page.fill('#mcChooseEnd', '2030-01-01');
     await page.waitForFunction(() => /no hay operaciones/.test(document.querySelector('#view').textContent), null, { timeout: 30000 }).catch(() => {});
     check('una fecha después de la última operación se dice, con el periodo del informe', /Después de esa fecha no hay operaciones/.test(await page.textContent('#view')));
     await page.fill('#mcChooseEnd', '2023-12-29');
     await page.waitForSelector('.mc-seg-table', { timeout: 60000 }).catch(() => {});
+    // La prueba de fuego, con lo de después de elegir: tres cifras calculadas desde las operaciones.
+    const after = await page.$eval('#u_trades', (e) => e.value);
+    check('la prueba de fuego usa solo las operaciones de después de elegir', Number(after) > 0 && Number(after) < 900, after);
+    check('sin drawdown, factor de recuperación ni Sharpe (no se pueden calcular desde las operaciones)', (await page.$eval('#u_drawdown', (e) => e.value)) === '' && (await page.$eval('#u_sharpe', (e) => e.value)) === '');
+    check('y el resultado dice que con tres cifras avisa menos', /avisa menos/.test(await page.textContent('.u-result').catch(() => '')));
+    // (Los otros informes de este recorrido sí son otros intentos: el aviso puede salir por ellos.)
+    const triesNote = await page.textContent('.u-result .vx-tries').catch(() => '');
+    check('y la comparación con el informe entero no cuenta como otro intento', !/MC-5anos\.html/.test(triesNote || ''), triesNote);
     const segs = await page.$$eval('.mc-seg-table tbody tr', (rows) => rows.map((r) => r.cells[0].textContent));
     check('radiografía en dos filas: antes y después de elegir', segs.join('|') === 'Antes de elegir|Después de elegir', segs.join('|'));
     check('el gráfico es, por defecto, el de después de elegir', (await page.$eval('#mcView', (e) => e.value)) === 'clean');
