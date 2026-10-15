@@ -41,9 +41,14 @@ el banco. Lo vigente, en corto:
 - **Tres puertas antes de la previsión:** rachas (contraste robusto de Dalla, Giraitis y
   Phillips, 2020), volatilidad agrupada (McLeod y Li, 1983) y al menos 100 días con operaciones.
   Si alguna salta, no hay cifras y se dice por qué.
-- **Límites medidos en la calibración 4** (pendientes del examen): previsión a 3 meses desde 1
-  año de datos no usados para elegir; a 6 meses desde 2 años. Criterio de descarte vigente
-  (enmienda 6): 6 meses con 2 años.
+- **Examen (`bench/results/REPORT-MC-exam1.md`, una sola vez, casos nuevos):** M2bc es apto para
+  prever **6 meses desde 1 año** de datos no usados para elegir y **12 meses desde 2 años**; **no
+  es apto a 3 meses** con ningún tamaño de muestra (demasiado prudente con EAs muy poco frecuentes
+  y corto con rachas o volatilidad agrupada con 6 meses de datos). Se cumple el criterio de
+  descarte de la enmienda 6. La calibración 4 había pedido 2 años para los 6 meses (por la
+  volatilidad agrupada con 1 año): es un punto débil y conviene quedarse con lo más estricto.
+- **Radiografía (`bench/results/REPORT-RADIO-1.md`):** aprueba en todos los procesos exigidos,
+  incluido el EA real del autor.
 - **Nunca hay previsión con datos usados para elegir** (con 100 o más configuraciones probadas,
   el drawdown supera su p95 un 12-32 % de las veces).
 - **Descartados:** M0 (el que había en la app), M1, M2 (contaba dos veces la incertidumbre) y M2c.

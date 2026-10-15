@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-15 — Monte Carlo: el examen aprueba; también la radiografía
+
+Examen de M2bc (`bench/results/REPORT-MC-exam1.md`), con casos nuevos, el método congelado y el
+mínimo de 100 días con operaciones fijado de antemano, ejecutado una sola vez: apto para prever
+**6 meses desde 1 año** de datos no usados para elegir y **12 meses desde 2 años**; **no apto a
+3 meses** (demasiado prudente con EAs muy poco frecuentes, y corto con rachas o volatilidad
+agrupada con 6 meses de datos). Se cumple el criterio de descarte vigente (6 meses con 2 años).
+La calibración había pedido 2 años para los 6 meses: la volatilidad agrupada con un año de datos
+es un punto débil. Lo informativo confirma la calibración: con la configuración elegida entre 100
+o más, el drawdown supera su p95 un 11-27 % de las veces.
+
+La radiografía (los mismos días en otro orden; no es una previsión) aprueba su prueba
+(`bench/results/REPORT-RADIO-1.md`): en todos los procesos exigidos, también en los días reales
+del EA del autor, el percentil del drawdown real se reparte por igual entre los diez décimos.
+
+La app todavía no cambia: falta la interfaz, con capturas para el visto bueno del autor, y la
+revisión externa.
+
 ## 2026-10-15 — Monte Carlo: calibración 4 completa; M2bc, el método candidato
 
 Tras cinco enmiendas al prerregistro (todas registradas antes de medir y con los resultados
