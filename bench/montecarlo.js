@@ -132,7 +132,12 @@ function methodM0(x, n, H, sims, seed, levels, observe) {
 const firstCaseOf = (caseId) => (caseId >= 1000001 ? 1000001 + Math.floor((caseId - 1000001) / 1000000) * 1000000 : 1);
 
 // ------------------------------------------------------------------ un caso
-function runCase(g, mu, n, H, caseId, sims, sd, methods) {
+/**
+ * Datos de un caso: la muestra (packedM), su futuro y lo que hace falta para juzgarlo. Lo usan
+ * runCase y el banco de la enmienda 7 (bench/montecarlo-e7.js), con la misma semilla y el mismo
+ * orden de sorteos que siempre: los casos son los mismos que en las calibraciones anteriores.
+ */
+function makeCase(g, mu, n, H, caseId, sd) {
   const key = `${g}|${mu}|${n}|${H}|${caseId}`;
   const r = makeRng(hashSeed(key));
   const levelsAdd = DD_K.map((k) => k * sd * Math.sqrt(H));
@@ -182,6 +187,11 @@ function runCase(g, mu, n, H, caseId, sims, sd, methods) {
     m0Totals = packedM.total; m0Future = future;
   }
   const tradingDays = g === 'G7' ? n : days.slice(0, n).reduce((a, d) => a + (d.length > 0 ? 1 : 0), 0);
+  return { key, packedM, logMode, future, levels, tradingDays, m0Totals, m0Future, m0Levels };
+}
+
+function runCase(g, mu, n, H, caseId, sims, sd, methods) {
+  const { key, packedM, logMode, future, levels, tradingDays, m0Totals, m0Future, m0Levels } = makeCase(g, mu, n, H, caseId, sd);
   // Puertas 1 y 3 (enmiendas 4 b y 5): con rachas o con volatilidad agrupada, la app no da cifras.
   const pt = robustPortmanteau(packedM.total, 10);
   if (pt.usable && pt.p < 0.05) return { refused: 'rachas', tradingDays };
@@ -393,7 +403,7 @@ function oracleCells(a, r, N) {
 }
 function erf(x) { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; }
 
-export { evaluate, oracleCells, genDays, REQUIRED };
+export { evaluate, oracleCells, genDays, makeCase, trueSd, newCounts, report, REQUIRED, NO_DEPENDENCE, PAIRS, MUS, KILL_NMIN };
 
 // ------------------------------------------------------------------ orquestación
 const IS_MAIN_SCRIPT = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);

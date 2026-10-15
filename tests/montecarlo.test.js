@@ -1,7 +1,7 @@
 // Pruebas de respuesta conocida para core/trades/montecarlo.js (Monte Carlo predictivo).
 // El banco que decide si se enseña en la app es otro: bench/PREREGISTRO-MONTECARLO.md.
 
-import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo, pitSorted, chi2Cdf, ljungBox, robustPortmanteau, volatilityClustering, calibratedMonteCarlo } from '../core/trades/montecarlo.js';
+import { packDays, daysFromDeals, blockLengthPPW, predictiveMonteCarlo, pitSorted, chi2Cdf, ljungBox, robustPortmanteau, volatilityClustering, calibratedMonteCarlo, volatilityClusteringAbs, volatilityClusteringRank } from '../core/trades/montecarlo.js';
 import { makeRng } from '../core/rng.js';
 
 let failures = 0;
@@ -207,6 +207,36 @@ section('M2bc: nivel calibrado por doble bootstrap');
   check('cuantiles ordenados', a.total.p05 <= a.total.p50 && a.total.p50 <= a.total.p95 && a.maxDd.p50 <= a.maxDd.p95);
   check('probabilidades entre 0 y 1', a.probLoss >= 0 && a.probLoss <= 1 && a.probDd.every((d) => d.p >= 0 && d.p <= 1));
   check('P(drawdown ≥ 10) ≤ P(drawdown ≥ 5)', a.probDd[1].p <= a.probDd[0].p);
+}
+
+section('Enmienda 7: variantes del detector de volatilidad agrupada');
+{
+  const gauss = (r) => { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); };
+  let rej1 = 0; let rej2 = 0; const C = 1000;
+  for (let c = 0; c < C; c++) {
+    const r = makeRng(70000 + c);
+    const x = Array.from({ length: 500 }, () => gauss(r));
+    if (volatilityClusteringAbs(x, 10).p < 0.05) rej1++;
+    if (volatilityClusteringRank(x, 10).p < 0.05) rej2++;
+  }
+  check('V1 (|e|): sin volatilidad agrupada rechaza un 3-7 %', rej1 / C >= 0.03 && rej1 / C <= 0.07, `${(100 * rej1 / C).toFixed(1)} %`);
+  check('V2 (rangos de |e|): sin volatilidad agrupada rechaza un 3-7 %', rej2 / C >= 0.03 && rej2 / C <= 0.07, `${(100 * rej2 / C).toFixed(1)} %`);
+  let det1 = 0; let det2 = 0; const D = 300;
+  for (let c = 0; c < D; c++) {
+    const r = makeRng(80000 + c); let h = 1; let e = 0; const x = [];
+    for (let i = 0; i < 300 + 1008; i++) { h = 0.05 + 0.1 * e * e + 0.85 * h; e = Math.sqrt(h) * gauss(r); if (i >= 300) x.push(e); }
+    if (volatilityClusteringAbs(x, 10).p < 0.05) det1++;
+    if (volatilityClusteringRank(x, 10).p < 0.05) det2++;
+  }
+  check('V1 detecta GARCH(1,1) con 1.008 días en más del 80 %', det1 / D > 0.8, `${(100 * det1 / D).toFixed(1)} %`);
+  check('V2 detecta GARCH(1,1) con 1.008 días en más del 80 %', det2 / D > 0.8, `${(100 * det2 / D).toFixed(1)} %`);
+  // Dos días extremos separados 9 días, como en el informe real: agrandarlos no cambia V2.
+  const r = makeRng(99);
+  const base = Array.from({ length: 500 }, () => gauss(r));
+  const withOut = (big) => base.map((v, i) => (i === 200 ? big : i === 209 ? big * 1.2 : v));
+  const a = volatilityClusteringRank(withOut(8), 10).p; const b = volatilityClusteringRank(withOut(80), 10).p;
+  check('V2 no cambia al agrandar los días extremos (solo cuenta su orden)', Math.abs(a - b) < 1e-12, `${a} ${b}`);
+  check('los rangos con empates usan el rango medio', Math.abs(volatilityClusteringRank([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1], 2).q - volatilityClusteringRank([0, 0, 0, 0, 5, 5, 5, 5, 0, 0, 0, 0, 5, 5, 5, 5], 2).q) < 1e-12);
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks}`);

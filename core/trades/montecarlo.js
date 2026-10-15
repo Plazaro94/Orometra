@@ -385,6 +385,35 @@ export function volatilityClustering(series, lags = 10) {
   return ljungBox(x.map((v) => (v - mean) ** 2), lags);
 }
 
+/**
+ * Variantes del detector de volatilidad agrupada que evalúa la enmienda 7 del prerregistro: la de
+ * los cuadrados (volatilityClustering) reacciona mucho a uno o dos días extremos.
+ *   V1: Ljung-Box sobre |eₜ|, eₜ = xₜ − x̄ (pesa menos lo extremo que el cuadrado).
+ *   V2: Ljung-Box sobre los rangos de |xₜ − mediana| (rangos medios en los empates): solo cuenta
+ *       el orden de los días por tamaño, no cuánto miden; agrandar un día extremo no cambia nada
+ *       (con la media en lugar de la mediana sí cambiaría: la media se mueve con el extremo).
+ */
+export function volatilityClusteringAbs(series, lags = 10) {
+  const x = Array.from(series).filter(Number.isFinite);
+  const mean = x.reduce((a, v) => a + v, 0) / (x.length || 1);
+  return ljungBox(x.map((v) => Math.abs(v - mean)), lags);
+}
+
+export function volatilityClusteringRank(series, lags = 10) {
+  const x = Array.from(series).filter(Number.isFinite);
+  const sorted = x.slice().sort((p, q) => p - q);
+  const mid = sorted.length ? (sorted[(sorted.length - 1) >> 1] + sorted[sorted.length >> 1]) / 2 : 0;
+  const a = x.map((v, i) => [Math.abs(v - mid), i]).sort((p, q) => p[0] - q[0]);
+  const rank = new Float64Array(a.length);
+  for (let i = 0; i < a.length;) {
+    let j = i;
+    while (j + 1 < a.length && a[j + 1][0] === a[i][0]) j++;
+    for (let k = i; k <= j; k++) rank[a[k][1]] = (i + j) / 2 + 1;
+    i = j + 1;
+  }
+  return ljungBox(Array.from(rank), lags);
+}
+
 // ------------------------------------------------------------------ M2bc: nivel calibrado
 
 /**

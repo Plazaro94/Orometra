@@ -296,9 +296,10 @@ es; por debajo de *n_min* dice que no hay muestra.
   aplicadas a ese percentil), y las puertas de rachas y volatilidad se aplican igual. Mínimo:
   30 operaciones. Casos 2.000.001 en adelante; si suspende, se corrige y se repite con casos
   nuevos (3.000.001 en adelante).
-- **Enmienda 7 — 2026-10-15, tras el examen y antes de generar ningún caso nuevo. BORRADOR:
-  pendiente del visto bueno del autor; no se ejecuta nada hasta tenerlo.** Última ronda del método
-  en esta versión. El examen (`REPORT-MC-exam1.md`) y la app publicada no se tocan.
+- **Enmienda 7 — 2026-10-15, tras el examen y antes de generar ningún caso nuevo. Aprobada por
+  delegación del autor** (a la pregunta de si se aprobaba, respondió «Lo que tú consideres»), y
+  congelada en el commit que la implementa (`core/trades/montecarlo.js`, variantes V1 y V2;
+  `bench/montecarlo-e7.js`). Última ronda del método en esta versión. El examen (`REPORT-MC-exam1.md`) y la app publicada no se tocan.
   Hallazgos que la motivan, todos del examen:
   (a) **El detector de volatilidad agrupada reacciona de más a días extremos aislados.** Las dos
   puertas juntas rechazan un 8-12 % en G1 y G11 (lo esperable con dos contrastes al 5 %, ~10 %),
@@ -315,8 +316,10 @@ es; por debajo de *n_min* dice que no hay muestra.
   Cambios que se evalúan:
   (c) **Detector de volatilidad: tres variantes**, todas con 10 retardos y p < 0,05, sobre
   eₜ = xₜ − x̄ de los resultados diarios: **V0**, el actual (Ljung-Box sobre eₜ², McLeod y Li,
-  1983); **V1**, Ljung-Box sobre |eₜ|; **V2**, Ljung-Box sobre los rangos de |eₜ| (no depende del
-  tamaño de los días extremos, solo de su orden). El detector de rachas (Dalla, Giraitis y
+  1983); **V1**, Ljung-Box sobre |eₜ|; **V2**, Ljung-Box sobre los rangos de |xₜ − mediana|
+  (rangos medios en los empates; no depende del tamaño de los días extremos, solo de su orden:
+  centrada en la media sí dependería, porque la media se mueve con el extremo; corregido en el
+  borrador antes de generar ningún caso, al escribir su prueba de respuesta conocida). El detector de rachas (Dalla, Giraitis y
   Phillips, 2020) y k = 100 no cambian.
   (d) **Mínimo de días con operaciones esperados en el horizonte (m):** cuarta puerta, solo para
   el horizonte que se pide: la previsión a H días exige (días con operaciones / n) × H ≥ m. Se
