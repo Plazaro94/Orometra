@@ -6,7 +6,7 @@ import { mountPlateauSurface } from './plateau-surface.js';
 import { sensitivityBars, parameterProfile, plateauHeatmap, dimRole } from './charts.js';
 import { L, pctSign, shareText } from './i18n.js';
 import { gloss } from './glossary.js';
-import { fallbackNote } from './ui-verdict.js';
+import { fallbackNote, terrainMarks } from './ui-verdict.js';
 import { setCoverageNote } from './export.js';
 import { state, $, num, int, pct, esc, rich, nf, paramHtml, roleBadge, findingsForCategory, findInMt5Html, mt5Figure, forwardHoldHtml, deployableSet } from './ui-state.js';
 
@@ -460,10 +460,18 @@ export function renderParams(a) {
     </section>
     <section class="panel">
       <div class="panel-head compact"><div><div class="panel-kicker">${L('Mapa', 'Map')}</div><h2>${L('Los dos parámetros más influyentes', 'The two most influential parameters')}</h2></div></div>
-      ${pair ? `${plateauHeatmap(a, pair[0], pair[1])}
+      ${pair ? `${(() => {
+    // La elegida y la n.º 1 de MT5, señaladas: meseta frente a pico, de un vistazo.
+    const tm = terrainMarks(a);
+    const keys = [
+      tm.hasPick ? `<span class="vx-map-key"><i class="vx-key-pick" aria-hidden="true"></i>${esc(L('La elegida', 'The chosen one'))}</span>` : '',
+      tm.hasTop ? `<span class="vx-map-key"><i class="vx-key-mt5" aria-hidden="true">✕</i>${esc(L('La n.º 1 de MT5', 'MT5’s #1'))}</span>` : '',
+    ].join('');
+    return `${tm.reading ? `<p class="vx-map-reading">${esc(tm.reading)}</p>` : ''}${keys ? `<div class="vx-map-legend">${keys}</div>` : ''}${plateauHeatmap(a, pair[0], pair[1], { marks: tm.marks, thin: 5 })}`;
+  })()}
       <p class="chart-note">${L(
-        'Calidad mediana de cada par de valores, del tono más suave (peor) al más intenso (mejor). Cuenta todas las configuraciones probadas, también las que no cumplen tus mínimos: por eso puede salir más baja que en el gráfico de arriba, que solo cuenta las que cumplen. Una zona contigua de valores altos es una meseta; una celda alta rodeada de bajas es un pico.',
-        'Median quality of each pair of values, from the softest shade (worst) to the strongest (best). It counts every tested configuration, including those that miss your minimums: that is why it can come out lower than in the chart above, which only counts those that pass. A contiguous zone of high values is a plateau; a high cell surrounded by low ones is a peak.',
+        'Calidad mediana de cada par de valores, del tono más suave (peor) al más intenso (mejor). Cuenta todas las configuraciones probadas, también las que no cumplen tus mínimos: por eso puede salir más baja que en el gráfico de arriba, que solo cuenta las que cumplen, y más baja que la calidad de la propia elegida, que es una sola configuración. Una zona contigua de valores altos es una meseta; una celda alta rodeada de bajas es un pico. Las casillas con menos de 5 pasadas salen atenuadas.',
+        'Median quality of each pair of values, from the softest shade (worst) to the strongest (best). It counts every tested configuration, including those that miss your minimums: that is why it can come out lower than in the chart above, which only counts those that pass, and lower than the quality of the chosen one itself, which is a single configuration. A contiguous zone of high values is a plateau; a high cell surrounded by low ones is a peak. Cells with fewer than 5 passes are dimmed.',
       )}</p>` : `<p class="muted">${L('Hacen falta al menos dos parámetros con varios valores para dibujar el mapa.', 'At least two parameters with several values are needed to draw the map.')}</p>`}
     </section>
     <section class="panel">

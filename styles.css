@@ -710,12 +710,8 @@ details.panel > .panel-body{padding:0 20px 20px}
 /* Tanda A (2026-10-15): la línea para encontrarla en MT5, el mapa del terreno y el «no». */
 .vx-find{margin:0 0 10px;font-size:var(--fs-md);line-height:1.5;color:var(--muted)}
 .vx-find b{color:var(--text-hi);font-family:var(--mono);font-weight:600}
-.vx-map{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 28px;align-items:start;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
-.vx-map-chart{min-width:0}
-.vx-map-chart .hm-grid{margin-top:0}
-.vx-map-text{min-width:0;max-width:56ch}
-.vx-map-reading{margin:0 0 12px;font-size:var(--fs-lg);line-height:1.45;color:var(--text-hi);font-weight:600}
-.vx-map-legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:var(--fs-md);color:var(--text-2)}
+.vx-map-reading{margin:0 0 8px;font-size:var(--fs-base);line-height:1.45;color:var(--text-hi);font-weight:600;max-width:var(--measure)}
+.vx-map-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 4px;font-size:var(--fs-md);color:var(--text-2)}
 .vx-map-key{display:inline-flex;align-items:center;gap:8px}
 .vx-key-pick{width:16px;height:16px;border-radius:4px;box-shadow:inset 0 0 0 3px var(--lime-fill)}
 .vx-key-mt5{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;font-style:normal;font-size:11px;font-weight:700}
@@ -727,13 +723,14 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-meaning{margin:0 0 18px;font-size:var(--fs-lg);line-height:1.5;color:var(--text-hi);max-width:56ch}
 .vx-causes{margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:6px;font-size:var(--fs-base);line-height:1.45;color:var(--text-2)}
 .vx-quiet{margin-top:20px;padding:14px 16px;border-radius:var(--radius-sm);background:var(--surface-2);border:1px solid var(--line-soft);font-size:var(--fs-md);line-height:1.5;color:var(--muted)}
-.vx-quiet strong{display:block;margin-bottom:4px;color:var(--text);font-size:var(--fs-base)}
+.vx-quiet strong{color:var(--text)}
 .vx-quiet p{margin:0 0 6px}
 .vx-quiet .vx-find{margin:0}
 .why-neutral .why-mark{color:var(--muted-2);background:var(--surface-2);border:1px solid var(--line)}
-@container vx (max-width:760px){
-  .vx-map{grid-template-columns:1fr}
-}
+.vx-more{margin-top:10px;font-size:var(--fs-md);line-height:1.5;color:var(--muted-2);max-width:56ch}
+.vx-more > summary{cursor:pointer;color:var(--info-text);font-weight:600;width:max-content;max-width:100%}
+.vx-more > p{margin:8px 0 0}
+.vx-quiet .vx-more{margin-top:6px}
 .u-result{margin-top:12px}
 .u-result-tag{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:999px;border:1px solid;font-size:var(--fs-md);font-weight:700}
 .u-result-tag::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}

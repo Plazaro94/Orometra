@@ -446,12 +446,19 @@ try {
     await verdictShown();
     const appPass = (await page.textContent('.vx-pass b')).trim();
     check('con la misma pasada que enseña la tarjeta', appPass === cardPass, `${cardPass} frente a ${appPass}`);
+    // La tarjeta no crece: en escritorio (1280 px) mide menos que la publicada antes de la tanda A
+    // (800 px con meseta y 567 sin ventaja, medidas el 2026-10-15).
+    const cardH = () => page.$eval('.vx', (e) => Math.round(e.getBoundingClientRect().height));
+    const hGood = await cardH();
+    check('la tarjeta con meseta no pasa de 800 px', hGood <= 800, `${hGood} px`);
     // Del ejemplo con meseta al ejemplo sin ventaja, y vuelta.
     await page.click('.demo-note [data-demo="noedge"]');
     await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
     check('desde el ejemplo se llega al de sin ventaja', Boolean(await page.$('.demo-note [data-demo="good"]')));
     check('que no propone ninguna configuración: la tarjeta del «no»', Boolean(await page.$('.vx.vx-no')) && /no hay nada que respaldar/.test(await page.textContent('#reportTitle')));
     check('y se queda en «débil»', /débil/i.test(await page.textContent('.vx-meter .is-here')), await page.textContent('.vx-meter .is-here'));
+    const hNo = await cardH();
+    check('la tarjeta del «no» no pasa de 567 px', hNo <= 567, `${hNo} px`);
     // El enlace de debajo de la tarjeta lleva a ese mismo ejemplo.
     await page.goto(`${BASE}/es/`);
     await page.click('.hm-more-alt a');

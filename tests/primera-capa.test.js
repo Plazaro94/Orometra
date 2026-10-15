@@ -44,6 +44,25 @@ for (const lang of ['es', 'en']) {
   }
 }
 
+// La tarjeta no puede crecer: tiene que leerse con menos que la publicada antes de la tanda A
+// (medida en el navegador el 2026-10-15, en español: 322 palabras y 28 cifras con meseta; 187 y
+// 13 sin ventaja). Lo que va en un desplegable cerrado no se ve y no cuenta. La primera versión
+// de la tanda A añadía un mapa y se iba a 464 palabras y 92 cifras: esto lo habría parado.
+setLocale('es');
+{
+  const BUDGET = { 'ejemplo con meseta': { words: 322, figures: 28 }, 'ejemplo sin ventaja': { words: 187, figures: 13 } };
+  for (const [name, t] of cases) {
+    const a = runAnalysis({ isTable: t.isTable, oosTable: t.oosTable });
+    const card = (renderVerdict(a).match(/<section class="vx[\s\S]*?<\/section>/) || [''])[0];
+    const visible = plain(card.replace(/<details[\s\S]*?<\/details>/g, '').replace(/ (title|aria-label)="[^"]*"/g, ''));
+    const words = visible.split(/\s+/).filter(Boolean).length;
+    const figures = (visible.match(/\d+(?:[.,]\d+)?/g) || []).length;
+    const cap = BUDGET[name];
+    check(`${name}: menos palabras que la tarjeta publicada (${words} ≤ ${cap.words})`, words <= cap.words, String(words));
+    check(`${name}: menos cifras que la tarjeta publicada (${figures} ≤ ${cap.figures})`, figures <= cap.figures, String(figures));
+  }
+}
+
 // El titular contesta: dice si hay zona estable y, si la hay, qué pasada llevarse.
 setLocale('es');
 {

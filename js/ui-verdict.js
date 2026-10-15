@@ -5,8 +5,7 @@ import { compareParams } from '../core/report.js';
 import { setCoverageNote } from './export.js';
 import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
-import { scatterIsOos, degradationChart, plateauHeatmap } from './charts.js';
-import { topInfluentialPair } from '../core/surface.js';
+import { scatterIsOos, degradationChart } from './charts.js';
 import { t, L, localeTag, pctSign, shareText } from './i18n.js';
 import { state, api, num, int, pct, esc, rich, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, mt5Figures, forwardHoldHtml, deployableSet, forwardUntested } from './ui-state.js';
 import { gloss } from './glossary.js';
@@ -429,32 +428,28 @@ function keyFacts(a, best) {
   const items = [];
   if (nb) {
     items.push(fact(`${int(nb.passing)}<small> ${of} ${int(nb.observed)}</small>`,
-      esc(L('vecinas también pasan tus mínimos', 'neighbors also clear your minimums'))));
+      esc(L('vecinas también cumplen tus mínimos', 'neighbors also clear your minimums'))));
   }
   if (a.meta.hasForward && val && val.withForward) {
-    const passed = Math.round(val.passFrac * val.withForward);
     items.push(fact(pct(val.passFrac, 0),
-      esc(L(`de la meseta sigue cumpliendo tus mínimos en el forward (${int(passed)} de ${int(val.withForward)})`,
-        `of the plateau still clears your minimums on the forward (${int(passed)} of ${int(val.withForward)})`))));
+      esc(L('de la meseta cumple también en el forward', 'of the plateau also clears them on the forward'))));
   } else {
-    items.push(fact('—', esc(L('Sin forward: no se ha podido validar fuera del periodo optimizado.', 'No forward: it could not be validated beyond the optimized period.'))));
+    items.push(fact('—', esc(L('sin forward: falta validarla', 'no forward: not yet validated'))));
   }
   if (st && st.draws && Number.isFinite(st.regionRate)) {
     items.push(fact(`${int(Math.round(st.regionRate * st.draws))}<small> ${of} ${int(st.draws)}</small>`,
-      esc(L('veces gana la misma zona al mover nuestros propios umbrales', 'times the same zone wins when we move our own thresholds'))));
+      esc(L('veces gana la misma zona al mover los umbrales', 'times the same zone wins when thresholds move'))));
   }
   return `<div class="vx-stats">${items.join('')}</div>`;
 }
 
 /**
- * El terreno de la optimización: el mapa de los dos parámetros que más influyen (el mismo de
- * Parámetros) con la elegida y la n.º 1 de MT5 señaladas. Enseña de un vistazo lo que hace
- * Orometra: meseta frente a pico. Con menos de dos parámetros variables no hay mapa.
+ * Las marcas del mapa de Parámetros: la elegida y la n.º 1 de MT5, y una frase que lo lee.
+ * Enseña lo que hace Orometra (meseta frente a pico) en la pestaña donde ya está el mapa; en
+ * la tarjeta del veredicto ocupaba más que la propia respuesta (medido el 2026-10-15).
  */
-function terrainMap(a, best) {
-  if ((a.sensitivity || []).filter((x) => !x.constant).length < 2) return '';
-  const pair = topInfluentialPair(a.sensitivity);
-  if (!pair) return '';
+export function terrainMarks(a) {
+  const best = a.plateaus[0];
   const top = mt5Top(a);
   const pickIdx = best ? best.representative : null;
   const marks = [];
@@ -474,20 +469,7 @@ function terrainMap(a, best) {
     reading = L(`No hay ninguna zona continua por encima del resto: la n.º 1 de MT5 (pasada ${topId}) es un punto suelto.`,
       `No continuous zone stands above the rest: MT5’s #1 (pass ${topId}) is an isolated point.`);
   }
-  const legend = [
-    best ? `<span class="vx-map-key"><i class="vx-key-pick" aria-hidden="true"></i>${esc(L('La elegida', 'The chosen one'))}</span>` : '',
-    top !== null && top !== pickIdx ? `<span class="vx-map-key"><i class="vx-key-mt5" aria-hidden="true">✕</i>${esc(L('La n.º 1 de MT5', 'MT5’s #1'))}</span>` : '',
-  ].join('');
-  return `<div class="vx-map">
-    <div class="vx-map-chart">${plateauHeatmap(a, pair[0], pair[1], { marks, thin: 5 })}</div>
-    <div class="vx-map-text">
-      <span class="vx-label">${esc(L('El terreno de tu optimización', 'The terrain of your optimization'))}</span>
-      ${reading ? `<p class="vx-map-reading">${esc(reading)}</p>` : ''}
-      ${legend ? `<div class="vx-map-legend">${legend}</div>` : ''}
-      <p class="vx-fine">${esc(L('Cada casilla es la calidad mediana de todas las configuraciones con esos dos valores, en los dos parámetros que más influyen. Cuanto más intensa, mejor. Una zona intensa y continua es una meseta; una casilla sola, un pico. Las casillas con menos de 5 pasadas salen atenuadas.',
-    'Each cell is the median quality of every configuration with those two values, on the two most influential parameters. The stronger, the better. A strong continuous zone is a plateau; a lone cell, a peak. Cells with fewer than 5 passes are dimmed.'))}</p>
-    </div>
-  </div>`;
+  return { marks, reading, hasPick: Boolean(best), hasTop: top !== null && top !== pickIdx };
 }
 
 /**
@@ -540,14 +522,14 @@ function nextSteps(a, best, hold) {
   } else if (best && hasF && !hold.done) {
     steps = [
       step(1, esc(L('Descarga el .set', 'Download the .set')),
-        esc(L(`Lleva ${setCountEs(a, best)} de la pasada ${best.record.id}. En el probador de MT5, pestaña de parámetros de entrada («Inputs»): clic derecho sobre la tabla → «Cargar» («Load») y elige el archivo.`,
-          `It carries ${setCountEn(a, best)} of pass ${best.record.id}. In the MT5 tester's “Inputs” tab, right-click the table → “Load” and choose the file.`))),
+        esc(L(`Lleva ${setCountEs(a, best)}. En MT5, pestaña «Inputs»: clic derecho → «Cargar».`,
+          `It carries ${setCountEn(a, best)}. In MT5, “Inputs” tab: right-click → “Load”.`))),
       step(2, esc(L('Pruébala en un periodo que no hayas usado', 'Test it on a period you have not used')),
-        esc(L('Ni para optimizar ni para validar: por ejemplo, los meses posteriores a tu forward. Decide antes qué resultado darás por bueno.',
-          'Neither for optimizing nor for validating: for example, the months after your forward. Decide beforehand what result you will accept.'))),
+        esc(L('Por ejemplo, los meses posteriores a tu forward. Decide antes qué darás por bueno.',
+          'For example, the months after your forward. Decide beforehand what you will accept.'))),
       step(3, esc(L('Compruébalo aquí', 'Check it here')),
-        esc(L('Suelta el informe de ese backtest y Orometra te dirá si el resultado es normal para esta configuración.',
-          'Drop that backtest report and Orometra will tell you whether the result is normal for this configuration.')),
+        esc(L('Suelta aquí su informe: sabrás si el resultado es normal para ella.',
+          'Drop its report here: you will see whether the result is normal for it.')),
         `<button class="text-btn vx-step-cta" data-goto="unseen">${L('Ir al periodo no visto &rarr;', 'Go to unseen period &rarr;')}</button>`),
     ];
   } else if (best && !hasF) {
@@ -565,14 +547,14 @@ function nextSteps(a, best, hold) {
     const insufficient = a.verdict.level === 'insufficient';
     steps = [
       step(1, esc(L('Mira qué falla', 'See what fails')),
-        esc(L('El diagnóstico muestra qué mínimos dejan fuera a la mayoría de configuraciones.', 'Diagnostics shows which minimums rule out most configurations.')),
+        esc(L('Qué mínimos dejan fuera a casi todas.', 'Which minimums rule out almost all of them.')),
         `<button class="text-btn vx-step-cta" data-goto="diagnostics">${L('Ir al diagnóstico &rarr;', 'Go to diagnostics &rarr;')}</button>`),
       step(2, esc(L('Ajusta la optimización', 'Adjust the optimization')),
         esc(insufficient
           ? L('Amplía el rango de los parámetros o añade valores intermedios; si tus mínimos son muy exigentes, relájalos.', 'Widen the parameter ranges or add intermediate values; if your minimums are very demanding, relax them.')
-          : L('Amplía el rango o afina el paso de los parámetros: una meseta necesita configuraciones vecinas que también funcionen.', 'Widen the range or refine the parameter step: a plateau needs neighboring configurations that also work.'))),
+          : L('Amplía el rango o afina el paso: una meseta necesita vecinas que también funcionen.', 'Widen the range or refine the step: a plateau needs neighbors that also work.'))),
       step(3, esc(L('Vuelve a analizar', 'Analyze again')),
-        esc(L('Exporta de nuevo los resultados y suéltalos aquí.', 'Export the results again and drop them here.'))),
+        esc(L('Exporta de nuevo y suéltalos aquí.', 'Export again and drop them here.'))),
     ];
   }
   const body = steps
@@ -614,18 +596,15 @@ export function expectationHtml(a, best) {
   return `<p class="vx-expect"><span class="vx-label">${gloss('expectation', esc(L('Qué esperar', 'What to expect')))}</span>
     ${L('Unos', 'About')} <b>${num(pr.expected, 2)}</b> ${esc(L('por operación', 'per trade'))}${esc(raw)}.
     ${esc(pr.ownLo > 0
-    ? L('Se distingue de una configuración cualquiera de las que cumplen tus mínimos.', 'It stands out from any configuration that meets your minimums.')
-    : L('No se distingue de una configuración cualquiera de las que cumplen tus mínimos.', 'It does not stand out from any configuration that meets your minimums.'))}</p>`;
+    ? L('Mejor que una cualquiera de las que cumplen tus mínimos.', 'Better than any one that meets your minimums.')
+    : L('No mejor que una cualquiera de las que cumplen tus mínimos.', 'No better than any one that meets your minimums.'))}</p>`;
 }
 
 /** «Búscala en MT5 por sus cifras», en una línea. La letra pequeña va con las de los botones. */
 function findShort(rec, hasF) {
   const figures = mt5Figures(rec);
   if (!figures) return '';
-  const where = hasF
-    ? L('En los resultados de la optimización de MT5 (no en los del forward) se busca por', 'In MT5’s optimization results (not the forward ones), look for')
-    : L('En los resultados de la optimización de MT5 se busca por', 'In MT5’s optimization results, look for');
-  return `<p class="vx-find">${where} ${figures}.</p>`;
+  return `<p class="vx-find">${L('En MT5 se busca por', 'In MT5, look for')} ${figures}.</p>`;
 }
 
 /** Lo que hay que saber para encontrarla en MT5, sin ocupar el sitio de la respuesta. */
@@ -636,7 +615,8 @@ function findFine(rec) {
     : n > 1
       ? L(` Hay ${n} configuraciones más con esas mismas cifras: para cargar exactamente esta, usa sus parámetros.`, ` ${n} more configurations have the same figures: to load exactly this one, use its parameters.`)
       : '';
-  return L('El número de pasada es el de tu archivo exportado: MT5 no lo guarda al cerrarse y puede enseñar otro.', 'The pass number is the one in your exported file: MT5 does not keep it after closing and may show a different one.') + twins;
+  const where = L('Búscala en los resultados de la optimización, no en los del forward.', 'Look for it in the optimization results, not the forward ones.');
+  return `${where} ${L('El número de pasada es el de tu archivo exportado: MT5 no lo guarda al cerrarse y puede enseñar otro.', 'The pass number is the one in your exported file: MT5 does not keep it after closing and may show a different one.')}${twins}`;
 }
 
 /**
@@ -646,8 +626,9 @@ function findFine(rec) {
 function renderNoAnswer(a, dv) {
   const meaning = dv.level === 'insufficient'
     ? a.verdict.summary
-    : L('Lo que destaca en tu tabla de MT5 se puede explicar por la suerte. No dice que tu EA sea malo: dice que esta optimización no lo demuestra. Y te ahorra probar con dinero algo que no se sostiene.',
-      'What stands out in your MT5 table can be explained by luck. It does not say your EA is bad: it says this optimization does not show it. And it saves you from testing with money something that does not hold up.');
+    // «Puede deberse a la suerte» ya lo dice la línea de la fiabilidad, al lado.
+    : L('No dice que tu EA sea malo: dice que esta optimización no lo demuestra.',
+      'It does not say your EA is bad: it says this optimization does not show it.');
   // Lo que pesa en el nivel primero (críticos, luego avisos sobre la meseta, luego los del orden
   // de la tabla). El contraste del Sharpe se queda en «Por qué este nivel»: aquí va lo que se
   // entiende sin saber estadística.
@@ -658,8 +639,7 @@ function renderNoAnswer(a, dv) {
     .slice(0, 3);
   const causesHtml = causes.length
     ? `<span class="vx-label">${esc(L('Lo que más pesa', 'What weighs most'))}</span>
-      <ul class="vx-causes">${causes.map((f) => `<li>${esc(f.title)}</li>`).join('')}</ul>
-      <p class="vx-fine">${esc(L('Cada una, explicada en «Por qué este nivel», más abajo.', 'Each one is explained under “Why this level”, below.'))}</p>`
+      <ul class="vx-causes">${causes.map((f) => `<li>${esc(f.title)}</li>`).join('')}</ul>`
     : '';
   return `<span class="vx-label">${esc(L('Qué significa', 'What it means'))}</span>
     <p class="vx-meaning">${esc(meaning)}</p>
@@ -668,10 +648,15 @@ function renderNoAnswer(a, dv) {
 
 function renderFallbackBox(a) {
   if (!a.fallback) return '';
+  // Corta: la configuración completa y cómo encontrarla, en el desplegable. Que no es una zona
+  // estable se dice siempre.
+  const params = a.meta.paramNames.map((n, j) => `${esc(n)}=${paramHtml(a.fallback.record.params[j])}`).join(', ');
   return `<div class="vx-quiet">
-    <strong>${esc(L('Si aun así quieres seguir explorando', 'If you still want to keep exploring'))}</strong>
-    <p><b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>
-    ${findShort(a.fallback.record, a.meta.hasForward)}
+    <p><strong>${esc(L('Si aun así quieres seguir explorando', 'If you still want to keep exploring'))}:</strong>
+    ${L('la pasada', 'pass')} <b class="mono">${esc(a.fallback.record.id)}</b> ${esc(L('es la que mejor combina los dos periodos con sus vecinas. No es una zona estable: úsala solo para volver a optimizar.', 'is the one that best combines both periods with its neighbors. It is not a stable zone: use it only to optimize again.'))}</p>
+    <details class="vx-more"><summary>${esc(L('Sus parámetros y cómo encontrarla en MT5', 'Its parameters and how to find it in MT5'))}</summary>
+      <p>${params}.</p>${findShort(a.fallback.record, a.meta.hasForward)}<p>${esc(findFine(a.fallback.record))}</p>
+    </details>
   </div>`;
 }
 
@@ -691,20 +676,17 @@ function renderDecision(a, dv, best, hold) {
       <button class="ghost-btn" data-copy="${best.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
     </div>`;
     const fine = [findFine(best.record), deploy ? setCoverageNote(a, best, state.searchSet) : ''].filter(Boolean).join(' ');
+    const more = `<details class="vx-more"><summary>${esc(L('Cómo cargarla en MT5', 'How to load it in MT5'))}</summary><p>${esc(fine)}</p></details>`;
     pick = `<span class="vx-label">${esc(L('Lleva esto', 'Take this'))}</span>
       <div class="vx-pass">${L('Pasada', 'Pass')} <b>${esc(best.record.id)}</b></div>
       <div class="t3-param-chips vx-params" role="group" aria-label="${esc(L('Valores recomendados', 'Recommended values'))}">
         ${a.meta.paramNames.map((n, j) => `<span>${esc(n)} <b>${paramHtml(best.record.params[j])}</b></span>`).join('')}
       </div>
-      ${findShort(best.record, hasF)}
-      <p class="vx-pass-note">${esc(deploy
-    ? L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado y en el forward (promediado con sus vecinas).`,
-      `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on both the optimized period and the forward (averaged with its neighbors).`)
-    : L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado (promediado con sus vecinas).`,
-      `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on the optimized period (averaged with its neighbors).`))}</p>
+      <p class="vx-pass-note">${esc(L(`El centro de una meseta de ${int(best.size)} configuraciones parecidas.`, `The center of a plateau of ${int(best.size)} similar configurations.`))}</p>
       ${expectationHtml(a, best)}
       ${actions}
-      <p class="vx-fine">${esc(fine)}</p>`;
+      ${findShort(best.record, hasF)}
+      ${more}`;
   } else {
     pick = renderNoAnswer(a, dv);
   }
@@ -719,7 +701,6 @@ function renderDecision(a, dv, best, hold) {
         ${keyFacts(a, best)}
       </div>
     </div>
-    ${terrainMap(a, best)}
     ${best ? '' : renderFallbackBox(a)}
     ${nextSteps(a, best, hold)}
   </section>`;

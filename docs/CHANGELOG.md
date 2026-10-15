@@ -2,29 +2,34 @@
 
 ## 2026-10-15 — Tanda A de la propuesta de claridad (pendiente del visto bueno del autor)
 
-La primera pantalla del informe contesta en vez de calificar. En la rama
+La primera pantalla del informe contesta en vez de calificar, y ocupa menos que antes. En la rama
 `claude/jolly-hamilton-md56a1`, sin publicar: el autor la quiere ver antes.
 
 - **Titular:** una frase que contesta y dice el siguiente paso («Tu optimización tiene una zona
   estable. Llévate la pasada 11445 y pruébala en un tramo que no hayas usado»). El nivel
   («Evidencia sólida») queda encima como etiqueta, también en el móvil (`answerLine`).
-- **Una sola nota:** la tarjeta ya no enseña la robustez /100 ni «se mantiene al validar»; cuenta
-  tres hechos con palabras (vecinas que también cumplen, parte de la meseta que cumple en el
+- **Una sola nota en la tarjeta, la fiabilidad:** fuera la robustez /100 y «se mantiene al
+  validar»; tres hechos cortos (vecinas que también cumplen, parte de la meseta que cumple en el
   forward, veces que gana la misma zona al mover los umbrales). La robustez sigue en Mesetas.
-- **El terreno de tu optimización:** el mapa de Parámetros, en la tarjeta, con la elegida y la
-  n.º 1 de MT5 marcadas y una frase que lo lee; las casillas con menos de 5 pasadas, atenuadas
-  (con un genético simulado, alguna casilla tenía solo 3).
 - **El «no» con forma propia:** sin meseta, «En esta optimización no hay nada que respaldar», qué
-  significa y lo que más pesa; la sugerencia orientativa, aparte y rotulada («Si aun así quieres
-  seguir explorando»); «A favor» pasa a «Lo que sí hay», sin marcas de visto. Sin el aviso «Sin
-  meseta estable» encima, que repetía el titular.
-- La línea para encontrarla en MT5, en una frase; su letra pequeña, bajo los botones.
+  significa y lo que más pesa (sin el contraste del Sharpe, que se queda en «Por qué este
+  nivel»); la sugerencia orientativa, aparte, corta y rotulada; «A favor» pasa a «Lo que sí hay»,
+  sin marcas de visto; sin el aviso «Sin meseta estable» encima, que repetía el titular.
+- **Menos letra a la vista:** «Cómo cargarla en MT5» (número de pasada, cifras repetidas, qué lleva
+  el .set) va en un desplegable; los pasos de «Qué hacer ahora», más cortos.
+- **El terreno, en Parámetros:** el mapa de los dos parámetros que más influyen señala allí la
+  elegida y la n.º 1 de MT5, con una frase que lo lee; las casillas con menos de 5 pasadas,
+  atenuadas. Una primera versión lo puso en la tarjeta y la tarjeta creció (464 palabras y 92
+  cifras frente a 322 y 28); además enseñaba 0,61 para la elegida (la mediana de su casilla)
+  junto al 0,93 de Mesetas (la propia pasada). Se retiró de la tarjeta antes de publicar.
+- **Medido en el navegador (escritorio / móvil), publicada → nueva:** con meseta, tarjeta de 800 a
+  626 px / de 1513 a 1307 px, de 322 a 215 palabras y de 28 a 26 cifras; sin ventaja, de 567 a
+  565 px / de 996 a 956 px, de 187 a 159 palabras y de 13 a 8 cifras.
 - La tarjeta de ejemplo de la portada, igual que la nueva.
-- Pruebas: `tests/primera-capa.test.js` (las palabras de la auditoría no salen en el titular ni
-  en la tarjeta, en los dos idiomas y con los dos ejemplos) y las que miraban los textos y
-  selectores anteriores (`audit-2026-10b`, `home-sample`, `e2e`).
-- En el móvil, la pantalla del «no» queda más larga que antes (el mapa y la sugerencia); la
-  respuesta sigue cabiendo en la primera pantalla.
+- Pruebas: `tests/primera-capa.test.js` (sin palabras de la auditoría en el titular ni en la
+  tarjeta, en los dos idiomas; y palabras y cifras visibles por debajo de la tarjeta publicada) y
+  dos alturas en el navegador (`tests/e2e.mjs`); las que miraban los textos y selectores
+  anteriores, al día (`audit-2026-10b`, `home-sample`, `e2e`).
 
 ## 2026-10-15 — Contraste del Sharpe: el umbral cuenta todas las pasadas (séptimo examen)
 

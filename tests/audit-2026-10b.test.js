@@ -220,9 +220,10 @@ section('M2, M3, M4 y M7: textos que se contradecían o no decían de qué es la
     /Cuenta todas las configuraciones probadas, también las que no cumplen tus mínimos/.test(psrc) && /It counts every tested configuration/.test(psrc));
   const usrc = fs.readFileSync(path.join(ROOT, 'js/ui-verdict.js'), 'utf8');
   // Desde la tanda A (2026-10-15) la tarjeta ya no enseña «Se mantiene al validar», sino qué parte
-  // de la meseta cumple en el forward: tiene que seguir diciendo de qué es la cifra y sobre cuántas.
-  check('M2: la cifra del forward de la tarjeta dice que es de la meseta y sobre cuántas',
-    /de la meseta sigue cumpliendo tus mínimos en el forward \(\$\{int\(passed\)\} de \$\{int\(val\.withForward\)\}\)/.test(usrc));
+  // de la meseta cumple en el forward: tiene que seguir diciendo de qué es la cifra. Sobre cuántas
+  // configuraciones, lo dice Mesetas («Cumplen en el forward»); la tarjeta va corta a propósito.
+  check('M2: la cifra del forward de la tarjeta dice que es de la meseta',
+    /de la meseta cumple también en el forward/.test(usrc));
 }
 
 section('FWD-4: pasadas que MT5 ocultó en la optimización no son un forward dañado');
