@@ -2714,7 +2714,7 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
 .mc-periods .inline-warn{margin:0}
 .mc-radios{display:flex;flex-wrap:wrap;gap:8px 20px}
 .mc-radios label{display:flex;gap:8px;align-items:center;font-size:var(--fs-md)}
-.mc-dates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
-.mc-dates input[type=date]{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-variant-numeric:tabular-nums;color-scheme:light dark;min-height:44px}
+.mc-date{max-width:360px}
+.mc-date input[type=date]{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-variant-numeric:tabular-nums;color-scheme:light dark;min-height:44px}
 .mc-seg-table td,.mc-seg-table th{white-space:nowrap}
 .mc-row-clean td{font-weight:700}

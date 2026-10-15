@@ -134,8 +134,8 @@ el optimizador de MT5 y tu decisión de poner dinero real**, y su respuesta más
   otro orden: si el orden real fue afortunado, la caída y la racha habituales; no es una
   previsión) con 30 operaciones o más, y la *previsión* a 6 y 12 meses (M2bc) solo con 2 años
   de operaciones no usadas para elegir, 100 días con operaciones, sin rachas ni volatilidad
-  agrupada y con la confirmación del usuario. Un backtest largo se parte en tramos por
-  fechas de corte: radiografía de cada tramo y previsión solo con lo posterior a la elección. Las martingalas no reciben cifras. Las dos
+  agrupada y con la confirmación del usuario. Un backtest largo se parte en antes y después
+  de elegir: radiografía de los dos y previsión solo con lo de después. Las martingalas no reciben cifras. Las dos
   aprobaron un banco prerregistrado; el Monte Carlo anterior se retiró el 2026-10-13 porque sus
   rangos se quedaban cortos.
 - Exportación: `.set` de la configuración propuesta, `.set` de **rango de refinamiento**

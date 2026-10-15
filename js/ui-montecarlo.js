@@ -7,9 +7,10 @@
 //   sin rachas ni volatilidad agrupada), si consta que el informe es de la configuración elegida,
 //   si no repite un periodo ya usado y si el usuario confirma que no usó esas fechas para elegir.
 //   Orometra no puede comprobar esto último: el export de optimización no trae fechas.
-// - Backtest largo (6.1): el usuario dice hasta qué fecha usó para elegir (y, si quiere, dónde
-//   acaba el optimizado). Cada operación cuenta en el tramo de su fecha de cierre; la
-//   radiografía sale por tramos y la previsión, solo con el tramo posterior a la elección.
+// - Backtest largo (6.1): el usuario dice hasta qué día miró para elegir. Solo dos trozos, antes
+//   y después de elegir (separar el optimizado del forward confundía más de lo que aclaraba):
+//   cada operación va al de su fecha de cierre, la radiografía sale de los dos y la previsión,
+//   solo con el de después.
 
 import { repeatedPeriod } from '../core/unseen.js';
 import { otherConfigOnSameDates } from '../core/history.js';
@@ -27,7 +28,7 @@ function mcState() {
     state.tradesMC = {
       report: state.report, sizing: null, status: 'idle', result: null, error: null, confirm: false, ddLimit: '', forecast: null,
       // Backtest largo: split 'no' (todo posterior a la elección) o 'yes' (con fechas de corte).
-      split: 'no', cuts: { chooseEnd: '', optEnd: '' }, view: null,
+      split: 'no', cuts: { chooseEnd: '' }, view: null,
     };
   }
   return state.tradesMC;
@@ -38,7 +39,7 @@ const rerender = () => { if (state.tab === 'unseen' && api.render) api.render();
 /** Fechas de corte que se mandan al worker, o undefined si el informe es entero posterior a la elección. */
 function activeCuts(mc) {
   if (mc.split !== 'yes' || !mc.cuts.chooseEnd) return undefined;
-  return { chooseEnd: mc.cuts.chooseEnd, optEnd: mc.cuts.optEnd || undefined };
+  return { chooseEnd: mc.cuts.chooseEnd };
 }
 
 /** Radiografía y puertas, al cargar el informe o al cambiar el tipo de lote. */
@@ -108,9 +109,9 @@ export function initMonteCarlo() {
       mc.view = null;
       startTradesMC();
       rerender();
-    } else if (t && (t.id === 'mcChooseEnd' || t.id === 'mcOptEnd')) {
+    } else if (t && t.id === 'mcChooseEnd') {
       const mc = mcState();
-      mc.cuts[t.id === 'mcChooseEnd' ? 'chooseEnd' : 'optEnd'] = t.value;
+      mc.cuts.chooseEnd = t.value;
       mc.confirm = false;
       mc.view = null;
       if (mc.cuts.chooseEnd) startTradesMC();
@@ -202,19 +203,17 @@ const VOL_CAVEAT = () => L(
 
 // ------------------------------------------------------------------ tramos
 const SEGMENT_LABEL = () => ({
-  opt: L('Periodo optimizado', 'Optimized period'),
-  fwd: L('Forward', 'Forward'),
-  used: L('Usado para elegir', 'Used for choosing'),
-  clean: L('Posterior a la elección', 'After the choice'),
-  all: L('Todo el informe', 'Whole report'),
+  used: L('Antes de elegir', 'Before choosing'),
+  clean: L('Después de elegir', 'After choosing'),
 });
+/** Solo los dos trozos que entiende cualquiera: antes y después de elegir. */
+const shownSegments = (res) => res.segments.filter((sg) => sg.key === 'used' || sg.key === 'clean');
 
 const CUT_ERROR = (e, period) => {
   const range = period ? L(`del ${fdate(period.from)} al ${fdate(period.to)}`, `from ${fdate(period.from)} to ${fdate(period.to)}`) : '';
   switch (e) {
-    case 'orden': return L('El fin del periodo optimizado no puede ser posterior al último día que usaste para elegir.', 'The end of the optimized period cannot be later than the last day you used for choosing.');
     case 'sin_operaciones_antes': return L(`Esa fecha es anterior a la primera operación: las operaciones del informe van ${range}.`, `That date is before the first trade: the report's trades run ${range}.`);
-    case 'sin_operaciones_despues': return L(`Después de esa fecha no hay operaciones: las del informe van ${range}. Si el informe entero es posterior a la elección, elige «No».`, `There are no trades after that date: the report's trades run ${range}. If the whole report is after the choice, pick "No".`);
+    case 'sin_operaciones_despues': return L(`Después de esa fecha no hay operaciones: las del informe van ${range}. Si no miraste ninguna de estas fechas para elegir, marca «No».`, `There are no trades after that date: the report's trades run ${range}. If you did not look at any of these dates for choosing, pick "No".`);
     case 'fecha_no_valida': return L('Esa fecha no es válida.', 'That date is not valid.');
     default: return L('El informe no trae fechas de cierre reconocibles.', "The report doesn't have recognizable closing dates.");
   }
@@ -228,17 +227,13 @@ function periodsRow(mc, res) {
   const max = (res.period && res.period.to) || day(rep.meta.to);
   const yes = mc.split === 'yes';
   const radio = (v, text) => `<label><input type="radio" name="mcSplit" value="${v}"${mc.split === v ? ' checked' : ''}> <span>${text}</span></label>`;
-  const dates = yes ? `<div class="mc-dates">
-      <label class="field"><span>${L('Último día que usaste para elegir (fin del forward)', 'Last day you used for choosing (end of the forward)')}</span>
+  const dates = yes ? `<label class="field mc-date"><span>${L('¿Hasta qué día miraste para elegir? (optimización y forward incluidos)', 'Up to what day did you look for choosing? (optimization and forward included)')}</span>
         <input type="date" id="mcChooseEnd" value="${esc(mc.cuts.chooseEnd)}" min="${esc(min)}" max="${esc(max)}"></label>
-      <label class="field"><span>${L('Fin del periodo optimizado (opcional, para verlo aparte del forward)', 'End of the optimized period (optional, to see it apart from the forward)')}</span>
-        <input type="date" id="mcOptEnd" value="${esc(mc.cuts.optEnd)}" min="${esc(min)}" max="${esc(max)}"></label>
-    </div>
-    <small>${L(`Cada operación cuenta en el tramo de su fecha de cierre. Las operaciones del informe van del ${fdate(min)} al ${fdate(max)}.`, `Each trade counts in the segment of its closing date. The report's trades run from ${fdate(min)} to ${fdate(max)}.`)}</small>` : '';
+    <small>${L(`Las operaciones del informe van del ${fdate(min)} al ${fdate(max)}. Cada una cuenta el día que se cerró.`, `The report's trades run from ${fdate(min)} to ${fdate(max)}. Each one counts on the day it was closed.`)}</small>` : '';
   const err = res.reason === 'cortes' ? `<p class="inline-warn">${esc(CUT_ERROR(res.cutError, res.period))}</p>` : '';
   return `<fieldset class="mc-periods">
-      <legend>${L('¿Este informe incluye fechas que usaste para elegir la configuración (el periodo optimizado o el forward)?', 'Does this report include dates you used to choose the configuration (the optimized period or the forward)?')}</legend>
-      <div class="mc-radios">${radio('no', L('No: todo es posterior a la elección', 'No: all of it is after the choice'))}${radio('yes', L('Sí: es un backtest largo', 'Yes: it is a long backtest'))}</div>
+      <legend>${L('¿Este informe incluye días que miraste para elegir la configuración?', 'Does this report include days you looked at to choose the configuration?')}</legend>
+      <div class="mc-radios">${radio('no', L('No', 'No'))}${radio('yes', L('Sí', 'Yes'))}</div>
       ${dates}${err}
     </fieldset>`;
 }
@@ -250,22 +245,22 @@ function segmentsTable(res) {
   const labels = SEGMENT_LABEL();
   const dd = ddFmt(res.mode);
   const cols = [L('Fechas', 'Dates'), L('Operaciones', 'Trades'), L('Caída máxima', 'Maximum drop'), L('Con otro orden, mayor en', 'With another order, larger in'), L('El orden fue', 'The order was')];
-  const rows = res.segments.map((sg) => {
+  const rows = shownSegments(res).map((sg) => {
     const r = sg.radiography;
     const ok = r && r.usable;
     const cell = (i, v) => `<td data-label="${esc(cols[i])}">${v}</td>`;
     return `<tr class="stack-row${sg.key === 'clean' ? ' mc-row-clean' : ''}"><td class="strong">${esc(labels[sg.key])}</td>${cell(0, `${fdate(sg.from)} – ${fdate(sg.to)}`)}${cell(1, int(sg.trades))}${cell(2, ok ? esc(dd(r.real.maxDd)) : '—')}${cell(3, ok ? pct(r.worseOrderShare, 0) : '—')}${cell(4, ok ? esc(orderWord(r.worseOrderShare)) : esc(L(`menos de ${MIN_TRADES} operaciones`, `fewer than ${MIN_TRADES} trades`)))}</tr>`;
   }).join('');
   const straddling = res.segments.reduce((a, sg) => a + sg.straddling, 0);
-  const options = res.segments.filter((sg) => sg.radiography && sg.radiography.usable)
+  const options = shownSegments(res).filter((sg) => sg.radiography && sg.radiography.usable)
     .map((sg) => `<option value="${sg.key}"${sg.key === viewKey(res) ? ' selected' : ''}>${esc(labels[sg.key])}</option>`).join('');
   return `<div class="table-wrap"><table class="stack-table mc-seg-table">
-      <thead><tr><th>${L('Tramo', 'Segment')}</th>${cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+      <thead><tr><th>${L('Operaciones de', 'Trades from')}</th>${cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead>
       <tbody>${rows}</tbody></table></div>
     <p class="chart-note">${L(
-    'En los tramos con los que elegiste, lo esperable es un orden favorable: la configuración se eligió porque le fue bien ahí. El tramo que cuenta es el posterior a la elección.',
-    'In the segments you chose with, a favorable order is to be expected: the configuration was chosen because it did well there. The segment that counts is the one after the choice.',
-  )}${straddling ? ` ${L(`${int(straddling)} ${straddling === 1 ? 'operación se abrió' : 'operaciones se abrieron'} antes de un corte y ${straddling === 1 ? 'se cerró' : 'se cerraron'} después: ${straddling === 1 ? 'cuenta' : 'cuentan'} en el tramo posterior.`, `${int(straddling)} ${straddling === 1 ? 'trade was' : 'trades were'} opened before a cut and closed after it: ${straddling === 1 ? 'it counts' : 'they count'} in the later segment.`)}` : ''}</p>
+    'Antes de elegir, lo esperable es un orden favorable: elegiste esta configuración porque ahí le fue bien. Lo que cuenta es lo de después.',
+    'Before choosing, a favorable order is to be expected: you chose this configuration because it did well there. What counts is what comes after.',
+  )}${straddling ? ` ${L(`${int(straddling)} ${straddling === 1 ? 'operación se abrió' : 'operaciones se abrieron'} antes de esa fecha y ${straddling === 1 ? 'se cerró' : 'se cerraron'} después: ${straddling === 1 ? 'cuenta' : 'cuentan'} en «después».`, `${int(straddling)} ${straddling === 1 ? 'trade was' : 'trades were'} opened before that date and closed after it: ${straddling === 1 ? 'it counts' : 'they count'} in "after".`)}` : ''}</p>
     ${options ? `<div class="mc-sizing"><label class="inline-select">${L('Ver el gráfico de', 'Show the chart for')} <select id="mcView">${options}</select></label></div>` : ''}`;
 }
 
@@ -274,14 +269,14 @@ function viewKey(res) {
   const mc = mcState();
   const usable = (k) => res.segments.some((sg) => sg.key === k && sg.radiography && sg.radiography.usable);
   if (mc.view && usable(mc.view)) return mc.view;
-  return usable('clean') ? 'clean' : 'all';
+  return usable('clean') ? 'clean' : 'used';
 }
 
 // ------------------------------------------------------------------ radiografía
 function radiographyBlock(res) {
   const r = res.radiography;
   if (!r) {
-    return `<div class="mc-off"><p>${esc(L('Este tramo no tiene operaciones.', 'This segment has no trades.'))}</p></div>`;
+    return `<div class="mc-off"><p>${esc(L('Aquí no hay operaciones.', 'There are no trades here.'))}</p></div>`;
   }
   if (!r.usable) {
     const why = r.reason === 'pocas_operaciones'
@@ -352,8 +347,8 @@ function processBlockers(a, p, res) {
   const current = Math.min(state.unseen.plateauIndex || 0, a.plateaus.length - 1) + 1;
   const overlapping = otherConfigOnSameDates(state.unseenTries, { from, to, plateau: current });
   if (overlapping.length) {
-    out.push(L('Ya has comparado otra configuración con fechas que se solapan con estas. Si elegiste entre ellas, este tramo ya no es ciego y la previsión saldría optimista.',
-      'You already compared another configuration with dates that overlap these. If you chose between them, this segment is no longer blind and the forecast would come out optimistic.'));
+    out.push(L('Ya has comparado otra configuración con fechas que se solapan con estas. Si elegiste entre ellas, estas fechas ya no son limpias y la previsión saldría optimista.',
+      'You already compared another configuration with dates that overlap these. If you chose between them, these dates are no longer clean and the forecast would come out optimistic.'));
   }
   return out;
 }
@@ -362,7 +357,7 @@ function dataBlockers(res) {
   const out = [];
   const miss = res.forecastData.missing;
   const where = res.cuts
-    ? L(`el tramo posterior al ${fdate(res.cuts.chooseEnd)}`, `the segment after ${fdate(res.cuts.chooseEnd)}`)
+    ? L(`lo que va después del ${fdate(res.cuts.chooseEnd)}`, `what comes after ${fdate(res.cuts.chooseEnd)}`)
     : L('este informe', 'this report');
   if (miss.includes('dias')) {
     out.push(L(`Hacen falta 2 años de operaciones que no usaste para elegir (${int(FORECAST_MIN_DAYS)} días de mercado) y ${where} tiene ${int(res.days)}. Con menos, en nuestras pruebas las cifras no cumplían lo que prometían.`,
@@ -413,7 +408,7 @@ function forecastCards(f, ddLimit) {
 function forecastBlock(a, p, res) {
   const mcs = mcState();
   if (mcs.split === 'yes' && !res.cuts) {
-    return `<div class="mc-off"><p>${esc(L('Indica arriba el último día que usaste para elegir: la previsión solo se calcula con lo posterior.', 'Enter above the last day you used for choosing: the forecast is only computed with what comes after.'))}</p></div>`;
+    return `<div class="mc-off"><p>${esc(L('Indica arriba hasta qué día miraste para elegir: la previsión solo se calcula con lo de después.', 'Enter above up to what day you looked for choosing: the forecast is only computed with what comes after.'))}</p></div>`;
   }
   const blockers = [...dataBlockers(res), ...processBlockers(a, p, res)];
   const no3m = L('A 3 meses no damos previsión: en nuestras pruebas no fue fiable con ningún tamaño de muestra.', 'We give no 3-month forecast: in our tests it was not reliable with any sample size.');

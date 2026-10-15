@@ -78,13 +78,14 @@ el banco. Lo vigente, en corto:
     horizonte y la caída máxima, no cada punto del camino. Tampoco la exportación de 8.5 ni la
     página propia (D3).
   - **Backtest largo con fechas de corte (6.1), 2026-10-15.** La pantalla pregunta si el informe
-    incluye fechas usadas para elegir. Si sí, el usuario da el último día usado (y, si quiere, el
-    fin del optimizado); cada operación va al tramo de su fecha de cierre
-    (`core/trades/mc-report.js#splitByCuts`) y se dice cuántas posiciones cruzan un corte (el
-    lector guarda ahora la hora de apertura de cada cierre). La radiografía sale por tramos, en
-    una tabla y con el gráfico del tramo que se elija; la previsión, solo con el tramo posterior
-    a la elección, con las mismas condiciones de arriba. Con el informe real del autor: optimizado
-    89 % (orden favorable), forward 3 % (desfavorable), posterior a la elección 51 % (normal).
+    incluye días que el usuario miró para elegir y, si es así, hasta qué día. Solo dos trozos,
+    «antes de elegir» y «después de elegir»: separar el optimizado del forward se probó y
+    confundía más de lo que aclaraba (el núcleo lo sigue admitiendo con `optEnd`). Cada operación
+    va al trozo de su fecha de cierre (`core/trades/mc-report.js#splitByCuts`) y se dice cuántas
+    posiciones cruzan la fecha (el lector guarda ahora la hora de apertura de cada cierre). La
+    radiografía sale de los dos trozos, en una tabla y con el gráfico del que se elija; la
+    previsión, solo con el de después, con las mismas condiciones de arriba. Con el informe real
+    del autor: antes de elegir, 12 % de órdenes con más caída; después, 51 % (normal).
   - **Limitación que sigue:** el contraste con la meseta («la prueba de fuego», `core/unseen.js`)
     usa las cifras del informe entero, también cuando el usuario da fechas de corte aquí.
 

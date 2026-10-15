@@ -1,19 +1,20 @@
 # Changelog
 
-## 2026-10-15 — Monte Carlo: backtest largo partido en tramos
+## 2026-10-15 — Monte Carlo: backtest largo, antes y después de elegir
 
-Si el informe es un backtest largo (optimizado + forward + lo posterior), la sección del Monte
-Carlo pregunta hasta qué fecha se usó para elegir y, si se quiere, dónde acaba el optimizado:
+Si el informe incluye días que se miraron para elegir la configuración, la sección del Monte
+Carlo pregunta hasta qué día, y parte las operaciones en dos: antes y después de elegir.
 
-- Cada operación cuenta en el tramo de su fecha de cierre; si se abrió antes de un corte y se
-  cerró después, va al tramo posterior y se dice cuántas hay (el lector del informe guarda ahora
-  la hora de apertura de cada cierre).
-- La radiografía sale por tramos, en una tabla (caída real, cuántos órdenes darían una caída mayor
-  y si el orden fue favorable, normal o desfavorable) y con el gráfico del tramo que se elija.
-- La previsión se calcula solo con el tramo posterior a la elección, con las mismas condiciones
-  que antes. Una fecha fuera del informe, o en el orden equivocado, se dice con el periodo real.
-- Pruebas: `tests/mc-report.test.js` (reparto, fechas que no valen, la previsión mira solo el
-  tramo limpio), la hora de apertura en `tests/report.test.js` y el flujo en el navegador.
+- Cada operación cuenta el día que se cerró; si se abrió antes de esa fecha y se cerró después,
+  va a «después» y se dice cuántas hay (el lector del informe guarda ahora la hora de apertura).
+- La radiografía sale de los dos trozos, en una tabla (caída real, cuántos órdenes darían una
+  caída mayor y si el orden fue favorable, normal o desfavorable) y con el gráfico del que se elija.
+- La previsión se calcula solo con lo de después, con las mismas condiciones que antes. Una fecha
+  fuera del informe se dice con el periodo real.
+- Una primera versión separaba también el periodo optimizado del forward; con el autor se vio que
+  confundía, y se quedó en dos trozos.
+- Pruebas: `tests/mc-report.test.js` (reparto, fechas que no valen, la previsión mira solo lo de
+  después), la hora de apertura en `tests/report.test.js` y el flujo en el navegador.
 
 Sigue igual: el contraste con la meseta usa las cifras del informe entero.
 
