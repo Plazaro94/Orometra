@@ -398,9 +398,9 @@ section('10. Grados de libertad, puertas inertes y estabilidad de las puertas');
 
   const st = a.stats.stabilityCheck;
   check('la estabilidad se audita por separado para nuestros umbrales y para los tuyos',
-    st && st.internal && st.internal.draws > 0 && st.gates && st.gates.draws > 0,
-    JSON.stringify({ internal: st && st.internal && st.internal.draws, gates: st && st.gates && st.gates.draws }));
-  console.log(`  estabilidad: nuestros umbrales ${(100 * st.internal.regionRate).toFixed(0)} % - tus minimos ${(100 * st.gates.regionRate).toFixed(0)} %`);
+    st && st.draws > 0 && st.gates && st.gates.draws > 0,
+    JSON.stringify({ internal: st && st.draws, gates: st && st.gates && st.gates.draws }));
+  console.log(`  estabilidad: nuestros umbrales ${(100 * st.regionRate).toFixed(0)} % - tus minimos ${(100 * st.gates.regionRate).toFixed(0)} %`);
   check('mover las puertas de un EA claro no cambia la region ganadora',
     st.gates.regionRate >= 0.8, `${(100 * st.gates.regionRate).toFixed(0)} %`);
 }

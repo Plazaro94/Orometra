@@ -97,7 +97,7 @@ section('AUD-03: nada del archivo llega al HTML sin escapar');
 section('AUD-07: CSP en <meta> en todas las paginas, igual que la cabecera de tools/serve.js');
 {
   const serve = fs.readFileSync(path.join(ROOT, 'tools/serve.js'), 'utf8');
-  const header = serve.match(/'Content-Security-Policy': "([^"]+)"/)[1];
+  const header = serve.match(/const CSP = "([^"]+)"/)[1];
   const expected = header.replace(" frame-ancestors 'none';", '');
   const pages = fs.readdirSync(ROOT, { recursive: true })
     .filter((f) => f.endsWith('.html') && !/^(node_modules|tests|bench|fotos-originales|\.git)[\\/]/.test(f))

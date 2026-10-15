@@ -166,10 +166,6 @@ export function errorCopy(code, L) {
         'It is not your file: the analysis failed because of a bug on our side. Try again; if it repeats, write to hello@orometra.com with the message above.',
       ),
     },
-    [CODE.ANALYSIS_SUCCESS]: {
-      title: L('Auditoría completada', 'Audit complete'),
-      hint: L('Se encontró al menos una meseta con el criterio actual.', 'At least one plateau was found under the current criteria.'),
-    },
   };
   return map[code] || map[CODE.INTERNAL_ERROR];
 }

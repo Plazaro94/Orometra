@@ -53,6 +53,10 @@ const DEFS = {
     es: 'Nota de 0 a 1 que da Orometra a cada configuración con varias métricas a la vez (factor de beneficio, drawdown, factor de recuperación, Sharpe y operaciones), no con la columna Result que optimizaste.',
     en: 'A 0-to-1 score Orometra gives each configuration from several metrics at once (profit factor, drawdown, recovery factor, Sharpe and trades), not from the Result column you optimized.',
   },
+  expectation: {
+    es: 'Beneficio por operación que cabe esperar de esta configuración, descontado lo que tenía de suerte. Se mide cuánto conservan en el forward las configuraciones que sacan de más en el periodo optimizado, y con eso se encoge lo que sacó ella y sus vecinas. Supone que el próximo periodo se parece al forward: un cambio de régimen mueve a todas a la vez, y eso no lo anticipa ningún dato pasado.',
+    en: 'Profit per trade you can expect from this configuration, net of what was luck. It measures how much of their extra on the optimized period configurations keep on the forward, and shrinks what it and its neighbors made accordingly. It assumes the next period resembles the forward: a regime change moves them all at once, and no past data anticipates that.',
+  },
   retention: {
     es: 'Calidad en el periodo de validación (forward) dividida entre la calidad en el periodo optimizado, en la mediana de la meseta. 100\u00A0% es que no pierde nada al salir de los datos con los que se optimizó.',
     en: 'Quality on the validation period (forward) divided by quality on the optimized period, at the plateau median. 100% means it loses nothing once outside the data it was optimized on.',

@@ -112,15 +112,21 @@ export function parseDelimited(text) {
   return { sheet: 'csv', rows, format: `delimitado (${delimiter === '\t' ? 'TAB' : delimiter})`, decimalHint };
 }
 
+/** ¿Empieza por la firma de un ZIP («PK»)? Así se reconoce un .xlsx antes de leerlo. */
+export function isZip(buffer) {
+  const b = new Uint8Array(buffer, 0, Math.min(2, buffer.byteLength));
+  return b[0] === 0x50 && b[1] === 0x4b;
+}
+
 /**
  * Convierte el contenido de un fichero en una tabla { headers, rows, sheet, format }.
  * Elimina filas totalmente vacias y columnas sin cabecera.
  */
 export function parseTable(buffer, fileName = '') {
   const head = new Uint8Array(buffer.slice(0, 4));
-  if (head[0] === 0x50 && head[1] === 0x4b) {
-    // Un .xlsx es un ZIP y descomprimirlo es asincrono, asi que no cabe aqui: la
-    // interfaz lo detecta antes y usa `parseXlsx` de `xlsx.js`. Ver `prepareTable`.
+  if (isZip(buffer)) {
+    // Un .xlsx es un ZIP y descomprimirlo es asincrono, asi que no cabe aqui: quien llama
+    // lo detecta antes con `isZip` y usa `parseXlsx` de js/xlsx.js (js/worker.js#readSheet).
     throw new AnalysisError(CODE.FILE_ERROR, L('Este archivo es un .xlsx. Se lee por otra vía; si ves este mensaje, recarga la página e inténtalo de nuevo.', 'This file is an .xlsx. It is read another way; if you see this message, reload the page and try again.'));
   }
   if (head[0] === 0xd0 && head[1] === 0xcf) {

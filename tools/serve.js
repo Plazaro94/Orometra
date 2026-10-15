@@ -14,6 +14,10 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.argv[2]) || 3000;
 
+// La politica de seguridad completa (con frame-ancestors, que un <meta> no admite). Cada
+// pagina lleva la misma en su <meta> (tests/input-guards.test.js lo comprueba).
+const CSP = "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests";
+
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -27,6 +31,10 @@ const TYPES = {
   '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   '.csv': 'text/csv; charset=utf-8',
   '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
   '.woff2': 'font/woff2',
   '.map': 'application/json; charset=utf-8',
 };
@@ -66,13 +74,21 @@ const server = http.createServer((req, res) => {
   }
   fs.readFile(target, (err, data) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('404: ' + rel);
+      // Como GitHub Pages: una direccion que no existe recibe 404.html, con estado 404.
+      fs.readFile(path.join(ROOT, '404.html'), (err404, page) => {
+        if (err404) {
+          res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+          res.end('404: ' + rel);
+          return;
+        }
+        res.writeHead(404, { 'Content-Type': TYPES['.html'], 'Content-Security-Policy': CSP, 'Cache-Control': 'no-store, must-revalidate' });
+        res.end(page);
+      });
       return;
     }
     res.writeHead(200, {
       'Content-Type': TYPES[path.extname(target).toLowerCase()] || 'application/octet-stream',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: https://plazaro94.goatcounter.com; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://plazaro94.goatcounter.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests",
+      'Content-Security-Policy': CSP,
       'Cache-Control': 'no-store, must-revalidate',
     });
     res.end(data);

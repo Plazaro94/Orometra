@@ -54,7 +54,8 @@ section('procedencia hard-fail');
 {
   const [isOk, oosOk] = makeOptTables();
   const ok = runAnalysis({ isTable: isOk, oosTable: oosOk, policy: DEFAULT_POLICY });
-  check('misma procedencia analiza', ok.plateaus.length >= 0);
+  const prov = ok.integrity && ok.integrity.provenance;
+  check('misma procedencia analiza: comparada y sin discrepancias', Boolean(prov && prov.checked && prov.mismatches === 0), JSON.stringify(prov));
 
   const [isBad, oosBad] = makeOptTables({ backMismatch: true });
   let threw = null;
@@ -112,10 +113,13 @@ section('pairTables provenance compared');
 
 section('Lote 2: isThenOos + fingerprint export');
 {
-  const [isT, oosT] = makeOptTables();
+  // Con la demo, que tiene meseta: con la rejilla pequeña de makeOptTables no sale ninguna
+  // y las comprobaciones de la meseta pasaban sin mirar nada.
+  const { isTable: isT, oosTable: oosT } = buildDemoTables();
   const a = runAnalysis({ isTable: isT, oosTable: oosT, policy: { ...DEFAULT_POLICY } });
+  check('hay meseta que comprobar', a.plateaus.length > 0, String(a.plateaus.length));
   check('selectionMode isThenOos por defecto', a.meta.selectionMode === 'isThenOos', a.meta.selectionMode);
-  check('meseta con oosValidation', a.plateaus.length === 0 || (a.plateaus[0].oosValidation && Number.isFinite(a.plateaus[0].oosValidation.passFrac)));
+  check('meseta con oosValidation', Boolean(a.plateaus[0] && a.plateaus[0].oosValidation && Number.isFinite(a.plateaus[0].oosValidation.passFrac)));
   check('fragilidad quality en stats', 'fragilityQuality' in a.stats && 'fragilityQualityUsable' in a.stats);
   const fp1 = fingerprintAnalysis(a);
   const fp2 = fingerprintAnalysis(runAnalysis({ isTable: isT, oosTable: oosT, policy: { ...DEFAULT_POLICY } }));
@@ -123,7 +127,7 @@ section('Lote 2: isThenOos + fingerprint export');
   check('misma entrada = mismo fingerprint', fp1 === fp2, `${fp1} vs ${fp2}`);
   const rep = buildReport(a);
   check('informe incluye fingerprint', rep.fingerprint === fp1, String(rep.fingerprint));
-  check('informe incluye oosValidation en mesetas', !rep.plateaus.length || ('oosValidation' in rep.plateaus[0]));
+  check('informe incluye oosValidation en mesetas', rep.plateaus.length > 0 && ('oosValidation' in rep.plateaus[0]));
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks}`);

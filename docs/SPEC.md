@@ -24,9 +24,12 @@ es esa evidencia? La app no dice «opera esto»: mide lo que los datos sostienen
 2. **No se juzga con la vara con la que se optimizó.** La columna `Result` de MT5 no se
    usa como medida de calidad.
 3. **Umbrales absolutos, no percentiles.** La app debe poder decir «aquí no hay nada».
-4. **Los mínimos se exigen en cada periodo por separado**: una configuración pasa solo si
-   pasa en los dos; un buen forward no tapa un in-sample flojo. No se promedian las cifras
-   de los dos periodos.
+4. **Se descubre en el in-sample y se valida en el forward, con los mínimos exigidos en cada
+   periodo por separado.** La meseta se busca con la calidad y los mínimos del in-sample; el
+   forward vuelve a exigir los mínimos para validarla, y si muchas de sus configuraciones
+   fallan allí, esa meseta baja de puesto. Un buen forward no tapa un in-sample flojo y no se
+   promedian las cifras de los dos periodos (modo `isThenOos`, `core/metrics.js`; el modo
+   `joint`, sin activar, exige los dos a la vez).
 5. **Dentro de la meseta se elige por puesto conjunto in-sample + forward promediado con
    las vecinas, no por su cima.** Las configuraciones sin forward cuentan como el último
    puesto del forward. Sin meseta y con forward, se da una sugerencia orientativa.
@@ -62,7 +65,9 @@ orometra/
 │   │   ├── sample.js        # tamaño de muestra, intervalos, potencia
 │   │   ├── costs.js         # stress de costes analítico + punto de equilibrio
 │   │   └── risk.js          # aviso de dominancia del swap
-│   ├── surface.js           # rejilla 2D de calidad para el relieve de la meseta
+│   ├── shrink.js            # «qué esperar» de la recomendada, ajustado por selección
+│   ├── history.js           # historial local: comparar con el análisis anterior y contar intentos
+│   ├── surface.js           # rejilla 2D de calidad para la superficie de la meseta
 │   ├── parse.js, setfile.js, schema.js, entities.js, errors.js, rng.js
 ├── app/                     # shell de la app (index.html)
 ├── js/                      # UI por sección (ui-*.js), gráficos, lector .xlsx, i18n
@@ -70,12 +75,14 @@ orometra/
 ├── es/                      # las mismas en español (generadas por tools/build-es.js)
 ├── fonts/, img/             # tipografías (con su licencia OFL) y fotos optimizadas
 ├── tools/                   # servidor local, build de es/, fotos, imagen para redes, CLI
+│                            # (audit.js) y el estudio de sensibilidad (sensitivity-study.js)
 ├── bench/                   # banco de pruebas del motor (ver bench/PREREGISTRO.md)
 ├── tests/                   # npm test (tests/all.js) y npm run test:e2e
 └── docs/
     ├── SPEC.md              # este documento
     ├── CHANGELOG.md
-    └── MT5_ASSUMPTIONS.md
+    ├── MT5_ASSUMPTIONS.md
+    └── LEGAL-NOTAS.md       # notas internas sobre los textos legales
 ```
 
 ### Por qué `core/trades/` no necesita nada fuera del navegador
@@ -85,9 +92,10 @@ nunca se podría hacer Monte Carlo ni stress de costes real. Pero el informe HTM
 **un backtest individual** (el que se usa para validar el periodo no visto) sí trae la
 lista de operaciones una a una. `core/trades/from-deals.js` agrupa esa lista por día y
 alimenta bootstrap/muestra/costes con ella — sin sonda, sin Electron, sin nada que
-instalar. Lo que esa lista **no** trae (stop loss por operación, posiciones simultáneas,
-hora de apertura) es exactamente lo que se dejó fuera (auditoría de estructura de
-riesgo, duración media de operación): no se rellena con supuestos.
+instalar. Lo que esa lista **no** trae (el stop loss de cada operación) es lo que dejó fuera
+la auditoría de estructura de riesgo: no se rellena con supuestos. La hora de apertura sí
+está, en la fila de entrada (`in`) de cada operación, pero no se lee: la duración media de
+operación no se calcula (DEAL-1 en `docs/MT5_ASSUMPTIONS.md`).
 
 Lo que sigue sin poder calcularse sin la curva de equity por configuración de toda la
 rejilla — y por tanto sigue fuera — es el PBO/CSCV publicado, el Deflated Sharpe Ratio
@@ -116,7 +124,8 @@ orquestando MT5. Ver `docs/CHANGELOG.md`, entrada 2026-09-24.
 - Politis, Romano (1994). *The Stationary Bootstrap*.
 - Bailey, Borwein, López de Prado, Zhu (2014). *Pseudo-Mathematics and Financial
   Charlatanism* (MinBTL, potencia estadística).
-- Lo (2002). *The Statistics of Sharpe Ratios*.
+- Lo (2002). *The Statistics of Sharpe Ratios*. Ya no se usa: su contraste por operaciones
+  se retiró (SR-1 en `docs/MT5_ASSUMPTIONS.md`); se cita porque lo explica el código.
 
 Las referencias sobre CSCV, DSR publicado y walk-forward (Bailey et al. 2014 sobre PBO;
 López de Prado 2018) siguen citadas en el código retirado a través del historial de git

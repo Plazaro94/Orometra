@@ -120,8 +120,7 @@ section('B11. Sin claves repetidas en las traducciones');
     }
   }
   check('ninguna clave repetida dentro de un idioma', dup === 0, `${dup} repetidas`);
-  const sm = fs.readFileSync(new URL('../sitemap.xml', import.meta.url), 'utf8');
-  check('el sitemap lleva lastmod en cada pagina', (sm.match(/<lastmod>/g) || []).length === (sm.match(/<loc>/g) || []).length);
+  // Que el sitemap lleve fecha en cada página lo comprueba tests/seo.test.js.
 }
 
 section('U. El periodo no visto no dice «normal» a secas');

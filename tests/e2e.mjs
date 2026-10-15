@@ -182,9 +182,25 @@ try {
     await page.click('.lp-menu-btn');
     const links = await page.$$eval('#lpMenu a', (as) => as.map((a) => a.getAttribute('href')));
     check('móvil: el menú lleva a la app, la metodología, las guías y la privacidad',
-      ['/app/', '/es/methodology/', '/es/guias/', '/es/privacy/'].every((h) => links.includes(h)), links.join(' '));
+      ['/app/?lang=es', '/es/methodology/', '/es/guias/', '/es/privacy/'].every((h) => links.includes(h)), links.join(' '));
     await page.keyboard.press('Escape');
     check('móvil: Esc cierra el menú', await page.$eval('#lpMenu', (e) => e.hidden));
+    await ctx.close();
+  }
+  {
+    // La app no tiene dirección en español: desde /es/ se abre en español aunque el navegador
+    // esté en inglés (antes salía en inglés).
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'en-US' });
+    const page = await ctx.newPage();
+    watch(page);
+    await page.goto(`${BASE}/es/`);
+    await page.locator('a[href^="/app/"]:visible').first().click();
+    await page.waitForLoadState('domcontentloaded');
+    check('desde /es/ la app sale en español', await page.evaluate(() => document.documentElement.lang) === 'es');
+    // Una elección guardada manda sobre el enlace.
+    await page.evaluate(() => localStorage.setItem('orometra.lang', 'en'));
+    await page.reload();
+    check('con el inglés elegido, la app sigue en inglés aunque venga de /es/', await page.evaluate(() => document.documentElement.lang) === 'en');
     await ctx.close();
   }
 

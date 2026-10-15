@@ -24,9 +24,9 @@ y qué no) · `bench/PREREGISTRO.md` (cómo se valida el motor) · `DEPLOY.md` (
 
 ```bash
 node tools/serve.js          # servidor local en http://localhost:3000 (hace falta: módulos ES y worker)
-npm test                     # build-es --check + tests/*.test.js (~3 min)
+npm test                     # build-es --check + tests/*.test.js (de 3 a 7 min según la máquina)
 npm run test:e2e             # navegador real (Playwright + Chromium; lanza su propio servidor)
-node tools/build-es.js       # regenera es/ tras cambiar una página inglesa o js/i18n.js
+node tools/build-es.js       # regenera es/, js/i18n-site.js y el ?v= de styles.css (tras tocar textos, páginas o CSS)
 node bench/run.js            # banco del motor (ver bench/PREREGISTRO.md)
 node bench/unseen.js 100     # banco del contraste del periodo no visto (cifras que cita la app)
 ```
@@ -38,9 +38,11 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
 - `core/` — motor puro, sin DOM: `analysis.js` (orquesta), `engine.js` (vecindad, mesetas),
   `metrics.js` (calidad y mínimos), `verdict.js` (nivel de evidencia y hallazgos),
   `unseen.js` (periodo no visto), `report.js` (informe HTML de backtest), `trades/`
-  (muestra y costes sobre las operaciones del informe), `setfile.js`.
+  (muestra, costes y Monte Carlo sobre las operaciones del informe), `setfile.js`.
 - `js/` — interfaz por secciones (`ui-*.js`), exportación (`export.js`), textos (`i18n.js`).
-- `es/` — **generado** por `tools/build-es.js`: no se edita a mano.
+- `es/` y `js/i18n-site.js` — **generados** por `tools/build-es.js`: no se editan a mano. Los
+  textos con `data-i18n` se cambian en `js/i18n.js` (el script los reescribe también en la
+  página inglesa); la estructura, en la página inglesa.
 - `tests/` — cualquier `*.test.js` entra solo en `npm test`; `tests/e2e.mjs` es el navegador.
 
 ## Principios que no se negocian (de docs/SPEC.md)
@@ -81,12 +83,16 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
 
 ## Pendiente conocido
 
-- **Informes reales de MT5.** Probado con uno (2026-10-14, `docs/MONTECARLO.md` 4.5):
-  .xlsx de terminal en español, una posición abierta cada vez; el lector, el emparejamiento
-  de cierres con aperturas y el valor del contrato cuadran con el resumen del informe. Falta:
-  el formato HTML y una cuenta de cobertura con varias posiciones abiertas a la vez.
-- Sin confirmar con MT5: si el `.set` acepta enums escritos como texto y si las cabeceras
-  del terminal en español coinciden con los patrones de `core/schema.js`.
+- **Probar un informe real en `.html` y uno de una cuenta de cobertura.** El emparejado de cierres y aperturas
+  (`core/report.js`) y el valor del contrato del stress de costes (`core/trades/costs.js`) ya
+  se han comprobado con tres informes reales en `.xlsx`, de un terminal en español, con
+  comisión y swap (REP-1 en `docs/MT5_ASSUMPTIONS.md`). Falta: el mismo informe guardado como
+  `.html`, que pasa por otro lector, y una cuenta de cobertura con varias posiciones abiertas a
+  la vez (en esos tres nunca hubo más de una).
+- Sin confirmar con MT5: si carga bien un `.set` de refinamiento con un enum de paso 1 y con
+  `nombre=valor||…||N` en un parámetro de texto (SET-2; que guarda los enums como número ya
+  está visto), y si las cabeceras del terminal en español coinciden con los patrones de
+  `core/schema.js`.
 - Aceptado a propósito: `collapseToTopology` (`core/engine.js`) se queda con la mejor fila
   al agrupar configuraciones que solo difieren en parámetros planos; el sesgo es pequeño.
 - Aceptado a propósito: un enum que el XML trae como número (el `.set` lo delata con paso 0)

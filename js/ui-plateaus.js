@@ -500,7 +500,10 @@ export function renderDiagnostics(a) {
   const sameOpt = prov.checked
     ? (prov.mismatches === 0
       ? L('confirmada', 'confirmed')
-      : L(`${int(prov.mismatches)} discrepancias`, `${int(prov.mismatches)} mismatches`))
+      // Pocas filas sueltas no son otra optimización (ver el aviso en core/verdict.js).
+      : prov.compared && prov.mismatches / prov.compared < 0.01
+        ? L(`sí; ${int(prov.mismatches)} ${prov.mismatches === 1 ? 'pasada no cuadra' : 'pasadas no cuadran'}`, `yes; ${int(prov.mismatches)} ${prov.mismatches === 1 ? 'pass does' : 'passes do'} not match`)
+        : L(`${int(prov.mismatches)} ${prov.mismatches === 1 ? 'discrepancia' : 'discrepancias'}`, `${int(prov.mismatches)} ${prov.mismatches === 1 ? 'mismatch' : 'mismatches'}`))
     : L('no comprobable', 'not checkable');
 
   const gateName = (name) => (name === 'profitFactor'
@@ -630,7 +633,7 @@ export function renderDiagnostics(a) {
         <div><span>${gloss('sharpe', a.stats.sharpeTest.period === 'oos' ? L('Sharpe máximo observado (forward)', 'Maximum observed Sharpe (forward)') : L('Sharpe máximo observado (periodo optimizado)', 'Maximum observed Sharpe (optimized period)'))}${Number.isFinite(a.stats.sharpeTest.minTrades) ? `<small class="muted"> ${L(`pasadas con más de ${a.stats.sharpeTest.minTrades} operaciones`, `passes with more than ${a.stats.sharpeTest.minTrades} trades`)}</small>` : ''}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
         <div><span>${L('Sharpe medio entre pasadas', 'Mean Sharpe across passes')}</span><strong>${num(a.stats.sharpeTest.mean, 3)}</strong></div>
         <div><span>${L('Dispersión entre pasadas (σ)', 'Dispersion across passes (σ)')}</span><strong>${num(a.stats.sharpeTest.sigma, 3)}</strong></div>
-        <div><span>${L('Umbral por azar (pruebas efectivas)', 'Chance threshold (effective trials)')}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>` : ''}
+        <div><span>${L('Umbral por azar (95\u00A0%, pruebas efectivas)', 'Chance threshold (95%, effective trials)')}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>` : ''}
         <div><span>${L('Tiempo de cálculo', 'Compute time')}</span><strong>${int(a.meta.elapsedMs)} ms</strong></div>
       </div>
       ${findingsNote(statsFindings)}
@@ -694,7 +697,7 @@ export function renderDiagnostics(a) {
 export function renderStabilityPanel(a) {
   const st = a.stats.stabilityCheck;
   if (!st || !st.draws) return '';
-  const internal = st.internal || st;
+  const internal = st; // la auditoría de nuestros umbrales (los campos planos)
   const gates = st.gates;
   const pctRegion = 100 * internal.regionRate;
   const tone = internal.regionRate >= 0.8 ? 'ok' : internal.regionRate >= 0.5 ? 'warn' : 'bad';

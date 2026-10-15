@@ -1,7 +1,7 @@
 // Worker, runAudit, progreso y errores.
 
 import { track } from './track.js';
-import { parseTable } from '../core/parse.js';
+import { parseTable, isZip } from '../core/parse.js';
 import { AnalysisError, CODE, classifyError, errorCopy, withCode } from '../core/errors.js';
 import { t, L, getLocale } from './i18n.js';
 import { state, api, $, $$, esc } from './ui-state.js';
@@ -198,11 +198,6 @@ export const fileKey = (file) => (file && file.size !== undefined ? `${file.name
 // (caché llena, o es uno nuevo), responde CACHE_MISS y se reenvían.
 export const workerKeys = new Set();
 
-const isZip = (buffer) => {
-  const b = new Uint8Array(buffer, 0, Math.min(2, buffer.byteLength));
-  return b[0] === 0x50 && b[1] === 0x4b;
-};
-
 /** Reserva sin worker: leer la tabla en la propia página (también un .xlsx). */
 async function readTableHere(buffer, name) {
   try {
@@ -365,8 +360,6 @@ export async function runAudit() {
       };
       payload = build;
     }
-    // Se pudo pedir cancelar mientras se leían los archivos, antes de llegar al worker.
-    if (cancelRequested) throw CANCELLED();
     const analysis = typeof payload === 'function' ? await askWorker(payload) : await runInWorker(payload);
     if (!run.isDemo) {
       workerKeys.add(fileKey(run.isFile));

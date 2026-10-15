@@ -9,14 +9,15 @@ import {
   ENGINE_DEFAULTS, buildCoordinates, classifyParams, normalizeByType, parameterSensitivity,
   conditionalSensitivity, selectDims, buildNeighborhood, localStability, robustnessScores,
   findPlateaus, coreMembers, chooseRepresentative, boundaryParams, refinementRange, finerRefinement,
-  countPossibleNeighbors, detectInversions, gridRegularity, componentExtent,
+  countPossibleNeighbors, maxNeighborOffsets, detectInversions, gridRegularity, componentExtent,
   collapseToTopology,
 } from './engine.js';
 import {
-  median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum,
+  median, quantile, mad, spearman, selectionFragility, degradationByDecile, expectedMaximum, maxQuantileZ,
   mean, stdev, extent, makeRng,
 } from './stats.js';
 import { buildVerdict, peakRejectReasons, peakRejectTags } from './verdict.js';
+import { selectionShrinkage, fitShrinkModel, unitPosterior } from './shrink.js';
 import { coverageAgainstSet, discreteRange } from './setfile.js';
 import { L } from '../js/i18n.js';
 
@@ -262,7 +263,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   }
   integrity = { ...integrity, damagedDropped: { is: screenedIs.dropped, oos: screenedOos.dropped }, hiddenLosers: hiddenLosers.hidden };
 
-  progress(onProgress, 18, L('Evaluando calidad y puertas', 'Evaluating quality and gates'));
+  progress(onProgress, 18, L('Evaluando calidad y mínimos', 'Evaluating quality and minimums'));
   const periodRatio = hasForward ? estimatePeriodRatio(records) : NaN;
   const minTradesIs = policy.gates.minTrades;
   // Mínimo de operaciones del forward: el del usuario escalado por la duración del forward,
@@ -359,8 +360,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // No es el espacio que pediste en MT5; para eso hace falta el .set (abajo).
   const coverage = cartesian > 0 ? records.length / cartesian : 0;
   const optimisedDims = levels.filter((l) => l.length > 1).length;
-  // "grid" solo si la malla OBSERVADA esta casi llena. Cobertura media sobre niveles
-  // vistos (antes denseCoverage=0.35) mentía en GA densos en un rincón.
+  // "grid" solo si la malla OBSERVADA esta casi llena (95 %). Con un umbral de 0,35 sobre
+  // la cobertura media de los niveles vistos se tomaban por malla los GA densos en un rincon.
   const sampling = coverage >= 0.95 ? 'grid' : coverage >= 0.02 ? 'partial' : 'sparse';
 
   const searchCoverage = coverageAgainstSet(
@@ -606,8 +607,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     const passing = Number.isFinite(st.passCount)
       ? st.passCount
       : (Number.isFinite(st.fracPass) ? Math.round(st.fracPass * st.support) : 0);
-    const maxOff = Math.max(64, Math.floor((opts.neighborWorkBudget || 8e6) / Math.max(1, coords.length)));
-    const slotInfo = countPossibleNeighbors(coords[rep], activeDims, levels, nb.radius, maxOff);
+    const slotInfo = countPossibleNeighbors(coords[rep], activeDims, levels, nb.radius, maxNeighborOffsets(coords.length, opts));
     const slotsKnown = slotInfo.complete && nb.offsetsComplete !== false;
     const neighborhood = {
       observed: st.support,
@@ -663,6 +663,73 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       rank: 0,
     };
   });
+  // Número efectivo de pruebas: configuraciones vecinas no son ensayos independientes.
+  // Se cuenta cuántas celdas distintas del espacio grueso se han explorado de verdad.
+  const cell = new Set();
+  const grain = nb.radius + 1;
+  const cellOf = new Array(coords.length);
+  for (let i = 0; i < coords.length; i++) {
+    let key = '';
+    for (const d of activeDims.length ? activeDims : levels.map((_, j) => j)) key += Math.floor(coords[i][d] / grain) + ',';
+    cell.add(key);
+    cellOf[i] = key;
+  }
+
+  // Candidatas para la expectativa ajustada por selección (core/shrink.js): las que cumplen
+  // tus mínimos en el periodo optimizado, cada una medida con su vecindad. Se usan para la
+  // cifra «qué esperar» y, con `plateauRank`, para ordenar las mesetas.
+  const perTrade = (m) => (Number.isFinite(m.expectedPayoff) ? m.expectedPayoff
+    : Number.isFinite(m.profit) && m.trades > 0 ? m.profit / m.trades : NaN);
+  // Media de un grupo de configuraciones en un periodo, con sus operaciones «efectivas»:
+  // la media armónica de las de sus miembros. No se supone que promediar reduzca el ruido
+  // (las vecinas comparten la suerte del periodo).
+  const groupUnit = (grp, period) => {
+    let sx = 0;
+    let sInv = 0;
+    let m = 0;
+    for (const j of grp) {
+      const r = records[j];
+      if (period === 'oos' && !hasOos(r)) continue;
+      const x = perTrade(r[period]);
+      const t = r[period].trades;
+      if (!Number.isFinite(x) || !(t > 0)) continue;
+      sx += x;
+      sInv += 1 / t;
+      m++;
+    }
+    if (!m) return { x: NaN, t: NaN };
+    const t = opts.shrinkNoise === 'mean' ? (m * m) / sInv : opts.shrinkNoise === 'flat' ? 1 : m / sInv;
+    return { x: sx / m, t };
+  };
+  // Cada candidata se mide CON SU VECINDAD, que es con lo que Orometra elige: la media a
+  // posteriori solo descuenta la selección si condiciona sobre todos los datos que la
+  // decidieron. Con la configuración sola (versión probada antes en el banco) encogía de
+  // más justo a las recomendadas, cuyas vecinas también salieron bien.
+  const shrinkItems = [];
+  const itemOf = new Map();
+  if (hasForward) {
+    records.forEach((r, i) => {
+      if (r.failsIs.length) return;
+      const grp = opts.shrinkUnit === 'config' ? [i] : [i, ...neighbors[i]];
+      const ui = groupUnit(grp, 'is');
+      const uo = hasOos(r) ? groupUnit(grp, 'oos') : { x: NaN, t: NaN };
+      itemOf.set(i, shrinkItems.length);
+      shrinkItems.push({ xi: ui.x, ti: ui.t, xo: uo.x, to: uo.t, block: cellOf[i] });
+    });
+  }
+  // Para ordenar mesetas por lo que se espera de ellas (R1, R2 del prerregistro del
+  // 2026-10-14 (b)): el modelo se ajusta una vez y se evalúa cada meseta como una unidad.
+  const rankMode = opts.plateauRank || 'current';
+  const shrinkModel = hasForward && rankMode !== 'current' ? fitShrinkModel(shrinkItems) : null;
+  const expectedOf = (members) => {
+    if (!shrinkModel) return null;
+    const ui = groupUnit(members, 'is');
+    const uo = groupUnit(members, 'oos');
+    const post = unitPosterior(shrinkModel, { xi: ui.x, ti: ui.t, xo: uo.x, to: uo.t });
+    if (!post) return null;
+    return rankMode === 'lower' ? post.mean - 1.96 * Math.sqrt(post.v) : post.mean;
+  };
+
   /*
    * Orden de las mesetas. Manda el SUELO de la región, nunca su cima, pero el suelo
    * solo no basta: dos mesetas con el mismo suelo no merecen la misma confianza si una
@@ -687,13 +754,21 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // Clave de orden ÚNICA. La usan el orden principal y la prueba de sensibilidad
   // (assessStability): si cada una ordenara a su manera, la prueba podría decir que la
   // recomendación "no sobrevive a sus propios umbrales" solo por medir otra cosa.
-  const rankKey = ({ q10, effectiveSize, support, inverted, irregular, oosPassFrac }) => {
+  const rankKey = ({ q10, effectiveSize, support, inverted, irregular, oosPassFrac, members }) => {
+    if (rankMode !== 'current' && members) {
+      const e = expectedOf(members);
+      if (Number.isFinite(e)) return e;
+    }
     let s = Math.max(0, q10)
       * Math.log1p(effectiveSize)
       * evidenceFactor(support)
       * (inverted ? INVERTED_RISK_PENALTY : 1)
       * (irregular ? IRREGULAR_PENALTY : 1);
-    if (Number.isFinite(oosPassFrac)) s *= 0.35 + 0.65 * oosPassFrac;
+    if (Number.isFinite(oosPassFrac)) {
+      const mode = opts.rankForward || 'soft';
+      if (mode === 'soft') s *= 0.35 + 0.65 * oosPassFrac;
+      else if (mode === 'strong') s *= oosPassFrac;
+    }
     return s;
   };
   // Validación OOS tras descubrir en IS: una meseta que no aguanta el forward baja de rango.
@@ -723,6 +798,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     inverted: p.invertedRisk.length > 0,
     irregular: p.spansIrregular.length > 0,
     oosPassFrac: p.oosValidation ? p.oosValidation.validatedFrac : NaN,
+    members: p.indices,
   });
   plateaus.forEach((p) => { p.rankScore = rankScore(p); });
   plateaus.sort((a, b) => b.rankScore - a.rankScore);
@@ -770,16 +846,26 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     : { fragility: NaN, usable: false };
   const degradation = hasForward ? degradationByDecile(isCriterion, oosCriterion) : [];
 
-  // Número efectivo de pruebas: configuraciones vecinas no son ensayos independientes.
-  // Se cuenta cuántas celdas distintas del espacio grueso se han explorado de verdad.
-  const cell = new Set();
-  const grain = nb.radius + 1;
-  for (let i = 0; i < coords.length; i++) {
-    let key = '';
-    for (const d of activeDims.length ? activeDims : levels.map((_, j) => j)) key += Math.floor(coords[i][d] / grain) + ',';
-    cell.add(key);
-  }
   const effectiveTrials = Math.max(2, cell.size);
+
+  // Expectativa ajustada por selección (core/shrink.js): cuánto de lo que saca de más la
+  // configuración recomendada se puede esperar que conserve. Se mide sobre el beneficio
+  // esperado por operación, la única cifra que se compara entre periodos de distinta
+  // duración sin reescalar, y sobre las candidatas de verdad: las que cumplen tus mínimos
+  // en el periodo optimizado. Bloques: las mismas celdas que las pruebas efectivas.
+  const shrinkage = (() => {
+    if (!hasForward) return null;
+    const reps = plateaus.slice(0, 3).map((p) => p.representative).filter((i) => itemOf.has(i));
+    const out = selectionShrinkage({ items: shrinkItems, targets: reps.map((i) => itemOf.get(i)) });
+    if (!out.usable) return { usable: false, reason: out.reason };
+    return {
+      ...out,
+      predictions: out.predictions.map((pr, k) => {
+        const r = records[reps[k]];
+        return { ...pr, index: reps[k], id: r.id, observedIs: perTrade(r.is), observedOos: hasOos(r) ? perTrade(r.oos) : NaN };
+      }),
+    };
+  })();
 
   // Contraste de seleccion sobre el Sharpe. La hipotesis nula es "ninguna
   // configuracion tiene ventaja": entonces cada Sharpe observado es ruido alrededor
@@ -810,6 +896,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // El informe lo dice: el Sharpe máximo que enseña es el de estas pasadas, no el de toda la
   // tabla (sin forward, en un export real: 33,37 frente a 40,24 de una pasada de 24 operaciones).
   const SHARPE_MIN_TRADES = 30;
+  const SHARPE_CHANCE_LEVEL = 0.95;
   const sharpeValues = records
     .filter((r) => Number.isFinite(r[period].sharpe) && Number.isFinite(r[period].trades) && r[period].trades > SHARPE_MIN_TRADES)
     .map((r) => r[period].sharpe);
@@ -818,7 +905,11 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
   // no hay nada que contrastar: se omite en vez de dar un "0.00 frente a 0.00".
   if (sharpeValues.length >= 30 && stdev(sharpeValues) > 1e-12) {
     const sigma = stdev(sharpeValues);
-    const chanceMax = expectedMaximum(0, sigma, effectiveTrials);
+    // Umbral: el cuantil 0,95 del máximo de N pruebas sin ventaja, no su media. Con la
+    // media (versión anterior), el mejor de N pruebas de puro ruido la superaba en torno
+    // al 43 % de las veces: «superar el umbral» no tenía ningún nivel de confianza.
+    const chanceMax = 0 + sigma * maxQuantileZ(effectiveTrials, SHARPE_CHANCE_LEVEL);
+    const chanceMean = expectedMaximum(0, sigma, effectiveTrials);
     const observedMax = extent(sharpeValues)[1];
     sharpeTest = {
       period,
@@ -829,6 +920,8 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       trials: records.length,
       effectiveTrials,
       chanceMax,
+      chanceLevel: SHARPE_CHANCE_LEVEL,
+      chanceMean,
     };
   }
 
@@ -909,6 +1002,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
           inverted: inversions.some((inv) => records[repIdx].params[inv.index] === inv.bestIs),
           irregular,
           oosPassFrac: hasForward && comp.length ? comp.filter((i) => !oosFails[i]).length / comp.length : NaN,
+          members: comp,
         });
         if (key > bestKey) { bestKey = key; best = repIdx; }
       }
@@ -1024,12 +1118,10 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     }
 
     return {
-      // Se conservan los campos planos del panel original para no romper nada que ya
-      // los lea; describen la auditoria de NUESTROS umbrales.
+      // Los campos planos son la auditoria de NUESTROS umbrales; `gates`, la de TUS minimos.
       ...internal,
       perturbation: 0.2,
       keys: KEYS,
-      internal,
       gates,
       gatesSkipped: gates === null,
     };
@@ -1064,17 +1156,15 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     forwardCount: hasForward ? records.filter(hasOos).length : records.length,
     plateauForwardCritical: opts.plateauForwardCritical,
     gatePassCount,
-    discoverPassCount,
     searchPassCount,
     total: records.length,
     plateaus,
     fragility: fragilityResult.fragility,
     fragilityQuality: fragilityQuality.fragility,
-    fragilityMargin: fragilityResult.margin,
     fragilityFolds: fragilityResult.folds,
     fragilityAsymmetry: fragilityResult.asymmetry,
-    fragilityWorstDirection: fragilityResult.worstDirection,
     sharpeTest,
+    shrinkage,
     spearman: rho,
     spearmanQuality: rhoQuality,
     coverage,
@@ -1112,6 +1202,14 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
     meta: {
       hasForward,
       selectionMode,
+      // Umbrales de meseta con que se explican los picos descartados (rebuildLocalizedCopy).
+      peakOpts: {
+        minSupport: opts.minSupport,
+        plateauFloorQuality: opts.plateauFloorQuality,
+        plateauMinFracPass: opts.plateauMinFracPass,
+        plateauMinRobust: opts.plateauMinRobust,
+        plateauMinSize: opts.plateauMinSize,
+      },
       discoverPassCount,
       searchPassCount,
       // Lo que el veredicto necesita para rehacerse igual al cambiar de idioma
@@ -1217,6 +1315,7 @@ export function runAnalysis({ isTable, oosTable, policy: rawPolicy = DEFAULT_POL
       stabilityCheck,
       degradation,
       sharpeTest,
+      shrinkage,
       effectiveTrials,
       medianQualityIs: median(records.map((r) => r.qualityIs)),
       medianQualityOos: median(records.map((r) => r.qualityOos)),

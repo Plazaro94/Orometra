@@ -25,7 +25,7 @@ const lineOf = (i) => css.slice(0, i).split('\n').length;
 // Reglas sueltas «selector { declaraciones }», también dentro de @media y @container.
 const rules = [...css.matchAll(/([^{}]*)\{([^{}]*)\}/g)].map((m) => ({ sel: m[1].trim(), body: m[2], at: m.index }));
 // El texto de los diagramas SVG va en unidades del dibujo, no en píxeles de pantalla.
-const isSvg = (r) => /svg|(^|[\s,>])text\b|\.ch-|\.hm-text/.test(r.sel) || /(^|;)\s*fill\s*:/.test(r.body);
+const isSvg = (r) => /svg|(^|[\s,>])text\b|\.ch-/.test(r.sel) || /(^|;)\s*fill\s*:/.test(r.body);
 
 console.log('\nTamaños de letra');
 const TEXT = new Set([9, 11, 12, 13, 14, 15, 16, 17, 18, 20]); // 9: la etiqueta del icono de archivo

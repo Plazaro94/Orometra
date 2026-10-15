@@ -228,8 +228,6 @@ code{font-family:var(--mono);font-size:max(12px,.92em);background:var(--surface-
 .legal-links a.text-btn{text-decoration:none;white-space:nowrap}
 .legal-links .text-btn{font-size:var(--fs-sm);color:var(--muted-2)}
 .legal-links .text-btn:hover{color:var(--ok-text)}
-.legal-panel .limits li{margin-bottom:12px}
-.legal-panel .limits strong{color:var(--text)}
 .topbar-title{display:block}
 .topbar-idle,.topbar-report{min-width:0}
 .topbar{align-items:flex-start}
@@ -621,10 +619,9 @@ details.panel > summary:hover::after{color:var(--text)}
 /* Deja hueco al +/- del summary para que no toque una badge situada a la derecha del titulo. */
 details.panel > summary.panel-head.compact{padding-right:44px}
 details.panel > .panel-body{padding:0 20px 20px}
-.panel-evidence{border-color:var(--info-line);background:var(--info-bg)}
 .panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px;flex-wrap:wrap}
 .panel-head.compact{align-items:center}
-.panel-kicker,.detail-kicker{font-size:var(--fs-sm);letter-spacing:0;font-weight:700;color:var(--muted-2);text-transform:none}
+.panel-kicker{font-size:var(--fs-sm);letter-spacing:0;font-weight:700;color:var(--muted-2);text-transform:none}
 .panel h2{font-size:var(--fs-lg);margin-top:4px;letter-spacing:-.02em}
 .panel h3{font-size:var(--fs-base);margin-bottom:10px;color:var(--text-hi)}
 .panel-intro{margin:0 0 16px;color:var(--muted);font-size:var(--fs-base);line-height:1.55;max-width:var(--measure)}
@@ -664,6 +661,9 @@ details.panel > .panel-body{padding:0 20px 20px}
 .vx-pass-risk{font-size:22px;color:var(--warn-text)}
 .vx-pass-note{margin:6px 0 14px;font-size:var(--fs-base);line-height:1.5;color:var(--muted)}
 .vx-pass-note b{color:var(--text-hi)}
+.vx-expect{margin:0 0 14px;font-size:var(--fs-base);line-height:1.5;color:var(--muted)}
+.vx-expect .vx-label{display:block;margin-bottom:2px}
+.vx-expect b{color:var(--text-hi);font-variant-numeric:tabular-nums}
 .vx-params{margin:0 0 16px}
 .vx-actions{display:flex;flex-wrap:wrap;gap:8px}
 .vx-actions button{padding:12px 18px;font-size:var(--fs-md)}
@@ -932,7 +932,6 @@ th.t3-label{padding-left:2px}
 .t3-params-head th{padding-top:16px;font-size:var(--fs-sm);letter-spacing:0;text-transform:none;color:var(--muted-2);font-weight:700;background:var(--surface)}
 .t3-table tfoot td{padding-top:14px;border-bottom:0}
 .t3-table tfoot th{border-bottom:0;background:var(--surface)}
-.t3-btn{display:block;width:100%;margin:0 auto 8px;text-align:center}
 
 /* ---------------------------------------------------------------- soltar archivos */
 .drop-overlay{
@@ -1193,9 +1192,7 @@ tr.sel td{color:var(--text-2)}
 .ch-grid{stroke:var(--surface-3);stroke-width:1}
 .ch-axis{stroke:var(--line);stroke-width:1}
 .ch-tick{fill:var(--muted-2);font-size:12px;font-family:var(--font)}
-.ch-count{fill:var(--muted-3);font-size:12px;font-family:var(--font)}
 .ch-axis-label{fill:var(--muted-2);font-size:13px;font-family:var(--font)}
-.ch-row-label{fill:var(--muted);font-size:13px;font-family:var(--mono)}
 .ch-point-label{fill:var(--text-2);font-size:12px;font-weight:700;font-family:var(--font)}
 .ch-diagonal{stroke:var(--line-strong);stroke-width:1;stroke-dasharray:4 4}
 .pt-fail{fill:var(--ch-fail);opacity:.75}
@@ -1204,8 +1201,6 @@ tr.sel td{color:var(--text-2)}
 .pt-rep{fill:var(--text-hi);stroke:var(--plateau);stroke-width:2.5}
 .chart-swatch-plateau{background:var(--plateau)}
 .chart-swatch-rep{background:var(--text-hi);border:2px solid var(--plateau);width:8px;height:8px}
-.ch-iqr{fill:var(--ok-bg);stroke:var(--ok-line);stroke-width:1}
-.ch-median{stroke:var(--accent);stroke-width:2}
 .ch-bar{fill:var(--ch-pass)}
 .ch-bar-top{fill:var(--ch-plateau)}
 .ch-zero{stroke:var(--muted-3);stroke-width:1}
@@ -1235,13 +1230,9 @@ tr.sel td{color:var(--text-2)}
 /* Rampa secuencial de 6 tonos (de fondo a lavanda) y cifra que conmuta de color con el tono. */
 .hm-c0{fill:#262d3d;background:#262d3d}.hm-c1{fill:#323b52;background:#323b52}.hm-c2{fill:#444f6c;background:#444f6c}
 .hm-c3{fill:#58648b;background:#58648b}.hm-c4{fill:#8796bf;background:#8796bf}.hm-c5{fill:#b4c2e4;background:#b4c2e4}
-.hm-text{fill:#e9edf6;font-size:12px;font-weight:700;font-family:var(--font);pointer-events:none}
-.hm-text-on{fill:#0b1019}
 [data-theme="light"] .hm-c0{fill:#eef1f8;background:#eef1f8}[data-theme="light"] .hm-c1{fill:#d5ddef;background:#d5ddef}
 [data-theme="light"] .hm-c2{fill:#b3c1e2;background:#b3c1e2}[data-theme="light"] .hm-c3{fill:#7f95c9;background:#7f95c9}
 [data-theme="light"] .hm-c4{fill:#4f69a8;background:#4f69a8}[data-theme="light"] .hm-c5{fill:#2b4a8c;background:#2b4a8c}
-[data-theme="light"] .hm-text{fill:#17295a}
-[data-theme="light"] .hm-text-on{fill:#ffffff}
 .hm-legend{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--muted);flex-wrap:wrap}
 .hm-legend span:first-child{margin-right:4px}
 .hm-ramp{display:inline-flex;border-radius:3px;overflow:hidden}
@@ -1452,14 +1443,14 @@ tr.sel td{color:var(--text-2)}
   .eyebrow{color:var(--muted-3)}
   .panel{border:1px solid var(--line-strong);background:#fff;box-shadow:none;break-inside:avoid;page-break-inside:avoid;margin-bottom:3mm;padding:12px 14px !important}
   .panel h2,.detail-head h2,.rep-pass,.strong,.t3-pass{color:#000}
-  .panel-kicker,.detail-kicker,.chart-note,.panel-intro,.muted,.t3-rank{color:var(--muted-3)}
+  .panel-kicker,.chart-note,.panel-intro,.muted,.t3-rank{color:var(--muted-3)}
   .range-table td,.range-table td.mono{color:#111}
   .evidence-sheet-row strong{color:#111}
   /* El informe impreso es un resumen, no una copia de toda la pestana: la hoja de
      evidencia, los rangos estables, los graficos y "mas hallazgos" ya se pueden
      consultar en la app. En papel sobran paginas sin anadir nada que el veredicto,
      el porque y el Top 3 no digan ya. */
-  .panel-evidence-sheet,.panel-ranges,.grid-secondary,.panel-evidence{display:none !important}
+  .panel-evidence-sheet,.panel-ranges,.grid-secondary{display:none !important}
   .grid-secondary,.columns-grid{grid-template-columns:1fr}
   table{font-size:9pt}
   th{color:var(--muted-3)}
@@ -1486,14 +1477,13 @@ tr.sel td{color:var(--text-2)}
   .param span{color:var(--muted-3)}
   .param strong{color:#000}
   .chart{max-width:100%}
-  .ch-tick,.ch-axis-label,.ch-count,.ch-row-label{fill:var(--muted-2)}
+  .ch-tick,.ch-axis-label{fill:var(--muted-2)}
   .sens-name,.sens-val{color:var(--muted-2)}
   /* Las barras de influencia son fondos HTML: sin esto no se imprimen. */
   .sens-track,.sens-fill,.sens-mark{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .ch-grid{stroke:var(--line)}
   .ch-axis{stroke:var(--muted)}
   .hm-c0{fill:#eef1f8;background:#eef1f8}.hm-c1{fill:#d5ddef;background:#d5ddef}.hm-c2{fill:#b3c1e2;background:#b3c1e2}.hm-c3{fill:#7f95c9;background:#7f95c9}.hm-c4{fill:#4f69a8;background:#4f69a8}.hm-c5{fill:#2b4a8c;background:#2b4a8c}
-  .hm-text{fill:#17295a}.hm-text-on{fill:#ffffff}
   .hm-cell{color:#17295a}.hm-cell.hm-on{color:#ffffff}
   /* Celdas y cajas son fondos HTML: sin esto no se imprimen. */
   .hm-cell,.hm-ramp i,.bx-box,.bx-med,.bx-plot > i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -2026,13 +2016,13 @@ html{scroll-padding-top:calc(var(--top-h,68px) + 16px)}
   letter-spacing:-.02em;color:var(--text-hi);font-variant-numeric:tabular-nums;
 }
 .hm-bench-grid li > p:last-child{margin:0;color:var(--text-2);line-height:1.6}
-/* Un punto por optimización (300 y 40). El mismo paso en las dos rejillas: la de 40 mide un
-   tercio de ancho que la de 300 (10 columnas frente a 30), así se ve el tamaño de cada muestra. */
+/* Un punto por optimización (300 y 32). El mismo paso en las dos rejillas: la de 32 mide
+   8/30 del ancho de la de 300 (8 columnas frente a 30), así se ve el tamaño de cada muestra. */
 .hm-dots{display:block;width:min(100%,420px);height:auto;margin:0 0 16px}
-.hm-dots-40{width:min(33.333%,140px)}
-/* En dos columnas, la de 40 ocupa el mismo alto que la de 300 (puntos arriba), para que los
-   textos de debajo empiecen a la misma altura. */
-@media (min-width:861px){.hm-dots-40{aspect-ratio:1 / 1}}
+.hm-dots-small{width:min(26.667%,112px)}
+/* En dos columnas, la pequeña ocupa el mismo alto que la de 300 (puntos arriba), para que
+   los textos de debajo empiecen a la misma altura: ancho 8/30 y alto 1/3 -> 4 / 5. */
+@media (min-width:861px){.hm-dots-small{aspect-ratio:4 / 5}}
 .hm-dots .off{fill:var(--muted-3);opacity:.32}
 .hm-dots .fa{fill:var(--danger)}
 .hm-dots .ok{fill:var(--lime-fill)}
@@ -2213,7 +2203,7 @@ html{zoom:var(--z)}
 .hm-take .hm-more-alt a{font-weight:500}
 
 /* Bandas de azul noche a todo el ancho */
-.hm-take,.hm-proof,.hm-final{
+.hm-take,.hm-final{
   background:var(--navy);box-shadow:0 0 0 100vmax var(--navy);clip-path:inset(0 -100vmax);
   padding-block:88px;
 }
@@ -2237,7 +2227,7 @@ html{zoom:var(--z)}
 :root[data-theme="light"] .hm-checks li::before{background:var(--ok)}
 @media (max-width:860px){
   .hm-hero{border-radius:28px;margin-bottom:72px}
-  .hm-take,.hm-proof,.hm-final{padding-block:64px}
+  .hm-take,.hm-final{padding-block:64px}
 }
 @media (max-width:640px){
   .hm-checks{grid-template-columns:1fr;gap:14px}

@@ -7,7 +7,7 @@ import { looksLikeSetFile, parseSetText } from '../core/setfile.js';
 import { AnalysisError, classifyError, CODE } from '../core/errors.js';
 import { buildDemoTables, buildNoEdgeDemoTables } from './demo.js';
 import { t, L } from './i18n.js';
-import { state, api, $, $$, esc, int, decodeHead } from './ui-state.js';
+import { state, api, $, esc, int, decodeHead } from './ui-state.js';
 
 // ---------------------------------------------------------------- carga de archivos
 export const BINARY_HINT = /\.(xlsx|xlsm)$/i;

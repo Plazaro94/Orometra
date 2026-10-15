@@ -7,7 +7,6 @@ import {
   refreshAnalyzeButton,
   renderPreflight,
   bindDropzone,
-  hideDropOverlay,
   bindGlobalDrop,
   loadDemo,
   updateDropStatus,
@@ -19,18 +18,15 @@ import {
   clearError,
   showError,
   showProgress,
-  setBusy,
   inspectXlsx,
   runAudit,
   cancelAudit,
-  runInWorker,
   preflightFile,
   analyzedCurrentFiles,
 } from './ui-audit.js';
 
 import {
   initChrome,
-  changeLanguage,
   loadPrefs,
   savePrefs,
   updatePolicyPreview,
@@ -59,25 +55,14 @@ import {
 import { copyParams, doExport, toggleExportMenu } from './ui-export.js';
 import { initMonteCarlo } from './ui-montecarlo.js';
 
-// Reexports mínimos para tests / depuración.
-export {
-  clearError,
-  showError,
-  runAudit,
-  changeLanguage,
-  refreshAnalyzeButton,
-  state,
-};
 
 Object.assign(api, {
   loadDemo,
   clearError,
   showError,
   showProgress,
-  setBusy,
   inspectXlsx,
   runAudit,
-  runInWorker,
   preflightFile,
   analyzedCurrentFiles,
   flushPendingDrop,
@@ -85,14 +70,12 @@ Object.assign(api, {
   refreshAnalyzeButton,
   renderPreflight,
   updateDropStatus,
-  hideDropOverlay,
   setTab,
   render,
   updatePolicyPreview,
   policyInputProblem,
   policyInputField,
   togglePolicy,
-  savePrefs,
   runUnseenCheck,
   readUnseenForm,
   setReport,

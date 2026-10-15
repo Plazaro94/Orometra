@@ -3,10 +3,10 @@
 
 import { median, quantile, extent } from '../core/stats.js';
 import { L, localeTag } from './i18n.js';
+import { esc } from './ui-state.js';
 
 const fmt2 = (v) => new Intl.NumberFormat(localeTag(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fx = (n) => (Number.isFinite(n) ? n.toFixed(1) : '0');
 
 function legend(items) {

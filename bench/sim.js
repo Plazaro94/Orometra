@@ -130,11 +130,21 @@ export function simulatePeriod(rng, mu, trades, years) {
 export const SCENARIOS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'];
 export const NO_EDGE = new Set(['S1', 'S2', 'S5']);
 
+// Primera semilla de cada tanda (bench/PREREGISTRO.md): calibración 1-100, exámenes 1001-1100,
+// 2001-2100… Un nombre que no está aquí es un error: antes caía sin avisar en las semillas de
+// la calibración con el nombre del examen.
+const SEED_BASE = { calib: 1, test: 1001, exam2: 2001, exam3: 3001, exam4: 4001, exam5: 5001, exam6: 6001 };
+export function seedBase(split) {
+  if (!(split in SEED_BASE)) throw new Error(`Tanda desconocida: ${split}. Hay: ${Object.keys(SEED_BASE).join(', ')}`);
+  return SEED_BASE[split];
+}
+
 /**
  * @returns {{ isTable, oosTable, truth, meta }}
  *   truth.byKey: Map "v1|v2|..." -> { edgeUnseen, edgeIs }
  */
 export function generateCase(scenario, seed) {
+  if (scenario === 'S9' || scenario === 'S10') return generateMultiZone(scenario, seed);
   const rng = makeRng(hashSeed(`${scenario}#${seed}`));
   const real = scenario === 'S8';
   const levels = real ? REAL_GRID.map((l) => l.slice()) : makeGrid(rng, Math.floor(uni(rng, 2, 4.999)));
@@ -213,6 +223,11 @@ export function generateCase(scenario, seed) {
     rows = rows.filter((_, i) => chosen.has(i));
   }
 
+  return exportCase(scenario, seed, rows, levels, { scenario, seed, dims, configs: rows.length, gridSize: coords.length, tradesIs, oosRatio, luckAmp, A, width, center });
+}
+
+// Tablas como las exporta MT5 a partir de las configuraciones probadas.
+function exportCase(scenario, seed, rows, levels, meta) {
   const names = levels.map((_, j) => `InpP${j + 1}`);
   const isH = ['Pass', 'Result', 'Profit', 'Expected Payoff', 'Profit Factor', 'Recovery Factor', 'Sharpe Ratio', 'Equity DD %', 'Trades', ...names];
   const oosH = ['Pass', 'Forward Result', 'Back Result', 'Profit', 'Expected Payoff', 'Profit Factor', 'Recovery Factor', 'Sharpe Ratio', 'Equity DD %', 'Trades', ...names];
@@ -230,6 +245,84 @@ export function generateCase(scenario, seed) {
     oosTable: { name: `${scenario}-${seed}-OOS.xml`, sheet: 'Tester Optimizator Results', format: 'sintetico', headers: oosH, rows: oosRows },
     rows, fwd, levels, names, key,
     truth,
-    meta: { scenario, seed, dims, configs: rows.length, gridSize: coords.length, tradesIs, oosRatio, luckAmp, A, width, center },
+    meta,
   };
+}
+
+// ---------------------------------------------------------------- S9 y S10: varias zonas
+// Prerregistrado en bench/PREREGISTRO.md (enmienda 2026-10-14 (b)) antes de generar ningún
+// caso: muchas dimensiones, muestreo genético y de 2 a 4 zonas buenas sorteadas.
+
+function generateMultiZone(scenario, seed) {
+  const rng = makeRng(hashSeed(`${scenario}#${seed}`));
+  const dims = 5 + Math.floor(rng() * 3);
+  const levels = [];
+  for (let d = 0; d < dims; d++) {
+    const n = 5 + Math.floor(rng() * 4);
+    const start = pick(rng, [1, 2, 5, 10, 14]);
+    const step = pick(rng, [1, 2, 5]);
+    levels.push(Array.from({ length: n }, (_, k) => start + k * step));
+  }
+  const gridSize = levels.reduce((a, l) => a * l.length, 1);
+  const tradesIs = Math.round(uni(rng, 150, 600));
+  const oosRatio = uni(rng, 0.25, 0.5);
+  const luckAmp = uni(rng, 0.04, 0.12);
+  const K = 2 + Math.floor(rng() * 3);
+  // Enmienda del 2026-10-14 (c): solo de 2 a 4 parámetros mueven la ventaja, como en un EA
+  // real; en el resto la zona no cambia (anchura infinita).
+  const nRel = Math.min(dims, 2 + Math.floor(rng() * 3));
+  const order = levels.map((_, j) => j).sort(() => rng() - 0.5);
+  const relevant = new Set(order.slice(0, nRel));
+  const zones = Array.from({ length: K }, () => ({
+    c: randomCenter(rng, levels, 1),
+    w: levels.map((_, j) => (relevant.has(j) ? uni(rng, 0.8, 2.5) : Infinity)),
+    a: uni(rng, 0.05, 0.35),
+  }));
+  const edge = (z) => zones.reduce((m, zn) => Math.max(m, zn.a * bump(z, zn.c, zn.w)), 0);
+  const withEdge = scenario === 'S9';
+  const edgeIs = edge;
+  const edgeOos = withEdge ? edge : () => 0;
+  const edgeUnseen = withEdge ? edge : () => 0;
+  const luckIs = luckField(rng, levels, luckAmp);
+  const luckOos = luckField(rng, levels, luckAmp);
+  const tradesOf = (z, base) => Math.max(20, Math.round(base * (0.8 + 0.4 * (z[0] / Math.max(1, levels[0].length - 1)))));
+  const budget = Math.min(gridSize, Math.round(uni(rng, 1500, 4000)));
+
+  const seen = new Map();
+  const add = (z) => {
+    const k = z.join(',');
+    if (seen.has(k)) return false;
+    const tIs = tradesOf(z, tradesIs);
+    const tOos = tradesOf(z, tradesIs * oosRatio);
+    seen.set(k, {
+      z,
+      params: z.map((v, j) => levels[j][v]),
+      is: simulatePeriod(rng, edgeIs(z) + luckIs(z), tIs, IS_YEARS),
+      oos: simulatePeriod(rng, edgeOos(z) + luckOos(z), tOos, OOS_YEARS),
+      edgeUnseen: edgeUnseen(z),
+      edgeIs: edgeIs(z),
+    });
+    return true;
+  };
+  const randomZ = () => levels.map((lv) => Math.floor(rng() * lv.length));
+  // Genético: un 25 % al azar y el resto hijos del 20 % mejor por beneficio in-sample.
+  let guard = 0;
+  while (seen.size < Math.round(0.25 * budget) && guard++ < 50 * budget) add(randomZ());
+  while (seen.size < budget && guard < 200 * budget) {
+    const ranked = [...seen.values()].sort((a, b) => b.is.profit - a.is.profit);
+    const top = ranked.slice(0, Math.max(1, Math.round(0.2 * ranked.length)));
+    for (let b = 0; b < 100 && seen.size < budget; b++) {
+      guard++;
+      const child = pick(rng, top).z.slice();
+      const m = rng() < 0.5 ? 1 : 2;
+      for (let t = 0; t < m; t++) {
+        const j = Math.floor(rng() * dims);
+        child[j] = Math.min(levels[j].length - 1, Math.max(0, child[j] + pick(rng, [-2, -1, 1, 2])));
+      }
+      add(child);
+    }
+  }
+  while (seen.size < budget) add(randomZ());
+  const rows = [...seen.values()];
+  return exportCase(scenario, seed, rows, levels, { scenario, seed, dims, relevant: nRel, configs: rows.length, gridSize, tradesIs, oosRatio, luckAmp, K, zones: zones.map((zn) => zn.a) });
 }

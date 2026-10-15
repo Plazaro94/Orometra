@@ -59,7 +59,7 @@ $$('[data-lang-set]').forEach((b) => b.addEventListener('click', () => {
 }));
 // La 404 es una sola página para los dos idiomas: en español, sus enlaces llevan a la
 // versión en español de cada página (las que la tienen).
-const ES_HREF = { '/': '/es/', '/methodology/': '/es/methodology/', '/guides/': '/es/guias/', '/privacy/': '/es/privacy/' };
+const ES_HREF = { '/': '/es/', '/app/': '/app/?lang=es', '/methodology/': '/es/methodology/', '/about/': '/es/about/', '/guides/': '/es/guias/', '/privacy/': '/es/privacy/' };
 function syncNotFoundLinks() {
   if (document.documentElement.getAttribute('data-page') !== 'notfound') return;
   const es = getLocale() === 'es';
@@ -200,7 +200,7 @@ function mountGuideRail() {
   q.textContent = t('guide.rail.q');
   const go = document.createElement('a');
   go.className = 'primary-btn';
-  go.href = '/app/';
+  go.href = getLocale() === 'es' ? '/app/?lang=es' : '/app/';
   go.textContent = t('lp.cta');
   cta.append(q, go);
   inner.append(k, list, cta);

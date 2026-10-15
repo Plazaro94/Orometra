@@ -66,10 +66,9 @@ section('1. [hidden] no puede ser anulado por display:flex/grid');
   );
 
   for (const id of ['statusBar', 'errorBox', 'preflight', 'policyPreview', 'dropOverlay']) {
-    const re = new RegExp(`id="${id}"[^>]*\\bhidden\\b|\\bhidden\\b[^>]*id="${id}"`);
-    // Atributo hidden puede ir antes o después del id.
-    const ok = new RegExp(`id="${id}"[^>]*>`).test(appHtml)
-      && appHtml.match(new RegExp(`<[^>]*id="${id}"[^>]*>`))?.[0]?.includes('hidden');
+    // El atributo hidden puede ir antes o después del id; aria-hidden no cuenta.
+    const tag = appHtml.match(new RegExp(`<[^>]*\\sid="${id}"[^>]*>`))?.[0] || '';
+    const ok = /\shidden(?=[\s=>/])/.test(tag);
     check(`#${id} arranca con atributo hidden`, Boolean(ok));
   }
 }

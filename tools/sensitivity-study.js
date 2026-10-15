@@ -98,13 +98,13 @@ function measure(label, input, truth) {
     smoothness(a.coords, a.levels, shuffledAll, null).forEach((v, j) => smNull[j].push(v));
   }
   console.log(`\n== ${label}  (verdict ${a.verdict.level}, plateaus ${a.plateaus.length}, rep ${a.plateaus[0]?.record.id ?? '-'})`);
-  console.log('param        truth   marginal  combined   suavidad real / nula   ');
+  console.log('param        truth   marginal  combined  comb. nula (μ ± σ)   suavidad real / nula');
   a.sensitivity.forEach((s, j) => {
     const n = nulls[j].filter(Number.isFinite); const mu = n.reduce((x, y) => x + y, 0) / (n.length || 1);
     const sd = Math.sqrt(n.reduce((x, y) => x + (y - mu) ** 2, 0) / Math.max(1, n.length - 1));
     const c = real[j].conditional;
     const sn = smNull[j].filter(Number.isFinite); const smu = sn.reduce((x, y) => x + y, 0) / (sn.length || 1);
-    console.log(`${s.name.padEnd(13)}${String(truth ? truth[j] : '?').padEnd(8)}${(s.sensitivity ?? NaN).toFixed(2).padStart(8)}  ${c.toFixed(2).padStart(8)}    ${smReal[j].toFixed(2)} / ${smu.toFixed(2)}  -> x${(smReal[j] / smu).toFixed(2)}`);
+    console.log(`${s.name.padEnd(13)}${String(truth ? truth[j] : '?').padEnd(8)}${(s.sensitivity ?? NaN).toFixed(2).padStart(8)}  ${c.toFixed(2).padStart(8)}  ${mu.toFixed(2).padStart(6)} ± ${sd.toFixed(2)}        ${smReal[j].toFixed(2)} / ${smu.toFixed(2)}  -> x${(smReal[j] / smu).toFixed(2)}`);
   });
 }
 const demo = buildDemoTables();

@@ -60,6 +60,174 @@ un 12 % y un 32 % de las veces: la app no dará previsiones con el periodo usado
 La app no cambia: el Monte Carlo sigue retirado. Falta la decisión del autor sobre el criterio de
 descarte y, si procede, el examen con casos nuevos.
 
+## 2026-10-14 — Informe de backtest comprobado con datos reales
+
+Tres informes reales del probador del autor, en `.xlsx` y de un terminal en español, con comisión
+y swap (de 164 a 1.303 operaciones). Orometra los lee enteros; la suma de las operaciones da
+exactamente el beneficio neto de cada informe, y el valor del contrato que usa el stress de
+costes sale igual en todas las operaciones que lo permiten. Queda apuntado como REP-1 en
+`docs/MT5_ASSUMPTIONS.md`. Sin probar todavía: el formato `.html` (otro lector) y una cuenta de
+cobertura con varias posiciones abiertas a la vez (en esos informes nunca hubo más de una). Los
+archivos no se suben al repositorio.
+
+## 2026-10-14 — Limpieza general: lo que se veía mal, documentación al día y código muerto fuera
+
+Auditoría de todo el repositorio buscando lo huérfano, lo desfasado y lo que no cuadraba. Nada
+cambia en el motor: la regresión de la demo da el mismo JSON y el banco no se ha vuelto a pasar
+porque ningún cálculo se ha tocado.
+
+- **Lo que veía el usuario.** Desde `/es/`, con el navegador en inglés, la app se abría en
+  inglés: las páginas en español la enlazan ahora con `?lang=es` (`tools/build-es.js`), que
+  `js/theme-init.js` respeta si no hay idioma elegido. La 404 en español llevaba «Quiénes
+  somos» a la versión inglesa. Metodología (paso 4) y el README decían que la elección gana a
+  la suma de puestos, y en el sexto examen pierde (0,258 frente a 0,236): corregido, con una
+  prueba que lo ata a `REPORT-exam6.md`. «Puertas/gates» por «mínimos/minimums» en la barra
+  de progreso y en un hallazgo en inglés.
+- **Caché de la hoja de estilos.** `styles.css?v=` se subía a mano y llevaba cinco cambios sin
+  subir. Ahora es la huella del contenido y la pone `tools/build-es.js`; `npm test` falla si
+  no está al día.
+- **Política de seguridad:** fuera `blob:` de `worker-src` (no hay workers desde `blob:`).
+  `tools/serve.js` sirve las fotos con su tipo y la 404 como Pages.
+- **Documentación.** SPEC (principio 4 como funciona de verdad: se descubre en el in-sample y
+  el forward valida; árbol de archivos), DEPLOY (política, almacenamiento), MT5_ASSUMPTIONS
+  (DEAL-1: la hora de apertura sí viene, en la fila de entrada; fuera la guía para verificar
+  SR-1, ya resuelto), prerregistro y `bench/results/LEEME.md` al día con el sexto examen y con
+  todo lo posterior al quinto; CLAUDE.md y README dicen qué genera `build-es.js`. Referencias
+  a archivos y funciones que ya no existen, corregidas.
+- **Banco.** Fuera `calib.jsonl` y `test.jsonl` (copias exactas de `*-c948971-n100.jsonl`),
+  `REPORT-test.md` (copia de `REPORT-test-c948971-n100.md`), `REPORT-calib.md` (regenerado como
+  `REPORT-calib-c948971-n100.md`, mismas cifras) y `calib-S1_S3.jsonl` (prueba suelta de 6
+  casos). Las tandas comparten las semillas de `bench/sim.js#seedBase`: un nombre desconocido
+  ya no cae en silencio en las de la calibración (`orden-tabla.js exam6` lo hacía).
+- **Código muerto.** Fuera `rawValue`, `setGrid`, `ENGINE_DEFAULTS.denseCoverage`, la clave
+  `home.trust`, el texto de `ANALYSIS_SUCCESS` (nunca se pintaba), una comprobación de
+  cancelar que no podía cumplirse, datos que se pasaban al veredicto y nadie leía, la copia
+  `stabilityCheck.internal`, imports sin usar, entradas de `api` sin uso y 11 clases de CSS
+  que ningún elemento lleva. Una sola versión de `isZip`, `esc`, `mt5Figure` y del tope de
+  desplazamientos de la vecindad. Los motivos de los picos descartados usan los umbrales con
+  que se analizó también al cambiar de idioma.
+- **Herramientas.** `tools/audit.js` lee `.xlsx` y escribe sin etiquetas HTML;
+  `tools/sensitivity-study.js` enseña la nula barajada que ya calculaba.
+- **Pruebas que no probaban:** `audit-fixes` comprobaba la meseta sobre una rejilla sin
+  ninguna (pasaba siempre); `smoke` aceptaba `aria-hidden` por `hidden`. `source.test.js`
+  revisa también `core/trades/`, `bench/` y `tools/`.
+- **Pendiente, a propósito:** el código sin uso de `core/trades/` (avisos de `risk.js` que nunca
+  saltan, opciones de costes que nadie pasa) y su texto en `js/ui-unseen.js` se quitan cuando
+  se integre la rama del Monte Carlo, que está reescribiendo esa parte.
+
+## 2026-10-14 — Portada y Metodología citan el sexto examen (el del motor actual)
+
+Citaban el quinto, hecho con el motor anterior. Ahora, con el sexto (semillas 6001-6100, a
+ciegas, motor actual):
+
+| | Quinto examen | Sexto examen |
+|---|---|---|
+| Falsas alarmas («moderada» o más sin ventaja) | 10 de 300 (3,3 %) | 4 de 300 (1,3 %) |
+| De ellas, «sólida» | ninguna | 1 |
+| Ventajas detectadas | 34 de 40 (85 %) | 31 de 32 (97 %) |
+| Elección: Orometra / n.º 1 de MT5 | 0,23 / 0,29 | 0,26 / 0,30 |
+| Criterios superados | 10 de 13 | 11 de 13 |
+
+- **Portada:** cifras, textos y las dos rejillas de puntos (4 de 300 y 31 de 32). La rejilla
+  pequeña pasa de 10 × 4 a 8 × 4 columnas con el mismo paso que la grande (clase
+  `hm-dots-small`).
+- **Metodología, «Cómo sabemos que funciona»:** las cifras, el enlace a `REPORT-exam6.md` y lo
+  que falla en ese examen (B3 y B4, por contar como fallo cada caso sin meseta; la «sólida»
+  sin ventaja, dentro del 1 % fijado). Ya no dice que el sobreajuste puro pase del 5 % (en el
+  sexto, 3 %) ni que la n.º 1 de MT5 gane por más de lo permitido en la rejilla real.
+- `tests/home-bench.test.js` lee ahora el sexto examen y comprueba esas frases.
+
+## 2026-10-14 — El suspenso frente a «media con vecinas», explicado con cifras
+
+En el banco, Orometra suspende frente a B4 («media con vecinas») y B3. No es la elección
+dentro de la meseta: cuando Orometra propone meseta gana a B4 (0,145 frente a 0,164 en el
+sexto examen), y contando la sugerencia orientativa también (0,191 frente a 0,213). El
+suspenso sale de contar cada caso sin meseta como el peor resultado, una regla exigente
+fijada a propósito en el prerregistro. Se mantiene, y no se relajan los umbrales para
+abstenerse menos (subirían los falsos positivos). Metodología lo dice ahora con cifras, y la
+tabla completa está en `bench/PREREGISTRO.md` (enmienda (e) del 2026-10-14).
+
+## 2026-10-14 — Orden entre mesetas: medido en un escenario nuevo, se queda como está
+
+Con el export auditado, Orometra pone primera una meseta grande que aguanta el forward a
+medias por delante de una pequeña que lo aguanta entera. El banco no
+tenía casos así, así que no podía decir qué orden acierta. Se ha medido, con todo fijado antes
+de generar ningún caso (`bench/PREREGISTRO.md`, enmiendas (b), (c) y (d) del 2026-10-14):
+
+- **Escenarios nuevos.** S9: de 5 a 7 parámetros (2 a 4 relevantes), de 2 a 4 zonas buenas
+  con anchura y altura sorteadas, muestreo genético y forward del 25 % mejor. S10: su gemelo
+  sin ventaja fuera del periodo optimizado.
+- **Tres reglas:** la actual (R0); ordenar cada meseta por lo que se espera de ella en un
+  periodo nuevo (R1, con el modelo de «qué esperar»); y por su límite inferior (R2).
+- **Resultado en la calibración:** arrepentimiento mediano en S9 de 0,187 con R0, 0,193 con R1
+  y 0,173 con R2 (hacía falta bajar al menos 0,02). R1 y R2 empeoran S6 en 0,019. Cuando R1
+  cambia la elegida, acierta tantas veces como falla (8 y 8 de 16). **Se queda R0.**
+- Lo que se aprende: ordenar por lo que se espera no elige mejor que la regla actual. En el
+  banco no se ha encontrado que preferir la meseta que aguanta el forward entera, frente a la
+  grande que lo aguanta a medias, mejore la elección; el aviso crítico sobre el forward sigue
+  saliendo, que es lo que toca.
+- Las dos reglas nuevas quedan en el motor como opción del banco (`plateauRank`), sin uso en
+  la app. Las semillas de examen 7001-7100 siguen sin generar.
+
+## 2026-10-14 — Auditoría estadística con un export real: qué esperar de la recomendada, Sharpe al 95 %, procedencia
+
+Se auditó como lo haría un quant un export real de MT5 (un EA sobre un índice en M15: unas
+10.000 pasadas genéticas, la mitad con forward, y su `.set`). Orometra reproducía sus cifras, pero tres cosas
+no aguantaban la revisión, y faltaba la que más importa para planificar.
+
+**Qué esperar de la recomendada (nuevo, `core/shrink.js`).** Lo que una configuración saca
+de más en el periodo optimizado es en parte suerte, y la recomendada, por construcción, es de
+las que mejor salieron. Ahora la app da su beneficio esperado por operación descontada esa
+suerte, junto a la cifra del forward («unos X por operación, no los Y del forward»), y
+dice si se distingue de una configuración cualquiera de las que cumplen tus mínimos.
+- Modelo de efectos aleatorios. Toda la selección (genético, mínimos, preselección del forward
+  de MT5) depende solo del in-sample, así que se estima con lo único que esa selección no
+  sesga: la regresión del forward sobre el in-sample (pendiente y residuo) y el número de
+  operaciones. Cada candidata se mide con su vecindad, que es con lo que Orometra elige.
+- Medida contra la verdad del banco (`bench/shrink.js`). En el sexto examen, con ventaja real:
+  error 6,7 frente a 10,4 de la cifra del forward y 10,7 de la del periodo optimizado; sesgo
+  −2,3 (prudente: se queda corta, no se pasa). Sin ventaja real, la app dice que la
+  recomendada se distingue de la familia el 5 % de las veces en calibración y el 9 % en el
+  examen (5 de 56), y así lo dice el texto.
+- Solo se da el **límite inferior** de la ventaja sobre la familia: ningún intervalo de dos
+  lados cubría el 95 % que habría dicho (ocho variantes probadas,
+  `bench/results/REPORT-shrink-variantes-2026-10-14.md`). Tampoco hay intervalo del total: su
+  mayor incertidumbre es el régimen del próximo periodo, y con un solo forward no se mide.
+- No mueve el nivel de evidencia (su peso en los niveles no está calibrado). Sale en la
+  tarjeta de la recomendada, en un hallazgo de Estadística, en el resumen de texto, en el
+  informe JSON y en `tools/audit.js`.
+- Con el export auditado: la recomendada da por operación lo mismo que la familia; la
+  alternativa que mejor salió en el forward se queda en algo más de la mitad de su cifra
+  del forward, y tampoco se distingue de la familia. De cada 100 que una configuración saca de más en el periodo optimizado, en el
+  forward conserva unas 17 (entre 10 y 26).
+
+**Contraste del Sharpe: percentil 95, no la media.** El umbral era el máximo *esperado* de N
+pruebas sin ventaja, y el máximo de puro ruido supera su media en torno al 43 % de las veces:
+«supera el umbral del azar» no tenía ningún nivel de confianza. Ahora es el percentil 95 del
+máximo, Φ⁻¹(0,95^(1/N)), exacto bajo independencia, y el texto dice que por azar se superaría
+el 5 % de las veces. En calibración baja de nivel 5 casos de 800, todos con ventaja; falsos
+positivos y potencia no cambian. Con el export auditado, el mejor Sharpe sigue superándolo.
+
+**Procedencia.** Una sola pasada cuyo Back Result no cuadraba daba un crítico, «los
+dos archivos no parecen de la misma optimización», con todas las demás idénticas. Mezclar
+exportaciones cambia casi todas las filas (por encima del 2 % ya se rechazaba el análisis): por
+debajo del 1 % ahora es un aviso que nombra las pasadas y no mueve el nivel.
+
+**Dos textos que decían más de lo que se mide.** «La nota de Orometra conserva el orden de las
+configuraciones» salía con una correlación de rangos de la nota de 0,08: lo que se mide es si
+la mejor de una mitad al azar aguanta en el otro periodo. Ahora lo dice así y, si la
+correlación es baja, añade que el orden completo apenas se conserva.
+
+**Medido y sin cambiar: el orden entre mesetas.** Con el export auditado, la meseta
+recomendada (muy grande, aguanta el forward a medias) queda por delante de una pequeña que
+lo aguanta entera. Quitar o reforzar el peso del forward al ordenar no se distingue en el
+banco: solo 34 de 800 casos tienen más de una meseta. Sin pruebas no se toca; hace falta un
+escenario nuevo, prerregistrado antes de generarlo (`bench/PREREGISTRO.md`, enmienda del
+2026-10-14).
+
+**Sexto examen del banco** (semillas 6001-6100, a ciegas, una sola vez): aprueba falsos
+positivos, potencia (96,9 %) y coherencia; **suspende la elección frente a B3 y B4**, igual que
+el motor anterior con esas semillas, que elige lo mismo en los 800 casos.
 ## 2026-10-14 — Primer informe real de MT5: se lee bien y corrige el diseño del Monte Carlo
 
 Con un backtest real del autor (NDX M15, terminal en español, .xlsx, 1.303 operaciones de
@@ -1519,15 +1687,18 @@ aplica). `docs/MT5_ASSUMPTIONS.md` sin las filas `INI-*`/`FRAME-*`/`ORF-1`/`PROB
 - `docs/SPEC.md`, `docs/MT5_ASSUMPTIONS.md` (este changelog).
 
 ### Pendiente / no cerrado en Fase 0
+(Después: SR-1 se resolvió el 2026-09-26; FWD-1 se observó en exports reales el 2026-09-28 y el
+2026-10-11, ver `docs/MT5_ASSUMPTIONS.md`; la carpeta `web/` no se hizo.)
 - **SR-1** (cómo calcula MT5 el Sharpe del export): sigue pendiente de verificación manual en MT5.
 - **FWD-1**: mitigado con aviso; falta confirmar con exports reales el comportamiento exacto de MT5.
 - Reorganizar la app web bajo carpeta `web/` (arquitectura objetivo): aplazado.
 - Verificación manual FWD-1 / SR-1 en MT5 (sigue pendiente).
 
-### Trabajo Lite previo (aún puede estar sin commit limpio)
+### Trabajo Lite previo
 - Cobertura vs `.set`, copy DoF/Sharpe, UX evidencia débil, IS+Forward obligatorio, i18n del veredicto, etc.
 
 ---
 
 ## Cómo usar este archivo
-Al cerrar cada fase: fecha, qué se hizo, qué falta, y supuestos MT5 pendientes.
+Al cerrar un trabajo relevante, una entrada arriba del todo (la más reciente primero): fecha,
+qué se hizo y por qué, qué se midió y qué queda pendiente.

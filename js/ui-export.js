@@ -74,6 +74,14 @@ export function buildPlainSummary(a) {
         lines.push(`  ${L('Forward', 'Forward')}: ${Number.isFinite(p.record.oos && p.record.oos.trades)
           ? per(p.record.oos) : L('MT5 no pasó esta configuración al forward', 'MT5 did not send this configuration to the forward')}`);
       }
+      // Qué esperar, descontada la selección (core/shrink.js), si se ha podido calcular.
+      const sh = a.stats && a.stats.shrinkage;
+      const pr = sh && sh.usable ? (sh.predictions || []).find((x) => x.index === p.representative) : null;
+      if (pr && Number.isFinite(pr.expected)) {
+        lines.push(`  ${L('Qué esperar (descontada la selección)', 'What to expect (net of selection)')}: ${L('unos', 'about')} ${num(pr.expected, 2)} ${L('por operación', 'per trade')} · ${pr.ownLo > 0
+          ? L('se distingue de una cualquiera de las que cumplen tus mínimos', 'stands out from any that meets your minimums')
+          : L('no se distingue de una cualquiera de las que cumplen tus mínimos', 'does not stand out from any that meets your minimums')}`);
+      }
       a.meta.paramNames.forEach((n, j) => lines.push(`  ${n} = ${paramValue(p.record.params[j])}`));
     });
     lines.push('');

@@ -63,6 +63,11 @@
     if (lang !== 'en' && lang !== 'es') {
       var nav = (navigator.language || '').toLowerCase();
       lang = nav.indexOf('es') === 0 ? 'es' : 'en';
+      // La app no tiene direccion por idioma: las paginas en espanol la enlazan con
+      // ?lang=es (tools/build-es.js) para que quien llega desde /es/ no la vea en ingles
+      // por tener el navegador en ingles. Una eleccion guardada manda sobre el enlace.
+      var asked = /[?&]lang=(en|es)(?:&|$)/.exec(location.search);
+      if (asked) lang = asked[1];
     }
     // Página 404 (una sola para todo el sitio): si la dirección rota es de la versión en
     // español (/es/…), se muestra en español aunque el navegador esté en inglés.

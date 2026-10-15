@@ -18,6 +18,7 @@
 // bordes de rango, inversiones, puertas inertes- se conservan intactos: son lo valioso.
 
 import { L, localeTag, pctSign, shareText } from '../js/i18n.js';
+import { ENGINE_DEFAULTS } from './engine.js';
 
 /** Numero en el formato del idioma activo (1,20 en ES, 1.20 en EN). */
 const fmt = (v, d = 2) => (Number.isFinite(v)
@@ -39,6 +40,10 @@ export const LEVELS = {
 // 'critical' y no 'block': ya no se bloquea nada, se senala una limitacion grave de la
 // evidencia. El usuario decide que hacer con ella.
 const SEV = { CRITICAL: 'critical', WARN: 'warn', INFO: 'info', OK: 'ok' };
+// Por debajo de esta fracción de filas cuyo Back Result no cuadra, es una anomalía de esas
+// filas y no una mezcla de exportaciones (ver el aviso de procedencia). Por encima del 2 %
+// el análisis se rechaza (`core/analysis.js`).
+const PROVENANCE_CRITICAL_SHARE = 0.01;
 
 export function buildVerdict(ctx) {
   const findings = [];
@@ -57,7 +62,7 @@ export function buildVerdict(ctx) {
   const tableOnly = () => { findings[findings.length - 1].scope = 'table'; };
 
   const { gatePassCount, total, plateaus, fragility, fragilityQuality, fragilityFolds, fragilityAsymmetry,
-    fragilityWorstDirection, sharpeTest, spearman, coverage, searchCoverage, medianSupport,
+    sharpeTest, shrinkage, spearman, spearmanQuality, coverage, searchCoverage, medianSupport,
     periodRatio, integrity, sampling, boundaryWorst, bestPlateau, inversions, periodComparison,
     hasForward, invertedRisk, alternativePlateau, underpowered, viableNeededForPlateau,
     tiedCount, tiedRanks, stabilityCheck, irregularGrids, rescuedDims, offsetsComplete,
@@ -74,7 +79,7 @@ export function buildVerdict(ctx) {
       L(`${searchPassCount.toLocaleString(localeTag())} ${pl(searchPassCount, 'configuración los cumple', 'configuraciones los cumplen')} en el periodo optimizado, pero ninguna en el forward. Con estos mínimos, lo que se encuentra en el periodo optimizado no se sostiene fuera de él.`,
         `${searchPassCount.toLocaleString(localeTag())} ${pl(searchPassCount, 'configuration meets', 'configurations meet')} them on the optimized period, but none in the forward. With these minimums, what is found on the optimized period does not hold outside it.`), null);
   } else if (!gatePassCount) {
-    add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration passes the minimum gates'),
+    add(SEV.CRITICAL, L('Ninguna configuración pasa los mínimos', 'No configuration meets the minimums'),
       hasForward
         ? L(`De ${total.toLocaleString(localeTag())} configuraciones, ninguna cumple tus mínimos en el periodo optimizado y en el forward. Con estos mínimos no hay nada que seleccionar.`,
           `Of ${total.toLocaleString(localeTag())} configurations, none meet your minimums in both the optimized period and the forward. With these minimums there is nothing to select.`)
@@ -195,9 +200,15 @@ export function buildVerdict(ctx) {
           'Even without the Result column, the score built from several metrics at once (profit factor, drawdown, trades…) also loses order from one period to the other. That affects each configuration\'s rank in the table, not the plateau, which is validated separately on the forward: choose by plateau, not by rank.'), 'stats');
       tableOnly();
     } else if (fragilityQuality < 0.3) {
-      add(SEV.OK, L(`La nota de Orometra se mantiene entre periodos: solo falla el ${fmt((100 * fragilityQuality), 0)}\u00A0%`, `The Orometra score holds across periods: it only fails ${fmt((100 * fragilityQuality), 0)}%`),
-        L('La nota con varias métricas a la vez (factor de beneficio, drawdown, operaciones…) conserva el orden de las configuraciones de un periodo a otro.',
-          'The score built from several metrics at once (profit factor, drawdown, trades…) keeps the order of configurations from one period to the other.'), null);
+      // Lo que se mide es la CABEZA de la tabla (la mejor de una mitad al azar), no el orden
+      // entero: con la correlación de rangos baja, decir «conserva el orden» sería falso.
+      const wholeOrder = Number.isFinite(spearmanQuality) && spearmanQuality < 0.3
+        ? L(` El orden completo, en cambio, apenas se conserva (correlación de rangos ${fmt(spearmanQuality, 2)}): la nota acierta con las mejores, no con el puesto de cada una.`,
+          ` The full order, however, barely holds (rank correlation ${fmt(spearmanQuality, 2)}): the score gets the best ones right, not each one's rank.`)
+        : '';
+      add(SEV.OK, L(`La mejor según la nota de Orometra aguanta en el otro periodo: solo falla el ${fmt((100 * fragilityQuality), 0)}\u00A0%`, `The best by the Orometra score holds up in the other period: it only fails ${fmt((100 * fragilityQuality), 0)}%`),
+        L(`Al quedarte con la mejor según la nota con varias métricas a la vez (factor de beneficio, drawdown, operaciones…) en una mitad al azar de las pasadas, cae por debajo de la mediana del otro periodo solo el ${fmt((100 * fragilityQuality), 0)}\u00A0% de las veces.${wholeOrder}`,
+          `Picking the best by the score built from several metrics at once (profit factor, drawdown, trades…) in a random half of the passes, it falls below the other period's median only ${fmt((100 * fragilityQuality), 0)}% of the time.${wholeOrder}`), null);
     }
   }
 
@@ -345,6 +356,9 @@ export function buildVerdict(ctx) {
 
   if (sharpeTest && Number.isFinite(sharpeTest.observedMax) && Number.isFinite(sharpeTest.chanceMax)) {
     const { observedMax, chanceMax, trials } = sharpeTest;
+    // Probabilidad de pasar el umbral por puro azar (5 % con el cuantil 0,95). Un informe
+    // guardado antes de este cambio no trae el nivel: su umbral era la media del máximo.
+    const lvlOut = fmt(100 * (1 - (Number.isFinite(sharpeTest.chanceLevel) ? sharpeTest.chanceLevel : 0.57)), 0);
     // Solo cuentan las pasadas con más de N operaciones (core/analysis.js): sin decirlo, el
     // máximo no cuadraba con el de la tabla de MT5.
     const among = Number.isFinite(sharpeTest.minTrades)
@@ -360,13 +374,39 @@ export function buildVerdict(ctx) {
       : L(`${n(eff)} pruebas`, `${n(eff)} trials`);
     if (observedMax <= chanceMax) {
       add(SEV.CRITICAL, L('El mejor Sharpe no supera el umbral del azar', 'Best Sharpe does not beat the chance threshold'),
-        L(`Con ${howMany}, el Sharpe máximo esperable sin ninguna ventaja real es ${fmt(chanceMax, 2)}. El mejor observado${sharpeTest.period === 'oos' ? ' en el forward' : ''}${among} es ${fmt(observedMax, 2)}. Probar muchas configuraciones produce buenos resultados por sí solo, y este no destaca sobre ese ruido.`,
-          `With ${howMany}, the maximum Sharpe expected with no real edge is ${fmt(chanceMax, 2)}. The best observed${sharpeTest.period === 'oos' ? ' on the forward' : ''}${among} is ${fmt(observedMax, 2)}. Trying many configurations produces good results on its own, and this one does not stand out above that noise.`), 'stats');
+        L(`Con ${howMany} y ninguna ventaja real, el mejor Sharpe pasaría de ${fmt(chanceMax, 2)} solo el ${lvlOut}\u00A0% de las veces. El mejor observado${sharpeTest.period === 'oos' ? ' en el forward' : ''}${among} es ${fmt(observedMax, 2)}. Probar muchas configuraciones produce buenos resultados por sí solo, y este no destaca sobre ese ruido.`,
+          `With ${howMany} and no real edge, the best Sharpe would exceed ${fmt(chanceMax, 2)} only ${lvlOut}% of the time. The best observed${sharpeTest.period === 'oos' ? ' on the forward' : ''}${among} is ${fmt(observedMax, 2)}. Trying many configurations produces good results on its own, and this one does not stand out above that noise.`), 'stats');
     } else {
       add(SEV.OK, L('El mejor Sharpe supera el umbral del azar', 'Best Sharpe beats the chance threshold'),
-        L(`Sharpe máximo${sharpeTest.period === 'oos' ? ' en el forward' : ''}${among} ${fmt(observedMax, 2)} frente a ${fmt(chanceMax, 2)} esperable sin ventaja real con ${howMany}. Superar este contraste es condición necesaria, no suficiente: descarta que el resultado venga solo de haber probado mucho, pero no valida la estrategia.`,
-          `Maximum Sharpe${sharpeTest.period === 'oos' ? ' on the forward' : ''}${among} ${fmt(observedMax, 2)} versus ${fmt(chanceMax, 2)} expected with no real edge with ${howMany}. Passing this test is a necessary condition, not a sufficient one: it rules out that the result comes only from trying a lot, but it does not validate the strategy.`), 'stats');
+        L(`Sharpe máximo${sharpeTest.period === 'oos' ? ' en el forward' : ''}${among} ${fmt(observedMax, 2)}. Con ${howMany} y ninguna ventaja real, el mejor pasaría de ${fmt(chanceMax, 2)} solo el ${lvlOut}\u00A0% de las veces. Superar este contraste es condición necesaria, no suficiente: descarta, con ese margen, que todo venga de haber probado mucho. Dice que en tus pasadas hay algo, no cuál de ellas lo tiene ni cuánto, y no valida la estrategia.`,
+          `Maximum Sharpe${sharpeTest.period === 'oos' ? ' on the forward' : ''}${among} ${fmt(observedMax, 2)}. With ${howMany} and no real edge, the best would exceed ${fmt(chanceMax, 2)} only ${lvlOut}% of the time. Passing this test is a necessary condition, not a sufficient one: it rules out, with that margin, that everything comes from trying a lot. It says there is something in your passes, not which of them has it or how much, and it does not validate the strategy.`), 'stats');
     }
+  }
+
+  // Qué esperar de la recomendada, descontada la selección (core/shrink.js). No mueve el
+  // nivel: es una cifra para planificar, y su peso en los niveles no se ha calibrado en el
+  // banco (bench/PREREGISTRO.md, enmienda del 2026-10-14).
+  const shrinkRep = shrinkage && shrinkage.usable && bestPlateau
+    ? (shrinkage.predictions || []).find((pr) => pr.index === bestPlateau.representative)
+    : null;
+  if (shrinkRep && Number.isFinite(shrinkRep.expected)) {
+    const { beta, betaLo, betaHi, family } = shrinkage;
+    const keep = (v) => fmt(100 * Math.min(1, Math.max(0, v)), 0);
+    const distinct = shrinkRep.ownLo > 0;
+    const hasO = Number.isFinite(shrinkRep.observedOos);
+    const ownEs = distinct
+      ? ` Su ventaja sobre ellas, de unos ${fmt(shrinkRep.own, 2)} por operación, se distingue de cero: su límite inferior es ${fmt(shrinkRep.ownLo, 2)}. En el banco de pruebas, sin ventaja real esto sale entre el 5 y el 9\u00A0% de las veces.`
+      : ` Su ventaja sobre ellas (${fmt(shrinkRep.own, 2)} por operación) no se distingue de cero: con estos datos no se puede decir que sea mejor que una cualquiera de las que cumplen tus mínimos. Lo que tiene de bueno lo tiene la familia entera.`;
+    const ownEn = distinct
+      ? ` Its edge over them, about ${fmt(shrinkRep.own, 2)} per trade, can be told apart from zero: its lower bound is ${fmt(shrinkRep.ownLo, 2)}. In the test bench, with no real edge this happens 5 to 9% of the time.`
+      : ` Its edge over them (${fmt(shrinkRep.own, 2)} per trade) cannot be told apart from zero: with this data you cannot say it is better than any configuration that meets your minimums. What it has that is good, the whole family has.`;
+    add(distinct ? SEV.INFO : SEV.WARN,
+      L(`Qué esperar de la recomendada: unos ${fmt(shrinkRep.expected, 2)} por operación${hasO ? `, no los ${fmt(shrinkRep.observedOos, 2)} del forward` : ''}`,
+        `What to expect from the recommended one: about ${fmt(shrinkRep.expected, 2)} per trade${hasO ? `, not the ${fmt(shrinkRep.observedOos, 2)} of the forward` : ''}`),
+      L(`La pasada ${shrinkRep.id} sacó ${fmt(shrinkRep.observedIs, 2)} por operación en el periodo optimizado${hasO ? ` y ${fmt(shrinkRep.observedOos, 2)} en el forward` : ' (MT5 no la pasó al forward)'}, en la moneda de la cuenta. De cada 100 que una configuración saca de más que las demás en el periodo optimizado, en el forward conserva unas ${keep(beta)} (entre ${keep(betaLo)} y ${keep(betaHi)}, al 95\u00A0%): el resto era suerte del periodo. Descontado eso, y medida junto a sus vecinas, cabe esperar unos ${fmt(shrinkRep.expected, 2)} por operación, frente a ${fmt(family, 2)} de una configuración cualquiera de las que cumplen tus mínimos.${ownEs} Es una estimación prudente: en el banco de pruebas, cuando hay ventaja real se queda corta, no se pasa. Supone que el próximo periodo se parece al forward: un cambio de régimen mueve a toda la familia a la vez, y eso no lo anticipa ningún dato pasado. Planifica con esta cifra, no con la del forward ni con la del periodo optimizado.`,
+        `Pass ${shrinkRep.id} made ${fmt(shrinkRep.observedIs, 2)} per trade on the optimized period${hasO ? ` and ${fmt(shrinkRep.observedOos, 2)} on the forward` : ' (MT5 did not pass it to the forward)'}, in the account currency. Of every 100 a configuration makes above the rest on the optimized period, it keeps about ${keep(beta)} on the forward (between ${keep(betaLo)} and ${keep(betaHi)}, at 95%): the rest was luck of the period. Net of that, and measured together with its neighbors, you can expect about ${fmt(shrinkRep.expected, 2)} per trade, versus ${fmt(family, 2)} for any configuration that meets your minimums.${ownEn} It is a cautious estimate: in the test bench, when there is a real edge it falls short rather than overshooting. It assumes the next period resembles the forward: a regime change moves the whole family at once, and no past data anticipates that. Plan with this figure, not the forward or optimized-period one.`),
+      'stats');
+    tableOnly();
   }
 
   // ---- Avisos metodologicos
@@ -577,10 +617,26 @@ export function buildVerdict(ctx) {
   }
 
   if (integrity) {
-    if (integrity.provenance && integrity.provenance.checked && integrity.provenance.mismatches > 0) {
-      add(SEV.CRITICAL, L('Los dos archivos no parecen de la misma optimización', 'The two files do not appear to be from the same optimization'),
-        L(`En ${integrity.provenance.mismatches} ${pl(integrity.provenance.mismatches, 'fila', 'filas')} el resultado del backtest del archivo forward no coincide con el del archivo de la optimización. Revisa que no hayas mezclado exportaciones.`,
-          `In ${integrity.provenance.mismatches} ${pl(integrity.provenance.mismatches, 'row', 'rows')} the forward file's backtest result does not match the optimization file. Check that you have not mixed exports.`), 'integrity');
+    const prov = integrity.provenance;
+    if (prov && prov.checked && prov.mismatches > 0) {
+      // Mezclar dos exportaciones cambia el Result de casi todas las filas (por encima del
+      // 2 % el análisis ni empieza). Unas pocas filas sueltas que no cuadran, con el resto
+      // idéntico, son una anomalía de esas filas, no otra optimización: se nombran y se
+      // avisa sin dar por mala toda la auditoría.
+      const share = prov.compared ? prov.mismatches / prov.compared : 1;
+      const ids = prov.ids && prov.ids.length
+        ? prov.ids.join(', ') + (prov.mismatches > prov.ids.length ? '…' : '')
+        : '';
+      if (share >= PROVENANCE_CRITICAL_SHARE) {
+        add(SEV.CRITICAL, L('Los dos archivos no parecen de la misma optimización', 'The two files do not appear to be from the same optimization'),
+          L(`En ${prov.mismatches} de ${prov.compared} filas (${fmt(100 * share, 1)}\u00A0%) el resultado del backtest del archivo forward no coincide con el del archivo de la optimización. Revisa que no hayas mezclado exportaciones.`,
+            `In ${prov.mismatches} of ${prov.compared} rows (${fmt(100 * share, 1)}%) the forward file's backtest result does not match the optimization file. Check that you have not mixed exports.`), 'integrity');
+      } else {
+        add(SEV.WARN, L(`${prov.mismatches} ${pl(prov.mismatches, 'pasada no cuadra', 'pasadas no cuadran')} entre los dos archivos`, `${prov.mismatches} ${pl(prov.mismatches, 'pass does', 'passes do')} not match between the two files`),
+          L(`En ${ids ? (prov.mismatches === 1 ? `la pasada ${ids}` : `las pasadas ${ids}`) : `${prov.mismatches} ${pl(prov.mismatches, 'fila', 'filas')}`}, el resultado del backtest del archivo forward no coincide con el del archivo de la optimización. Las otras ${prov.compared - prov.mismatches} cuadran, así que los archivos son de la misma optimización: es una anomalía de ${pl(prov.mismatches, 'esa fila', 'esas filas')} y no cambia el análisis. ${prov.mismatches === 1 ? 'Si es la que vas a usar' : 'Si una de ellas es la que vas a usar'}, repítela en el probador.`,
+            `In ${ids ? (prov.mismatches === 1 ? `pass ${ids}` : `passes ${ids}`) : `${prov.mismatches} ${pl(prov.mismatches, 'row', 'rows')}`}, the forward file's backtest result does not match the optimization file. The other ${prov.compared - prov.mismatches} match, so both files come from the same optimization: it is an anomaly in ${pl(prov.mismatches, 'that row', 'those rows')} and does not change the analysis. ${prov.mismatches === 1 ? 'If it is the one you will use' : 'If one of them is the one you will use'}, rerun it in the tester.`), 'integrity');
+        tableOnly();
+      }
     }
     if (integrity.forwardSelectionSuspect) {
       const pct = Number.isFinite(integrity.forwardRowRatio)
@@ -760,8 +816,10 @@ function gateShortName(token) {
  * la tabla (lo que distingue a esa fila) y `detail` la frase completa, con las cifras.
  */
 export function peakRejectTags(p, opts = {}) {
-  const minSupport = opts.minSupport ?? 4;
-  const plateauFloorQuality = opts.plateauFloorQuality ?? 0.42;
+  // Las mismas condiciones que exige el motor a una meseta (engine.js#plateauCandidates).
+  const minSupport = opts.minSupport ?? ENGINE_DEFAULTS.minSupport;
+  const plateauFloorQuality = opts.plateauFloorQuality ?? ENGINE_DEFAULTS.plateauFloorQuality;
+  const minFracPass = opts.plateauMinFracPass ?? ENGINE_DEFAULTS.plateauMinFracPass;
   const out = [];
   const tagged = (tag, detail) => out.push({ tag, detail });
   if (p.st.support < minSupport) {
@@ -796,7 +854,7 @@ export function peakRejectTags(p, opts = {}) {
         L(`no cumple tus mínimos (${parts.join(' · ')})`, `does not meet your minimums (${parts.join(' · ')})`));
     }
   }
-  if (Number.isFinite(p.st.fracPass) && p.st.fracPass < 0.9) {
+  if (Number.isFinite(p.st.fracPass) && p.st.fracPass < minFracPass) {
     tagged(L(`${fmt(100 * p.st.fracPass, 0)}\u00A0% de vecinas cumple`, `${fmt(100 * p.st.fracPass, 0)}% of neighbors pass`),
       L(`solo el ${fmt(100 * p.st.fracPass, 0)}\u00A0% de sus vecinas cumple tus mínimos`,
         `only ${fmt(100 * p.st.fracPass, 0)}% of its neighbors clear the minimums`));
@@ -809,8 +867,8 @@ export function peakRejectTags(p, opts = {}) {
   if (!out.length) {
     // Si su robustez sí llega, lo que falla es que su zona conexa tiene menos configuraciones
     // de las que pide una meseta (engine.js, plateauMinSize): «poca robustez» era falso.
-    const minRobust = opts.plateauMinRobust ?? 50;
-    const minSize = opts.plateauMinSize ?? 3;
+    const minRobust = opts.plateauMinRobust ?? ENGINE_DEFAULTS.plateauMinRobust;
+    const minSize = opts.plateauMinSize ?? ENGINE_DEFAULTS.plateauMinSize;
     if (Number.isFinite(p.robust) && p.robust >= minRobust) {
       tagged(L('Zona demasiado pequeña', 'Zone too small'),
         L(`cumple lo que se pide a una meseta, pero forma una zona de menos de ${minSize} configuraciones así`,
@@ -842,7 +900,6 @@ export function rebuildLocalizedCopy(analysis) {
   const tiedList = tied.length > 1 ? tied : [];
   const verdict = buildVerdict({
     gatePassCount: m.gatePassCount,
-    discoverPassCount: m.discoverPassCount,
     searchPassCount: m.searchPassCount,
     forwardCount: m.forwardCount,
     missingMetrics: m.missingMetrics,
@@ -852,11 +909,10 @@ export function rebuildLocalizedCopy(analysis) {
     plateaus,
     fragility: s.fragility,
     fragilityQuality: s.fragilityQuality,
-    fragilityMargin: s.fragilityMargin,
     fragilityFolds: s.fragilityFolds,
     fragilityAsymmetry: s.fragilityAsymmetry,
-    fragilityWorstDirection: s.fragilityWorstDirection,
     sharpeTest: s.sharpeTest,
+    shrinkage: s.shrinkage,
     spearman: s.spearmanCriterion,
     spearmanQuality: s.spearmanQuality,
     coverage: m.coverage,
@@ -887,11 +943,9 @@ export function rebuildLocalizedCopy(analysis) {
       : null,
     bestPlateau,
   });
-  const peakOpts = {
-    minSupport: (m.policy && m.policy.minSupport) || 4,
-    plateauFloorQuality: 0.42,
-  };
-  // ENGINE opts live on analysis via meta if we stored them; use defaults matching engine.
+  // Con los umbrales con que se analizó (meta.peakOpts): sin ellos, al cambiar de idioma los
+  // motivos se calculaban con los de por defecto aunque el análisis usara otros (BENCH_OPTS).
+  const peakOpts = m.peakOpts || {};
   const peaks = (analysis.peaks || []).map((p) => ({
     ...p,
     reasons: peakRejectReasons(p, peakOpts),

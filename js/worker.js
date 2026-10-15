@@ -1,11 +1,11 @@
 // El análisis corre fuera del hilo principal: una rejilla completa de 100.000
 // pasadas bloquearia la pestana durante segundos si se ejecutase en la interfaz.
 
-import { parseTable, finishTable } from '../core/parse.js';
+import { parseTable, finishTable, isZip } from '../core/parse.js';
 import { preflightSummary, roleFromTable } from '../core/schema.js';
 import { gridLooksLikeReport } from '../core/report.js';
 import { runAnalysis } from '../core/analysis.js';
-import { setLocale } from './i18n.js';
+import { setLocale, L } from './i18n.js';
 import { tradesMonteCarlo, tradesForecast } from '../core/trades/mc-report.js';
 import { AnalysisError, CODE, withCode } from '../core/errors.js';
 
@@ -20,10 +20,6 @@ function remember(key, table) {
   tableCache.set(key, table);
   while (tableCache.size > CACHE_MAX) tableCache.delete(tableCache.keys().next().value);
 }
-const isZip = (buffer) => {
-  const b = new Uint8Array(buffer, 0, Math.min(2, buffer.byteLength));
-  return b[0] === 0x50 && b[1] === 0x4b;
-};
 
 // Un .xlsx se descomprime aquí y no en la página: antes se leía en el hilo principal hasta
 // cuatro veces (detectar si era informe, detectar el periodo, comprobación previa y
@@ -90,7 +86,7 @@ self.onmessage = async (event) => {
       post('done', { summary: preflightSummary(table) });
       return;
     }
-    post('progress', { pct: 2, label: locale === 'en' ? 'Reading files' : 'Leyendo archivos' });
+    post('progress', { pct: 2, label: L('Leyendo archivos', 'Reading files') });
     const isTable = await tableFor(event.data.isTable, event.data.isKey, isBuffer, isName);
     const oosTable = await tableFor(event.data.oosTable, event.data.oosKey, oosBuffer, oosName);
     const analysis = runAnalysis({
