@@ -7,7 +7,7 @@ import { runAnalysis } from '../core/analysis.js';
 import {
   fingerprint, summarize, emptyStore, parseStore, addEntry, previousFor, attempts,
   insideSpan, compare, dataSignature, HISTORY_MAX, HISTORY_VERSION,
-  addUnseenTry, earlierCountedTries, UNSEEN_TRIES_MAX, otherConfigOnSameDates,
+  addUnseenTry, earlierCountedTries, UNSEEN_TRIES_MAX, otherConfigOnSameDates, dropWholeReportTry,
 } from '../core/history.js';
 
 let failures = 0;
@@ -188,6 +188,17 @@ section('Previsión del Monte Carlo: otra configuración comparada con las misma
   check('la misma meseta en otro tramo no cuenta', otherConfigOnSameDates(tries, { from: '2024-01-01', to: '2024-03-31', plateau: 1 }).length === 0);
   check('otra meseta en fechas que no se tocan no cuenta', otherConfigOnSameDates(tries, { from: '2021-01-01', to: '2021-12-31', plateau: 1 }).length === 0);
   check('sin fechas del informe, nada', otherConfigOnSameDates(tries, { from: null, to: null, plateau: 1 }).length === 0);
+}
+
+section('Fecha de corte: la comparación con el informe entero no cuenta como otro intento');
+{
+  const tries = [
+    { key: 'entero', file: 'largo.html', from: '2021-01-04', to: '2025-12-26' },
+    { key: 'corte1', file: 'largo.html', from: '2024-01-01', to: '2025-12-26' },
+    { key: 'otro', file: 'otro.html', from: '2021-01-04', to: '2025-12-26' },
+  ];
+  const left = dropWholeReportTry(tries, { file: 'largo.html', from: '2021-01-04', to: '2025-12-26' }).map((t) => t.key).join();
+  check('se quita la del informe entero del mismo archivo; se quedan otra fecha de corte y otro archivo', left === 'corte1,otro', left);
 }
 
 console.log(`\n${'='.repeat(70)}\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas\n${'='.repeat(70)}`);

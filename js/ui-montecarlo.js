@@ -20,6 +20,7 @@ import { radiographyChart } from './charts.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, num, int, pct, esc } from './ui-state.js';
 import { runInWorker } from './ui-audit.js';
+import { reportCut, activeCut, cutWindow, unseenValuesFromReport } from './ui-cut.js';
 import { repeatedPeriodText } from './ui-verdict.js';
 
 /** Estado del Monte Carlo del informe en pantalla. Fuera de state.unseen: «Limpiar» no lo borra. */
@@ -27,20 +28,13 @@ function mcState() {
   if (!state.tradesMC || state.tradesMC.report !== state.report) {
     state.tradesMC = {
       report: state.report, sizing: null, status: 'idle', result: null, error: null, confirm: false, ddLimit: '', forecast: null,
-      // Backtest largo: split 'no' (todo posterior a la elección) o 'yes' (con fechas de corte).
-      split: 'no', cuts: { chooseEnd: '' }, view: null,
+      view: null,
     };
   }
   return state.tradesMC;
 }
 
 const rerender = () => { if (state.tab === 'unseen' && api.render) api.render(); };
-
-/** Fechas de corte que se mandan al worker, o undefined si el informe es entero posterior a la elección. */
-function activeCuts(mc) {
-  if (mc.split !== 'yes' || !mc.cuts.chooseEnd) return undefined;
-  return { chooseEnd: mc.cuts.chooseEnd };
-}
 
 /** Radiografía y puertas, al cargar el informe o al cambiar el tipo de lote. */
 export async function startTradesMC() {
@@ -51,10 +45,13 @@ export async function startTradesMC() {
   mc.result = null;
   mc.error = null;
   mc.forecast = null;
+  // Otra fecha de corte, otros datos: la confirmación y el tramo del gráfico se piden de nuevo.
+  const cutKey = (activeCut() || {}).chooseEnd || '';
+  if (mc.cutKey !== cutKey) { mc.confirm = false; mc.view = null; mc.cutKey = cutKey; }
   const token = {};
   mc.token = token;
   try {
-    const result = await runInWorker({ kind: 'tradesMC', deals: rep.deals, sizing: mc.sizing || undefined, cuts: activeCuts(mc) });
+    const result = await runInWorker({ kind: 'tradesMC', deals: rep.deals, sizing: mc.sizing || undefined, cuts: activeCut() });
     if (mc.token !== token || state.tradesMC !== mc) return;
     mc.result = result;
     mc.status = 'done';
@@ -77,7 +74,7 @@ async function startForecast() {
   mc.token = token;
   rerender();
   try {
-    const result = await runInWorker({ kind: 'tradesForecast', deals: rep.deals, sizing: mc.result.sizing, ddLimit, cuts: activeCuts(mc) });
+    const result = await runInWorker({ kind: 'tradesForecast', deals: rep.deals, sizing: mc.result.sizing, ddLimit, cuts: activeCut() });
     if (mc.token !== token || state.tradesMC !== mc) return;
     mc.forecast = { status: 'done', result, ddLimit };
   } catch (err) {
@@ -101,20 +98,6 @@ export function initMonteCarlo() {
       mc.sizing = t.value;
       mc.confirm = false;
       startTradesMC();
-      rerender();
-    } else if (t && t.name === 'mcSplit') {
-      const mc = mcState();
-      mc.split = t.value;
-      mc.confirm = false;
-      mc.view = null;
-      startTradesMC();
-      rerender();
-    } else if (t && t.id === 'mcChooseEnd') {
-      const mc = mcState();
-      mc.cuts.chooseEnd = t.value;
-      mc.confirm = false;
-      mc.view = null;
-      if (mc.cuts.chooseEnd) startTradesMC();
       rerender();
     } else if (t && t.id === 'mcView') {
       mcState().view = t.value;
@@ -208,35 +191,6 @@ const SEGMENT_LABEL = () => ({
 });
 /** Solo los dos trozos que entiende cualquiera: antes y después de elegir. */
 const shownSegments = (res) => res.segments.filter((sg) => sg.key === 'used' || sg.key === 'clean');
-
-const CUT_ERROR = (e, period) => {
-  const range = period ? L(`del ${fdate(period.from)} al ${fdate(period.to)}`, `from ${fdate(period.from)} to ${fdate(period.to)}`) : '';
-  switch (e) {
-    case 'sin_operaciones_antes': return L(`Esa fecha es anterior a la primera operación: las operaciones del informe van ${range}.`, `That date is before the first trade: the report's trades run ${range}.`);
-    case 'sin_operaciones_despues': return L(`Después de esa fecha no hay operaciones: las del informe van ${range}. Si no miraste ninguna de estas fechas para elegir, marca «No».`, `There are no trades after that date: the report's trades run ${range}. If you did not look at any of these dates for choosing, pick "No".`);
-    case 'fecha_no_valida': return L('Esa fecha no es válida.', 'That date is not valid.');
-    default: return L('El informe no trae fechas de cierre reconocibles.', "The report doesn't have recognizable closing dates.");
-  }
-};
-
-/** ¿El informe incluye fechas usadas para elegir? Con fechas de corte, se parte en tramos. */
-function periodsRow(mc, res) {
-  const rep = state.report;
-  const day = (d) => (d instanceof Date && !Number.isNaN(d.valueOf()) ? d.toISOString().slice(0, 10) : '');
-  const min = (res.period && res.period.from) || day(rep.meta.from);
-  const max = (res.period && res.period.to) || day(rep.meta.to);
-  const yes = mc.split === 'yes';
-  const radio = (v, text) => `<label><input type="radio" name="mcSplit" value="${v}"${mc.split === v ? ' checked' : ''}> <span>${text}</span></label>`;
-  const dates = yes ? `<label class="field mc-date"><span>${L('¿Hasta qué día miraste para elegir? (optimización y forward incluidos)', 'Up to what day did you look for choosing? (optimization and forward included)')}</span>
-        <input type="date" id="mcChooseEnd" value="${esc(mc.cuts.chooseEnd)}" min="${esc(min)}" max="${esc(max)}"></label>
-    <small>${L(`Las operaciones del informe van del ${fdate(min)} al ${fdate(max)}. Cada una cuenta el día que se cerró.`, `The report's trades run from ${fdate(min)} to ${fdate(max)}. Each one counts on the day it was closed.`)}</small>` : '';
-  const err = res.reason === 'cortes' ? `<p class="inline-warn">${esc(CUT_ERROR(res.cutError, res.period))}</p>` : '';
-  return `<fieldset class="mc-periods">
-      <legend>${L('¿Este informe incluye días que miraste para elegir la configuración?', 'Does this report include days you looked at to choose the configuration?')}</legend>
-      <div class="mc-radios">${radio('no', L('No', 'No'))}${radio('yes', L('Sí', 'Yes'))}</div>
-      ${dates}${err}
-    </fieldset>`;
-}
 
 const orderWord = (worse) => (worse >= 0.8 ? L('favorable', 'favorable') : worse <= 0.2 ? L('desfavorable', 'unfavorable') : L('normal', 'normal'));
 
@@ -337,13 +291,12 @@ function processBlockers(a, p, res) {
       ? L('Este informe es de otra configuración, no de la que estás validando.', 'This report is from another configuration, not the one you are validating.')
       : L('No consta que este informe sea de la configuración que estás validando (al informe le faltan parámetros optimizados).', 'It is not confirmed that this report is from the configuration you are validating (the report is missing optimized parameters).'));
   }
-  const repeated = pcmp.matches ? repeatedPeriod(p.record, rep.metrics) : null;
+  // Con fecha de corte, lo que se compara es lo de después (js/ui-cut.js).
+  const repeated = pcmp.matches ? repeatedPeriod(p.record, unseenValuesFromReport()) : null;
   if (repeated) out.push(repeatedPeriodText(repeated, p.record.id).short);
   // Otra configuración (otra meseta) ya comparada con fechas que se solapan: si se eligió entre
   // ellas, este tramo ya no es ciego. La misma configuración en otro tramo no es elegir.
-  const day = (d) => (d instanceof Date && !Number.isNaN(d.valueOf()) ? d.toISOString().slice(0, 10) : null);
-  const from = res.cuts ? res.cleanFrom : day(rep.meta.from);
-  const to = res.cuts ? res.cleanTo : day(rep.meta.to);
+  const { from, to } = cutWindow() || {};
   const current = Math.min(state.unseen.plateauIndex || 0, a.plateaus.length - 1) + 1;
   const overlapping = otherConfigOnSameDates(state.unseenTries, { from, to, plateau: current });
   if (overlapping.length) {
@@ -406,8 +359,7 @@ function forecastCards(f, ddLimit) {
 }
 
 function forecastBlock(a, p, res) {
-  const mcs = mcState();
-  if (mcs.split === 'yes' && !res.cuts) {
+  if (reportCut().split === 'yes' && !res.cuts) {
     return `<div class="mc-off"><p>${esc(L('Indica arriba hasta qué día miraste para elegir: la previsión solo se calcula con lo de después.', 'Enter above up to what day you looked for choosing: the forecast is only computed with what comes after.'))}</p></div>`;
   }
   const blockers = [...dataBlockers(res), ...processBlockers(a, p, res)];
@@ -469,7 +421,7 @@ export function renderMonteCarlo(a, p) {
     return `${sizingRow(res)}<div class="mc-off"><p>${esc(MARTINGALE_TEXT())}</p></div>`;
   }
   if (res.reason === 'cortes') {
-    return `${sizingRow(res)}${periodsRow(mc, res)}`;
+    return `${sizingRow(res)}<div class="mc-off"><p>${esc(L('Corrige arriba la fecha hasta la que miraste para elegir.', 'Fix above the date up to which you looked for choosing.'))}</p></div>`;
   }
   if (!res.usable) {
     const why = res.reason === 'balance_no_valido'
@@ -479,7 +431,6 @@ export function renderMonteCarlo(a, p) {
   }
   const view = res.segments ? res.segments.find((sg) => sg.key === viewKey(res)) : null;
   return `${sizingRow(res)}
-    ${periodsRow(mc, res)}
     <h4 class="mc-h">${L('Radiografía: ¿fue suerte el orden?', 'Radiography: was the order luck?')}</h4>
     ${res.segments ? segmentsTable(res) : ''}
     ${radiographyBlock(view || res)}

@@ -11,6 +11,7 @@ import {
 } from '../core/history.js';
 import { L, localeTag, pctSign } from './i18n.js';
 import { state, api, esc, num, int, paramHtml } from './ui-state.js';
+import { cutWindow } from './ui-cut.js';
 import { displayVerdictLevel, levelName, holdoutFact } from './ui-verdict.js';
 
 const KEY = 'orometra.history';
@@ -58,8 +59,6 @@ export function recordAnalysis(analysis, { isDemo = state.isDemo } = {}) {
   }
 }
 
-/** Fecha (AAAA-MM-DD) de un Date del informe, o null. */
-const day = (d) => (d instanceof Date && !Number.isNaN(d.valueOf()) ? d.toISOString().slice(0, 10) : null);
 
 /**
  * El backtest que se acaba de comparar, como intento del periodo no visto. Lo identifican
@@ -70,8 +69,10 @@ function currentTry(analysis) {
   const res = state.unseen.result;
   const o = state.unseen.observed || {};
   const rep = state.report;
-  const from = rep ? day(rep.meta.from) : null;
-  const to = rep ? day(rep.meta.to) : null;
+  // Con fecha de corte (js/ui-cut.js), las fechas del intento son las de después de elegir.
+  const w = cutWindow();
+  const from = w ? w.from : null;
+  const to = w ? w.to : null;
   const num0 = (v) => (Number.isFinite(v) ? v : null);
   const hold = holdoutFact(analysis);
   return {
@@ -145,7 +146,8 @@ function currentKeyOf() {
   const o = state.unseen.observed || {};
   const rep = state.report;
   const num0 = (v) => (Number.isFinite(v) ? v : null);
-  return [rep ? day(rep.meta.from) || '' : '', rep ? day(rep.meta.to) || '' : '', num0(o.trades), num0(o.profit)].join('|');
+  const w = rep ? cutWindow() : null;
+  return [w ? w.from || '' : '', w ? w.to || '' : '', num0(o.trades), num0(o.profit)].join('|');
 }
 
 // ------------------------------------------------------------------ formato

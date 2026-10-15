@@ -370,6 +370,10 @@ function parseDeals(rows) {
       }
     }
     const commission = commissionOf(c) + carryCommission;
+    // La comisión de las aperturas, aparte: MT5 calcula el factor de beneficio por transacción, y
+    // la apertura es una transacción con beneficio 0 que cuenta como pérdida (comprobado con un
+    // informe real: así sale exacto). Lo usa core/trades/mc-report.js#summaryFromDeals.
+    const openCommission = carryCommission;
     const swap = swapOf(c) + carrySwap;
     carryCommission = 0;
     carrySwap = 0;
@@ -381,6 +385,7 @@ function parseDeals(rows) {
       // exactamente el beneficio neto del informe.
       profit,
       commission,
+      openCommission,
       swap,
       cost,
       net: profit + cost,

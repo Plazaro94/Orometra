@@ -1,7 +1,7 @@
 // Pruebas de respuesta conocida para core/trades/mc-report.js: el backtest largo partido en
 // tramos por fechas de corte (docs/MONTECARLO.md, 6.1).
 
-import { splitByCuts, tradesMonteCarlo, FORECAST_MIN_DAYS } from '../core/trades/mc-report.js';
+import { splitByCuts, tradesMonteCarlo, summaryFromDeals, FORECAST_MIN_DAYS } from '../core/trades/mc-report.js';
 import { makeRng } from '../core/rng.js';
 
 let failures = 0;
@@ -75,6 +75,20 @@ section('La previsión mira solo el tramo limpio');
   check('la radiografía de arriba es la del tramo limpio', cut.radiography.trades === cut.segments[1].trades);
   const totalClean = ds.filter((d) => d.time.slice(0, 10) > '2023.12.29').reduce((a, d) => a + d.net, 0);
   check('el resultado del tramo limpio es la suma de sus operaciones', Math.abs(cut.segments[1].radiography.total - totalClean) < 1e-9);
+}
+
+section('Cifras para el contraste con la meseta, como las calcula MT5');
+{
+  // A gana 10 brutos y B pierde 5; cada una paga 1 al abrir y 1 al cerrar. MT5 suma por
+  // transacción: ganancias 10 − 1 = 9; pérdidas: las dos aperturas (1 + 1) y el cierre de B (5 + 1).
+  const ds = [
+    { profit: 10, swap: 0, commission: -2, openCommission: -1, net: 8 },
+    { profit: -5, swap: 0, commission: -2, openCommission: -1, net: -7 },
+  ];
+  const s = summaryFromDeals(ds);
+  check('operaciones y beneficio neto', s.trades === 2 && s.profit === 1);
+  check('factor de beneficio por transacción: 9 / 8 = 1,125', Math.abs(s.profitFactor - 1.125) < 1e-12, String(s.profitFactor));
+  check('sin pérdidas, no hay factor de beneficio', Number.isNaN(summaryFromDeals([{ profit: 3, swap: 0, commission: 0, openCommission: 0, net: 3 }]).profitFactor));
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks}`);

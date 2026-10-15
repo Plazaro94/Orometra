@@ -82,6 +82,28 @@ export function splitByCuts(deals, cuts = {}) {
   return { ok: true, segments, clean: segments[segments.length - 1].deals, period };
 }
 
+/**
+ * Las cifras del contraste con la meseta (core/unseen.js) que se pueden calcular desde las
+ * operaciones, como las calcula MT5: número de operaciones, beneficio neto y factor de beneficio.
+ * MT5 suma por transacción: la apertura es una transacción con beneficio 0 y su comisión cuenta
+ * como pérdida (con el primer informe real sale exacto: 1,464124). El drawdown y el factor de
+ * recuperación de MT5 miden la equidad y el Sharpe usa su propia fórmula: desde las operaciones
+ * no se pueden reproducir y no se dan.
+ *
+ * @param {object[]} deals  operaciones de cierre (core/report.js), con `openCommission`
+ * @returns {{trades:number, profit:number, profitFactor:number}}
+ */
+export function summaryFromDeals(deals) {
+  let gross = 0; let loss = 0; let profit = 0;
+  for (const d of deals) {
+    const open = Number.isFinite(d.openCommission) ? d.openCommission : 0;
+    const close = (Number.isFinite(d.profit) ? d.profit : 0) + (Number.isFinite(d.swap) ? d.swap : 0) + (Number.isFinite(d.commission) ? d.commission : 0) - open;
+    for (const x of [close, open]) { if (x > 0) gross += x; else loss -= x; }
+    profit += Number.isFinite(d.net) ? d.net : 0;
+  }
+  return { trades: deals.length, profit, profitFactor: loss > 0 ? gross / loss : NaN };
+}
+
 /** Radiografía, puertas y si los datos permiten una previsión, para un conjunto de operaciones. */
 function analyze(deals, sizing) {
   const s = series(deals, sizing);

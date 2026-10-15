@@ -1,7 +1,12 @@
 // Estudio (no forma parte de los criterios prerregistrados): ¿qué tal se porta el contraste
 // del periodo no visto (core/unseen.js) con verdad conocida?
 //
-//   node bench/unseen.js [semillas por escenario]
+//   node bench/unseen.js [semillas por escenario] [--solo-operaciones]
+//
+// --solo-operaciones: solo las cifras que se pueden calcular desde las operaciones del informe
+// (operaciones, beneficio y factor de beneficio), como cuando el usuario da una fecha de corte en
+// un backtest largo (js/ui-unseen.js). El drawdown, el factor de recuperación y el Sharpe de MT5
+// no se pueden reproducir desde las operaciones y se quedan fuera.
 //
 // Para cada caso en que el motor propone meseta, se simula un periodo no visto de la
 // configuración elegida: su ventaja verdadera fuera de la muestra (`edgeUnseen`) más una
@@ -19,7 +24,8 @@ import { evaluateUnseen } from '../core/unseen.js';
 import { setLocale } from '../js/i18n.js';
 
 setLocale('es');
-const N = Number(process.argv[2] || 100);
+const N = Number(process.argv.slice(2).find((a) => /^\d+$/.test(a)) || 100);
+const TRADES_ONLY = process.argv.includes('--solo-operaciones');
 const SCEN = ['S3', 'S4', 'S7', 'S8', 'S6', 'S5'];
 const HELD = new Set(['S3', 'S4', 'S7', 'S8']);
 const DURATIONS = [1, 0.4, 0.2];
@@ -44,16 +50,19 @@ for (const s of SCEN) {
       const t = (tally[`${group}|${f}`] ||= { casos: 0, aviso: 0, fuera: 0, sinResultado: 0 });
       t.casos++;
       try {
-        const r = evaluateUnseen(a, p, {
-          trades, profit: m.profit, profitFactor: m.profitFactor, drawdown: m.drawdownPct,
-          recoveryFactor: m.recoveryFactor, sharpe: m.sharpe,
-        });
+        const r = evaluateUnseen(a, p, TRADES_ONLY
+          ? { trades, profit: m.profit, profitFactor: m.profitFactor }
+          : {
+            trades, profit: m.profit, profitFactor: m.profitFactor, drawdown: m.drawdownPct,
+            recoveryFactor: m.recoveryFactor, sharpe: m.sharpe,
+          });
         if (r.level !== 'normal') t.aviso++;
         if (r.level === 'outside') t.fuera++;
       } catch { t.sinResultado++; }
     }
   }
 }
+console.log(TRADES_ONLY ? 'Solo operaciones, beneficio y factor de beneficio' : 'Las seis cifras');
 console.log('grupo | duración (× forward) | casos | avisa (cola o fuera) | fuera');
 for (const group of ['ventaja intacta (S3/S4/S7/S8)', 'ventaja a la mitad (S6)', 'sin ventaja (S5)']) {
   for (const f of DURATIONS) {
