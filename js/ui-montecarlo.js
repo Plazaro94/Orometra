@@ -180,8 +180,8 @@ function gatesText(g) {
 }
 
 const VOL_CAVEAT = () => L(
-  'Ojo: con resultados muy desiguales, dos días extraordinarios cerca uno del otro pueden bastar para que salte este aviso. Es un error del lado prudente (niega cifras, no da cifras malas) y lo estamos mejorando.',
-  'Note: with very uneven results, two extraordinary days close to each other can be enough to trigger this warning. It errs on the side of caution (it withholds figures, it does not give bad ones) and we are improving it.',
+  'Ojo: con resultados muy desiguales, dos días extraordinarios cerca uno del otro pueden bastar para que salte este aviso. Es un error del lado prudente (niega cifras, no da cifras malas). Probamos dos detectores más robustos y ninguno cumplió las condiciones fijadas de antemano, así que se queda este.',
+  'Note: with very uneven results, two extraordinary days close to each other can be enough to trigger this warning. It errs on the side of caution (it withholds figures, it does not give bad ones). We tried two more robust detectors and neither met the conditions set in advance, so this one stays.',
 );
 
 // ------------------------------------------------------------------ tramos

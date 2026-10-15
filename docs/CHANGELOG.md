@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-10-15 — Monte Carlo: la enmienda 7 no cambia nada; el apartado queda cerrado
+
+Última ronda del método (enmienda 7, aprobada por delegación del autor): dos detectores de
+volatilidad más robustos (V1, sobre |e|; V2, sobre rangos) y una puerta de días con operaciones
+esperados en el horizonte para la previsión a 3 meses. Calibración con los casos 1-500 de siempre
+(`bench/results/REPORT-MC-e7-calib.md`), tal como salió:
+
+- **Por la regla fijada de antemano no se elige ningún cambio.** Exigía que la variante siguiera
+  apta a 12 meses desde 2 años, y en esta calibración tampoco la actual lo es (un suspenso del
+  lado prudente en el EA de muy baja frecuencia, como en la calibración 4). Y la puerta nueva no
+  hace falta en la calibración (3 meses ya aprueba sin ella), así que lo elegido es justo lo que
+  ya se examinó. Examinar otra vez lo mismo con casos nuevos sería repetir el examen hasta que
+  salga bien: **no hay examen 2** y queda como estaba (sin 3 meses).
+- **Fallo de redacción, declarado:** la intención era «no peor que el detector actual». Con esa
+  lectura habría salido V2, que niega menos cifras a los EAs con colas gruesas (11,3 % frente a
+  13,4 %) y daría 6 meses desde 1 año. No se aplica: cambiar la regla después de ver los datos es
+  lo que el prerregistro prohíbe. Queda para una versión futura, con prerregistro nuevo.
+- Con el histórico completo del autor, el detector actual salta (p < 0,001) y V1 y V2 no.
+- El aviso de la app ya no dice «lo estamos mejorando»: dice que se probaron dos detectores más
+  robustos y que ninguno cumplió las condiciones fijadas de antemano.
+
+Con esto el Monte Carlo queda terminado en esta versión (`docs/MONTECARLO.md`, «Cierre»).
+
 ## 2026-10-15 — Calidad del historial y caída de equidad frente a la de balance
 
 - La ficha del informe enseña la «Calidad del historial» tal como la da MT5. El informe no dice

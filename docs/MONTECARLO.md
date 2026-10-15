@@ -1,6 +1,6 @@
 # Monte Carlo sobre las operaciones de un backtest: diseño
 
-Estado: **en la app (pendiente del visto bueno del autor para publicar).** Diseño: 2026-10-13; interfaz: 2026-10-15.
+Estado: **terminado en esta versión y publicado.** Diseño: 2026-10-13; interfaz y cierre: 2026-10-15.
 
 Regla que manda sobre todo lo demás: **si el banco no aprueba un método, ese método no se
 publica; si ningún método aprueba, la herramienta no se construye**, y lo que hoy enseña la app
@@ -56,8 +56,18 @@ el banco. Lo vigente, en corto:
   gruesas, dos días extremos pueden dispararlo. En el informe real del autor salta en el
   histórico completo por dos ganancias de 5.187 y 6.361 separadas 9 días (recortándolas, p =
   0,08). Es un error del lado prudente (niega cifras, no da cifras malas), pero confunde.
-  Mejora pendiente: un detector robusto, que exigiría calibrar y examinar de nuevo.
+  La enmienda 7 probó dos detectores robustos (V1 y V2); por su regla, ninguno se elige y no hubo
+  examen 2 (ver «Cierre» más abajo). Queda como límite conocido.
 - **Qué recibe cada usuario:** sección 8.6. **Los gráficos:** sección 8.7.
+- **Cierre (2026-10-15).** La enmienda 7 fue la última ronda del método: ni el detector robusto
+  ni la puerta de días esperados en el horizonte cambian nada por su propia regla
+  (`bench/results/REPORT-MC-e7-calib.md`). El Monte Carlo queda así en esta versión: radiografía
+  para todos, previsión a 6 y 12 meses con 2 años limpios, sin 3 meses. Límites conocidos: el
+  detector de volatilidad salta a veces por dos días extremos; la previsión supone que el
+  mercado no cambia; sin probar con informes reales en `.html`, de cuentas de cobertura, con lote
+  proporcional ni con martingala; sin revisión estadística externa; sin abanico hacia delante ni
+  exportación. Para una versión futura, con prerregistro nuevo: V2 (rangos), que con la lectura
+  «no peor que V0» habría dado 6 meses desde 1 año de datos.
 - **Interfaz (2026-10-15).** En la pestaña del periodo no visto, sobre el informe cargado
   (`js/ui-montecarlo.js`; cálculo en el worker con `core/trades/mc-report.js`):
   - Tipo de lote deducido (`core/trades/sizing.js`: fijo, proporcional o martingala) y

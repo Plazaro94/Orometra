@@ -346,3 +346,21 @@ es; por debajo de *n_min* dice que no hay muestra.
   se vuelve a intentar en esta versión**.
   (h) Se informa, sin exigirse: si la variante elegida salta con el histórico completo del EA
   del autor, y cuántos de los casos de G4 detecta cada variante.
+  **Resultado (2026-10-15, `REPORT-MC-e7-calib.md`, casos 1-500, tal como salió).** Ninguna
+  variante cumple las condiciones de (e): en esta calibración tampoco V0 es apto a H = 252 desde
+  n ≤ 504 (G5b, DD > p50 en un 41,7 %, del lado prudente, como ya pasó en la calibración 4), así
+  que V1 (H = 252 desde n = 1.008 y una celda con más de un 20 % de rechazo) y V2 (H = 252 no apto)
+  no pueden «seguir» aptos. Se queda **V0**. Con V0, la m más pequeña que cumple (e) es **0**:
+  en la calibración, H = 63 ya es apto desde n = 252 sin la puerta nueva (en el examen 1 no lo fue).
+  Variante y m elegidas son, por tanto, las del examen 1: no hay ningún cambio que examinar, y
+  examinar otra vez el mismo método con casos nuevos sería repetir el examen hasta que salga bien.
+  **No se ejecuta el examen 2.** Por (g), se queda como estaba (V0, sin 3 meses) y queda como
+  límite conocido. Se declara además un fallo de redacción de esta enmienda: (e) exigía que la
+  variante «siguiera» apta a H = 252 desde n ≤ 504, cuando en la calibración V0 tampoco lo era; la
+  intención era «no peor que V0». Con esa lectura, V2 habría salido elegida (rechazo medio en G2,
+  G6, G6b y G12 de un 11,3 % frente a un 13,4 %, y H = 126 apto desde n = 252 en lugar de 504). No
+  se aplica: cambiar la regla después de ver la calibración es lo que este prerregistro prohíbe.
+  Queda anotado para una versión futura, con prerregistro nuevo. Informativo (h): con el histórico
+  completo del EA del autor, V0 salta (p < 0,001) y V1 y V2 no (p = 0,156 y 0,734); con lo
+  posterior a la elección, ninguna (p = 0,999, 0,579 y 0,162). Casos de G4 marcados antes de las
+  puertas: V0 83 %, V1 80 %, V2 67 %.

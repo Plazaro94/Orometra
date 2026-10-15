@@ -7,7 +7,7 @@ https://orometra.com.
 
 Antes de cambiar algo de fondo, lee lo que aplique:
 `README.md` (qué hace y por qué) · `docs/SPEC.md` (principios y normas) ·
-`docs/CHANGELOG.md` (historia y decisiones) · `docs/MONTECARLO.md` (Monte Carlo en rediseño) · `docs/MT5_ASSUMPTIONS.md` (qué se sabe de MT5
+`docs/CHANGELOG.md` (historia y decisiones) · `docs/MONTECARLO.md` (Monte Carlo: diseño, banco y límites) · `docs/MT5_ASSUMPTIONS.md` (qué se sabe de MT5
 y qué no) · `bench/PREREGISTRO.md` (cómo se valida el motor) · `DEPLOY.md` (publicación).
 
 ## Cómo trabajar con el autor
@@ -93,6 +93,10 @@ Antes de cada push: `npm test`, y `npm run test:e2e` si se toca la interfaz.
   `nombre=valor||…||N` en un parámetro de texto (SET-2; que guarda los enums como número ya
   está visto), y si las cabeceras del terminal en español coinciden con los patrones de
   `core/schema.js`.
+- **Monte Carlo terminado en esta versión** (`docs/MONTECARLO.md`, «Cierre»): sin previsión a
+  3 meses y con el detector de volatilidad de siempre (la enmienda 7 no eligió cambios). No se
+  reabre sin un prerregistro nuevo. Límites: sin informes reales en `.html`, de cobertura, con
+  lote proporcional ni con martingala; sin revisión externa.
 - Aceptado a propósito: `collapseToTopology` (`core/engine.js`) se queda con la mejor fila
   al agrupar configuraciones que solo difieren en parámetros planos; el sesgo es pequeño.
 - Aceptado a propósito: un enum que el XML trae como número (el `.set` lo delata con paso 0)
