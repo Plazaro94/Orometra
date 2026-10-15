@@ -296,3 +296,50 @@ es; por debajo de *n_min* dice que no hay muestra.
   aplicadas a ese percentil), y las puertas de rachas y volatilidad se aplican igual. Mínimo:
   30 operaciones. Casos 2.000.001 en adelante; si suspende, se corrige y se repite con casos
   nuevos (3.000.001 en adelante).
+- **Enmienda 7 — 2026-10-15, tras el examen y antes de generar ningún caso nuevo. BORRADOR:
+  pendiente del visto bueno del autor; no se ejecuta nada hasta tenerlo.** Última ronda del método
+  en esta versión. El examen (`REPORT-MC-exam1.md`) y la app publicada no se tocan.
+  Hallazgos que la motivan, todos del examen:
+  (a) **El detector de volatilidad agrupada reacciona de más a días extremos aislados.** Las dos
+  puertas juntas rechazan un 8-12 % en G1 y G11 (lo esperable con dos contrastes al 5 %, ~10 %),
+  pero un 12-18 % en G6 y G6b y un 13-15 % en G12, procesos sin volatilidad agrupada y con colas
+  gruesas. En el histórico completo del EA del autor salta por dos ganancias de 5.187 y 6.361
+  separadas 9 días (sin ellas, p = 0,084). Es un error del lado prudente (niega cifras), pero
+  deja sin previsión a quien podría tenerla.
+  (b) **A 3 meses (H = 63) M2bc no es apto con k = 100** por dos motivos: con n = 126, G3a y G4
+  (rachas y volatilidad que las puertas no ven con tan pocos días: la app nunca daría 3 meses con
+  n = 126) y, para cualquier n, **G5b** (90 % de días sin cierres): DD > p50 en un 40,6 % de los
+  casos (del lado prudente). Con k = 100, G5b solo pasa las puertas con n = 1.008, y entonces en
+  63 días hay unos 6 días con operaciones: la caída de 3 meses es casi siempre la de una o dos
+  operaciones, una distribución con saltos en la que la cifra del p50 no significa gran cosa.
+  Cambios que se evalúan:
+  (c) **Detector de volatilidad: tres variantes**, todas con 10 retardos y p < 0,05, sobre
+  eₜ = xₜ − x̄ de los resultados diarios: **V0**, el actual (Ljung-Box sobre eₜ², McLeod y Li,
+  1983); **V1**, Ljung-Box sobre |eₜ|; **V2**, Ljung-Box sobre los rangos de |eₜ| (no depende del
+  tamaño de los días extremos, solo de su orden). El detector de rachas (Dalla, Giraitis y
+  Phillips, 2020) y k = 100 no cambian.
+  (d) **Mínimo de días con operaciones esperados en el horizonte (m):** cuarta puerta, solo para
+  el horizonte que se pide: la previsión a H días exige (días con operaciones / n) × H ≥ m. Se
+  evalúa m ∈ {0, 10, 15, 20}.
+  (e) **Calibración:** casos 1-500, solo M2bc (es el único candidato), todos los procesos
+  exigidos, los 9 pares con H ≤ n/2, cada variante de (c) con cada m de (d). Para no repetir el
+  cálculo, en cada caso se calculan antes todas las puertas y M2bc se ejecuta una vez si alguna
+  combinación lo deja pasar; cada combinación se evalúa con los casos que deja pasar. Se elige,
+  en este orden: **la variante** con la menor tasa media de rechazo de las dos puertas en G2,
+  G6, G6b y G12, siempre que con ella M2bc siga apto para H = 126 y H = 252 desde n ≤ 504 y que
+  rechace como mucho un 20 % en los procesos sin rachas ni volatilidad (enmienda 5 d); si
+  ninguna baja esa tasa al menos 2 puntos respecto de V0, se queda V0. Después, **m**: el menor
+  que deje H = 63 apto desde n ≤ 252 sin empeorar el n_min de H = 126 ni de H = 252; si ninguno lo
+  consigue, H = 63 sigue fuera y m no se usa. Reglas de aptitud, bandas, Holm y procesos: los
+  del §6 con las enmiendas 4 y 5, sin cambios.
+  (f) **Examen:** M2bc con la variante y la m elegidas, congeladas en el commit que las fije;
+  casos **4.000.001-4.000.500** (no se han generado: los 2.000.001 en adelante los usó la
+  radiografía con otra clave de semilla, y se dejan los 3.000.001 en adelante para una posible
+  repetición de la radiografía). Una sola vez y se publica tal como salga
+  (`REPORT-MC-exam2.md`).
+  (g) **Regla de cierre, fijada ahora:** lo que apruebe el examen pasa a la app con los
+  tamaños de muestra más estrictos de la calibración y del examen, como hasta ahora. Lo que
+  suspenda se queda como está hoy (V0 y sin 3 meses), se documenta como límite conocido y **no
+  se vuelve a intentar en esta versión**.
+  (h) Se informa, sin exigirse: si la variante elegida salta con el histórico completo del EA
+  del autor, y cuántos de los casos de G4 detecta cada variante.
