@@ -51,6 +51,8 @@ function syntheticReport() {
 <tr><td></td><td><b>InpRiesgo=1.0</b></td></tr>
 <tr><td>Resultados</td></tr>
 <tr><td>Beneficio Neto:</td><td>${netProfit.toFixed(2)}</td><td>Reducci&oacute;n relativa de la equidad:</td><td>7.42% (3 210.55)</td></tr>
+<tr><td>Calidad del historial:</td><td>97%</td></tr>
+<tr><td>Beneficio Bruto:</td><td>1</td><td>Reducci&oacute;n m&aacute;xima del balance:</td><td>2 980.10 (6.51%)</td><td>Reducci&oacute;n m&aacute;xima de la equidad:</td><td>3 410.20 (7.11%)</td></tr>
 <tr><td>Factor de Beneficio:</td><td>1.85</td><td>Beneficio Esperado:</td><td>${(netProfit / 40).toFixed(2)}</td></tr>
 <tr><td>Factor de Recuperaci&oacute;n:</td><td>4.10</td><td>Ratio de Sharpe:</td><td>2.15</td></tr>
 <tr><td>Total de operaciones ejecutadas:</td><td>40</td><td>Total de transacciones:</td><td>80</td></tr>
@@ -88,6 +90,8 @@ section('1. Informe sintetico');
 
   check('lee el factor de beneficio', r.metrics.profitFactor === 1.85, String(r.metrics.profitFactor));
   check('lee el drawdown como porcentaje', r.metrics.drawdown === 7.42, String(r.metrics.drawdown));
+  check('lee las caídas máximas de balance y de equidad en dinero', r.metrics.ddMaxBalanceMoney === 2980.1 && r.metrics.ddMaxEquityMoney === 3410.2, `${r.metrics.ddMaxBalanceMoney} ${r.metrics.ddMaxEquityMoney}`);
+  check('lee la calidad del historial', r.metrics.historyQuality === 97, String(r.metrics.historyQuality));
   check('cuenta OPERACIONES, no transacciones', r.metrics.trades === 40, String(r.metrics.trades));
 
   check('recupera las 40 operaciones cerradas', r.deals.length === 40, String(r.deals.length));

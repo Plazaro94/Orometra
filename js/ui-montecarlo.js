@@ -226,6 +226,21 @@ function viewKey(res) {
   return usable('clean') ? 'clean' : 'used';
 }
 
+/**
+ * La caída de esta sección es de balance (operaciones cerradas). El informe trae también la de
+ * equidad, que cuenta lo que estaba abierto: se dice cuánto mayor fue, en el informe entero.
+ */
+function equityNote() {
+  const m = state.report && state.report.metrics;
+  if (!m || !(m.ddMaxBalanceMoney > 0) || !(m.ddMaxEquityMoney > 0)) return '';
+  const r = m.ddMaxEquityMoney / m.ddMaxBalanceMoney;
+  if (r < 1.005) return L('La caída es de balance (operaciones cerradas); en tu informe, la de equidad fue prácticamente la misma.', 'The drop is on the balance (closed trades); in your report, the equity drop was practically the same.');
+  return L(
+    `La caída es de balance (operaciones cerradas). En el informe entero, la de equidad, que cuenta también lo que estaba abierto, fue un ${pct(r - 1, 0)} mayor (${num(m.ddMaxEquityMoney, 0)} frente a ${num(m.ddMaxBalanceMoney, 0)}): con las operaciones abiertas, cuenta con algo más.`,
+    `The drop is on the balance (closed trades). In the whole report, the equity drop, which also counts what was open, was ${pct(r - 1, 0)} larger (${num(m.ddMaxEquityMoney, 0)} versus ${num(m.ddMaxBalanceMoney, 0)}): with open trades, expect somewhat more.`,
+  );
+}
+
 // ------------------------------------------------------------------ radiografía
 function radiographyBlock(res) {
   const r = res.radiography;
@@ -277,6 +292,7 @@ function radiographyBlock(res) {
     `Your longest run of losing trades: <strong>${int(r.real.longestLosingStreak)}</strong> in a row. With another order, the usual would be ${int(r.longestLosingStreak.p50)}, and 1 in 20 times, ${int(r.longestLosingStreak.p95)} or more.`,
   )}</li>
     </ul>
+    ${equityNote() ? `<p class="chart-note">${esc(equityNote())}</p>` : ''}
     ${gateWarn}`;
 }
 
@@ -372,8 +388,8 @@ function forecastBlock(a, p, res) {
   if (f && f.status === 'done' && f.result && f.result.usable) {
     return `${forecastCards(f.result, f.ddLimit)}
       <p class="chart-note">${L(
-      `Con las operaciones del ${fdate(f.result.from)} al ${fdate(f.result.to)}, que según nos dices no usaste para elegir. Supone que el mercado se sigue comportando como en esas fechas: si cambia, o si llega una pérdida mayor que cualquiera de tu backtest, estas cifras no lo saben. La caída es de balance, operación a operación. ${no3m}`,
-      `From the trades of ${fdate(f.result.from)} to ${fdate(f.result.to)}, which you tell us you did not use for choosing. It assumes the market keeps behaving as on those dates: if it changes, or if a loss larger than any in your backtest arrives, these figures do not know it. The drop is on the balance, trade by trade. ${no3m}`,
+      `Con las operaciones del ${fdate(f.result.from)} al ${fdate(f.result.to)}, que según nos dices no usaste para elegir. Supone que el mercado se sigue comportando como en esas fechas: si cambia, o si llega una pérdida mayor que cualquiera de tu backtest, estas cifras no lo saben. ${equityNote() || 'La caída es de balance, operación a operación.'} ${no3m}`,
+      `From the trades of ${fdate(f.result.from)} to ${fdate(f.result.to)}, which you tell us you did not use for choosing. It assumes the market keeps behaving as on those dates: if it changes, or if a loss larger than any in your backtest arrives, these figures do not know it. ${equityNote() || 'The drop is on the balance, trade by trade.'} ${no3m}`,
     )}</p>
       <p class="chart-note">${L(
       'Método comprobado antes de publicarlo, con casos simulados de respuesta conocida y reglas fijadas de antemano: remuestreo bayesiano por bloques de días con el nivel calibrado por doble bootstrap (detalle en la metodología).',

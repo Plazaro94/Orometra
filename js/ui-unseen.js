@@ -223,6 +223,7 @@ export function renderReportCard(a, plateau) {
       <div><span>${L('Periodo del backtest', 'Backtest period')}</span><strong>${fecha(rep.meta.from)} – ${fecha(rep.meta.to)}${Number.isFinite(rep.meta.days) ? ` <em>${int(rep.meta.days)} ${L('días', 'days')}</em>` : ''}</strong></div>
       <div><span>${L('Operaciones', 'Trades')}</span><strong>${int(rep.metrics.trades)}${rep.deals.length ? ` <em>${int(rep.deals.length)} ${L('leídas una a una', 'read one by one')}</em>` : ''}</strong></div>
       <div><span>${L('Beneficio neto', 'Net profit')}</span><strong>${num(rep.metrics.profit, 2)}</strong></div>
+      ${Number.isFinite(rep.metrics.historyQuality) ? `<div><span>${L('Calidad del historial (según MT5)', 'History quality (per MT5)')}</span><strong>${pct(rep.metrics.historyQuality / 100, 0)}</strong></div>` : ''}
     </div>
     ${mismatch}
     ${othersWarn}

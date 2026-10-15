@@ -352,6 +352,8 @@ try {
     check('dice que no es una previsión y lo que pasó con el orden', /no es una previsión/.test(short) && /habría sido mayor en el/.test(short));
     check('sin previsión con un año, y dice por qué', /Hacen falta 2 años/.test(short) && !(await page.$('#mcForecastBtn')));
     check('el lote fijo se deduce', (await page.$eval('#mcSizing', (e) => e.value)) === 'fixed');
+    check('la ficha enseña la calidad del historial de MT5', /Calidad del historial \(según MT5\)\s*99\s?%/.test(short.replace(/\u00A0/g, ' ')));
+    check('y el Monte Carlo dice cuánto mayor fue la caída de equidad que la de balance', /la de equidad, que cuenta también lo que estaba abierto, fue un 10\s?% mayor/.test(short.replace(/\u00A0/g, ' ')));
 
     await page.setInputFiles('#mainFile', [mcLong]);
     await page.waitForSelector('#mcForecastBtn', { timeout: 60000 }).catch(() => {});

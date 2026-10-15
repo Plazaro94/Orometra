@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-15 — Calidad del historial y caída de equidad frente a la de balance
+
+- La ficha del informe enseña la «Calidad del historial» tal como la da MT5. El informe no dice
+  qué modelado de ticks se usó, y no se sabe qué umbral de esa calidad haría poco fiable un
+  backtest, así que se enseña sin juzgarla.
+- El Monte Carlo mide la caída de balance (operaciones cerradas). Ahora dice además cuánto mayor
+  fue en el informe la caída máxima de equidad, que cuenta lo que estaba abierto (con el informe
+  real del autor, un 10 % mayor: 18.667 frente a 17.020).
+- El lector del informe lee la reducción máxima del balance y la de la equidad en dinero, y la
+  calidad del historial, con su prueba.
+
 ## 2026-10-15 — La prueba de fuego usa también la fecha de corte
 
 La pregunta «¿Este informe incluye días que miraste para elegir?» sube a la ficha del informe y
