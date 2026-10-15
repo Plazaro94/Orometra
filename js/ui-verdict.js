@@ -5,9 +5,10 @@ import { compareParams } from '../core/report.js';
 import { setCoverageNote } from './export.js';
 import { mergeSetValues } from '../core/setfile.js';
 import { outcomeFromAnalysis, CODE, errorCopy } from '../core/errors.js';
-import { scatterIsOos, degradationChart } from './charts.js';
+import { scatterIsOos, degradationChart, plateauHeatmap } from './charts.js';
+import { topInfluentialPair } from '../core/surface.js';
 import { t, L, localeTag, pctSign, shareText } from './i18n.js';
-import { state, api, num, int, pct, esc, rich, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, forwardHoldHtml, deployableSet, forwardUntested } from './ui-state.js';
+import { state, api, num, int, pct, esc, rich, paramHtml, categorizeFinding, findInMt5Html, mt5Figure, mt5Figures, forwardHoldHtml, deployableSet, forwardUntested } from './ui-state.js';
 import { gloss } from './glossary.js';
 
 /*
@@ -319,6 +320,63 @@ export function trustLine(a, level) {
 }
 
 /**
+ * El titular del informe: una frase que contesta y dice el siguiente paso, en vez del nivel
+ * a secas («Evidencia sólida»), que queda encima como etiqueta. Texto plano: el número de
+ * pasada viene del archivo del usuario y se pinta con textContent o con esc().
+ */
+export function answerLine(a) {
+  const level = displayVerdictLevel(a);
+  const best = a.plateaus[0];
+  const hold = holdoutFact(a);
+  const counts = a.verdict.counts || {};
+  const crit = counts.critical || 0;
+  const warns = counts.warnings || 0;
+  if (level === 'insufficient') {
+    return L('Con estos datos no se puede saber si hay algo.', 'These data cannot tell whether there is anything there.');
+  }
+  if (!best) return L('En esta optimización no hay nada que respaldar.', 'There is nothing to back in this optimization.');
+  const id = best.record.id;
+  if (hold.done && hold.against) {
+    return L(`La pasada ${id} no ha aguantado en el tramo que no habías usado.`, `Pass ${id} did not hold on the stretch you had not used.`);
+  }
+  if (hold.done && hold.ok) {
+    return L(`Tu optimización tiene una zona estable, y el tramo que no habías usado no contradice a la pasada ${id}.`,
+      `Your optimization has a stable zone, and the stretch you had not used does not contradict pass ${id}.`);
+  }
+  if (!a.meta.hasForward) {
+    return L(`Hay una zona estable alrededor de la pasada ${id}, pero sin forward no se puede saber si aguanta fuera.`,
+      `There is a stable zone around pass ${id}, but without a forward there is no way to know whether it holds elsewhere.`);
+  }
+  if (!deployableSet(a, best)) {
+    return L('Hay una zona estable, pero el forward no ha probado ninguna de sus configuraciones: vuelve a optimizar en su rango.',
+      'There is a stable zone, but the forward did not test any of its configurations: optimize again within its range.');
+  }
+  if (level === 'weak') {
+    return crit === 1
+      ? L(`Hay una zona estable, pero con una limitación seria: léela antes de usar la pasada ${id}.`,
+        `There is a stable zone, but with one serious limitation: read it before using pass ${id}.`)
+      : L(`Hay una zona estable, pero con ${crit} limitaciones serias: léelas antes de usar la pasada ${id}.`,
+        `There is a stable zone, but with ${crit} serious limitations: read them before using pass ${id}.`);
+  }
+  const tail = L(`Llévate la pasada ${id} y pruébala en un tramo que no hayas usado.`, `Take pass ${id} and test it on a stretch you have not used.`);
+  if (level === 'good') return `${L('Tu optimización tiene una zona estable, con un aviso.', 'Your optimization has a stable zone, with one warning.')} ${tail}`;
+  if (level === 'moderate' && warns) {
+    return `${warns === 1
+      ? L('Tu optimización tiene una zona estable, con un aviso.', 'Your optimization has a stable zone, with one warning.')
+      : L(`Tu optimización tiene una zona estable, con ${warns} avisos.`, `Your optimization has a stable zone, with ${warns} warnings.`)} ${tail}`;
+  }
+  return `${L('Tu optimización tiene una zona estable.', 'Your optimization has a stable zone.')} ${tail}`;
+}
+
+/** La n.º 1 de MT5: la de mayor Result en el periodo optimizado, como la ordena el probador. */
+export function mt5Top(a) {
+  let at = null;
+  let top = -Infinity;
+  a.records.forEach((r, i) => { if (Number.isFinite(r.criterionIs) && r.criterionIs > top) { top = r.criterionIs; at = i; } });
+  return at;
+}
+
+/**
  * Cabecera compacta de las pestañas que no son el veredicto: el nivel y la pasada en una
  * línea, en vez del titular de tres líneas que empujaba cada pestaña ~285 px hacia abajo.
  * El titular completo sigue en el h1 (oculto a la vista, no al lector de pantalla).
@@ -356,32 +414,79 @@ function evidenceMeter(level) {
   </div>`;
 }
 
-/** Las tres cifras que resumen por qué fiarse (o no) de la configuración elegida. */
-function keyFigures(a, best) {
+/**
+ * Tres hechos que resumen por qué fiarse (o no) de la configuración elegida, contados con
+ * palabras. La única nota de la tarjeta es la fiabilidad: la robustez (/100) y la calidad
+ * (0-1) se quedan en Mesetas, donde se explican, para que no parezcan la misma cifra.
+ */
+function keyFacts(a, best) {
   if (!best) return '';
   const nb = best.neighborhood;
-  const hasF = a.meta.hasForward;
-  const keep = Number.isFinite(best.medianRetention) ? best.medianRetention
-    : (hasF && Number.isFinite(best.record.retention) ? best.record.retention : NaN);
-  const tile = (value, label, note) => `<div class="vx-stat">
-    <strong>${value}</strong>
-    <span class="vx-stat-label">${label}</span>
-    <span class="vx-stat-note">${note}</span>
-  </div>`;
-  return `<div class="vx-stats">
-    ${tile(`${num(best.robust, 0)}<small>/100</small>`,
-      gloss('robustness', esc(L('Robustez', 'Robustness'))),
-      esc(L('Cuánto aguanta al mover sus parámetros.', 'How well it holds when its parameters move.')))}
-    ${tile(nb ? `${int(nb.passing)}<small> ${L('de', 'of')} ${int(nb.observed)}</small>` : '—',
-      esc(L('Vecinas que cumplen', 'Neighbors that pass')),
-      esc(L('Configuraciones de al lado que también pasan tus mínimos.', 'Adjacent configurations that also clear your minimums.')))}
-    ${hasF
-    ? tile(Number.isFinite(keep) ? pct(keep, 0) : '—',
-      gloss('retention', esc(L('Se mantiene al validar', 'Holds on validation'))),
-      esc(L(Number.isFinite(best.medianRetention) ? 'Qué parte de su calidad conservan en el forward las configuraciones de su meseta (la mediana).' : 'Qué parte de su calidad conserva en el periodo de validación (forward).', Number.isFinite(best.medianRetention) ? 'How much of their quality the configurations of its plateau keep on the forward (the median).' : 'How much of its quality it keeps on the validation period (forward).')))
-    : tile('—',
-      esc(L('Sin validar', 'Not validated')),
-      esc(L('No hay periodo de validación (forward): añádelo para poder medirlo.', 'No validation period (forward): add one to measure this.')))}
+  const val = best.oosValidation;
+  const st = a.stats && a.stats.stabilityCheck;
+  const fact = (value, text) => `<div class="vx-stat"><strong>${value}</strong><span class="vx-stat-note">${text}</span></div>`;
+  const of = L('de', 'of');
+  const items = [];
+  if (nb) {
+    items.push(fact(`${int(nb.passing)}<small> ${of} ${int(nb.observed)}</small>`,
+      esc(L('vecinas también pasan tus mínimos', 'neighbors also clear your minimums'))));
+  }
+  if (a.meta.hasForward && val && val.withForward) {
+    const passed = Math.round(val.passFrac * val.withForward);
+    items.push(fact(pct(val.passFrac, 0),
+      esc(L(`de la meseta sigue cumpliendo tus mínimos en el forward (${int(passed)} de ${int(val.withForward)})`,
+        `of the plateau still clears your minimums on the forward (${int(passed)} of ${int(val.withForward)})`))));
+  } else {
+    items.push(fact('—', esc(L('Sin forward: no se ha podido validar fuera del periodo optimizado.', 'No forward: it could not be validated beyond the optimized period.'))));
+  }
+  if (st && st.draws && Number.isFinite(st.regionRate)) {
+    items.push(fact(`${int(Math.round(st.regionRate * st.draws))}<small> ${of} ${int(st.draws)}</small>`,
+      esc(L('veces gana la misma zona al mover nuestros propios umbrales', 'times the same zone wins when we move our own thresholds'))));
+  }
+  return `<div class="vx-stats">${items.join('')}</div>`;
+}
+
+/**
+ * El terreno de la optimización: el mapa de los dos parámetros que más influyen (el mismo de
+ * Parámetros) con la elegida y la n.º 1 de MT5 señaladas. Enseña de un vistazo lo que hace
+ * Orometra: meseta frente a pico. Con menos de dos parámetros variables no hay mapa.
+ */
+function terrainMap(a, best) {
+  if ((a.sensitivity || []).filter((x) => !x.constant).length < 2) return '';
+  const pair = topInfluentialPair(a.sensitivity);
+  if (!pair) return '';
+  const top = mt5Top(a);
+  const pickIdx = best ? best.representative : null;
+  const marks = [];
+  if (best) marks.push({ index: pickIdx, kind: 'pick', label: L(`la elegida (pasada ${best.record.id})`, `the chosen one (pass ${best.record.id})`) });
+  if (top !== null && top !== pickIdx) marks.push({ index: top, kind: 'mt5', label: L(`n.º 1 de MT5 (pasada ${a.records[top].id})`, `MT5’s #1 (pass ${a.records[top].id})`) });
+  const topId = top !== null ? a.records[top].id : '';
+  let reading = '';
+  if (top !== null && top === pickIdx) {
+    reading = L(`La elegida es también la n.º 1 de MT5 (pasada ${topId}): aquí la cabeza de la tabla está en terreno firme.`,
+      `The chosen one is also MT5’s #1 (pass ${topId}): here the top of the table stands on firm ground.`);
+  } else if (top !== null && best && (best.indices || []).includes(top)) {
+    reading = L(`La n.º 1 de MT5 (pasada ${topId}) está dentro de la misma meseta: la cabeza de la tabla está en terreno firme.`,
+      `MT5’s #1 (pass ${topId}) is inside the same plateau: the top of the table stands on firm ground.`);
+  } else if (top !== null && best) {
+    reading = L(`La n.º 1 de MT5 (pasada ${topId}) queda fuera de la meseta elegida.`, `MT5’s #1 (pass ${topId}) lies outside the chosen plateau.`);
+  } else if (top !== null) {
+    reading = L(`No hay ninguna zona continua por encima del resto: la n.º 1 de MT5 (pasada ${topId}) es un punto suelto.`,
+      `No continuous zone stands above the rest: MT5’s #1 (pass ${topId}) is an isolated point.`);
+  }
+  const legend = [
+    best ? `<span class="vx-map-key"><i class="vx-key-pick" aria-hidden="true"></i>${esc(L('La elegida', 'The chosen one'))}</span>` : '',
+    top !== null && top !== pickIdx ? `<span class="vx-map-key"><i class="vx-key-mt5" aria-hidden="true">✕</i>${esc(L('La n.º 1 de MT5', 'MT5’s #1'))}</span>` : '',
+  ].join('');
+  return `<div class="vx-map">
+    <div class="vx-map-chart">${plateauHeatmap(a, pair[0], pair[1], { marks, thin: 5 })}</div>
+    <div class="vx-map-text">
+      <span class="vx-label">${esc(L('El terreno de tu optimización', 'The terrain of your optimization'))}</span>
+      ${reading ? `<p class="vx-map-reading">${esc(reading)}</p>` : ''}
+      ${legend ? `<div class="vx-map-legend">${legend}</div>` : ''}
+      <p class="vx-fine">${esc(L('Cada casilla es la calidad mediana de todas las configuraciones con esos dos valores, en los dos parámetros que más influyen. Cuanto más intensa, mejor. Una zona intensa y continua es una meseta; una casilla sola, un pico. Las casillas con menos de 5 pasadas salen atenuadas.',
+    'Each cell is the median quality of every configuration with those two values, on the two most influential parameters. The stronger, the better. A strong continuous zone is a plateau; a lone cell, a peak. Cells with fewer than 5 passes are dimmed.'))}</p>
+    </div>
   </div>`;
 }
 
@@ -513,6 +618,63 @@ export function expectationHtml(a, best) {
     : L('No se distingue de una configuración cualquiera de las que cumplen tus mínimos.', 'It does not stand out from any configuration that meets your minimums.'))}</p>`;
 }
 
+/** «Búscala en MT5 por sus cifras», en una línea. La letra pequeña va con las de los botones. */
+function findShort(rec, hasF) {
+  const figures = mt5Figures(rec);
+  if (!figures) return '';
+  const where = hasF
+    ? L('En los resultados de la optimización de MT5 (no en los del forward) se busca por', 'In MT5’s optimization results (not the forward ones), look for')
+    : L('En los resultados de la optimización de MT5 se busca por', 'In MT5’s optimization results, look for');
+  return `<p class="vx-find">${where} ${figures}.</p>`;
+}
+
+/** Lo que hay que saber para encontrarla en MT5, sin ocupar el sitio de la respuesta. */
+function findFine(rec) {
+  const n = rec.twins || 0;
+  const twins = n === 1
+    ? L(' Hay otra configuración con esas mismas cifras: para cargar exactamente esta, usa sus parámetros.', ' Another configuration has the same figures: to load exactly this one, use its parameters.')
+    : n > 1
+      ? L(` Hay ${n} configuraciones más con esas mismas cifras: para cargar exactamente esta, usa sus parámetros.`, ` ${n} more configurations have the same figures: to load exactly this one, use its parameters.`)
+      : '';
+  return L('El número de pasada es el de tu archivo exportado: MT5 no lo guarda al cerrarse y puede enseñar otro.', 'The pass number is the one in your exported file: MT5 does not keep it after closing and may show a different one.') + twins;
+}
+
+/**
+ * Sin meseta, la respuesta es «no»: la pantalla lo dice con su propia forma. Primero qué
+ * significa, luego lo que más pesa en contra y, aparte y rotulada, la sugerencia orientativa.
+ */
+function renderNoAnswer(a, dv) {
+  const meaning = dv.level === 'insufficient'
+    ? a.verdict.summary
+    : L('Lo que destaca en tu tabla de MT5 se puede explicar por la suerte. No dice que tu EA sea malo: dice que esta optimización no lo demuestra. Y te ahorra probar con dinero algo que no se sostiene.',
+      'What stands out in your MT5 table can be explained by luck. It does not say your EA is bad: it says this optimization does not show it. And it saves you from testing with money something that does not hold up.');
+  // Lo que pesa en el nivel primero (críticos, luego avisos sobre la meseta, luego los del orden
+  // de la tabla). El contraste del Sharpe se queda en «Por qué este nivel»: aquí va lo que se
+  // entiende sin saber estadística.
+  const weight = (f) => (f.severity === 'critical' ? 0 : f.scope === 'table' ? 2 : 1);
+  const causes = (a.verdict.findings || [])
+    .filter((f) => (f.severity === 'critical' || f.severity === 'warn') && !/Sharpe/.test(f.title))
+    .map((f, i) => ({ f, i })).sort((x, y) => weight(x.f) - weight(y.f) || x.i - y.i).map((x) => x.f)
+    .slice(0, 3);
+  const causesHtml = causes.length
+    ? `<span class="vx-label">${esc(L('Lo que más pesa', 'What weighs most'))}</span>
+      <ul class="vx-causes">${causes.map((f) => `<li>${esc(f.title)}</li>`).join('')}</ul>
+      <p class="vx-fine">${esc(L('Cada una, explicada en «Por qué este nivel», más abajo.', 'Each one is explained under “Why this level”, below.'))}</p>`
+    : '';
+  return `<span class="vx-label">${esc(L('Qué significa', 'What it means'))}</span>
+    <p class="vx-meaning">${esc(meaning)}</p>
+    ${causesHtml}`;
+}
+
+function renderFallbackBox(a) {
+  if (!a.fallback) return '';
+  return `<div class="vx-quiet">
+    <strong>${esc(L('Si aun así quieres seguir explorando', 'If you still want to keep exploring'))}</strong>
+    <p><b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>
+    ${findShort(a.fallback.record, a.meta.hasForward)}
+  </div>`;
+}
+
 function renderDecision(a, dv, best, hold) {
   const c = verdictCopy(dv.level);
   const hasF = a.meta.hasForward;
@@ -528,41 +690,37 @@ function renderDecision(a, dv, best, hold) {
     : `<button class="primary-btn" data-export="refine" data-plateau-index="${best.rank - 1}">${L('Descargar rango para reoptimizar', 'Download range to re-optimize')}</button>`}
       <button class="ghost-btn" data-copy="${best.rank - 1}">${L('Copiar parámetros', 'Copy parameters')}</button>
     </div>`;
-    pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
+    const fine = [findFine(best.record), deploy ? setCoverageNote(a, best, state.searchSet) : ''].filter(Boolean).join(' ');
+    pick = `<span class="vx-label">${esc(L('Lleva esto', 'Take this'))}</span>
       <div class="vx-pass">${L('Pasada', 'Pass')} <b>${esc(best.record.id)}</b></div>
-      ${findInMt5Html(best.record, hasF)}
+      <div class="t3-param-chips vx-params" role="group" aria-label="${esc(L('Valores recomendados', 'Recommended values'))}">
+        ${a.meta.paramNames.map((n, j) => `<span>${esc(n)} <b>${paramHtml(best.record.params[j])}</b></span>`).join('')}
+      </div>
+      ${findShort(best.record, hasF)}
       <p class="vx-pass-note">${esc(deploy
     ? L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado y en el forward (promediado con sus vecinas).`,
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on both the optimized period and the forward (averaged with its neighbors).`)
     : L(`Elegida dentro de una meseta de ${int(best.size)} configuraciones parecidas, por su buen puesto en el periodo optimizado (promediado con sus vecinas).`,
       `Chosen within a plateau of ${int(best.size)} similar configurations, for ranking well on the optimized period (averaged with its neighbors).`))}</p>
       ${expectationHtml(a, best)}
-      <div class="t3-param-chips vx-params" role="group" aria-label="${esc(L('Valores recomendados', 'Recommended values'))}">
-        ${a.meta.paramNames.map((n, j) => `<span>${esc(n)} <b>${paramHtml(best.record.params[j])}</b></span>`).join('')}
-      </div>
       ${actions}
-      ${deploy ? `<p class="vx-fine">${esc(setCoverageNote(a, best, state.searchSet))}</p>` : ''}`;
-  } else if (a.fallback) {
-    pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
-      <div class="vx-pass vx-pass-risk">${esc(L('Ninguna con garantías', 'None you can rely on'))}</div>
-      <p class="vx-pass-note">${L('Sugerencia orientativa:', 'Tentative suggestion:')} <b class="mono">${L('Pasada', 'Pass')} ${esc(a.fallback.record.id)}</b>. ${fallbackNote(a)}</p>
-      ${findInMt5Html(a.fallback.record, hasF)}`;
+      <p class="vx-fine">${esc(fine)}</p>`;
   } else {
-    pick = `<span class="vx-label">${esc(L('Qué configuración usar', 'Which configuration to use'))}</span>
-      <div class="vx-pass vx-pass-risk">${esc(t('verdict.nopick'))}</div>
-      <p class="vx-pass-note">${esc(L('Ninguna meseta cumple tus mínimos con estabilidad suficiente.', 'No plateau meets your minimums with enough stability.'))}</p>`;
+    pick = renderNoAnswer(a, dv);
   }
-  return `<section class="vx ${c.cls}" aria-label="${esc(L('Veredicto', 'Verdict'))}">
-    <h2 class="sr-only">${esc(dv.headline)}</h2>
+  return `<section class="vx ${c.cls}${best ? '' : ' vx-no'}" aria-label="${esc(L('Veredicto', 'Verdict'))}">
+    <h2 class="sr-only">${esc(answerLine(a))}</h2>
     <div class="vx-main">
       <div class="vx-pick">${pick}</div>
       <div class="vx-trust">
         <span class="vx-label">${esc(L('Fiabilidad', 'Reliability'))}</span>
         ${evidenceMeter(dv.level)}
         <p class="vx-trust-line">${esc(trustLine(a, dv.level))}</p>
-        ${keyFigures(a, best)}
+        ${keyFacts(a, best)}
       </div>
     </div>
+    ${terrainMap(a, best)}
+    ${best ? '' : renderFallbackBox(a)}
     ${nextSteps(a, best, hold)}
   </section>`;
 }
@@ -651,7 +809,10 @@ export function renderVerdict(a) {
 
   // El título de la página ya dice el nivel: la tarjeta va primero y los datos del
   // análisis (pasadas, fecha, mínimos), que son contexto, justo debajo.
-  return `${renderOutcomeBanner(a)}
+  // Sin meseta, el titular y la tarjeta del «no» ya lo dicen: el aviso «Sin meseta estable»
+  // de encima repetía lo mismo. Los demás avisos (nada cumple tus mínimos, pocos datos) siguen.
+  const banner = !best && outcomeFromAnalysis(a).code === CODE.NO_PLATEAU ? '' : renderOutcomeBanner(a);
+  return `${banner}
   ${renderDecision(a, dv, best, hold)}
   ${stamp}
   ${demoNote}
@@ -810,15 +971,22 @@ export function renderWhyGrade(a, highlights, summary = '') {
   </div>`;
   // Sin puntos en contra (o a favor) no se reserva media pantalla vacía: una línea basta.
   const emptyLine = (title) => `<p class="why-none"><strong>${esc(title)}:</strong> ${L('nada destacado', 'nothing notable')}.</p>`;
-  const proTitle = L('A favor', 'In favor');
+  // Sin meseta, lo que sale bien no es «a favor» de nada que se pueda usar: se cuenta como
+  // lo que sí hay, sin marcas de visto, para que un «no» no se lea como un «sí».
+  const noPlateau = !a.plateaus.length;
+  const proTitle = noPlateau ? L('Lo que sí hay', 'What there is') : L('A favor', 'In favor');
+  const proCls = noPlateau ? 'why-pros why-neutral' : 'why-pros';
+  const proMark = noPlateau ? '·' : '✓';
   const conTitle = L('En contra / límites', 'Against / limits');
   const grid = !pros.length && !cons.length
     ? ''
     : !cons.length
-      ? `${col(proTitle, pros, 'why-pros', '✓')}${emptyLine(conTitle)}`
+      ? `${col(proTitle, pros, proCls, proMark)}${emptyLine(conTitle)}`
       : !pros.length
         ? `${col(conTitle, cons, 'why-cons', '!')}${emptyLine(proTitle)}`
-        : `${col(proTitle, pros, 'why-pros', '✓')}${col(conTitle, cons, 'why-cons', '!')}`;
+        : noPlateau
+          ? `${col(conTitle, cons, 'why-cons', '!')}${col(proTitle, pros, proCls, proMark)}`
+          : `${col(proTitle, pros, proCls, proMark)}${col(conTitle, cons, 'why-cons', '!')}`;
   return `<section class="panel panel-why">
     <div class="panel-head compact">
       <div>

@@ -450,19 +450,19 @@ try {
     await page.click('.demo-note [data-demo="noedge"]');
     await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
     check('desde el ejemplo se llega al de sin ventaja', Boolean(await page.$('.demo-note [data-demo="good"]')));
-    check('que no propone ninguna configuración con garantías', Boolean(await page.$('.vx-pass-risk')));
+    check('que no propone ninguna configuración: la tarjeta del «no»', Boolean(await page.$('.vx.vx-no')) && /no hay nada que respaldar/.test(await page.textContent('#reportTitle')));
     check('y se queda en «débil»', /débil/i.test(await page.textContent('.vx-meter .is-here')), await page.textContent('.vx-meter .is-here'));
     // El enlace de debajo de la tarjeta lleva a ese mismo ejemplo.
     await page.goto(`${BASE}/es/`);
     await page.click('.hm-more-alt a');
     await page.waitForURL(/demo=noedge/, { timeout: 10000 }).catch(() => {});
     await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
-    check('la portada enlaza con el ejemplo sin ventaja', /demo=noedge/.test(page.url()) && Boolean(await page.$('.vx-pass-risk')), page.url());
+    check('la portada enlaza con el ejemplo sin ventaja', /demo=noedge/.test(page.url()) && Boolean(await page.$('.vx.vx-no')), page.url());
     // Y la pantalla vacía de la app ofrece los dos.
     await page.goto(`${BASE}/app/`);
     await page.click('.empty-demo [data-demo="noedge"]');
     await page.waitForSelector('.demo-note [data-demo="good"]', { timeout: 120000 }).catch(() => {});
-    check('la app vacía ofrece el ejemplo sin ventaja', Boolean(await page.$('.vx-pass-risk')));
+    check('la app vacía ofrece el ejemplo sin ventaja', Boolean(await page.$('.vx.vx-no')));
     // Periodo no visto con las cifras del propio periodo optimizado de la pasada propuesta.
     await page.goto(`${BASE}/app/?demo=1`);
     await verdictShown();
@@ -686,8 +686,8 @@ try {
     check('y es la de los parámetros recomendados', row && chips.length > 0 && chips.every((c) => rowChips.includes(c)), `${shown}: ${chips.join(', ')} frente a ${rowChips.join(', ')}`);
     // El número no basta para encontrarla en MT5 (no lo guarda al cerrarse): se dan sus cifras,
     // que tienen que ser las de esa fila del archivo.
-    const find = await page.$$eval('.vx .vx-pass-note', (ps) => {
-      const p = ps.find((x) => /Búscala/.test(x.textContent));
+    const find = await page.$$eval('.vx .vx-find', (ps) => {
+      const p = ps.find((x) => /se busca por/.test(x.textContent));
       return p ? [...p.querySelectorAll('b')].map((b) => b.textContent.trim()) : [];
     });
     const col = (name) => demo.isTable.headers.indexOf(name);

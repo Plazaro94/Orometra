@@ -5,7 +5,7 @@ import { enhanceRadioGroups } from './radiogroup.js';
 import { t, L, getLocale, setLocale, applyStaticI18n, pctSign } from './i18n.js';
 import { rebuildLocalizedCopy } from '../core/verdict.js';
 import { state, api, $, $$, int, num, pct, esc } from './ui-state.js';
-import { displayVerdictCopy, displayVerdictLevel, levelName, compactSummary, compactAction, refreshCompactCharts } from './ui-verdict.js';
+import { displayVerdictCopy, displayVerdictLevel, levelName, compactSummary, compactAction, refreshCompactCharts, answerLine } from './ui-verdict.js';
 import { COMPACT_QUERY } from './charts.js';
 
 // ---------------------------------------------------------------- preferencias
@@ -443,8 +443,12 @@ export function render() {
   if (idle) idle.hidden = hayAnalisis;
   if (report) report.hidden = !hayAnalisis;
   if (hayAnalisis && state.analysis) {
+    // El titular es una frase que contesta («Tu optimización tiene una zona estable…»); el
+    // nivel («Evidencia sólida») queda encima, como etiqueta.
     const rt = $('#reportTitle');
-    if (rt) rt.textContent = displayVerdictCopy(state.analysis).headline;
+    if (rt) rt.textContent = answerLine(state.analysis);
+    const eb = $('#reportEyebrow');
+    if (eb) eb.textContent = displayVerdictCopy(state.analysis).headline;
     // El título de la pestaña del navegador sigue al nivel MOSTRADO en cada pintado: al
     // cargar el periodo no visto el nivel cambia, y antes el título se quedaba en el de
     // la primera vez. Dice el nivel en palabras («Evidencia moderada · …»).

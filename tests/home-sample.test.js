@@ -28,21 +28,26 @@ console.log('\nTarjeta del informe de ejemplo');
 check('la pasada', card.includes(`<b>${best.record.id}</b>`), best.record.id);
 const chips = a.meta.paramNames.map((n, j) => `<span>${n} <b>${best.record.params[j]}</b></span>`).join('');
 check('los parámetros, con su nombre y en el orden del informe', card.includes(chips), chips);
-check('la robustez', card.includes(`<strong>${Math.round(best.robust)}<small>/100</small></strong>`), String(best.robust));
+// Desde la tanda A (2026-10-15) la tarjeta cuenta hechos, no la robustez /100: las veces que gana
+// la misma zona al mover los umbrales y qué parte de la meseta cumple en el forward.
+const st = a.stats.stabilityCheck;
+check('las veces que gana la misma zona', card.includes(`<strong>${Math.round(st.regionRate * st.draws)}<small data-i18n="home.take.stat.runs"> of ${st.draws}</small>`), `${st.regionRate} · ${st.draws}`);
+check('sin la robustez /100', !card.includes('/100'));
 check('las vecinas que cumplen', card.includes(`<strong>${best.neighborhood.passing}<small data-i18n="home.take.stat.of"> of ${best.neighborhood.observed}</small>`),
   `${best.neighborhood.passing} de ${best.neighborhood.observed}`);
 const order = ['insufficient', 'weak', 'moderate', 'good', 'strong'];
 const here = (card.match(/<div class="vx-seg[^"]*">/g) || []).findIndex((s) => s.includes('is-here'));
 check('el nivel del medidor', here === order.indexOf(a.verdict.level), `${order[here]} frente a ${a.verdict.level}`);
-const keep = Number.isFinite(best.medianRetention) ? best.medianRetention : best.record.retention;
+const keep = best.oosValidation.passFrac;
 
 for (const lang of ['en', 'es']) {
   setLocale(lang);
   console.log(`\n${lang.toUpperCase()}`);
   const size = lang === 'es' ? String(best.size) : best.size.toLocaleString('en-US');
   check('el tamaño de la meseta', t('home.take.pick.note').includes(`${size} `), t('home.take.pick.note'));
-  check('se mantiene al validar', t('home.take.stat.pct') === (lang === 'es' ? `${Math.round(100 * keep)} %` : `${Math.round(100 * keep)}%`), t('home.take.stat.pct'));
+  check('parte de la meseta que cumple en el forward', t('home.take.stat.pct') === (lang === 'es' ? `${Math.round(100 * keep)} %` : `${Math.round(100 * keep)}%`), t('home.take.stat.pct'));
   check('de N vecinas', t('home.take.stat.of').trim().endsWith(String(best.neighborhood.observed)), t('home.take.stat.of'));
+  check('de N repeticiones', t('home.take.stat.runs').trim().endsWith(String(st.draws)), t('home.take.stat.runs'));
   check('el nivel, también para el lector de pantalla', t('home.take.aria.meter').includes(`(${order.indexOf(a.verdict.level) + 1} `), t('home.take.aria.meter'));
 }
 

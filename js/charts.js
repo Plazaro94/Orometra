@@ -253,8 +253,14 @@ export function sensitivityBars(analysis) {
   return `<ol class="sens-chart" aria-label="${esc(L(`Influencia relativa de cada parámetro; el más influyente es ${topName}.`, `Relative influence of each parameter; the most influential is ${topName}.`))}">${body}</ol>`;
 }
 
-/** Mapa 2D: calidad mediana por pareja de valores de los dos parámetros dados. */
-export function plateauHeatmap(analysis, dimA, dimB) {
+/**
+ * Mapa 2D: calidad mediana por pareja de valores de los dos parámetros dados.
+ *
+ * `opts.marks`: configuraciones que se señalan en su casilla ({ index, kind: 'pick' | 'mt5',
+ * label }), para la tarjeta del veredicto. `opts.thin`: casillas con menos pasadas que esto
+ * se atenúan (con un genético, una casilla de 3 pasadas no es tan fiable como una de 700).
+ */
+export function plateauHeatmap(analysis, dimA, dimB, opts = {}) {
   const la = analysis.levels[dimA];
   const lb = analysis.levels[dimB];
   if (!la || !lb || la.length < 2 || lb.length < 2) return `<p class="muted">${esc(L('Se necesitan dos parámetros con varios valores.', 'Two parameters with several values are needed.'))}</p>`;
@@ -264,6 +270,14 @@ export function plateauHeatmap(analysis, dimA, dimB) {
     const b = lb.indexOf(r.params[dimB]);
     if (a >= 0 && b >= 0 && Number.isFinite(analysis.scores[i])) cells[a][b].push(analysis.scores[i]);
   });
+  const marksAt = new Map();
+  for (const m of opts.marks || []) {
+    const r = analysis.records[m.index];
+    if (!r) continue;
+    const key = `${la.indexOf(r.params[dimA])},${lb.indexOf(r.params[dimB])}`;
+    marksAt.set(key, [...(marksAt.get(key) || []), m]);
+  }
+  const thin = Number.isFinite(opts.thin) ? opts.thin : 0;
   // Color por tramos del rango observado (no por opacidad del valor bruto): con calidades
   // de 0,23 a 0,62 todo salía del mismo gris y las cifras no se leían. Seis tonos reales,
   // y la cifra en claro u oscuro según el tono de su celda.
@@ -284,8 +298,10 @@ export function plateauHeatmap(analysis, dimA, dimB) {
       if (!vals.length) { rows += '<span class="hm-cell hm-empty"></span>'; continue; }
       const m = median(vals);
       const k = step(m);
-      const tip = `${nameA}=${la[a]}, ${nameB}=${lb[b]} · ${L('calidad mediana', 'median quality')} ${m.toFixed(3)} (${vals.length} configs)`;
-      rows += `<span class="hm-cell hm-c${k}${k >= 4 ? ' hm-on' : ''}" title="${esc(tip)}">${fmt2(m)}</span>`;
+      const here = marksAt.get(`${a},${b}`) || [];
+      const tip = `${nameA}=${la[a]}, ${nameB}=${lb[b]} · ${L('calidad mediana', 'median quality')} ${m.toFixed(3)} (${vals.length} configs)${here.map((x) => ` · ${x.label}`).join('')}`;
+      const cls = `${k >= 4 ? ' hm-on' : ''}${vals.length < thin ? ' hm-thin' : ''}${here.map((x) => ` hm-${x.kind}`).join('')}`;
+      rows += `<span class="hm-cell hm-c${k}${cls}" title="${esc(tip)}">${fmt2(m)}</span>`;
     }
   }
   const xl = la.map((v) => `<span class="hm-xtick">${esc(formatTick(v))}</span>`).join('');
