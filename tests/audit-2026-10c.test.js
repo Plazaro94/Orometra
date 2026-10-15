@@ -66,8 +66,15 @@ section('Q2. La nota de Orometra: la cabeza de la tabla, no el orden entero');
 section('Q3. Sharpe: el umbral es el percentil 95 del máximo, no su media');
 {
   const s = base.stats.sharpeTest;
-  const want = s.sigma * maxQuantileZ(s.effectiveTrials, 0.95);
-  check('chanceMax = σ · z₀,₉₅ del máximo de N efectivas', Math.abs(s.chanceMax - want) < 1e-9, `${s.chanceMax} vs ${want}`);
+  const want = s.sigma * maxQuantileZ(s.trials, 0.95);
+  check('chanceMax = σ · z₀,₉₅ del máximo de N pruebas', Math.abs(s.chanceMax - want) < 1e-9, `${s.chanceMax} vs ${want}`);
+  // Desde el 2026-10-15, N son todas las pasadas del contraste, no las celdas del espacio grueso.
+  const used = base.records.filter((r) => Number.isFinite(r.oos.sharpe) && r.oos.trades > s.minTrades).length;
+  check('N = pasadas del contraste (más de 30 operaciones en el forward)', s.trials === used, `${s.trials} vs ${used}`);
+  check('ya no guarda las pruebas efectivas en el contraste', s.effectiveTrials === undefined);
+  const legacy = rebuild({ ...base, stats: { ...base.stats, sharpeTest: { ...s, effectiveTrials: 48 } } });
+  const legacyF = legacy.findings.find((f) => /umbral del azar/.test(f.title));
+  check('un análisis anterior (con pruebas efectivas) lo dice así', legacyF && /48 pruebas efectivas/.test(legacyF.detail), legacyF && legacyF.detail);
   check('el umbral queda por encima del máximo esperado', s.chanceMax > s.chanceMean);
   check('se guarda el nivel', s.chanceLevel === 0.95);
   // Un máximo entre la media y el percentil 95 antes «superaba el azar»; ahora no.

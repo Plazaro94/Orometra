@@ -221,7 +221,8 @@ section('I8. El contraste del Sharpe dice las pruebas que usa, con coma decimal'
   const d = buildDemoTables();
   const a = runAnalysis({ isTable: d.isTable, oosTable: d.oosTable });
   const f = a.verdict.findings.find((x) => /Sharpe/.test(x.title));
-  check('menciona las pruebas efectivas', f && /pruebas efectivas/.test(f.detail) && f.detail.includes(String(a.stats.sharpeTest.effectiveTrials)), f && f.detail);
+  const nTrials = a.stats.sharpeTest.trials.toLocaleString('es-ES');
+  check('menciona las pruebas que cuenta', f && f.detail.includes(`${nTrials} pruebas (cada pasada`), f && f.detail);
   check('decimales con coma en espanol', f && /\d,\d{2}/.test(f.detail) && !/\d\.\d{2}\b/.test(f.detail), f && f.detail);
 }
 

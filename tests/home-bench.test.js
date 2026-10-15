@@ -1,5 +1,5 @@
-// Las cifras del banco de pruebas que cita la portada (home.bench.*) salen del sexto
-// examen, ciego (bench/results/REPORT-exam6.md). Si el banco cambia, esta prueba falla
+// Las cifras del banco de pruebas que cita la portada (home.bench.*) salen del séptimo
+// examen, ciego (bench/results/REPORT-exam7.md). Si el banco cambia, esta prueba falla
 // hasta que se actualice el texto en los dos idiomas (y las rejillas de puntos de la portada).
 //
 //   node tests/home-bench.test.js
@@ -15,8 +15,8 @@ function check(name, cond, detail = '') {
   else { failures++; console.log(`  FAIL ${name}${detail ? ' -> ' + detail : ''}`); }
 }
 
-const md = fs.readFileSync(new URL('../bench/results/REPORT-exam6.md', import.meta.url), 'utf8');
-const num = (re) => { const m = md.match(re); if (!m) throw new Error(`No encuentro ${re} en REPORT-exam6.md`); return Number(m[1]); };
+const md = fs.readFileSync(new URL('../bench/results/REPORT-exam7.md', import.meta.url), 'utf8');
+const num = (re) => { const m = md.match(re); if (!m) throw new Error(`No encuentro ${re} en REPORT-exam7.md`); return Number(m[1]); };
 const row = (name) => {
   const line = md.split('\n').find((l) => l.startsWith(`| ${name} |`));
   if (!line) throw new Error(`No encuentro la fila ${name}`);
@@ -43,6 +43,8 @@ const fp = (lang, x, d) => (lang === 'es' ? `${x.toFixed(d).replace('.', ',')}\u
 const dec = (lang, x) => (lang === 'es' ? x.toFixed(2).replace('.', ',') : x.toFixed(2));
 const falseAlarms = Math.round((fpPct / 100) * noEdgeCases);
 const detected = Math.round((powerPct / 100) * powerCases);
+// El porcentaje que se enseña sale de los casos (34 de 38 = 89 %), no del redondeo del informe (89,5).
+const powerShown = Math.round((100 * detected) / powerCases);
 
 for (const lang of ['en', 'es']) {
   setLocale(lang);
@@ -50,7 +52,7 @@ for (const lang of ['en', 'es']) {
   check('número de casos', t('home.bench.sub').includes(String(cases)), t('home.bench.sub'));
   check('falsas alarmas: porcentaje', t('home.bench.1.n') === fp(lang, fpPct, 1), `${t('home.bench.1.n')} frente a ${fpPct}`);
   check('falsas alarmas: n de N', t('home.bench.1.body').includes(String(noEdgeCases)) && t('home.bench.1.body').includes(` ${falseAlarms} `), t('home.bench.1.body'));
-  check('potencia: porcentaje', t('home.bench.2.n') === fp(lang, powerPct, 0), `${t('home.bench.2.n')} frente a ${powerPct}`);
+  check('potencia: porcentaje', t('home.bench.2.n') === fp(lang, powerShown, 0), `${t('home.bench.2.n')} frente a ${powerShown}`);
   // «De 32 optimizaciones con una ventaja real clara, 31 recibieron…»
   const of = lang === 'es' ? `De ${powerCases} optimizaciones` : `Out of ${powerCases} optimizations`;
   const got = ` ${detected} `;
@@ -59,10 +61,12 @@ for (const lang of ['en', 'es']) {
   // elección, dónde no gana y por qué).
   const crit = lang === 'es' ? `${passed} de los ${passed + failed}` : `${passed} of the ${passed + failed}`;
   check('la portada dice que los datos son simulados', /(simuladas|simulated)/.test(t('home.bench.sub')), t('home.bench.sub'));
-  // En el sexto examen, una «sólida» sin ventaja (0,3 %): se dice en la portada y en Metodología.
+  // Las «sólidas» sin ventaja se dicen en la portada y en Metodología (en el séptimo examen, ninguna).
   const strongCount = Math.round((strongPct / 100) * noEdgeCases);
-  const oneStrong = lang === 'es' ? 'una de ellas, «sólida»' : 'one of them, “strong”';
-  check('una «sólida» sin ventaja, dicha', strongCount === 1 && t('home.bench.1.body').includes(oneStrong) && t('doc.method.bench.1').includes(oneStrong), `${strongCount}`);
+  const strongText = strongCount === 0
+    ? (lang === 'es' ? 'ninguna «sólida»' : 'none got “strong”')
+    : (lang === 'es' ? 'una de ellas, «sólida»' : 'one of them, “strong”');
+  check('las «sólidas» sin ventaja, dichas', strongCount <= 1 && t('home.bench.1.body').includes(strongText) && t('doc.method.bench.1').includes(strongText), `${strongCount}`);
   check('S5 dentro del 5 % (Metodología ya no lo cita como fallo)', s5Pos <= 5 && !/(8 de 100|8 of 100)/.test(t('doc.method.bench.p2')), `${s5Pos}`);
   // Metodología cita las mismas cifras («Cómo sabemos que funciona»).
   const m1 = t('doc.method.bench.1');
@@ -71,12 +75,15 @@ for (const lang of ['en', 'es']) {
   check('metodología: elección', t('doc.method.bench.3').includes(dec(lang, oAll)) && t('doc.method.bench.3').includes(dec(lang, b1All)));
   const m2 = t('doc.method.bench.p2');
   check('metodología: criterios y media con vecinas', m2.includes(crit) && m2.includes(dec(lang, b4All)), m2);
-  check('metodología: enlaza al mismo examen', m2.includes('REPORT-exam6.md'));
+  check('metodología: enlaza al mismo examen', m2.includes('REPORT-exam7.md'));
   // El paso 4 de Metodología resume la elección: no puede decir que gana a un método al que
   // el examen la da por perdedora (decía que ganaba a la suma de puestos, B3).
   const s4 = t('doc.method.s4.body3');
   const ahead = lang === 'es' ? '«media con vecinas» y la suma de puestos quedan por delante' : '“average with neighbors” and the rank sum come out ahead';
   check('metodología (paso 4): media con vecinas y suma de puestos, como en el examen', s4.includes(ahead) === (losesTo('B3') && losesTo('B4')), s4);
+  const onlyB4 = lang === 'es' ? '«media con vecinas» queda por delante' : '“average with neighbors” comes out ahead';
+  check('metodología (paso 4): si solo pierde con la media con vecinas, lo dice', s4.includes(onlyB4) === (losesTo('B4') && !losesTo('B3')), s4);
+  check('metodología (paso 4): gana a la suma de puestos si el examen lo dice', !losesTo('B3') === (lang === 'es' ? s4.includes('la suma de puestos y el azar') : s4.includes('the rank sum and random choice')), s4);
   check('metodología (paso 4): gana a la n.º 1 de MT5, al forward y al azar', !losesTo('B1') && !losesTo('B2') && !losesTo('B5'));
   check('metodología: dice por qué no gana en el total y dónde gana la n.º 1 de MT5', /(sugerencia orientativa|tentative suggestion)/.test(m2) && /(genéticas|genetic)/.test(m2), m2);
 }
@@ -104,15 +111,16 @@ for (const [file, href] of [['index.html', '/methodology/#banco'], ['es/index.ht
   const d1 = dots(grids[0]);
   check(`${file}: puntos de falsas alarmas`, d1.all === noEdgeCases && d1.box === noEdgeCases && d1.on === falseAlarms, JSON.stringify(d1));
   const d2 = dots(grids[1]);
-  check(`${file}: puntos de ventajas detectadas`, d2.all === powerCases && d2.box === powerCases && d2.on === detected, JSON.stringify(d2));
+  // Columnas de 4: la última puede quedar a medias (38 = 9 × 4 + 2).
+  check(`${file}: puntos de ventajas detectadas`, d2.all === powerCases && d2.box >= powerCases && d2.box - powerCases < 4 && d2.on === detected, JSON.stringify(d2));
 }
 
 console.log('\nLo que Metodología da por cierto');
 check('Orometra gana a la n.º 1 de MT5 en el total', oAll < b1All);
 check('la media con vecinas queda por delante en el total', b4All < oAll);
-check('la n.º 1 de MT5 gana en genética (S7) y en la rejilla real (S8)', b1S7 < oS7 && b1S8 < oS8);
-check('y en el resto, no', oS3 <= b1S3 && oS4 <= b1S4 && oS6 <= b1S6);
-check('metodología: en la rejilla real (S8) la n.º 1 de MT5 le gana dentro del margen (≤ 0,10)', oS8 - b1S8 <= 0.10, `${oS8} frente a ${b1S8}`);
+check('la n.º 1 de MT5 gana en genética (S7)', b1S7 < oS7);
+check('y en el resto, no (también en la rejilla real, S8)', oS3 <= b1S3 && oS4 <= b1S4 && oS6 <= b1S6 && oS8 <= b1S8);
+check('metodología: en genética (S7) la n.º 1 de MT5 le gana dentro del margen (≤ 0,10)', oS7 - b1S7 <= 0.10, `${oS7} frente a ${b1S7}`);
 check('«por eso»: con la sugerencia orientativa, gana en S7, S8 y a la media con vecinas',
   fb && Number(fb[1]) < b1S7 && Number(fb[2]) < b1S8 && Number(fb[3]) < b4All, fb ? fb.slice(1).join(' ') : 'sin línea');
 

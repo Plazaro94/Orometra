@@ -326,3 +326,50 @@ M1. Si no propone meseta, se registra como «se abstiene».
   Nota del 2026-10-14, añadida después: la casilla del quinto examen «cuando no la propone»
   estaba vacía; calculada sobre `exam5.jsonl` (121 casos sin meseta), 0,324 frente a 0,323.
   Ahí la sugerencia no gana a B4; en lo que enseña la app, sí (0,187 frente a 0,198).
+- **2026-10-15, medición del contraste del Sharpe, sin cambiar el motor.** El texto de la app
+  dice que el puro ruido superaría su umbral el 5 % de las veces. `bench/sharpe.js` lo mide en
+  la calibración y en el sexto examen, ya publicado (`REPORT-calib-sharpe.md`). En S1 lo supera
+  el 37 % (50 de 134). Contando como pruebas todas las pasadas del contraste y no las celdas del
+  espacio grueso (variante B), el 4,5 % (6 de 134). Con B, 18 y 25 casos con ventaja bajan a
+  «débil», la potencia queda en 87,8 % y 93,8 %, los falsos positivos no suben y la coherencia se
+  mantiene. No se adopta nada aquí. Si se adopta B, se prerregistra en una enmienda propia y se
+  examina una sola vez en las semillas 7001-7100, que siguen sin generar.
+- **2026-10-15 (b), prerregistro de la variante B del contraste del Sharpe, ANTES de generar
+  ninguna semilla del examen.** El autor decide adoptarla tras la medición anterior.
+  *Cambio (y nada más):* el umbral del contraste del Sharpe pasa a contar como pruebas todas las
+  pasadas que entran en él (las del forward, o del periodo optimizado sin forward, con más de 30
+  operaciones), no las celdas del espacio grueso. El resto del motor no cambia: las celdas se
+  siguen usando para los bloques de la expectativa ajustada (`core/shrink.js`), la elección de
+  la configuración no depende de este contraste y el umbral sigue siendo el percentil 95 del
+  máximo, con la misma σ. Cambian los textos que describen el contraste (veredicto, Diagnóstico y
+  Metodología).
+  *Elegida con:* la calibración (semillas 1-100) y el sexto examen, ya publicado y por tanto no
+  ciego (`REPORT-calib-sharpe.md`). No se ha generado ninguna semilla de 7001 en adelante.
+  *Criterios (cerrados):*
+  (a) **Calibración del contraste:** en S1 (la única nula limpia), el número de casos que superan
+  el umbral, entre los que tienen contraste, no es significativamente mayor que el 5 %: prueba
+  binomial de una cola con p ≥ 0,01.
+  (b) **Criterios del §6 y de las enmiendas:** falsos positivos («moderada» o más ≤ 5 % en cada
+  escenario sin ventaja), «sólida» ≤ 1 % y «buena» o «sólida» ≤ 2 % en cada uno, potencia ≥ 80 %
+  y coherencia (insuficiente/débil < moderada ≤ buena ≤ sólida). La elección (arrepentimiento
+  frente a B1-B5) no cambia con este contraste: se informa tal como salga y no decide.
+  *Decisión:* B se adopta si cumple (a) y cumple todos los criterios de (b) que cumpla el motor
+  actual (`6689445`) en las mismas semillas. Si no, se vuelve al umbral actual y lo que se
+  corrige es el texto (quitar «solo el 5 %» y decir la tasa medida).
+  *Examen:* semillas 7001-7100 de S1-S8, nunca generadas. Una sola vez, con el motor nuevo
+  congelado y, al lado, el actual (`exam7-motor-6689445`). Se publica tal como salga, y la
+  portada y Metodología pasan a citar este examen si B se adopta.
+- **2026-10-15 (c), resultado del séptimo examen.** Motor congelado en `906b8f3` (variante B) y,
+  al lado, el anterior (`6689445`), en las semillas 7001-7100 de S1-S8, generadas una sola vez
+  (`REPORT-exam7.md`, `REPORT-exam7-motor-6689445.md`). Se publica tal como salió.
+  (a) En S1 superan el umbral 2 de 68 casos con contraste (2,9 %; prueba binomial de una cola
+  frente al 5 %, p = 0,86): **aprobado**. Con el motor anterior, 34 de 68 (50 %).
+  (b) B aprueba todos los criterios que aprueba el anterior: falsos positivos 0,3 % (anterior,
+  0,7 %), «sólida» 0 %, «buena» o «sólida» 0 % en cada escenario sin ventaja (anterior, 1 % en
+  S5), potencia 89,5 % de 38 (igual) y coherencia (débil 0,086 < moderada 0,193 < buena 0,224 <
+  sólida 0,232). Los dos suspenden la elección frente a B4 (0,213 frente a 0,211) y la aprueban
+  frente a B1, B2, B3 y B5: eligen lo mismo en los 800 casos.
+  Cambian 24 niveles: 23 casos con ventaja bajan a «débil» (18 desde «moderada», 4 desde
+  «buena», 1 desde «sólida») y 1 «buena» sin ventaja, en S5, también.
+  **Decisión: B se adopta.** La portada y Metodología citan este examen.
+

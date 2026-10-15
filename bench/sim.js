@@ -133,7 +133,7 @@ export const NO_EDGE = new Set(['S1', 'S2', 'S5']);
 // Primera semilla de cada tanda (bench/PREREGISTRO.md): calibración 1-100, exámenes 1001-1100,
 // 2001-2100… Un nombre que no está aquí es un error: antes caía sin avisar en las semillas de
 // la calibración con el nombre del examen.
-const SEED_BASE = { calib: 1, test: 1001, exam2: 2001, exam3: 3001, exam4: 4001, exam5: 5001, exam6: 6001 };
+const SEED_BASE = { calib: 1, test: 1001, exam2: 2001, exam3: 3001, exam4: 4001, exam5: 5001, exam6: 6001, exam7: 7001 };
 export function seedBase(split) {
   if (!(split in SEED_BASE)) throw new Error(`Tanda desconocida: ${split}. Hay: ${Object.keys(SEED_BASE).join(', ')}`);
   return SEED_BASE[split];

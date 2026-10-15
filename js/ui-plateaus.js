@@ -628,12 +628,12 @@ export function renderDiagnostics(a) {
         <div><span>· ${L('eligiendo en el forward, validando en el periodo optimizado', 'choosing on the forward, validating on the optimized period')}</span><strong>${pct(a.stats.fragilityFolds.oosToIs.value, 0)}</strong></div>
         <div><span>· ${L('asimetría entre sentidos', 'asymmetry across directions')}</span><strong>${pct(a.stats.fragilityAsymmetry, 0)}</strong></div>` : ''}
         <div><span>${L('Pasadas analizadas', 'Passes analyzed')}</span><strong>${int(a.meta.total)}</strong></div>
-        <div><span>${gloss('effectiveTrials', L('Pruebas efectivas (independientes)', 'Effective trials (independent)'))}</span><strong>${int(a.stats.effectiveTrials)}</strong></div>
         ${a.stats.sharpeTest ? `
         <div><span>${gloss('sharpe', a.stats.sharpeTest.period === 'oos' ? L('Sharpe máximo observado (forward)', 'Maximum observed Sharpe (forward)') : L('Sharpe máximo observado (periodo optimizado)', 'Maximum observed Sharpe (optimized period)'))}${Number.isFinite(a.stats.sharpeTest.minTrades) ? `<small class="muted"> ${L(`pasadas con más de ${a.stats.sharpeTest.minTrades} operaciones`, `passes with more than ${a.stats.sharpeTest.minTrades} trades`)}</small>` : ''}</span><strong>${num(a.stats.sharpeTest.observedMax, 3)}</strong></div>
         <div><span>${L('Sharpe medio entre pasadas', 'Mean Sharpe across passes')}</span><strong>${num(a.stats.sharpeTest.mean, 3)}</strong></div>
         <div><span>${L('Dispersión entre pasadas (σ)', 'Dispersion across passes (σ)')}</span><strong>${num(a.stats.sharpeTest.sigma, 3)}</strong></div>
-        <div><span>${L('Umbral por azar (95\u00A0%, pruebas efectivas)', 'Chance threshold (95%, effective trials)')}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>` : ''}
+        <div><span>${L('Pasadas que cuentan como pruebas', 'Passes counted as trials')}</span><strong>${int(a.stats.sharpeTest.trials)}</strong></div>
+        <div><span>${L('Umbral por azar (95\u00A0%)', 'Chance threshold (95%)')}</span><strong>${num(a.stats.sharpeTest.chanceMax, 3)}</strong></div>` : ''}
         <div><span>${L('Tiempo de cálculo', 'Compute time')}</span><strong>${int(a.meta.elapsedMs)} ms</strong></div>
       </div>
       ${findingsNote(statsFindings)}

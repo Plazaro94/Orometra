@@ -7,6 +7,7 @@
 //   node bench/run.js exam4            semillas 4001-4100 (cuarto examen, ya visto)
 //   node bench/run.js exam5            semillas 5001-5100 (quinto examen, ya visto)
 //   node bench/run.js exam6            semillas 6001-6100 (sexto examen, ya visto)
+//   node bench/run.js exam7            semillas 7001-7100 (séptimo examen, ya visto)
 //   node bench/run.js calib S3 5       un escenario y N semillas (pruebas rápidas)
 //
 // Escribe una línea JSON por caso en bench/results/<split>[-escenarios][-BENCH_TAG].jsonl.

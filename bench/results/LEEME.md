@@ -25,7 +25,9 @@ se indica en la tabla. Los hashes son el commit del motor con el que se generó 
 | `calib-motor-dbcc488.jsonl` | `dbcc488` | 1-100 | Calibración con el motor publicado antes de la auditoría estadística del 2026-10-14 (referencia) |
 | `calib-2026-10-14` | `95ef28e` | 1-100 | Calibración tras la auditoría estadística (umbral del Sharpe al percentil 95, expectativa ajustada) |
 | `calib-fw-none.jsonl`, `calib-fw-strong.jsonl` | `95ef28e` con `rankForward` | 1-100 | Orden entre mesetas sin el peso del forward y con el peso entero; el banco no lo distingue (enmienda del 2026-10-14) |
-| `exam6`, `exam6-motor-dbcc488` | `95ef28e` / anterior | 6001-6100 | **Sexto examen, ciego**, motor actual; el anterior, para comparar (elige lo mismo en los 800 casos). **Cifras que cita la portada** (`tests/home-bench.test.js` las lee de `REPORT-exam6.md`) |
+| `exam6`, `exam6-motor-dbcc488` | `95ef28e` / anterior | 6001-6100 | **Sexto examen, ciego**, motor de entonces; el anterior, para comparar (elige lo mismo en los 800 casos). Lo citó la portada hasta el séptimo |
+| `calib-2026-10-15` | `906b8f3` | 1-100 | Calibración con el umbral del Sharpe contando todas las pasadas (variante B, enmiendas del 2026-10-15) |
+| `exam7`, `exam7-motor-6689445` | `906b8f3` / anterior | 7001-7100 | **Séptimo examen, ciego**, prerregistrado para la variante B; el anterior, para comparar (elige lo mismo en los 800 casos). **Cifras que cita la portada** (`tests/home-bench.test.js` las lee de `REPORT-exam7.md`) |
 
 ## Estudios aparte
 
@@ -40,5 +42,6 @@ se indica en la tabla. Los hashes son el commit del motor con el que se generó 
 | `calib-orden-tabla.jsonl`, `calib-orden-tabla-pf1.4.jsonl`, `exam5-orden-tabla.jsonl`, `REPORT-calib-orden-tabla.md` | `bench/orden-tabla.js` | Si el aviso «La regla "primera de Result" falla» cambiaba algún nivel al dejar de ser crítico (2026-10-11). Estos `.jsonl` tienen otro formato: `bench/report.js` no los lee |
 | `REPORT-shrink-calib-2026-10-14.md`, `REPORT-shrink-exam6.md` | `node bench/shrink.js calib-2026-10-14` / `exam6` | Expectativa ajustada por selección frente a la verdad del no visto |
 | `REPORT-shrink-variantes-2026-10-14.md` | `bench/shrink.js` con cada variante | Las ocho variantes de la expectativa ajustada probadas en la calibración |
+| `calib-sharpe.jsonl`, `exam6-sharpe.jsonl`, `REPORT-calib-sharpe.md` | `node bench/sharpe.js calib` / `exam6` | Cuántas veces supera el puro ruido el umbral del contraste del Sharpe (A, el actual) frente a contar todas las pasadas (B) y una variante exploratoria (C), y qué niveles cambiarían (2026-10-15, motor `6689445`, sin cambiarlo). Otro formato: `bench/report.js` no los lee |
 | `calib-S1_S2_S3_S4_S5_S6_S7_S8_S9_S10-orden-current.jsonl`, `-expected`, `-lower` | `BENCH_TAG=orden-<regla> BENCH_OPTS='{"plateauRank":"<regla>"}' node bench/run.js calib S1,…,S10` | Orden entre mesetas con R0 (`current`), R1 (`expected`) y R2 (`lower`), con los escenarios S9 y S10 (enmiendas del 2026-10-14 (b) a (d)). Su parte S1-S8 de R0 es la misma que `calib-2026-10-14` |
 | `REPORT-orden-mesetas-calib.md`, `REPORT-orden-calib-R0-s1s8.md`, `-R1-s1s8`, `-R2-s1s8` | `node bench/orden-mesetas.js calib-S1_…_S10-orden` | Los criterios prerregistrados aplicados a las tres reglas. Los `REPORT-orden-calib-R*-s1s8.md` los vuelve a escribir el script cada vez: son el informe del banco de cada regla en S1-S8 |

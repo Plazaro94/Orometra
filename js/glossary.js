@@ -33,10 +33,6 @@ const DEFS = {
     es: 'Cuántas veces la mejor fila de un periodo cae a la mitad de abajo en el otro. Si es alta, el orden de la tabla de MT5 depende de qué periodo mires y no sirve para elegir.',
     en: 'How often the best row of one period falls to the bottom half in the other. If it is high, the MT5 table order depends on which period you look at and is no use for choosing.',
   },
-  effectiveTrials: {
-    es: 'Número de partes distintas del espacio de parámetros probadas, contando las configuraciones vecinas como una sola prueba en vez de varias independientes.',
-    en: 'Number of distinct areas of the parameter space tested, counting nearby neighbors as a single trial instead of several independent ones.',
-  },
   sampling: {
     es: 'Cómo cubrió la optimización el espacio de parámetros: rejilla completa (prueba todas las combinaciones), parcial, o dispersa (algoritmo genético, que concentra las pruebas donde ya iba bien).',
     en: 'How the optimization covered the parameter space: full grid (every combination tested), partial, or sparse (genetic algorithm, which concentrates trials where things already looked good).',
