@@ -326,3 +326,11 @@ M1. Si no propone meseta, se registra como «se abstiene».
   Nota del 2026-10-14, añadida después: la casilla del quinto examen «cuando no la propone»
   estaba vacía; calculada sobre `exam5.jsonl` (121 casos sin meseta), 0,324 frente a 0,323.
   Ahí la sugerencia no gana a B4; en lo que enseña la app, sí (0,187 frente a 0,198).
+- **2026-10-15, medición del contraste del Sharpe, sin cambiar el motor.** El texto de la app
+  dice que el puro ruido superaría su umbral el 5 % de las veces. `bench/sharpe.js` lo mide en
+  la calibración y en el sexto examen, ya publicado (`REPORT-calib-sharpe.md`). En S1 lo supera
+  el 37 % (50 de 134). Contando como pruebas todas las pasadas del contraste y no las celdas del
+  espacio grueso (variante B), el 4,5 % (6 de 134). Con B, 18 y 25 casos con ventaja bajan a
+  «débil», la potencia queda en 87,8 % y 93,8 %, los falsos positivos no suben y la coherencia se
+  mantiene. No se adopta nada aquí. Si se adopta B, se prerregistra en una enmienda propia y se
+  examina una sola vez en las semillas 7001-7100, que siguen sin generar.

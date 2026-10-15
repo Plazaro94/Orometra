@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-10-15 — Contraste del Sharpe: el puro ruido supera el umbral el 37 % de las veces, no el 5 %
+
+Medición en el banco, **sin cambiar el motor** (`bench/sharpe.js`, informe en
+`bench/results/REPORT-calib-sharpe.md`). La app dice que, sin ventaja real, el mejor Sharpe
+superaría el umbral solo el 5 % de las veces. En el escenario de ruido puro (S1) lo supera en
+50 de 134 casos (37 %), entre la calibración y el sexto examen.
+
+- Causa: el umbral cuenta las «pruebas efectivas» (las celdas del espacio grueso, de 18 a 24),
+  pero en el banco los Sharpe del forward de vecinas no están correlacionados y el máximo es el
+  de todas las pasadas (de 220 a 264). Contando todas las pasadas (variante B), el ruido puro lo
+  supera en 6 de 134 (4,5 %).
+- Con B cambian 18 niveles en la calibración y 25 en el examen, todos con ventaja, a «débil».
+  La potencia baja del 92,7 % al 87,8 % y del 96,9 % al 93,8 % (sigue por encima del 80 %). Los
+  falsos positivos no suben y la coherencia de niveles se mantiene.
+- Una variante exploratoria (ruido medido con las diferencias entre vecinas) no está calibrada
+  en S5 (38 % en la calibración, 13 % en el examen) y se descarta.
+- Corrige lo que se dijo el 2026-10-10 («en los 16 casos sin ventaja, el contraste del Sharpe
+  aprueba porque la suerte por zonas del forward es real»): sin esa suerte aprueba igual
+  (S1). La causa es el número de pruebas.
+- Límite: en un EA real las vecinas comparten operaciones y sus Sharpe pueden estar mucho más
+  correlacionados que en el banco. Con eso, B es prudente de más; A, en cambio, promete un nivel
+  que no cumple. No hay exports reales en el repositorio para medirlo.
+- Pendiente del autor: adoptar B (con prerregistro y examen en semillas nuevas, 7001-7100) o
+  dejar el umbral y corregir el texto. Mientras tanto, la app sigue diciendo «solo el 5 %».
+
 ## 2026-10-15 — Monte Carlo: backtest largo, antes y después de elegir
 
 Si el informe incluye días que se miraron para elegir la configuración, la sección del Monte
