@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-15 — Monte Carlo: backtest largo partido en tramos
+
+Si el informe es un backtest largo (optimizado + forward + lo posterior), la sección del Monte
+Carlo pregunta hasta qué fecha se usó para elegir y, si se quiere, dónde acaba el optimizado:
+
+- Cada operación cuenta en el tramo de su fecha de cierre; si se abrió antes de un corte y se
+  cerró después, va al tramo posterior y se dice cuántas hay (el lector del informe guarda ahora
+  la hora de apertura de cada cierre).
+- La radiografía sale por tramos, en una tabla (caída real, cuántos órdenes darían una caída mayor
+  y si el orden fue favorable, normal o desfavorable) y con el gráfico del tramo que se elija.
+- La previsión se calcula solo con el tramo posterior a la elección, con las mismas condiciones
+  que antes. Una fecha fuera del informe, o en el orden equivocado, se dice con el periodo real.
+- Pruebas: `tests/mc-report.test.js` (reparto, fechas que no valen, la previsión mira solo el
+  tramo limpio), la hora de apertura en `tests/report.test.js` y el flujo en el navegador.
+
+Sigue igual: el contraste con la meseta usa las cifras del informe entero.
+
 ## 2026-10-15 — Monte Carlo en la app: radiografía y previsión
 
 En la pestaña del periodo no visto, sobre las operaciones del informe (pendiente del visto bueno

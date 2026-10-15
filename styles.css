@@ -2708,3 +2708,13 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
 .mc-bar-zero{stroke:var(--muted-3);stroke-width:1;stroke-dasharray:3 3}
 .mc-bar-label{fill:var(--muted-2);font-size:11px;font-family:var(--font)}
 .mc-h{margin:18px 0 8px;font-size:var(--fs-md);color:var(--text-2)}
+.mc-periods{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 14px;max-width:var(--measure);display:grid;gap:10px}
+.mc-periods legend{padding:0 4px;font-size:var(--fs-md);color:var(--text-2);line-height:1.45}
+.mc-periods small{color:var(--muted-2);font-size:var(--fs-sm);line-height:1.45}
+.mc-periods .inline-warn{margin:0}
+.mc-radios{display:flex;flex-wrap:wrap;gap:8px 20px}
+.mc-radios label{display:flex;gap:8px;align-items:center;font-size:var(--fs-md)}
+.mc-dates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.mc-dates input[type=date]{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-variant-numeric:tabular-nums;color-scheme:light dark;min-height:44px}
+.mc-seg-table td,.mc-seg-table th{white-space:nowrap}
+.mc-row-clean td{font-weight:700}

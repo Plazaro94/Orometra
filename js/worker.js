@@ -74,11 +74,11 @@ self.onmessage = async (event) => {
     // Monte Carlo sobre las operaciones del informe (core/trades/mc-report.js): radiografía y
     // puertas al cargar el informe; la previsión, solo cuando la pantalla la pide.
     if (event.data.kind === 'tradesMC') {
-      post('done', { summary: tradesMonteCarlo(event.data.deals, { sizing: event.data.sizing }) });
+      post('done', { summary: tradesMonteCarlo(event.data.deals, { sizing: event.data.sizing, cuts: event.data.cuts }) });
       return;
     }
     if (event.data.kind === 'tradesForecast') {
-      post('done', { summary: tradesForecast(event.data.deals, { sizing: event.data.sizing, ddLimit: event.data.ddLimit }) });
+      post('done', { summary: tradesForecast(event.data.deals, { sizing: event.data.sizing, ddLimit: event.data.ddLimit, cuts: event.data.cuts }) });
       return;
     }
     if (event.data.kind === 'preflight') {

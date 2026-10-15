@@ -298,11 +298,17 @@ function parseDeals(rows) {
     const d = m ? m[1].length : 0;
     return d <= 8 ? d : NaN;
   };
-  /** Consume `vol` de una cola y devuelve el precio medio ponderado de lo consumido. */
+  /**
+   * Consume `vol` de una cola y devuelve el precio medio ponderado de lo consumido. Deja en
+   * `consumedOpenTime` la apertura más antigua de lo consumido: una posición abierta antes de
+   * una fecha de corte y cerrada después cuenta en el tramo posterior, y se dice cuántas hay.
+   */
+  let consumedOpenTime = null;
   const consume = (q, vol) => {
     let left = vol;
     let acc = 0;
     let got = 0;
+    consumedOpenTime = q.length ? q[0].time : null;
     while (left > 1e-12 && q.length) {
       const head = q[0];
       const take = Math.min(left, head.volume);
@@ -333,13 +339,14 @@ function parseDeals(rows) {
     if (cols.direction >= 0 && !/out/.test(dir)) {
       carryCommission += commissionOf(c);
       carrySwap += swapOf(c);
-      if (canPair && /in/.test(dir)) queueOf(sym, side).push({ price, volume: vol });
+      if (canPair && /in/.test(dir)) queueOf(sym, side).push({ price, volume: vol, time: dealTime(c[cols.time]) });
       continue;
     }
     const profit = toNumber(c[cols.profit]);
     if (!Number.isFinite(profit)) continue;
     // Precio de apertura de lo que se cierra.
     let openPrice = NaN;
+    consumedOpenTime = null;
     let closedVolume = vol;
     let positionSide = null;
     if (canPair && /by/.test(dir)) {
@@ -357,7 +364,7 @@ function parseDeals(rows) {
         closedVolume = queuedVolume(q);
         openPrice = closedVolume > 0 ? consume(q, closedVolume) : NaN;
         const rest = vol - closedVolume;
-        if (rest > 1e-12) queueOf(sym, side).push({ price, volume: rest });
+        if (rest > 1e-12) queueOf(sym, side).push({ price, volume: rest, time: dealTime(c[cols.time]) });
       } else {
         openPrice = consume(q, vol);
       }
@@ -384,6 +391,8 @@ function parseDeals(rows) {
       // cerrada y volumen cerrado: con ellos se deduce el valor del contrato.
       price,
       openPrice,
+      // Apertura de lo que se cierra (la más antigua si se cerraron varias); null si no se emparejó.
+      openTime: consumedOpenTime,
       positionSide,
       closedVolume,
       digits: cols.price >= 0 ? decimalsOf(priceRaw) : NaN,

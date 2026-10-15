@@ -7,6 +7,9 @@
 //   sin rachas ni volatilidad agrupada), si consta que el informe es de la configuración elegida,
 //   si no repite un periodo ya usado y si el usuario confirma que no usó esas fechas para elegir.
 //   Orometra no puede comprobar esto último: el export de optimización no trae fechas.
+// - Backtest largo (6.1): el usuario dice hasta qué fecha usó para elegir (y, si quiere, dónde
+//   acaba el optimizado). Cada operación cuenta en el tramo de su fecha de cierre; la
+//   radiografía sale por tramos y la previsión, solo con el tramo posterior a la elección.
 
 import { repeatedPeriod } from '../core/unseen.js';
 import { otherConfigOnSameDates } from '../core/history.js';
@@ -21,12 +24,22 @@ import { repeatedPeriodText } from './ui-verdict.js';
 /** Estado del Monte Carlo del informe en pantalla. Fuera de state.unseen: «Limpiar» no lo borra. */
 function mcState() {
   if (!state.tradesMC || state.tradesMC.report !== state.report) {
-    state.tradesMC = { report: state.report, sizing: null, status: 'idle', result: null, error: null, confirm: false, ddLimit: '', forecast: null };
+    state.tradesMC = {
+      report: state.report, sizing: null, status: 'idle', result: null, error: null, confirm: false, ddLimit: '', forecast: null,
+      // Backtest largo: split 'no' (todo posterior a la elección) o 'yes' (con fechas de corte).
+      split: 'no', cuts: { chooseEnd: '', optEnd: '' }, view: null,
+    };
   }
   return state.tradesMC;
 }
 
 const rerender = () => { if (state.tab === 'unseen' && api.render) api.render(); };
+
+/** Fechas de corte que se mandan al worker, o undefined si el informe es entero posterior a la elección. */
+function activeCuts(mc) {
+  if (mc.split !== 'yes' || !mc.cuts.chooseEnd) return undefined;
+  return { chooseEnd: mc.cuts.chooseEnd, optEnd: mc.cuts.optEnd || undefined };
+}
 
 /** Radiografía y puertas, al cargar el informe o al cambiar el tipo de lote. */
 export async function startTradesMC() {
@@ -40,7 +53,7 @@ export async function startTradesMC() {
   const token = {};
   mc.token = token;
   try {
-    const result = await runInWorker({ kind: 'tradesMC', deals: rep.deals, sizing: mc.sizing || undefined });
+    const result = await runInWorker({ kind: 'tradesMC', deals: rep.deals, sizing: mc.sizing || undefined, cuts: activeCuts(mc) });
     if (mc.token !== token || state.tradesMC !== mc) return;
     mc.result = result;
     mc.status = 'done';
@@ -63,7 +76,7 @@ async function startForecast() {
   mc.token = token;
   rerender();
   try {
-    const result = await runInWorker({ kind: 'tradesForecast', deals: rep.deals, sizing: mc.result.sizing, ddLimit });
+    const result = await runInWorker({ kind: 'tradesForecast', deals: rep.deals, sizing: mc.result.sizing, ddLimit, cuts: activeCuts(mc) });
     if (mc.token !== token || state.tradesMC !== mc) return;
     mc.forecast = { status: 'done', result, ddLimit };
   } catch (err) {
@@ -87,6 +100,23 @@ export function initMonteCarlo() {
       mc.sizing = t.value;
       mc.confirm = false;
       startTradesMC();
+      rerender();
+    } else if (t && t.name === 'mcSplit') {
+      const mc = mcState();
+      mc.split = t.value;
+      mc.confirm = false;
+      mc.view = null;
+      startTradesMC();
+      rerender();
+    } else if (t && (t.id === 'mcChooseEnd' || t.id === 'mcOptEnd')) {
+      const mc = mcState();
+      mc.cuts[t.id === 'mcChooseEnd' ? 'chooseEnd' : 'optEnd'] = t.value;
+      mc.confirm = false;
+      mc.view = null;
+      if (mc.cuts.chooseEnd) startTradesMC();
+      rerender();
+    } else if (t && t.id === 'mcView') {
+      mcState().view = t.value;
       rerender();
     } else if (t && t.id === 'mcConfirm') {
       mcState().confirm = t.checked;
@@ -170,13 +200,93 @@ const VOL_CAVEAT = () => L(
   'Note: with very uneven results, two extraordinary days close to each other can be enough to trigger this warning. It errs on the side of caution (it withholds figures, it does not give bad ones) and we are improving it.',
 );
 
+// ------------------------------------------------------------------ tramos
+const SEGMENT_LABEL = () => ({
+  opt: L('Periodo optimizado', 'Optimized period'),
+  fwd: L('Forward', 'Forward'),
+  used: L('Usado para elegir', 'Used for choosing'),
+  clean: L('Posterior a la elección', 'After the choice'),
+  all: L('Todo el informe', 'Whole report'),
+});
+
+const CUT_ERROR = (e, period) => {
+  const range = period ? L(`del ${fdate(period.from)} al ${fdate(period.to)}`, `from ${fdate(period.from)} to ${fdate(period.to)}`) : '';
+  switch (e) {
+    case 'orden': return L('El fin del periodo optimizado no puede ser posterior al último día que usaste para elegir.', 'The end of the optimized period cannot be later than the last day you used for choosing.');
+    case 'sin_operaciones_antes': return L(`Esa fecha es anterior a la primera operación: las operaciones del informe van ${range}.`, `That date is before the first trade: the report's trades run ${range}.`);
+    case 'sin_operaciones_despues': return L(`Después de esa fecha no hay operaciones: las del informe van ${range}. Si el informe entero es posterior a la elección, elige «No».`, `There are no trades after that date: the report's trades run ${range}. If the whole report is after the choice, pick "No".`);
+    case 'fecha_no_valida': return L('Esa fecha no es válida.', 'That date is not valid.');
+    default: return L('El informe no trae fechas de cierre reconocibles.', "The report doesn't have recognizable closing dates.");
+  }
+};
+
+/** ¿El informe incluye fechas usadas para elegir? Con fechas de corte, se parte en tramos. */
+function periodsRow(mc, res) {
+  const rep = state.report;
+  const day = (d) => (d instanceof Date && !Number.isNaN(d.valueOf()) ? d.toISOString().slice(0, 10) : '');
+  const min = (res.period && res.period.from) || day(rep.meta.from);
+  const max = (res.period && res.period.to) || day(rep.meta.to);
+  const yes = mc.split === 'yes';
+  const radio = (v, text) => `<label><input type="radio" name="mcSplit" value="${v}"${mc.split === v ? ' checked' : ''}> <span>${text}</span></label>`;
+  const dates = yes ? `<div class="mc-dates">
+      <label class="field"><span>${L('Último día que usaste para elegir (fin del forward)', 'Last day you used for choosing (end of the forward)')}</span>
+        <input type="date" id="mcChooseEnd" value="${esc(mc.cuts.chooseEnd)}" min="${esc(min)}" max="${esc(max)}"></label>
+      <label class="field"><span>${L('Fin del periodo optimizado (opcional, para verlo aparte del forward)', 'End of the optimized period (optional, to see it apart from the forward)')}</span>
+        <input type="date" id="mcOptEnd" value="${esc(mc.cuts.optEnd)}" min="${esc(min)}" max="${esc(max)}"></label>
+    </div>
+    <small>${L(`Cada operación cuenta en el tramo de su fecha de cierre. Las operaciones del informe van del ${fdate(min)} al ${fdate(max)}.`, `Each trade counts in the segment of its closing date. The report's trades run from ${fdate(min)} to ${fdate(max)}.`)}</small>` : '';
+  const err = res.reason === 'cortes' ? `<p class="inline-warn">${esc(CUT_ERROR(res.cutError, res.period))}</p>` : '';
+  return `<fieldset class="mc-periods">
+      <legend>${L('¿Este informe incluye fechas que usaste para elegir la configuración (el periodo optimizado o el forward)?', 'Does this report include dates you used to choose the configuration (the optimized period or the forward)?')}</legend>
+      <div class="mc-radios">${radio('no', L('No: todo es posterior a la elección', 'No: all of it is after the choice'))}${radio('yes', L('Sí: es un backtest largo', 'Yes: it is a long backtest'))}</div>
+      ${dates}${err}
+    </fieldset>`;
+}
+
+const orderWord = (worse) => (worse >= 0.8 ? L('favorable', 'favorable') : worse <= 0.2 ? L('desfavorable', 'unfavorable') : L('normal', 'normal'));
+
+/** Radiografía de cada tramo, en una tabla: así se ve qué tramo tuvo suerte con el orden. */
+function segmentsTable(res) {
+  const labels = SEGMENT_LABEL();
+  const dd = ddFmt(res.mode);
+  const cols = [L('Fechas', 'Dates'), L('Operaciones', 'Trades'), L('Caída máxima', 'Maximum drop'), L('Con otro orden, mayor en', 'With another order, larger in'), L('El orden fue', 'The order was')];
+  const rows = res.segments.map((sg) => {
+    const r = sg.radiography;
+    const ok = r && r.usable;
+    const cell = (i, v) => `<td data-label="${esc(cols[i])}">${v}</td>`;
+    return `<tr class="stack-row${sg.key === 'clean' ? ' mc-row-clean' : ''}"><td class="strong">${esc(labels[sg.key])}</td>${cell(0, `${fdate(sg.from)} – ${fdate(sg.to)}`)}${cell(1, int(sg.trades))}${cell(2, ok ? esc(dd(r.real.maxDd)) : '—')}${cell(3, ok ? pct(r.worseOrderShare, 0) : '—')}${cell(4, ok ? esc(orderWord(r.worseOrderShare)) : esc(L(`menos de ${MIN_TRADES} operaciones`, `fewer than ${MIN_TRADES} trades`)))}</tr>`;
+  }).join('');
+  const straddling = res.segments.reduce((a, sg) => a + sg.straddling, 0);
+  const options = res.segments.filter((sg) => sg.radiography && sg.radiography.usable)
+    .map((sg) => `<option value="${sg.key}"${sg.key === viewKey(res) ? ' selected' : ''}>${esc(labels[sg.key])}</option>`).join('');
+  return `<div class="table-wrap"><table class="stack-table mc-seg-table">
+      <thead><tr><th>${L('Tramo', 'Segment')}</th>${cols.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <p class="chart-note">${L(
+    'En los tramos con los que elegiste, lo esperable es un orden favorable: la configuración se eligió porque le fue bien ahí. El tramo que cuenta es el posterior a la elección.',
+    'In the segments you chose with, a favorable order is to be expected: the configuration was chosen because it did well there. The segment that counts is the one after the choice.',
+  )}${straddling ? ` ${L(`${int(straddling)} ${straddling === 1 ? 'operación se abrió' : 'operaciones se abrieron'} antes de un corte y ${straddling === 1 ? 'se cerró' : 'se cerraron'} después: ${straddling === 1 ? 'cuenta' : 'cuentan'} en el tramo posterior.`, `${int(straddling)} ${straddling === 1 ? 'trade was' : 'trades were'} opened before a cut and closed after it: ${straddling === 1 ? 'it counts' : 'they count'} in the later segment.`)}` : ''}</p>
+    ${options ? `<div class="mc-sizing"><label class="inline-select">${L('Ver el gráfico de', 'Show the chart for')} <select id="mcView">${options}</select></label></div>` : ''}`;
+}
+
+/** Tramo del gráfico: el que eligió el usuario, o el posterior a la elección, o el informe entero. */
+function viewKey(res) {
+  const mc = mcState();
+  const usable = (k) => res.segments.some((sg) => sg.key === k && sg.radiography && sg.radiography.usable);
+  if (mc.view && usable(mc.view)) return mc.view;
+  return usable('clean') ? 'clean' : 'all';
+}
+
 // ------------------------------------------------------------------ radiografía
 function radiographyBlock(res) {
   const r = res.radiography;
-  if (!r || !r.usable) {
-    const why = r && r.reason === 'pocas_operaciones'
-      ? L(`Hacen falta al menos ${MIN_TRADES} operaciones y este informe tiene ${int(r.trades)}: con menos, cualquier orden parece posible y no se puede decir nada.`,
-        `At least ${MIN_TRADES} trades are needed and this report has ${int(r.trades)}: with fewer, any order looks possible and nothing can be said.`)
+  if (!r) {
+    return `<div class="mc-off"><p>${esc(L('Este tramo no tiene operaciones.', 'This segment has no trades.'))}</p></div>`;
+  }
+  if (!r.usable) {
+    const why = r.reason === 'pocas_operaciones'
+      ? L(`Hacen falta al menos ${MIN_TRADES} operaciones y aquí hay ${int(r.trades)}: con menos, cualquier orden parece posible y no se puede decir nada.`,
+        `At least ${MIN_TRADES} trades are needed and there are ${int(r.trades)} here: with fewer, any order looks possible and nothing can be said.`)
       : L('Todas las operaciones caen el mismo día: no hay días que reordenar.', 'All the trades fall on the same day: there are no days to reorder.');
     return `<div class="mc-off"><p>${esc(why)}</p></div>`;
   }
@@ -196,7 +306,7 @@ function radiographyBlock(res) {
     `Your ${int(r.trades)} trades in ${int(r.sims)} different orders of their days: all end at ${v(r.total)}. Your maximum drop was ${dd(r.real.maxDd)}; with another order it would have been larger in ${pct(worse, 0)} of cases.`,
   );
   const chart = radiographyChart(r, { fmt: tickFmt(res.mode), label, yLabel: res.mode === 'log' ? L('Resultado acumulado (%)', 'Cumulative result (%)') : L('Resultado acumulado', 'Cumulative result') });
-  const gateWarn = res.gates.streaks.hit || res.gates.volatility.hit
+  const gateWarn = res.gates && (res.gates.streaks.hit || res.gates.volatility.hit)
     ? `<div class="inline-warn">${esc(gatesText(res.gates))} ${esc(L('Reordenar los días rompe eso, así que las caídas y las rachas de esta radiografía se quedan cortas.', 'Reordering the days breaks that, so the drops and streaks in this radiography fall short.'))}</div>`
     : '';
   const unit = res.mode === 'log'
@@ -237,7 +347,8 @@ function processBlockers(a, p, res) {
   // Otra configuración (otra meseta) ya comparada con fechas que se solapan: si se eligió entre
   // ellas, este tramo ya no es ciego. La misma configuración en otro tramo no es elegir.
   const day = (d) => (d instanceof Date && !Number.isNaN(d.valueOf()) ? d.toISOString().slice(0, 10) : null);
-  const from = day(rep.meta.from); const to = day(rep.meta.to);
+  const from = res.cuts ? res.cleanFrom : day(rep.meta.from);
+  const to = res.cuts ? res.cleanTo : day(rep.meta.to);
   const current = Math.min(state.unseen.plateauIndex || 0, a.plateaus.length - 1) + 1;
   const overlapping = otherConfigOnSameDates(state.unseenTries, { from, to, plateau: current });
   if (overlapping.length) {
@@ -250,13 +361,16 @@ function processBlockers(a, p, res) {
 function dataBlockers(res) {
   const out = [];
   const miss = res.forecastData.missing;
+  const where = res.cuts
+    ? L(`el tramo posterior al ${fdate(res.cuts.chooseEnd)}`, `the segment after ${fdate(res.cuts.chooseEnd)}`)
+    : L('este informe', 'this report');
   if (miss.includes('dias')) {
-    out.push(L(`Hacen falta 2 años de operaciones que no usaste para elegir (${int(FORECAST_MIN_DAYS)} días de mercado) y este informe tiene ${int(res.days)}. Con menos, en nuestras pruebas las cifras no cumplían lo que prometían.`,
-      `It needs 2 years of trades you did not use for choosing (${int(FORECAST_MIN_DAYS)} market days) and this report has ${int(res.days)}. With less, in our tests the figures did not deliver what they promised.`));
+    out.push(L(`Hacen falta 2 años de operaciones que no usaste para elegir (${int(FORECAST_MIN_DAYS)} días de mercado) y ${where} tiene ${int(res.days)}. Con menos, en nuestras pruebas las cifras no cumplían lo que prometían.`,
+      `It needs 2 years of trades you did not use for choosing (${int(FORECAST_MIN_DAYS)} market days) and ${where} has ${int(res.days)}. With less, in our tests the figures did not deliver what they promised.`));
   }
   if (miss.includes('dias_con_operaciones')) {
-    out.push(L(`Hacen falta al menos ${int(FORECAST_MIN_TRADING_DAYS)} días con operaciones y este informe tiene ${int(res.tradingDays)}.`,
-      `It needs at least ${int(FORECAST_MIN_TRADING_DAYS)} days with trades and this report has ${int(res.tradingDays)}.`));
+    out.push(L(`Hacen falta al menos ${int(FORECAST_MIN_TRADING_DAYS)} días con operaciones y ${where} tiene ${int(res.tradingDays)}.`,
+      `It needs at least ${int(FORECAST_MIN_TRADING_DAYS)} days with trades and ${where} has ${int(res.tradingDays)}.`));
   }
   if (miss.includes('puertas')) {
     out.push(`${gatesText(res.gates)} ${L('En esos casos el método se quedaba corto en nuestras pruebas, así que no damos cifras.', 'In those cases the method fell short in our tests, so we give no figures.')}${res.gates.volatility.hit ? ` ${VOL_CAVEAT()}` : ''}`);
@@ -297,6 +411,10 @@ function forecastCards(f, ddLimit) {
 }
 
 function forecastBlock(a, p, res) {
+  const mcs = mcState();
+  if (mcs.split === 'yes' && !res.cuts) {
+    return `<div class="mc-off"><p>${esc(L('Indica arriba el último día que usaste para elegir: la previsión solo se calcula con lo posterior.', 'Enter above the last day you used for choosing: the forecast is only computed with what comes after.'))}</p></div>`;
+  }
   const blockers = [...dataBlockers(res), ...processBlockers(a, p, res)];
   const no3m = L('A 3 meses no damos previsión: en nuestras pruebas no fue fiable con ningún tamaño de muestra.', 'We give no 3-month forecast: in our tests it was not reliable with any sample size.');
   if (blockers.length) {
@@ -321,9 +439,12 @@ function forecastBlock(a, p, res) {
   const err = f && f.status === 'error' ? `<p class="inline-warn">${esc(f.error)}</p>` : '';
   const unit = res.mode === 'log' ? L('en % del balance', 'as % of the balance') : L('en dinero de la cuenta', 'in account money');
   return `<div class="mc-confirm">
-      <p>${L(
-    `Estas operaciones van del <strong>${fdate(res.from)}</strong> al <strong>${fdate(res.to)}</strong>. La previsión solo vale si <strong>ninguna de esas fechas se usó para elegir la configuración</strong>: ni para optimizar, ni para el forward, ni para comparar varias configuraciones. Orometra no puede comprobarlo por ti.`,
-    `These trades run from <strong>${fdate(res.from)}</strong> to <strong>${fdate(res.to)}</strong>. The forecast is only valid if <strong>none of those dates was used to choose the configuration</strong>: not for optimizing, not for the forward, not for comparing several configurations. Orometra cannot check this for you.`,
+      <p>${res.cuts ? L(
+    `Se calcula solo con las operaciones posteriores al ${fdate(res.cuts.chooseEnd)}: del <strong>${fdate(res.from)}</strong> al <strong>${fdate(res.to)}</strong>. `,
+    `It is computed only with the trades after ${fdate(res.cuts.chooseEnd)}: from <strong>${fdate(res.from)}</strong> to <strong>${fdate(res.to)}</strong>. `,
+  ) : ''}${L(
+    `${res.cuts ? 'Esas' : 'Estas'} operaciones van del <strong>${fdate(res.from)}</strong> al <strong>${fdate(res.to)}</strong>. La previsión solo vale si <strong>ninguna de esas fechas se usó para elegir la configuración</strong>: ni para optimizar, ni para el forward, ni para comparar varias configuraciones. Orometra no puede comprobarlo por ti.`,
+    `${res.cuts ? 'Those' : 'These'} trades run from <strong>${fdate(res.from)}</strong> to <strong>${fdate(res.to)}</strong>. The forecast is only valid if <strong>none of those dates was used to choose the configuration</strong>: not for optimizing, not for the forward, not for comparing several configurations. Orometra cannot check this for you.`,
   )}</p>
       <label><input type="checkbox" id="mcConfirm"${mc.confirm ? ' checked' : ''}> <span>${L('No usé ninguna de estas fechas para elegir', 'I did not use any of these dates for choosing')}</span></label>
       <label class="field"><span>${L(`Caída de balance que no aguantarías (opcional, ${unit})`, `Balance drop you could not stand (optional, ${unit})`)}</span>
@@ -352,15 +473,21 @@ export function renderMonteCarlo(a, p) {
   if (res.sizing === 'martingale') {
     return `${sizingRow(res)}<div class="mc-off"><p>${esc(MARTINGALE_TEXT())}</p></div>`;
   }
+  if (res.reason === 'cortes') {
+    return `${sizingRow(res)}${periodsRow(mc, res)}`;
+  }
   if (!res.usable) {
     const why = res.reason === 'balance_no_valido'
       ? L('Para trabajar en % hace falta el balance tras cada operación, y el informe no lo trae completo. Prueba con «lote fijo».', 'Working in % needs the balance after each trade, and the report does not have it complete. Try "fixed lot".')
       : L('El informe no trae fechas de cierre reconocibles: no se pueden agrupar las operaciones por día sin inventar un reparto.', "The report doesn't have recognizable closing dates: trades can't be grouped by day without making one up.");
     return `${sizingRow(res)}<div class="mc-off"><p>${esc(why)}</p></div>`;
   }
+  const view = res.segments ? res.segments.find((sg) => sg.key === viewKey(res)) : null;
   return `${sizingRow(res)}
+    ${periodsRow(mc, res)}
     <h4 class="mc-h">${L('Radiografía: ¿fue suerte el orden?', 'Radiography: was the order luck?')}</h4>
-    ${radiographyBlock(res)}
+    ${res.segments ? segmentsTable(res) : ''}
+    ${radiographyBlock(view || res)}
     <h4 class="mc-h">${L('Previsión a 6 y 12 meses', '6- and 12-month forecast')}</h4>
     ${forecastBlock(a, p, res)}`;
 }

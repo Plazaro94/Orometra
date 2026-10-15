@@ -80,6 +80,8 @@ const mcLong = path.join(tmp, 'MC-2anos.html');
 fs.writeFileSync(mcLong, backtestReport({ weekdays: 640, seed: 5 }));
 const mcOther = path.join(tmp, 'MC-otra.html');
 fs.writeFileSync(mcOther, backtestReport({ weekdays: 640, seed: 5, inputs: 'InpFastMA=16 InpSlowMA=70 InpATR_SL=2 InpATR_TP=4 InpTrailStart=1.5 InpMinBodyPct=20' }));
+const mcFull = path.join(tmp, 'MC-5anos.html');
+fs.writeFileSync(mcFull, backtestReport({ start: Date.UTC(2021, 0, 4), weekdays: 1300, seed: 12 }));
 const mcMart = path.join(tmp, 'MC-martingala.html');
 fs.writeFileSync(mcMart, backtestReport({ weekdays: 260, seed: 7, martingale: true }));
 const setFile = path.join(tmp, 'DemoEA.set');
@@ -366,6 +368,30 @@ try {
     await page.setInputFiles('#mainFile', [mcOther]);
     await page.waitForSelector('.mc-sizing', { timeout: 60000 }).catch(() => {});
     check('un informe de otra configuración no tiene previsión', !(await page.$('#mcForecastBtn')) && /otra configuración/.test(await page.textContent('#view')));
+
+    // Backtest largo: cinco años, partidos por fechas de corte.
+    await page.setInputFiles('#mainFile', [mcFull]);
+    await page.waitForSelector('input[name="mcSplit"]', { timeout: 60000 }).catch(() => {});
+    await page.check('input[name="mcSplit"][value="yes"]');
+    await page.waitForSelector('#mcChooseEnd', { timeout: 15000 }).catch(() => {});
+    check('backtest largo: sin la fecha, no hay previsión y se pide', /Indica arriba el último día/.test(await page.textContent('#view')) && !(await page.$('#mcForecastBtn')));
+    await page.fill('#mcChooseEnd', '2030-01-01');
+    await page.waitForFunction(() => /no hay operaciones/.test(document.querySelector('#view').textContent), null, { timeout: 30000 }).catch(() => {});
+    check('una fecha después de la última operación se dice, con el periodo del informe', /Después de esa fecha no hay operaciones/.test(await page.textContent('#view')));
+    await page.fill('#mcOptEnd', '2022-12-30');
+    await page.fill('#mcChooseEnd', '2023-12-29');
+    await page.waitForSelector('.mc-seg-table', { timeout: 60000 }).catch(() => {});
+    const segs = await page.$$eval('.mc-seg-table tbody tr', (rows) => rows.map((r) => r.cells[0].textContent));
+    check('radiografía por tramos: optimizado, forward, posterior a la elección y todo', segs.join('|') === 'Periodo optimizado|Forward|Posterior a la elección|Todo el informe', segs.join('|'));
+    check('el gráfico es, por defecto, el del tramo posterior a la elección', (await page.$eval('#mcView', (e) => e.value)) === 'clean');
+    await page.selectOption('#mcView', 'opt');
+    await page.waitForFunction(() => document.querySelector('#mcView') && document.querySelector('#mcView').value === 'opt', null, { timeout: 15000 }).catch(() => {});
+    check('y se puede ver el de otro tramo', Boolean(await page.$('.mc-real')) && (await page.$eval('#mcView', (e) => e.value)) === 'opt');
+    check('la previsión dice que solo usa lo posterior al corte', /Se calcula solo con las operaciones posteriores al 29\/12\/2023/.test(await page.textContent('#view')));
+    await page.check('#mcConfirm');
+    await page.click('#mcForecastBtn');
+    await page.waitForSelector('.mc-cards', { timeout: 120000 }).catch(() => {});
+    check('y con el tramo limpio de dos años, la calcula', (await page.$$('.mc-card')).length === 2);
 
     await page.setInputFiles('#mainFile', [mcMart]);
     await page.waitForFunction(() => /No damos cifras/.test(document.querySelector('#view').textContent), null, { timeout: 60000 }).catch(() => {});

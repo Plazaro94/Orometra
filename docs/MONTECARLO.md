@@ -75,8 +75,18 @@ el banco. Lo vigente, en corto:
     en vez de 0 %). La distribución principal usa 10.000 simulaciones (el examen, 2.000); la
     calibración, 200 × 500 como en el examen.
   - **Pendiente:** el abanico hacia delante de 8.7 no está: el examen validó el final del
-    horizonte y la caída máxima, no cada punto del camino. Tampoco el flujo de un backtest largo
-    con fechas de corte (6.1), la exportación de 8.5 ni la página propia (D3).
+    horizonte y la caída máxima, no cada punto del camino. Tampoco la exportación de 8.5 ni la
+    página propia (D3).
+  - **Backtest largo con fechas de corte (6.1), 2026-10-15.** La pantalla pregunta si el informe
+    incluye fechas usadas para elegir. Si sí, el usuario da el último día usado (y, si quiere, el
+    fin del optimizado); cada operación va al tramo de su fecha de cierre
+    (`core/trades/mc-report.js#splitByCuts`) y se dice cuántas posiciones cruzan un corte (el
+    lector guarda ahora la hora de apertura de cada cierre). La radiografía sale por tramos, en
+    una tabla y con el gráfico del tramo que se elija; la previsión, solo con el tramo posterior
+    a la elección, con las mismas condiciones de arriba. Con el informe real del autor: optimizado
+    89 % (orden favorable), forward 3 % (desfavorable), posterior a la elección 51 % (normal).
+  - **Limitación que sigue:** el contraste con la meseta («la prueba de fuego», `core/unseen.js`)
+    usa las cifras del informe entero, también cuando el usuario da fechas de corte aquí.
 
 ---
 

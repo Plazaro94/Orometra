@@ -96,6 +96,8 @@ section('1. Informe sintetico');
   // Cada cierre se empareja con su apertura (1.1000 -> 1.1050, comprado, 0,5 lotes).
   check('cierre emparejado con su apertura', r.deals.every((d) => d.openPrice === 1.1 && d.price === 1.105 && d.positionSide === 'buy' && d.closedVolume === 0.5 && d.symbol === 'EURUSD' && d.digits === 4),
     JSON.stringify(r.deals[0]));
+  // Y trae la hora de la apertura: el Monte Carlo cuenta las posiciones que cruzan una fecha de corte.
+  check('cada cierre trae la hora de su apertura', r.deals.every((d) => /^\d{4}\.\d{2}\.\d{2}/.test(d.openTime || '') && d.openTime <= d.time), JSON.stringify(r.deals[0]));
   const net = r.deals.reduce((a, d) => a + d.net, 0);
   check('la suma de los netos reproduce el beneficio del informe',
     Math.abs(net - netProfit) < 0.01, `${net.toFixed(2)} vs ${netProfit.toFixed(2)}`);

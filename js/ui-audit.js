@@ -135,7 +135,7 @@ export async function analyseOnMainThread(payload) {
 /** Reserva del Monte Carlo de las operaciones, igual que analyseOnMainThread. */
 async function tradesOnMainThread(payload) {
   const { tradesMonteCarlo, tradesForecast } = await import('../core/trades/mc-report.js');
-  const opts = { sizing: payload.sizing, ddLimit: payload.ddLimit };
+  const opts = { sizing: payload.sizing, ddLimit: payload.ddLimit, cuts: payload.cuts };
   return payload.kind === 'tradesMC' ? tradesMonteCarlo(payload.deals, opts) : tradesForecast(payload.deals, opts);
 }
 
