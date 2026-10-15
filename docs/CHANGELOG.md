@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-15 — Monte Carlo en la app: radiografía y previsión
+
+En la pestaña del periodo no visto, sobre las operaciones del informe (pendiente del visto bueno
+del autor para publicar):
+
+- **Radiografía** (con 30 operaciones o más): los mismos días en otro orden, con el gráfico de
+  curvas de balance, las bandas y la curva real; dice si el orden fue afortunado y cuál sería la
+  racha de pérdidas normal. Etiqueta fija: no es una previsión.
+- **Previsión a 6 y 12 meses** (M2bc) solo con 2 años de operaciones, 100 días con operaciones,
+  sin rachas ni volatilidad agrupada, con el informe de la configuración elegida, sin un periodo
+  repetido ni otra meseta comparada con esas fechas, y tras confirmar el usuario que no las usó
+  para elegir. Si falta algo, el mismo sitio dice qué y por qué. A 3 meses, nada.
+- **Tipo de lote** deducido de las operaciones (`core/trades/sizing.js`) y corregible: lote fijo
+  o riesgo fijo en dinero (se trabaja en dinero), proporcional (en %) o martingala (sin cifras).
+- El cálculo va en el worker: la radiografía tarda 0,1-0,2 s; la previsión, unos 2 s en
+  escritorio con el informe real del autor.
+- Pruebas nuevas: `tests/sizing.test.js`, la regla de «otra meseta en las mismas fechas» en
+  `tests/history.test.js` y una sección del navegador con informes sintéticos
+  (`tests/helpers/backtest-report.js`).
+
 ## 2026-10-15 — Monte Carlo: el examen aprueba; también la radiografía
 
 Examen de M2bc (`bench/results/REPORT-MC-exam1.md`), con casos nuevos, el método congelado y el
@@ -16,7 +36,7 @@ La radiografía (los mismos días en otro orden; no es una previsión) aprueba s
 del EA del autor, el percentil del drawdown real se reparte por igual entre los diez décimos.
 
 La app todavía no cambia: falta la interfaz, con capturas para el visto bueno del autor, y la
-revisión externa.
+revisión externa (la interfaz, en la entrada de arriba).
 
 ## 2026-10-15 — Monte Carlo: calibración 4 completa; M2bc, el método candidato
 

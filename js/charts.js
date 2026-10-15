@@ -298,3 +298,51 @@ export function plateauHeatmap(analysis, dimA, dimB) {
     <span class="hm-xtitle" aria-hidden="true">${esc(nameA)}</span>
   </div></div>`;
 }
+
+/**
+ * Radiografía del backtest (core/trades/radiography.js): las curvas de balance de los mismos
+ * días en otro orden, finas y en gris, con las bandas del 5-95 % y del 25-75 %, y la curva
+ * real encima. Todas acaban en el mismo punto: son las mismas operaciones.
+ *
+ * @param {object} r      resultado de orderRadiography (con curves y bands)
+ * @param {object} opts   compact; fmt: formato de los valores (dinero o %); label: conclusión
+ */
+export function radiographyChart(r, { compact = isCompact(), fmt = formatTick, label = '', yLabel = '' } = {}) {
+  const W = compact ? 300 : 620; const H = compact ? 240 : 300;
+  const pad = compact ? { l: 54, r: 10, t: 12, b: 40 } : { l: 70, r: 16, t: 16, b: 44 };
+  const xs = [0, ...r.bands.x];
+  const withStart = (arr) => [0, ...arr];
+  const all = [...r.curves.flat(), ...r.real.curve, ...r.bands.p05, ...r.bands.p95, 0];
+  let [lo, hi] = extent(all);
+  const span = hi - lo || 1;
+  lo -= span * 0.04; hi += span * 0.06;
+  const xScale = (v) => pad.l + (v / (r.trades || 1)) * (W - pad.l - pad.r);
+  const yScale = (v) => H - pad.b - ((v - lo) / (hi - lo)) * (H - pad.t - pad.b);
+  const path = (ys) => ys.map((y, i) => `${i ? 'L' : 'M'}${fx(xScale(xs[i]))},${fx(yScale(y))}`).join('');
+  const area = (top, bottom) => {
+    const t = withStart(top); const b = withStart(bottom);
+    return `${path(t)}${b.map((y, i) => i).reverse().map((i) => `L${fx(xScale(xs[i]))},${fx(yScale(b[i]))}`).join('')}Z`;
+  };
+  const outer = `<path class="mc-band-outer" d="${area(r.bands.p95, r.bands.p05)}"/>`;
+  const inner = `<path class="mc-band-inner" d="${area(r.bands.p75, r.bands.p25)}"/>`;
+  const curves = `<path class="mc-path" d="${r.curves.map((c) => path(withStart(c))).join('')}"/>`;
+  const real = `<path class="mc-real" d="${path(withStart(r.real.curve))}"/>`;
+  const zero = lo < 0 && hi > 0 ? `<line class="mc-zero" x1="${pad.l}" y1="${fx(yScale(0))}" x2="${W - pad.r}" y2="${fx(yScale(0))}"/>` : '';
+  const yTicks = niceTicks(lo, hi, compact ? 4 : 5);
+  const xTicks = niceTicks(0, r.trades, compact ? 3 : 5).filter((t) => Number.isInteger(t));
+  const gx = xTicks.map((t) => `<text class="ch-tick" x="${fx(xScale(t))}" y="${H - pad.b + 15}" text-anchor="middle">${esc(formatTick(t))}</text>`).join('');
+  const gy = yTicks.map((t) => `<line class="ch-grid" x1="${pad.l}" y1="${fx(yScale(t))}" x2="${W - pad.r}" y2="${fx(yScale(t))}"/><text class="ch-tick" x="${pad.l - 8}" y="${fx(yScale(t) + 4)}" text-anchor="end">${esc(fmt(t))}</text>`).join('');
+  const svg = `${svgOpen(W, H, label, compact ? 260 : W)}
+    ${gy}${outer}${inner}${curves}${zero}${real}${gx}
+    <line class="ch-axis" x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}"/>
+    <line class="ch-axis" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}"/>
+    <text class="ch-axis-label" x="${(pad.l + W - pad.r) / 2}" y="${H - 6}" text-anchor="middle">${esc(L('Operaciones, de la primera a la última', 'Trades, from first to last'))}</text>
+    ${yLabel ? `<text class="ch-axis-label" x="12" y="${(pad.t + H - pad.b) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(pad.t + H - pad.b) / 2})">${esc(yLabel)}</text>` : ''}
+  </svg></div>`;
+  return wrapChart(svg, legend([
+    { cls: 'chart-swatch-mc-real', label: L('Tu backtest', 'Your backtest') },
+    { cls: 'chart-swatch-mc-path', label: L(`${r.curves.length} órdenes de ejemplo`, `${r.curves.length} sample orders`) },
+    { cls: 'chart-swatch-mc-inner', label: L('La mitad central', 'The middle half') },
+    { cls: 'chart-swatch-mc-outer', label: L('9 de cada 10 órdenes', '9 in 10 orders') },
+  ]));
+}

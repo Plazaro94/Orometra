@@ -315,3 +315,14 @@ export function addUnseenTry(tries, t, max = UNSEEN_TRIES_MAX) {
 export function earlierCountedTries(tries, currentKey) {
   return (Array.isArray(tries) ? tries : []).filter((x) => x && x.key !== currentKey && x.counts);
 }
+
+/**
+ * Backtests de OTRA meseta comparados con fechas que se solapan con [from, to] (AAAA-MM-DD).
+ * Para el nivel son correcciones, pero para la previsión del Monte Carlo (js/ui-montecarlo.js)
+ * no: si se miraron varias configuraciones en esas fechas y se eligió entre ellas, el tramo ya
+ * no es ciego. La misma meseta en otro tramo no cuenta: no es elegir configuración.
+ */
+export function otherConfigOnSameDates(tries, { from, to, plateau }) {
+  if (!from || !to) return [];
+  return (Array.isArray(tries) ? tries : []).filter((t) => t && t.from && t.to && t.from <= to && t.to >= from && t.plateau !== plateau);
+}

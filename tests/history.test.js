@@ -7,7 +7,7 @@ import { runAnalysis } from '../core/analysis.js';
 import {
   fingerprint, summarize, emptyStore, parseStore, addEntry, previousFor, attempts,
   insideSpan, compare, dataSignature, HISTORY_MAX, HISTORY_VERSION,
-  addUnseenTry, earlierCountedTries, UNSEEN_TRIES_MAX,
+  addUnseenTry, earlierCountedTries, UNSEEN_TRIES_MAX, otherConfigOnSameDates,
 } from '../core/history.js';
 
 let failures = 0;
@@ -174,6 +174,20 @@ section('Almacén: tolera datos rotos');
   check('otra versión → vacío', parseStore(JSON.stringify({ v: 99, entries: [e1] })).entries.length === 0);
   const s = parseStore(JSON.stringify({ v: HISTORY_VERSION, off: true, seen: true, labels: { [e1.fp]: 'Cruce MAs' }, entries: [e1, null, { id: 3 }] }));
   check('conserva ajustes y descarta entradas inválidas', s.off && s.seen && s.labels[e1.fp] === 'Cruce MAs' && s.entries.length === 1);
+}
+
+section('Previsión del Monte Carlo: otra configuración comparada con las mismas fechas');
+{
+  const tries = [
+    { key: 'a', from: '2024-01-01', to: '2024-12-31', plateau: 1 },
+    { key: 'b', from: '2024-06-01', to: '2025-06-30', plateau: 2 },
+    { key: 'c', from: '2020-01-01', to: '2020-12-31', plateau: 3 },
+  ];
+  const hit = otherConfigOnSameDates(tries, { from: '2025-01-01', to: '2025-12-31', plateau: 1 });
+  check('otra meseta con fechas que se solapan cuenta', hit.length === 1 && hit[0].key === 'b');
+  check('la misma meseta en otro tramo no cuenta', otherConfigOnSameDates(tries, { from: '2024-01-01', to: '2024-03-31', plateau: 1 }).length === 0);
+  check('otra meseta en fechas que no se tocan no cuenta', otherConfigOnSameDates(tries, { from: '2021-01-01', to: '2021-12-31', plateau: 1 }).length === 0);
+  check('sin fechas del informe, nada', otherConfigOnSameDates(tries, { from: null, to: null, plateau: 1 }).length === 0);
 }
 
 console.log(`\n${'='.repeat(70)}\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas\n${'='.repeat(70)}`);

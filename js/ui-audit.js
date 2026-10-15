@@ -132,9 +132,16 @@ export async function analyseOnMainThread(payload) {
   });
 }
 
+/** Reserva del Monte Carlo de las operaciones, igual que analyseOnMainThread. */
+async function tradesOnMainThread(payload) {
+  const { tradesMonteCarlo, tradesForecast } = await import('../core/trades/mc-report.js');
+  const opts = { sizing: payload.sizing, ddLimit: payload.ddLimit };
+  return payload.kind === 'tradesMC' ? tradesMonteCarlo(payload.deals, opts) : tradesForecast(payload.deals, opts);
+}
+
 export function runInWorker(payload) {
   const w = getWorker();
-  if (!w) return analyseOnMainThread(payload);
+  if (!w) return payload.kind === 'tradesMC' || payload.kind === 'tradesForecast' ? tradesOnMainThread(payload) : analyseOnMainThread(payload);
   return new Promise((resolve, reject) => {
     const id = ++requestId;
     const finish = () => {

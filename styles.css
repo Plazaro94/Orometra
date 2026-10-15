@@ -2683,3 +2683,38 @@ body:has(.hm-hero) .lp-cta-top:not(.is-shown){opacity:0;visibility:hidden;pointe
   .lp-doc .lp-doc-block h2{font-size:21px}
   .lp-doc .guide-step h3{font-size:18px}
 }
+
+/* Radiografía del Monte Carlo (radiographyChart en charts.js) y previsión (ui-montecarlo.js). */
+.mc-band-outer{fill:color-mix(in srgb,var(--ch-pass) 16%,transparent);stroke:none}
+.mc-band-inner{fill:color-mix(in srgb,var(--ch-pass) 30%,transparent);stroke:none}
+.mc-path{fill:none;stroke:var(--muted-3);stroke-width:.6;opacity:.28}
+.mc-real{fill:none;stroke:var(--text-hi);stroke-width:2.2;stroke-linejoin:round}
+.mc-zero{stroke:var(--muted-3);stroke-width:1;stroke-dasharray:4 4;opacity:.8}
+.chart-swatch-mc-real{width:14px;height:0;border-radius:0;border-top:3px solid var(--text-hi)}
+.chart-swatch-mc-path{width:14px;height:0;border-radius:0;border-top:1px solid var(--muted-3)}
+.chart-swatch-mc-inner{width:14px;height:8px;border-radius:2px;background:color-mix(in srgb,var(--ch-pass) 45%,transparent)}
+.chart-swatch-mc-outer{width:14px;height:8px;border-radius:2px;background:color-mix(in srgb,var(--ch-pass) 20%,transparent)}
+.mc-tag{display:inline-block;margin:0 0 10px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:var(--fs-sm);color:var(--muted)}
+.mc-sizing{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:4px 0 14px;font-size:var(--fs-md)}
+.mc-sizing select{max-width:100%}
+.mc-sizing small{flex-basis:100%;color:var(--muted-2);font-size:var(--fs-sm)}
+.mc-facts{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px;max-width:var(--measure)}
+.mc-facts li{line-height:1.5}
+.mc-off{border:1px dashed var(--line-strong);border-radius:10px;padding:12px 14px;color:var(--muted);max-width:var(--measure)}
+.mc-off p{margin:0 0 8px}
+.mc-off p:last-child{margin-bottom:0}
+.mc-confirm{border:1px solid var(--line);border-radius:10px;padding:12px 14px;max-width:var(--measure);display:grid;gap:10px}
+.mc-confirm p{margin:0}
+.mc-confirm label{display:flex;gap:8px;align-items:flex-start;line-height:1.45}
+.mc-confirm input[type="checkbox"]{margin-top:4px;flex:none}
+.mc-confirm .field{max-width:320px}
+.mc-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin:4px 0 0}
+.mc-card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px;align-content:start}
+.mc-card h4{margin:0;font-size:var(--fs-md)}
+.mc-card p{margin:0;line-height:1.5;font-size:var(--fs-md)}
+.mc-bar{width:100%;height:44px;display:block;overflow:visible}
+.mc-bar-range{fill:color-mix(in srgb,var(--ch-pass) 30%,transparent);stroke:var(--ch-pass);stroke-width:1}
+.mc-bar-mid{stroke:var(--accent);stroke-width:2}
+.mc-bar-zero{stroke:var(--muted-3);stroke-width:1;stroke-dasharray:3 3}
+.mc-bar-label{fill:var(--muted-2);font-size:11px;font-family:var(--font)}
+.mc-h{margin:18px 0 8px;font-size:var(--fs-md);color:var(--text-2)}

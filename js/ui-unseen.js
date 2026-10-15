@@ -12,6 +12,7 @@ import { MIN_SAMPLE_DAYS } from '../core/trades/sample.js';
 import { L, localeTag } from './i18n.js';
 import { state, api, $, num, int, pct, esc, paramHtml, decodeHead, deployableSet } from './ui-state.js';
 import { holdoutFact, displayVerdictLevel, levelName, repeatedPeriodText } from './ui-verdict.js';
+import { renderMonteCarlo, startTradesMC } from './ui-montecarlo.js';
 
 /**
  * El informe del backtest se acepta en los dos formatos que ofrece MT5 (Informe → HTML u
@@ -54,6 +55,8 @@ export async function setReport(file) {
     state.unseen.tradesAudit = report.deals && report.deals.length
       ? auditUnseenTrades(report.deals)
       : null;
+    // Radiografía y puertas del Monte Carlo, en el worker (js/ui-montecarlo.js).
+    startTradesMC();
     api.clearError();
     // Antes de analizar no se pintaba nada: el informe se leía sin ninguna señal.
     if (api.updateDropStatus) api.updateDropStatus();
@@ -237,7 +240,7 @@ export function renderReportCard(a, plateau) {
  * el export de optimización nunca trae. Independiente del contraste numérico de arriba
  * (no hace falta rellenar ni pulsar "Comprobar"): basta con haber soltado el informe.
  */
-export function renderTradesAudit() {
+export function renderTradesAudit(a, plateau) {
   const rep = state.report;
   if (!rep || !rep.deals.length) return '';
   const aud = state.unseen.tradesAudit;
@@ -266,17 +269,9 @@ export function renderTradesAudit() {
 
   const { sample: sa, costs, breakEven, warnings, contract } = aud;
 
-  // El Monte Carlo (core/trades/bootstrap.js) se retiró de la pantalla el 2026-10-13: frente
-  // a un futuro del mismo proceso, sus rangos se quedaban cortos (docs/MONTECARLO.md,
-  // sección 2). Hasta que un método apruebe el banco, se dice en vez de enseñar cifras.
-  const mc = `<p class="muted">${L(
-    `Retirado mientras lo rehacemos. En nuestras pruebas, sus rangos salían más estrechos de lo que
-    debían: el drawdown superaba su «peor caso habitual» entre 1 de cada 10 y 1 de cada 4 veces, cuando
-    debía ser 1 de cada 20. Volverá cuando apruebe unas pruebas fijadas de antemano.`,
-    `Withdrawn while we rebuild it. In our tests its ranges came out narrower than they should: the
-    drawdown exceeded its "usual worst case" between 1 in 10 and 1 in 4 times, when it should be 1 in 20.
-    It will come back once it passes tests set in advance.`,
-  )}</p>`;
+  // Monte Carlo (js/ui-montecarlo.js): radiografía y, si se puede, previsión. El anterior
+  // (core/trades/bootstrap.js) se retiró el 2026-10-13 porque sus rangos se quedaban cortos.
+  const mc = renderMonteCarlo(a, plateau);
 
   const sufficient = sa.verdictHint === 'sample_ok';
   // "Se distingue de cero" también vale para una serie que pierde: entonces no es verde.
@@ -471,7 +466,7 @@ export function renderUnseen(a) {
     </label>`).join('');
 
   const reportCard = renderReportCard(a, p);
-  const tradesAudit = renderTradesAudit();
+  const tradesAudit = renderTradesAudit(a, p);
 
   const form = `<section class="panel">
     <div class="panel-head compact">

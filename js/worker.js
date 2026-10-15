@@ -6,6 +6,7 @@ import { preflightSummary, roleFromTable } from '../core/schema.js';
 import { gridLooksLikeReport } from '../core/report.js';
 import { runAnalysis } from '../core/analysis.js';
 import { setLocale } from './i18n.js';
+import { tradesMonteCarlo, tradesForecast } from '../core/trades/mc-report.js';
 import { AnalysisError, CODE, withCode } from '../core/errors.js';
 
 // Tablas ya leidas en la comprobacion previa, por archivo (nombre|tamaño|fecha). Parsear
@@ -72,6 +73,16 @@ self.onmessage = async (event) => {
       const table = finishTable(sheet, event.data.name);
       remember(event.data.key, table);
       post('done', { summary: { role: roleFromTable(table) } });
+      return;
+    }
+    // Monte Carlo sobre las operaciones del informe (core/trades/mc-report.js): radiografía y
+    // puertas al cargar el informe; la previsión, solo cuando la pantalla la pide.
+    if (event.data.kind === 'tradesMC') {
+      post('done', { summary: tradesMonteCarlo(event.data.deals, { sizing: event.data.sizing }) });
+      return;
+    }
+    if (event.data.kind === 'tradesForecast') {
+      post('done', { summary: tradesForecast(event.data.deals, { sizing: event.data.sizing, ddLimit: event.data.ddLimit }) });
       return;
     }
     if (event.data.kind === 'preflight') {

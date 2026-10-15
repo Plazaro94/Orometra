@@ -15,6 +15,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDemoTables } from '../js/demo.js';
 import { zip, libro } from './helpers/xlsx-build.js';
+import { report as backtestReport } from './helpers/backtest-report.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 3918;
@@ -72,6 +73,15 @@ fs.writeFileSync(reportHtml, `<!DOCTYPE html><html><body><div>Strategy Tester Re
 <tr><td>Inputs:</td><td><b>InpFastMA=16</b></td></tr>
 <tr><td>Results</td></tr><tr><td>Total Net Profit:</td><td>1200.00</td></tr><tr><td>Total Trades:</td><td>120</td></tr><tr><td>Profit Factor:</td><td>1.30</td></tr>
 </table></body></html>`);
+// Monte Carlo: un año (radiografía, sin previsión), dos años y medio (con previsión) y martingala.
+const mcShort = path.join(tmp, 'MC-1ano.html');
+fs.writeFileSync(mcShort, backtestReport({ weekdays: 260, seed: 3 }));
+const mcLong = path.join(tmp, 'MC-2anos.html');
+fs.writeFileSync(mcLong, backtestReport({ weekdays: 640, seed: 5 }));
+const mcOther = path.join(tmp, 'MC-otra.html');
+fs.writeFileSync(mcOther, backtestReport({ weekdays: 640, seed: 5, inputs: 'InpFastMA=16 InpSlowMA=70 InpATR_SL=2 InpATR_TP=4 InpTrailStart=1.5 InpMinBodyPct=20' }));
+const mcMart = path.join(tmp, 'MC-martingala.html');
+fs.writeFileSync(mcMart, backtestReport({ weekdays: 260, seed: 7, martingale: true }));
 const setFile = path.join(tmp, 'DemoEA.set');
 fs.writeFileSync(setFile, 'InpFastMA=16||4||2||30||Y\nInpSlowMA=70||20||10||120||Y\n');
 // Lo mismo como libros de Excel (.xlsx), por si el usuario los guardó desde Excel.
@@ -308,6 +318,45 @@ try {
     await page.setInputFiles('#mainFile', [optFile]);
     await page.waitForFunction(() => document.querySelector('#mainDrop').classList.contains('error'), null, { timeout: 15000 }).catch(() => {});
     check('tras analizar, un .opt rechazado se ve', await page.$eval('#mainDropStatus', (e) => e.offsetParent !== null && /\.opt/.test(e.textContent)));
+    await page.context().close();
+  }
+
+  section('2c bis. Monte Carlo sobre las operaciones del informe');
+  {
+    const page = await appPage('es');
+    await page.goto(`${BASE}/app/?demo=1`);
+    await page.waitForSelector('.vx', { timeout: 120000 });
+    await page.click('.nav-item[data-tab="unseen"]');
+    await page.setInputFiles('#mainFile', [mcShort]);
+    await page.waitForSelector('.mc-sizing', { timeout: 60000 }).catch(() => {});
+    const short = await page.textContent('#view');
+    check('un año de operaciones: radiografía con su gráfico de curvas', /Radiografía/.test(short) && Boolean(await page.$('.mc-real')) && (await page.$$eval('.mc-path', (e) => e.length)) === 1, short.slice(0, 200));
+    check('dice que no es una previsión y lo que pasó con el orden', /no es una previsión/.test(short) && /habría sido mayor en el/.test(short));
+    check('sin previsión con un año, y dice por qué', /Hacen falta 2 años/.test(short) && !(await page.$('#mcForecastBtn')));
+    check('el lote fijo se deduce', (await page.$eval('#mcSizing', (e) => e.value)) === 'fixed');
+
+    await page.setInputFiles('#mainFile', [mcLong]);
+    await page.waitForSelector('#mcForecastBtn', { timeout: 60000 }).catch(() => {});
+    check('dos años y medio: pide confirmar que esas fechas no se usaron para elegir', /ninguna de esas fechas se usó para elegir/.test(await page.textContent('#view')));
+    check('sin confirmar, el botón no calcula', await page.$eval('#mcForecastBtn', (b) => b.disabled));
+    await page.check('#mcConfirm');
+    await page.fill('#mcDdLimit', '1500');
+    await page.click('#mcForecastBtn');
+    await page.waitForSelector('.mc-cards', { timeout: 120000 }).catch(() => {});
+    const cards = await page.$$eval('.mc-card', (els) => els.map((e) => e.textContent));
+    check('previsión a 6 y 12 meses, sin 3 meses', cards.length === 2 && /En 6 meses/.test(cards[0]) && /En 12 meses/.test(cards[1]), String(cards.length));
+    check('cada tarjeta trae rango, caída, pérdidas y el límite', cards.every((c) => /entre/.test(c) && /1 de cada 20/.test(c) && /acabar en pérdidas/.test(c) && /caer 1500 o más/.test(c)));
+    // Un informe de otra configuración: ya no consta que sea de la elegida.
+    await page.setInputFiles('#mainFile', [mcOther]);
+    await page.waitForSelector('.mc-sizing', { timeout: 60000 }).catch(() => {});
+    check('un informe de otra configuración no tiene previsión', !(await page.$('#mcForecastBtn')) && /otra configuración/.test(await page.textContent('#view')));
+
+    await page.setInputFiles('#mainFile', [mcMart]);
+    await page.waitForFunction(() => /No damos cifras/.test(document.querySelector('#view').textContent), null, { timeout: 60000 }).catch(() => {});
+    check('martingala: ni radiografía ni previsión', /No damos cifras/.test(await page.textContent('#view')) && !(await page.$('.mc-real')) && (await page.$eval('#mcSizing', (e) => e.value)) === 'martingale');
+    await page.selectOption('#mcSizing', 'fixed');
+    await page.waitForSelector('.mc-real', { timeout: 60000 }).catch(() => {});
+    check('si el usuario dice que no es martingala, se calcula y se dice que lo cambió', Boolean(await page.$('.mc-real')) && /Lo has cambiado tú/.test(await page.textContent('#view')));
     await page.context().close();
   }
 

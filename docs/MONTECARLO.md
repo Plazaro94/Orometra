@@ -1,6 +1,6 @@
 # Monte Carlo sobre las operaciones de un backtest: diseño
 
-Estado: **propuesta, sin código de producto.** Fecha: 2026-10-13.
+Estado: **en la app (pendiente del visto bueno del autor para publicar).** Diseño: 2026-10-13; interfaz: 2026-10-15.
 
 Regla que manda sobre todo lo demás: **si el banco no aprueba un método, ese método no se
 publica; si ningún método aprueba, la herramienta no se construye**, y lo que hoy enseña la app
@@ -58,6 +58,25 @@ el banco. Lo vigente, en corto:
   0,08). Es un error del lado prudente (niega cifras, no da cifras malas), pero confunde.
   Mejora pendiente: un detector robusto, que exigiría calibrar y examinar de nuevo.
 - **Qué recibe cada usuario:** sección 8.6. **Los gráficos:** sección 8.7.
+- **Interfaz (2026-10-15).** En la pestaña del periodo no visto, sobre el informe cargado
+  (`js/ui-montecarlo.js`; cálculo en el worker con `core/trades/mc-report.js`):
+  - Tipo de lote deducido (`core/trades/sizing.js`: fijo, proporcional o martingala) y
+    corregible por el usuario; con martingala no hay cifras.
+  - Radiografía con 30 operaciones o más: 2.000 órdenes, 100 curvas de ejemplo, bandas del
+    5-95 % y del 25-75 %, la curva real encima, la frase de la caída y la de la racha. Si saltan
+    las puertas, con aviso.
+  - Previsión a 6 y 12 meses solo con **504 días laborables o más** (lo más estricto de la
+    calibración y del examen), 100 días con operaciones, las dos puertas, el informe de la
+    configuración elegida (parámetros comprobados), sin repetir un periodo ya usado, sin otra
+    meseta comparada con fechas que se solapan y con la **confirmación del usuario** de que no usó
+    esas fechas para elegir (la app no puede comprobarlo: el export no trae fechas). A 3 meses,
+    nada. Se enseñan solo cifras examinadas: p05/p50/p95 del resultado, p50/p95 de la caída,
+    probabilidad de pérdida y, si el usuario la da, la de tocar su límite (con «menos del 1 %»
+    en vez de 0 %). La distribución principal usa 10.000 simulaciones (el examen, 2.000); la
+    calibración, 200 × 500 como en el examen.
+  - **Pendiente:** el abanico hacia delante de 8.7 no está: el examen validó el final del
+    horizonte y la caída máxima, no cada punto del camino. Tampoco el flujo de un backtest largo
+    con fechas de corte (6.1), la exportación de 8.5 ni la página propia (D3).
 
 ---
 

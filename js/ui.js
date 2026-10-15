@@ -57,6 +57,7 @@ import {
   disposePlateauSurface,
 } from './ui-plateaus.js';
 import { copyParams, doExport, toggleExportMenu } from './ui-export.js';
+import { initMonteCarlo } from './ui-montecarlo.js';
 
 // Reexports mínimos para tests / depuración.
 export {
@@ -114,6 +115,7 @@ Object.assign(api, {
 });
 
 initHistory();
+initMonteCarlo();
 
 initChrome();
 loadPrefs();
