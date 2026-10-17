@@ -237,6 +237,8 @@ try {
     await page.setInputFiles('#mainFile', [isXml]);
     await placed('ReportOptimizer.xml');
     await ready();
+    check('sin .set, su recuadro sale vacío y se puede analizar igual',
+      /Opcional: se analiza igual/.test(await page.textContent('#preflightGrid')) && !(await page.$eval('#analyzeBtn', (b) => b.disabled)));
     const drop = await page.textContent('#mainDropStatus');
     check('tras el ejemplo, un archivo propio no se junta con el forward del ejemplo', drop.includes('ReportOptimizer.xml') && !/DEMO/i.test(drop), drop);
     await page.click('#analyzeBtn');
@@ -252,10 +254,10 @@ try {
     await placed('ReportOptimizer.forward.xml');
     await ready();
     // El .set va después de las tablas: hasta que no está cargado, no hay nada que comprobar.
-    await page.waitForFunction(() => document.querySelector('#setStatus').textContent.includes('DemoEA.set'), null, { timeout: 60000 }).catch(() => {});
+    await page.waitForFunction(() => document.querySelector('#preflightGrid').textContent.includes('DemoEA.set'), null, { timeout: 60000 }).catch(() => {});
     await page.waitForTimeout(500);
     check('el .set de la tanda no analiza solo', await page.$eval('#statusBar', (e) => e.hidden) && !(await stored()));
-    check('el .set queda cargado', (await page.textContent('#setStatus')).includes('DemoEA.set'));
+    check('el .set queda cargado', (await page.textContent('#preflightGrid')).includes('DemoEA.set'));
     // Durante un análisis, lo soltado espera y no se cuela en el informe.
     await page.goto(`${BASE}/app/`);
     await page.setInputFiles('#mainFile', [isXml]);

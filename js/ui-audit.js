@@ -380,7 +380,7 @@ export async function runAudit() {
     if (!document.body.classList.contains('has-analysis')) document.body.classList.add('intake-collapsed');
     const summaryText = $('#intakeSummaryText');
     if (summaryText) {
-      summaryText.innerHTML = `<strong>${esc(state.source.is)}</strong>${state.source.oos ? ` · ${esc(state.source.oos)}` : ''}`;
+      summaryText.innerHTML = `<strong>${esc(state.source.is)}</strong>${state.source.oos ? ` · ${esc(state.source.oos)}` : ''}${state.searchSetName ? ` · ${esc(state.searchSetName)}` : ''}`;
     }
     state.selectedPlateau = 0;
     // El informe NO se descarta al reanalizar: es habitual soltar los tres archivos a

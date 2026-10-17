@@ -94,8 +94,6 @@ export function resetSession() {
   state.preflight = { is: null, oos: null };
   state.tab = 'verdict';
   api.updateDropStatus();
-  const setStatus = $('#setStatus');
-  if (setStatus) setStatus.textContent = '';
   $$('.dropzone').forEach((d) => d.classList.remove('ready', 'error'));
   { const el = $('#mainFile'); if (el) el.value = ''; }
   api.clearError();

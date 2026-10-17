@@ -78,8 +78,8 @@ export async function setSearchSet(file) {
     state.searchSet = parsed;
     state.searchSetName = file.name;
     api.clearError();
-    const status = $('#setStatus');
-    if (status) status.textContent = `${file.name} · ${parsed.params.length} ${L('parámetros', 'parameters')}`;
+    updateDropStatus();
+    renderPreflight();
     // Volver a analizar con el contraste de cobertura solo si lo cargado es lo que se
     // analizó: con archivos nuevos (sin comprobar aún) se espera a que se pulse Analizar.
     if (!state.busy && api.analyzedCurrentFiles && api.analyzedCurrentFiles()) await api.runAudit();
@@ -263,7 +263,8 @@ export function updateDropStatus() {
   statusEl.textContent = [
     `${L('Optimización', 'Optimization')}: ${isName || L('falta', 'missing')}`,
     `${L('Forward', 'Forward')}: ${oosName || L('no cargado (opcional)', 'not loaded (optional)')}`,
-  ].join(' · ') + reportNote() + (state.dropNote ? ` · ${state.dropNote}` : '');
+  ].join(' · ') + (state.searchSetName ? ` · .set: ${state.searchSetName}` : '')
+    + reportNote() + (state.dropNote ? ` · ${state.dropNote}` : '');
 }
 
 /** El informe del backtest soltado antes de analizar: que se vea que se ha leído. */
@@ -380,6 +381,25 @@ export async function queuePreflight(which, retried = false) {
   refreshAnalyzeButton();
 }
 
+/** El .set de la optimización, en su propio recuadro: opcional, sin él se analiza igual. */
+function setCard() {
+  const label = L('.set de la optimización', 'Optimization .set');
+  if (!state.searchSet) {
+    return `<div class="preflight-card preflight-empty">
+      <span class="preflight-role">${esc(label)}</span>
+      <strong>—</strong>
+      <em>${L('Opcional: se analiza igual sin él', 'Optional: the analysis runs without it')}</em>
+    </div>`;
+  }
+  const params = state.searchSet.params;
+  const optimized = params.filter((p) => p.hasRange && p.enabled).length;
+  return `<div class="preflight-card preflight-ok">
+    <span class="preflight-role">${esc(label)}</span>
+    <strong>${esc(state.searchSetName || '.set')}</strong>
+    <em>${esc(t('preflight.params'))} ${int(params.length)} · ${L('optimizados', 'optimized')} ${int(optimized)}</em>
+  </div>`;
+}
+
 export function renderPreflight() {
   const host = $('#preflight');
   const grid = $('#preflightGrid');
@@ -389,7 +409,7 @@ export function renderPreflight() {
     { key: 'is', label: L('Optimización', 'Optimization') },
     { key: 'oos', label: L('Forward', 'Forward') },
   ];
-  const hasAny = slots.some((s) => state.preflight[s.key]);
+  const hasAny = slots.some((s) => state.preflight[s.key]) || Boolean(state.searchSet);
   host.hidden = !hasAny;
   if (!hasAny) return;
 
@@ -439,7 +459,7 @@ export function renderPreflight() {
     `Columns not recognized for: ${miss.map((m) => MISSING[m]).join(', ')}. Orometra reads MT5 headers in English and Spanish; without these columns, their minimums cannot be applied.`,
   ))}</em>` : ''}
     </div>`;
-  }).join('');
+  }).join('') + setCard();
 
   // Solo el forward: se lee bien, pero sin la optimización no hay nada que analizar.
   const noIs = !state.preflight.is && !hasError && !reading;

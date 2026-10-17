@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-17 — El .set de la optimización, con su propio recuadro en la comprobación de datos
+
+La comprobación de datos enseñaba dos recuadros (optimización y forward) y el .set solo salía
+como una línea suelta bajo la caja. Ahora tiene un tercer recuadro: con el .set cargado, su
+nombre, los parámetros que trae y cuántos se optimizaron; sin él, vacío y con «Opcional: se
+analiza igual sin él». El nombre del .set sale también en la caja de carga y en el resumen que
+queda tras analizar. Si solo se ha soltado el .set, la comprobación aparece y dice que falta la
+optimización.
+
 ## 2026-10-15 — Monte Carlo: la enmienda 7 no cambia nada; el apartado queda cerrado
 
 Última ronda del método (enmienda 7, aprobada por delegación del autor): dos detectores de
