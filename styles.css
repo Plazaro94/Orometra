@@ -551,12 +551,16 @@ body:not(.has-analysis):not(.policy-open) .policy-panel{display:none}
 .preflight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .set-note{margin:8px 0 0;font-size:var(--fs-md);line-height:1.4;color:var(--muted-3)}
 .noscript-note{margin:24px;padding:14px 16px;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn-text);border-radius:8px}
-.preflight-warn{display:block;margin-top:4px;color:var(--warn-text)}
+.preflight-card .preflight-warn{display:block;margin-top:4px;color:var(--warn-text)}
 .preflight-card{
   border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-2);
   padding:12px 12px;display:flex;flex-direction:column;gap:4px;min-width:0;
 }
 .preflight-role{font-size:var(--fs-sm);letter-spacing:0;text-transform:none;font-weight:700;color:var(--muted-2)}
+.preflight-role-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+/* Con aire para el dedo en el móvil, sin descolocar la fila. */
+.preflight-remove{padding:6px 0 6px 10px;margin:-6px 0;text-decoration:underline;text-underline-offset:2px}
+.preflight-remove:disabled{color:var(--muted-3);cursor:default}
 .preflight-card strong{
   font-size:var(--fs-md);color:var(--text-hi);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }

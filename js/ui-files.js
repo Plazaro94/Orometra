@@ -3,7 +3,7 @@
 import { parseTable } from '../core/parse.js';
 import { metricColumns, inferParamsSingle, roleFromTable } from '../core/schema.js';
 import { looksLikeReport, mentionsReport } from '../core/report.js';
-import { looksLikeSetFile, parseSetText } from '../core/setfile.js';
+import { looksLikeSetFile, parseSetText, setMatch } from '../core/setfile.js';
 import { AnalysisError, classifyError, CODE } from '../core/errors.js';
 import { buildDemoTables, buildNoEdgeDemoTables } from './demo.js';
 import { t, L } from './i18n.js';
@@ -393,11 +393,46 @@ function setCard() {
   }
   const params = state.searchSet.params;
   const optimized = params.filter((p) => p.hasRange && p.enabled).length;
-  return `<div class="preflight-card preflight-ok">
-    <span class="preflight-role">${esc(label)}</span>
+  // Se cruza con los parámetros del export ya leído (la optimización, o si no el forward).
+  const table = [state.preflight.is, state.preflight.oos].find((p) => p && p.ok !== false && !p.reading && p.paramNames);
+  const match = table ? setMatch(table.paramNames, state.searchSet) : null;
+  const names = (list) => esc(list.slice(0, 4).join(', ')) + (list.length > 4 ? '…' : '');
+  let warn = '';
+  if (match && match.status === 'none') {
+    warn = L(
+      `${match.total === 1 ? 'El parámetro de la optimización no está' : `Ninguno de los ${match.total} parámetros de la optimización está`} en este .set: ¿es de otro EA? Se analiza igual, pero no sirve para medir la cobertura ni para completar el .set que descargues.`,
+      `${match.total === 1 ? 'The optimization parameter is not' : `None of the ${match.total} optimization parameters is`} in this .set: is it from another EA? The analysis still runs, but it cannot be used to measure coverage or to complete the .set you download.`,
+    );
+  } else if (match && match.status === 'partial') {
+    warn = L(
+      `${match.missing.length} de ${match.total} parámetros de la optimización no están en el .set: ${names(match.missing)}. Puede ser otra versión del EA.`,
+      `${match.missing.length} of ${match.total} optimization parameters are not in the .set: ${names(match.missing)}. It may be another version of the EA.`,
+    );
+  }
+  const tone = match && match.status === 'none' ? 'preflight-bad' : 'preflight-ok';
+  return `<div class="preflight-card ${tone}">
+    <div class="preflight-role-row">
+      <span class="preflight-role">${esc(label)}</span>
+      <button class="text-btn preflight-remove" type="button" data-remove-set${state.busy ? ' disabled' : ''}
+        aria-label="${esc(L('Quitar el .set', 'Remove the .set'))}">${L('Quitar', 'Remove')}</button>
+    </div>
     <strong>${esc(state.searchSetName || '.set')}</strong>
     <em>${esc(t('preflight.params'))} ${int(params.length)} · ${L('optimizados', 'optimized')} ${int(optimized)}</em>
+    ${warn ? `<em class="${match.status === 'none' ? '' : 'preflight-warn'}">${warn}</em>` : ''}
   </div>`;
+}
+
+/** Quita el .set cargado. Si el análisis en pantalla lo usaba, se repite sin él. */
+export async function removeSearchSet() {
+  if (state.busy || !state.searchSet) return;
+  state.searchSet = null;
+  state.searchSetName = null;
+  updateDropStatus();
+  renderPreflight();
+  // El botón desaparece con el recuadro: el foco vuelve a la caja de carga.
+  const zone = $('#mainDrop');
+  if (zone) zone.focus();
+  if (api.analyzedCurrentFiles && api.analyzedCurrentFiles()) await api.runAudit();
 }
 
 export function renderPreflight() {

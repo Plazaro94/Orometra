@@ -12,6 +12,7 @@ import {
   updateDropStatus,
   acceptFiles,
   flushPendingDrop,
+  removeSearchSet,
 } from './ui-files.js';
 
 import {
@@ -110,6 +111,10 @@ $('#policyToggle').addEventListener('click', () => togglePolicy());
 bindDropzone('#mainDrop', '#mainFile', null);
 bindGlobalDrop();
 $('#analyzeBtn').addEventListener('click', runAudit);
+// El recuadro del .set se repinta entero: el clic se escucha en su contenedor.
+$('#preflightGrid').addEventListener('click', (e) => {
+  if (e.target.closest('[data-remove-set]')) removeSearchSet();
+});
 $('#cancelBtn').addEventListener('click', cancelAudit);
 $('#demoBtn').addEventListener('click', () => loadDemo('good'));
 $('#exportBtn').addEventListener('click', toggleExportMenu);

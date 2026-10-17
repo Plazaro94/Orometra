@@ -9,6 +9,20 @@ analiza igual sin él». El nombre del .set sale también en la caja de carga y 
 queda tras analizar. Si solo se ha soltado el .set, la comprobación aparece y dice que falta la
 optimización.
 
+- **Si encaja con la optimización.** El recuadro cruza por nombre los parámetros del export con
+  los del .set (`setMatch`, `core/setfile.js`): si faltan algunos, lo dice en ámbar y los nombra
+  (otra versión del EA, o un parámetro renombrado); si no está ninguno, en rojo: «¿es de otro
+  EA?». Se puede analizar igual.
+- **Botón «Quitar».** Vacía el .set; si el análisis en pantalla lo usaba, se repite sin él.
+  Desactivado mientras se analiza.
+- **Un .set de otro EA ya no se mezcla.** Antes, `mergeSetValues` metía sus parámetros en el .set
+  descargado y la nota lo llamaba completo. Ahora, si no comparte ninguno de los parámetros
+  optimizados, el .set sale solo con los de la meseta y la nota lo explica. El informe lo avisa
+  en Diagnóstico («El .set no es de esta optimización»), como hallazgo informativo: no cambia el
+  nivel de evidencia. La cifra «Cobertura vs .set» dice «el .set no encaja» en vez de «sin .set».
+- El aviso ámbar de la comprobación de datos (también el de columnas no reconocidas) salía en
+  gris: `.preflight-card em` le ganaba en especificidad.
+
 ## 2026-10-15 — Monte Carlo: la enmienda 7 no cambia nada; el apartado queda cerrado
 
 Última ronda del método (enmienda 7, aprobada por delegación del autor): dos detectores de

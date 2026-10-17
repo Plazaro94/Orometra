@@ -5,7 +5,7 @@
 
 import { generateCase } from '../bench/sim.js';
 import { runAnalysis } from '../core/analysis.js';
-import { parseSetText, mergeSetValues, compareOtherParams } from '../core/setfile.js';
+import { parseSetText, mergeSetValues, compareOtherParams, setMatch } from '../core/setfile.js';
 import { buildSetFile, buildRefinementSetFile, setCoverageNote } from '../js/export.js';
 import { setLocale } from '../js/i18n.js';
 
@@ -77,6 +77,40 @@ section('4. Backtest del periodo no visto frente al .set de la optimización');
   check('se marcan los que difieren', diff.map((d) => d.name).join(',') === 'InpLot,InpFilter', diff.map((d) => d.name).join(','));
   check('los optimizados no se comparan aquí', !diff.some((d) => d.name === 'InpP'));
   check('sin .set no hay nada que comparar', compareOtherParams({ A: '1' }, null, []).length === 0);
+}
+
+section('5. Un .set de otro EA no se mezcla y se avisa');
+{
+  const ajeno = parseSetText('OtroLot=0.10||0.10||1||0.10||N\nOtroMA=20||10||5||40||Y\n');
+  const m = mergeSetValues(['InpP', 'InpQ'], ['18', '2'], ajeno);
+  check('no se mezcla: solo lo optimizado', m.complete === false && m.entries.map((e) => e.name).join(',') === 'InpP,InpQ', m.entries.map((e) => e.name).join(','));
+  check('y lo marca como de otro EA', m.mismatch === true && m.fromSet === 0);
+  const parcial = mergeSetValues(['InpP', 'InpNuevo'], ['18', '7'], parseSetText('InpP=16||12||2||20||Y\nInpLot=0.10||0.10||1||0.10||N\n'));
+  check('si comparte alguno sí se mezcla (parámetro renombrado)', parcial.complete === true && !parcial.mismatch);
+
+  const set = parseSetText('InpP=16||12||2||20||Y\nInpQ=1||1||1||3||Y\nInpLot=0.10||0.10||1||0.10||N\n');
+  const ok = setMatch(['InpP', 'InpQ'], set);
+  check('setMatch: están todos', ok.status === 'ok' && ok.total === 2 && ok.missing.length === 0);
+  const part = setMatch(['InpP', 'InpR', 'InpS'], set);
+  check('setMatch: faltan algunos', part.status === 'partial' && part.missing.join(',') === 'InpR,InpS', JSON.stringify(part));
+  const none = setMatch(['InpP', 'InpQ'], ajeno);
+  check('setMatch: ninguno', none.status === 'none' && none.missing.length === 2);
+  check('setMatch: sin parámetros o sin .set no dice nada', setMatch([], set) === null && setMatch(['InpP'], null) === null);
+
+  const c = generateCase('S3', 1);
+  const sin = runAnalysis({ isTable: c.isTable, oosTable: c.oosTable });
+  const con = runAnalysis({ isTable: c.isTable, oosTable: c.oosTable, searchSet: ajeno });
+  const titles = (a) => a.verdict.findings.map((f) => f.title);
+  check('el informe lo avisa', titles(con).includes('El .set no es de esta optimización'), titles(con).join(' | '));
+  check('sin .set no sale ese aviso', !titles(sin).includes('El .set no es de esta optimización'));
+  check('y no cambia el nivel de evidencia', con.verdict.level === sin.verdict.level, `${sin.verdict.level} / ${con.verdict.level}`);
+  const p = con.plateaus[0];
+  const lineas = buildSetFile(con, p, ajeno).split(/\r?\n/).filter((l) => l && !l.startsWith(';'));
+  check('el .set descargado no lleva los parámetros del otro EA', lineas.length === con.meta.paramNames.length && !lineas.some((l) => l.startsWith('Otro')), lineas.join(' '));
+  check('la nota de la interfaz lo dice', /¿es de otro EA\?/.test(setCoverageNote(con, p, ajeno)));
+  setLocale('en');
+  check('y en inglés', /is it from another EA\?/.test(setCoverageNote(con, p, ajeno)));
+  setLocale('es');
 }
 
 console.log(`\nRESULTADO: ${checks - failures}/${checks} comprobaciones correctas`);

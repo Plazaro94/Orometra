@@ -72,14 +72,16 @@ export function parseSetText(text) {
  * @param {string[]} names   parámetros optimizados (los del export)
  * @param {string[]} texts   su valor elegido, ya en formato MT5
  * @param {{params:Array}|null} baseSet  el .set de la optimización, si se ha soltado
- * @returns {{complete:boolean, entries:Array<{name:string,text:string,source:'optimized'|'base'}>, optimized:number, fromSet:number}}
+ * @returns {{complete:boolean, entries:Array<{name:string,text:string,source:'optimized'|'base'}>, optimized:number, fromSet:number, mismatch?:boolean}}
  */
 export function mergeSetValues(names, texts, baseSet) {
   const chosen = new Map(names.map((n, j) => [n, texts[j]]));
   const base = baseSet && Array.isArray(baseSet.params) ? baseSet.params : [];
-  if (!base.length) {
-    return { complete: false, entries: names.map((n, j) => ({ name: n, text: texts[j], source: 'optimized' })), optimized: names.length, fromSet: 0 };
-  }
+  const alone = { complete: false, entries: names.map((n, j) => ({ name: n, text: texts[j], source: 'optimized' })), optimized: names.length, fromSet: 0 };
+  if (!base.length) return alone;
+  // Un .set que no menciona ninguno de los parámetros optimizados es de otro EA: mezclarlo
+  // daría un .set con los parámetros de los dos y una nota que lo llamaría completo.
+  if (names.length && !names.some((n) => base.some((p) => p.name === n))) return { ...alone, mismatch: true };
   const entries = [];
   const used = new Set();
   for (const p of base) {
@@ -92,6 +94,24 @@ export function mergeSetValues(names, texts, baseSet) {
   for (const n of names) if (!used.has(n)) entries.push({ name: n, text: chosen.get(n), source: 'optimized' });
   const fromSet = entries.filter((e) => e.source === 'base').length;
   return { complete: true, entries, optimized: entries.length - fromSet, fromSet };
+}
+
+/**
+ * ¿Es este .set el de la optimización? Cruza los parámetros del export con los del .set,
+ * por nombre. 'none': ninguno está en el .set (otro EA); 'partial': faltan algunos (otra
+ * versión, o un parámetro renombrado); 'ok': están todos; null si no hay con qué cruzar.
+ *
+ * @param {string[]} paramNames  parámetros del export
+ * @param {{params:Array}|null} setFile
+ * @returns {{status:'ok'|'partial'|'none', total:number, missing:string[]}|null}
+ */
+export function setMatch(paramNames, setFile) {
+  const names = Array.isArray(paramNames) ? paramNames : [];
+  if (!names.length || !setFile || !Array.isArray(setFile.params) || !setFile.params.length) return null;
+  const inSet = new Set(setFile.params.map((p) => p.name));
+  const missing = names.filter((n) => !inSet.has(n));
+  const status = missing.length === 0 ? 'ok' : missing.length === names.length ? 'none' : 'partial';
+  return { status, total: names.length, missing };
 }
 
 /**

@@ -69,6 +69,7 @@ export function setBusy(busy) {
   // calculos y gana el que acabe el ultimo.
   $('#demoBtn').disabled = busy;
   $$('.dropzone').forEach((z) => z.classList.toggle('locked', busy));
+  $$('[data-remove-set]').forEach((b) => { b.disabled = busy; });
   api.refreshAnalyzeButton();
 }
 

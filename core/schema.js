@@ -324,10 +324,13 @@ export function missingKeyMetrics(table) {
 
 /** Resumen de una tabla para la comprobación previa (mismo cálculo en el hilo y en el worker). */
 export function preflightSummary(table) {
+  const params = inferParamsSingle(table).params;
   return {
     rows: table.rows.length,
     cols: table.headers.length,
-    params: inferParamsSingle(table).params.length,
+    params: params.length,
+    // Para cruzarlos con el .set antes de analizar (js/ui-files.js).
+    paramNames: params.map((p) => p.name),
     metrics: Object.keys(metricColumns(table)).length,
     missing: missingKeyMetrics(table),
     format: table.format || 'table',

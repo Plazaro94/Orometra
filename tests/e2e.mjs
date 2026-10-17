@@ -86,6 +86,9 @@ const mcMart = path.join(tmp, 'MC-martingala.html');
 fs.writeFileSync(mcMart, backtestReport({ weekdays: 260, seed: 7, martingale: true }));
 const setFile = path.join(tmp, 'DemoEA.set');
 fs.writeFileSync(setFile, 'InpFastMA=16||4||2||30||Y\nInpSlowMA=70||20||10||120||Y\n');
+// Un .set de otro EA: ninguno de sus parámetros está en la optimización.
+const otherSet = path.join(tmp, 'OtroEA.set');
+fs.writeFileSync(otherSet, 'OtroLot=0.10||0.10||1||0.10||N\nOtroMA=20||10||5||40||Y\n');
 // Lo mismo como libros de Excel (.xlsx), por si el usuario los guardó desde Excel.
 const toXlsx = (table) => Buffer.from(zip(libro({ filas: [table.headers, ...table.rows], compartidas: table.headers })));
 const isXlsx = path.join(tmp, 'ReportOptimizer.xlsx');
@@ -258,6 +261,15 @@ try {
     await page.waitForTimeout(500);
     check('el .set de la tanda no analiza solo', await page.$eval('#statusBar', (e) => e.hidden) && !(await stored()));
     check('el .set queda cargado', (await page.textContent('#preflightGrid')).includes('DemoEA.set'));
+    check('un .set al que le faltan parámetros lo dice en su recuadro',
+      /4 de 6 parámetros de la optimización no están en el \.set/.test(await page.textContent('#preflightGrid')), await page.textContent('#preflightGrid'));
+    await page.click('[data-remove-set]');
+    check('«Quitar» vacía el recuadro del .set', /Opcional: se analiza igual/.test(await page.textContent('#preflightGrid'))
+      && !(await page.textContent('#mainDropStatus')).includes('DemoEA.set'));
+    await page.setInputFiles('#mainFile', [otherSet]);
+    await page.waitForFunction(() => document.querySelector('#preflightGrid').textContent.includes('OtroEA.set'), null, { timeout: 30000 }).catch(() => {});
+    check('un .set de otro EA se marca en su recuadro', /¿es de otro EA\?/.test(await page.textContent('#preflightGrid'))
+      && !(await page.$eval('#analyzeBtn', (b) => b.disabled)));
     // Durante un análisis, lo soltado espera y no se cuela en el informe.
     await page.goto(`${BASE}/app/`);
     await page.setInputFiles('#mainFile', [isXml]);

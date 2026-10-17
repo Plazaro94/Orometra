@@ -553,7 +553,9 @@ export function renderDiagnostics(a) {
           <div><span>${L('Configuraciones posibles', 'Possible configurations')}</span><strong>${int(a.meta.cartesian)}</strong></div>
           <div><span>${L('Configuraciones analizadas', 'Configurations analyzed')}</span><strong>${int(a.meta.total)}${a.integrity && a.integrity.collapsedTopology > 0 ? ` <em>${L('tras agrupar', 'after grouping')} ${esc((a.meta.flatDims || []).join(', '))}</em>` : ''}</strong></div>
           <div><span>${L('Parte probada', 'Share tested')}</span><strong>${Number.isFinite(a.meta.coverage) ? shareText(a.meta.coverage) : '—'}</strong></div>
-          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? shareText(a.meta.searchCoverage.coverageSearch) : L('sin .set', 'no .set')}</strong></div>
+          <div><span>${L('Cobertura vs .set', 'Coverage vs .set')}</span><strong>${a.meta.searchCoverage && a.meta.searchCoverage.usable && Number.isFinite(a.meta.searchCoverage.coverageSearch) ? shareText(a.meta.searchCoverage.coverageSearch) : !a.meta.searchCoverage || !a.meta.searchCoverage.present ? L('sin .set', 'no .set')
+            : a.meta.searchCoverage.matched === 0 ? L('el .set no encaja', '.set does not match')
+              : L('el .set no trae rangos', '.set has no ranges')}</strong></div>
           <div><span>${L('Distancia entre vecinas', 'Neighbor distance')}</span><strong>${int(a.meta.radius)} ${a.meta.radius === 1 ? L('paso', 'step') : L('pasos', 'steps')}</strong></div>
           <div><span>${L('Vecinas por configuración', 'Neighbors per configuration')}</span><strong>${L('mediana', 'median')} ${int(a.meta.medianSupport)}</strong></div>
           <div><span>${L('Duración forward estimada', 'Estimated forward duration')}</span><strong>${Number.isFinite(a.meta.periodRatio) ? pct(a.meta.periodRatio, 0) + L(' del periodo optimizado', ' of the optimized period') : '—'}</strong></div>

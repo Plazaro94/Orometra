@@ -519,6 +519,11 @@ export function buildVerdict(ctx) {
     add(SEV.INFO, L('Sin .set de optimización: cobertura solo sobre niveles vistos', 'No optimization .set: coverage is on seen levels only'),
       L('Suelta el .set con el que lanzaste la optimización (el que guarda el inicio, el paso y el fin de cada parámetro) para medir qué parte del rango pedido cubren tus archivos.',
         'Drop the .set you launched the optimization with (the one that stores each parameter’s start, step and stop) to measure how much of the requested range your files cover.'), 'coverage');
+  } else if (searchCoverage.matched === 0) {
+    // Informativo: un .set equivocado no dice nada de la estrategia ni debe bajar el nivel.
+    add(SEV.INFO, L('El .set no es de esta optimización', 'The .set is not from this optimization'),
+      L(`${searchCoverage.missingInSet.length === 1 ? 'El parámetro optimizado no está' : `Ninguno de los ${searchCoverage.missingInSet.length} parámetros optimizados está`} en el .set que has soltado: no se ha usado para medir la cobertura ni para completar el .set que descargues. ¿Es de otro EA? Quítalo en la comprobación de datos o suelta el bueno.`,
+        `${searchCoverage.missingInSet.length === 1 ? 'The optimized parameter is not' : `None of the ${searchCoverage.missingInSet.length} optimized parameters is`} in the .set you dropped: it was not used to measure coverage or to complete the .set you download. Is it from another EA? Remove it in the data check or drop the right one.`), 'coverage');
   }
 
   if (Number.isFinite(medianSupport) && medianSupport < 4) {

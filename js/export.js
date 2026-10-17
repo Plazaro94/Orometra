@@ -80,6 +80,12 @@ function setCompletenessComment(merged) {
 export function setCoverageNote(analysis, plateau, baseSet = null) {
   const names = analysis.meta.paramNames;
   const merged = mergeSetValues(names, names.map((_, j) => fmt(plateau.record.params[j])), baseSet);
+  if (merged.mismatch) {
+    return L(
+      `El .set solo lleva ${merged.optimized === 1 ? 'el parámetro' : `los ${merged.optimized} parámetros`} que optimizaste: el .set que has soltado no tiene ninguno de ellos (¿es de otro EA?) y no se ha usado para completarlo.`,
+      `The .set only carries ${merged.optimized === 1 ? 'the parameter' : `the ${merged.optimized} parameters`} you optimized: the .set you dropped has none of them (is it from another EA?) and was not used to complete it.`,
+    );
+  }
   if (merged.complete) {
     return L(
       `El .set lleva los ${merged.entries.length} parámetros: ${merged.optimized} con la meseta elegida y ${merged.fromSet} con los valores de tu .set de la optimización.`,
